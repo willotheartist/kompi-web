@@ -5,6 +5,8 @@ import {
   LinkSummary,
 } from "@/components/dashboard/dashboard-shell";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const linksRaw = await prisma.link.findMany({
     orderBy: { createdAt: "desc" },
@@ -17,7 +19,6 @@ export default async function DashboardPage() {
   const links: LinkSummary[] = linksRaw.map((link: any) => {
     const code = link.code ?? null;
 
-    // Prefer stored shortUrl if it ever exists, otherwise build from code
     const shortUrl =
       (link as any).shortUrl ??
       (code ? `${base}/r/${code}` : null);
