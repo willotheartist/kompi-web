@@ -11,14 +11,26 @@ export default async function DashboardPage() {
     take: 15,
   });
 
-  const links: LinkSummary[] = linksRaw.map((link) => ({
-    id: link.id,
-    code: link.code ?? null,
-    shortUrl: (link as any).shortUrl ?? null,
-    targetUrl: link.targetUrl,
-    createdAt: link.createdAt.toISOString(),
-    clicks: (link as any).clicks ?? null,
-  }));
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+  const links: LinkSummary[] = linksRaw.map((link: any) => {
+    const code = link.code ?? null;
+
+    // Prefer stored shortUrl if it ever exists, otherwise build from code
+    const shortUrl =
+      (link as any).shortUrl ??
+      (code ? `${base}/r/${code}` : null);
+
+    return {
+      id: link.id,
+      code,
+      shortUrl,
+      targetUrl: link.targetUrl,
+      createdAt: link.createdAt.toISOString(),
+      clicks: (link as any).clicks ?? null,
+    };
+  });
 
   return (
     <DashboardLayout>
