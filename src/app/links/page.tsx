@@ -5,6 +5,8 @@ import {
   LinkListItem,
 } from "@/components/links/links-list-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const linksRaw = await prisma.link.findMany({
     orderBy: { createdAt: "desc" },
