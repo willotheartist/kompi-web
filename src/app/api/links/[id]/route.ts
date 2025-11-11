@@ -1,78 +1,115 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
 async function getUserLink(userId: string, id: string) {
   return prisma.link.findFirst({
-    where: { id, workspace: { ownerId: userId } },
+    where: {
+      id,
+      workspace: {
+        ownerId: userId,
+      },
+    },
   });
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
+// Get a single link (for analytics / editing)
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireUser();
-    const link = await getUserLink(user.id, params.id);
-    if (!link) return new NextResponse("Not found", { status: 404 });
+    const { id } = await params;
 
-    const body = (await req.json().catch(() => ({}))) as {
-      isActive?: boolean;
-      targetUrl?: string;
-      code?: string;
-    };
-
-    const data: {
-      isActive?: boolean;
-      targetUrl?: string;
-      code?: string;
-    } = {};
-
-    if (typeof body.isActive === "boolean") data.isActive = body.isActive;
-    if (typeof body.targetUrl === "string") data.targetUrl = body.targetUrl;
-
-    if (body.code && body.code !== link.code) {
-      const code = body.code.trim();
-      if (!code) {
-        return new NextResponse("Invalid code", { status: 400 });
-      }
-      const conflict = await prisma.link.findFirst({
-        where: {
-          code,
-          workspaceId: link.workspaceId,
-          NOT: { id: link.id },
-        },
-      });
-      if (conflict) {
-        return new NextResponse("Code already in use", { status: 409 });
-      }
-      data.code = code;
+    const link = await getUserLink(user.id, id);
+    if (!link) {
+      return new NextResponse("Not found", { status: 404 });
     }
 
-    const updated = await prisma.link.update({
-      where: { id: link.id },
-      data,
-    });
-
-    return NextResponse.json(updated);
+    return NextResponse.json(link);
   } catch {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 }
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
+// Update a link
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireUser();
-    const link = await getUserLink(user.id, params.id);
-    if (!link) return new NextResponse("Not found", { status: 404 });
+    const { id } = await params;
 
-    await prisma.link.delete({ where: { id: link.id } });
+    const link = await getUserLink(user.id, id);
+    if (!link) {
+      return new NextResponse("Not found", { status: 404 });
+    }
+
+    const body = await req.json();
+
+    // Build update payload defensively to keep TS + Prisma happy
+    const data: any = {};
+
+    if (typeof body.code === "string") {
+      data.code = body.code;
+    }
+
+    if (typeof body.targetUrl === "string") {
+      data.targetUrl = body.targetUrl;
+    }
+
+    if (typeof body.url === "string") {
+      // In case your schema uses `url` instead of `targetUrl`
+      data.url = body.url;
+    }
+
+    if (typeof body.title === "string") {
+      data.title = body.title;
+    }
+
+    if (Array.isArray(body.tags)) {
+      data.tags = body.tags;
+    }
+
+    if (typeof body.isActive === "boolean") {
+      data.isActive = body.isActive;
+    }
+
+    const updated = await prisma.link.update({
+      where: { id: link.id },
+      data: data as any,
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("PATCH /api/links/[id] error", error);
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+}
+
+// Delete a link
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await requireUser();
+    const { id } = await params;
+
+    const link = await getUserLink(user.id, id);
+    if (!link) {
+      return new NextResponse("Not found", { status: 404 });
+    }
+
+    await prisma.link.delete({
+      where: { id: link.id },
+    });
+
     return new NextResponse(null, { status: 204 });
-  } catch {
+  } catch (error) {
+    console.error("DELETE /api/links/[id] error", error);
     return new NextResponse("Unauthorized", { status: 401 });
   }
 }
