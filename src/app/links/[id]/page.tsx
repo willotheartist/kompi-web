@@ -26,6 +26,8 @@ export default async function Page({ params }: PageProps) {
   if (!id) notFound();
 
   let link = await prisma.link.findUnique({ where: { id } });
+
+  // Also allow looking up by code if direct ID lookup fails
   if (!link) {
     link = await prisma.link.findFirst({ where: { code: id } });
   }
@@ -46,14 +48,26 @@ export default async function Page({ params }: PageProps) {
   const thirtyDaysAgo = new Date(now);
   thirtyDaysAgo.setDate(now.getDate() - 30);
 
-  const last7 = events.filter((e) => e.createdAt >= sevenDaysAgo).length;
-  const last30 = events.filter((e) => e.createdAt >= thirtyDaysAgo).length;
+  // Last 7 / 30 days — explicitly type `e` to satisfy TS
+  const last7 = events.filter((e: any) => {
+    const createdAt = new Date(e.createdAt);
+    return createdAt >= sevenDaysAgo;
+  }).length;
 
+  const last30 = events.filter((e: any) => {
+    const createdAt = new Date(e.createdAt);
+    return createdAt >= thirtyDaysAgo;
+  }).length;
+
+  // Previous 7 days window for growth %
   const prev7Start = new Date(sevenDaysAgo);
   prev7Start.setDate(prev7Start.getDate() - 7);
-  const prev7 = events.filter(
-    (e) => e.createdAt >= prev7Start && e.createdAt < sevenDaysAgo
-  ).length;
+
+  const prev7 = events.filter((e: any) => {
+    const createdAt = new Date(e.createdAt);
+    return createdAt >= prev7Start && createdAt < sevenDaysAgo;
+  }).length;
+
   const growth7 =
     prev7 === 0
       ? last7 > 0
@@ -61,37 +75,49 @@ export default async function Page({ params }: PageProps) {
         : 0
       : Math.round(((last7 - prev7) / prev7) * 100);
 
+  // Daily breakdown (last 14 days)
   const days = 14;
   const daily: { label: string; count: number }[] = [];
+
   for (let i = days - 1; i >= 0; i--) {
     const day = new Date(now);
     day.setDate(now.getDate() - i);
+
     const label = `${day.getMonth() + 1}/${day.getDate()}`;
+
     const start = new Date(day);
     start.setHours(0, 0, 0, 0);
+
     const end = new Date(day);
     end.setHours(23, 59, 59, 999);
-    const count = events.filter(
-      (e) => e.createdAt >= start && e.createdAt <= end
-    ).length;
+
+    const count = events.filter((e: any) => {
+      const createdAt = new Date(e.createdAt);
+      return createdAt >= start && createdAt <= end;
+    }).length;
+
     daily.push({ label, count });
   }
 
+  // Top referrers
   const refCounts = new Map<string, number>();
-  for (const e of events) {
+  for (const e of events as any[]) {
     const key = e.referer || "Direct";
     refCounts.set(key, (refCounts.get(key) || 0) + 1);
   }
+
   const topReferrers = Array.from(refCounts.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
     .map(([label, count]) => ({ label, count }));
 
+  // Device breakdown
   const deviceCounts = new Map<string, number>();
-  for (const e of events) {
+  for (const e of events as any[]) {
     const bucket = getDeviceBucket(e.userAgent || null);
     deviceCounts.set(bucket, (deviceCounts.get(bucket) || 0) + 1);
   }
+
   const devices = Array.from(deviceCounts.entries())
     .sort((a, b) => b[1] - a[1])
     .map(([label, count]) => {
@@ -102,6 +128,7 @@ export default async function Page({ params }: PageProps) {
 
   const createdLabel = link.createdAt.toISOString().slice(0, 10);
   const code = link.code ?? null;
+
   const base =
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const shortUrl = code ? `${base}/r/${code}` : null;
