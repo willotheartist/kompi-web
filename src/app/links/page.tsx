@@ -14,7 +14,7 @@ export default async function Page() {
   const base =
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-  const links: LinkListItem[] = linksRaw.map((link) => {
+  const links: LinkListItem[] = linksRaw.map((link: any) => {
     const code = link.code ?? null;
     const shortUrl = code ? `${base}/r/${code}` : null;
 
@@ -27,7 +27,6 @@ export default async function Page() {
       code,
       shortUrl,
       targetUrl: link.targetUrl,
-      // use existing `clicks` field from Prisma model
       clicks: link.clicks ?? 0,
       createdLabel,
       isActive: link.isActive ?? true,
