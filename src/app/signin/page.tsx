@@ -1,74 +1,74 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+// import whatever you use for sign-in (NextAuth, etc.)
+// import { signIn } from "next-auth/react";
 
-export default function SignInPage() {
+function SignInInner() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const value = email.trim().toLowerCase();
-    if (!value) return toast.error("Enter your email");
-    setLoading(true);
-    const res = await signIn("credentials", {
-      email: value,
-      redirect: true,
-      callbackUrl,
-    });
-    if (!res || res.error) {
-      setLoading(false);
-      toast.error("Sign-in failed");
-    }
-  }
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  const error = searchParams.get("error");
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
-      <Card className="w-full max-w-md p-8 space-y-6">
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-2xl bg-neutral-900 text-white flex items-center justify-center text-xs">
-            K
-          </div>
-          <div>
-            <div className="text-sm font-semibold">Kompi Links</div>
-            <div className="text-[10px] text-neutral-500">
-              Minimal link hub for pros.
-            </div>
-          </div>
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Card className="w-full max-w-md space-y-6 rounded-2xl border bg-background/80 p-6 shadow-sm backdrop-blur">
         <div className="space-y-1">
-          <h1 className="text-xl font-semibold text-neutral-900">
-            Sign in to continue
+          <h1 className="text-xl font-semibold tracking-tight">
+            Sign in to Kompi
           </h1>
-          <p className="text-xs text-neutral-500">
-            Dev: enter any email, we create your account automatically.
+          <p className="text-sm text-muted-foreground">
+            Access your links, analytics, and Kompi workspace.
           </p>
         </div>
-        <form onSubmit={onSubmit} className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-xs text-neutral-600">Work email</label>
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoFocus
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing you in..." : "Continue"}
+
+        {error && (
+          <p className="text-xs text-red-500">
+            {error === "OAuthAccountNotLinked"
+              ? "This email is already linked with a different sign-in method."
+              : "Sign-in failed. Please try again."}
+          </p>
+        )}
+
+        {/* Example sign-in buttons — wire to your auth as needed */}
+        <div className="space-y-3">
+          {/* <Button
+            className="w-full"
+            onClick={() => signIn("google", { callbackUrl })}
+          >
+            Continue with Google
+          </Button> */}
+
+          {/* Dev / email login stub */}
+          <Button
+            className="w-full"
+            variant="outline"
+            // onClick={() => signIn("credentials", { callbackUrl })}
+          >
+            Continue
           </Button>
-        </form>
+        </div>
+
+        <p className="text-[10px] leading-relaxed text-muted-foreground">
+          By continuing, you agree to Kompi’s Terms and Privacy Policy.
+        </p>
       </Card>
-    </main>
+    </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+          Loading sign-in…
+        </div>
+      }
+    >
+      <SignInInner />
+    </Suspense>
   );
 }
