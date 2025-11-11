@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
@@ -9,13 +9,17 @@ async function getUserLink(userId: string, id: string) {
 }
 
 export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireUser();
-    const link = await getUserLink(user.id, params.id);
-    if (!link) return new NextResponse("Not found", { status: 404 });
+    const { id } = await params;
+
+    const link = await getUserLink(user.id, id);
+    if (!link) {
+      return new NextResponse("Not found", { status: 404 });
+    }
 
     const events = await prisma.clickEvent.findMany({
       where: { linkId: link.id },
@@ -30,6 +34,7 @@ export async function GET(
       const key = e.referer || "Direct";
       refMap.set(key, (refMap.get(key) || 0) + 1);
     }
+
     const topReferrers = [...refMap.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
