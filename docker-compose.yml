@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: kompilinks-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kompi
+      POSTGRES_PASSWORD: kompi
+      POSTGRES_DB: kompilinks
+    ports:
+      - "5432:5432"
+    volumes:
+      - kompilinks_db_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: kompilinks-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://kompi:kompi@db:5432/kompilinks"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXTAUTH_SECRET: "your-production-secret"
+    ports:
+      - "3000:3000"
+
+volumes:
+  kompilinks_db_data:
