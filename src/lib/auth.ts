@@ -11,7 +11,8 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         const raw = credentials?.email;
-        const email = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+        const email =
+          typeof raw === "string" ? raw.trim().toLowerCase() : "";
         if (!email) return null;
 
         let user = await prisma.user.findUnique({ where: { email } });
@@ -31,8 +32,12 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user && "id" in user) token.sub = String((user as { id: string }).id);
-      if (user && "email" in user && user.email) token.email = String(user.email);
+      if (user && "id" in user) {
+        token.sub = String((user as { id: string }).id);
+      }
+      if (user && "email" in user && user.email) {
+        token.email = String(user.email);
+      }
       return token;
     },
     async session({ session, token }) {
@@ -79,9 +84,14 @@ export async function getActiveWorkspace(
   if (!workspaces.length) return null;
 
   if (workspaceId) {
-    const byId = workspaces.find((w) => w.id === workspaceId);
+    const byId = workspaces.find(
+      (w: any) => w.id === workspaceId
+    );
     if (byId) return byId;
-    const bySlug = workspaces.find((w) => w.slug === workspaceId);
+
+    const bySlug = workspaces.find(
+      (w: any) => w.slug === workspaceId
+    );
     if (bySlug) return bySlug;
   }
 
