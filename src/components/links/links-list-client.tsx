@@ -1,11 +1,30 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { CreateLinkForm } from "@/components/links/create-link-form";
+import LinkActionsMenu from "@/components/links/link-actions-menu";
+import { onest } from "@/lib/fonts";
+import {
+  MousePointer2,
+  CalendarDays,
+  CornerDownRight,
+  Copy,
+  Eye,
+  Check,
+} from "lucide-react";
 
 export type LinkListItem = {
   id: string;
@@ -19,9 +38,10 @@ export type LinkListItem = {
 
 type LinksListClientProps = {
   links: LinkListItem[];
+  workspaceId?: string;
 };
 
-export function LinksListClient({ links }: LinksListClientProps) {
+export function LinksListClient({ links, workspaceId }: LinksListClientProps) {
   const [query, setQuery] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -48,114 +68,243 @@ export function LinksListClient({ links }: LinksListClientProps) {
     );
   }
 
+  const noLinksAtAll = links.length === 0;
+
   return (
-    <div className="space-y-4">
-      {/* Header + search */}
+    <div className={cn("space-y-5", onest.className)}>
+      {/* Header + search + create */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">
+        <h1 className="text-[20px] font-semibold text-white">
           Your links
         </h1>
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by URL, code, or short link..."
-          className="w-full max-w-sm"
-        />
+
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <Button
+            asChild
+            className="order-2 h-10 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 px-4 text-[13px] font-semibold text-white shadow-[0_12px_40px_rgba(15,23,42,0.85)] hover:brightness-110 sm:order-1"
+          >
+            <Link href="/links/new">Create link</Link>
+          </Button>
+
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by URL, code, or short link…"
+            className={cn(
+              "order-1 w-full max-w-sm rounded-2xl border border-white/10",
+              "bg-slate-900/70 text-slate-100 placeholder:text-slate-500",
+              "shadow-[0_10px_30px_rgba(15,23,42,0.75)] focus-visible:ring-sky-500/60 sm:order-2"
+            )}
+            disabled={noLinksAtAll}
+          />
+        </div>
       </div>
 
-      {/* List */}
-      <div className="space-y-2">
-        {filtered.length === 0 ? (
-          <Card className="p-4 text-sm text-muted-foreground">
-            No links found. Try a different search.
+      {/* Empty state */}
+      {noLinksAtAll ? (
+        <div className="flex min-h-[48vh] items-center justify-center">
+          <Card className="mx-auto w-full max-w-lg rounded-3xl border border-white/10 bg-slate-900/80 px-6 py-8 text-center shadow-[0_18px_50px_rgba(15,23,42,0.9)]">
+            <h2 className="text-lg font-semibold text-white">
+              Ready to create your first link?
+            </h2>
+            <p className="mt-1 text-sm text-slate-300">
+              Spin up a clean short link and start tracking clicks in seconds.
+            </p>
+
+            {workspaceId ? (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="mt-5 rounded-2xl bg-white/95 px-5 py-2 text-sm font-medium text-slate-900 hover:bg.white">
+                    Create link
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="font-semibold">
+                      Create a new link
+                    </DialogTitle>
+                  </DialogHeader>
+                  <CreateLinkForm workspaceId={workspaceId} />
+                </DialogContent>
+              </Dialog>
+            ) : null}
           </Card>
-        ) : (
-          filtered.map((link) => {
-            const isCopied = copiedId === link.id;
+        </div>
+      ) : (
+        // List
+        <div className="space-y-3">
+          {filtered.length === 0 ? (
+            <Card className="rounded-3xl border border.white/10 bg-slate-900/80 p-4 text-sm text-slate-300">
+              No links found. Try a different search.
+            </Card>
+          ) : (
+            filtered.map((link) => {
+              const isCopied = copiedId === link.id;
+              const composedShortUrl =
+                link.shortUrl ??
+                (link.code
+                  ? `${
+                      typeof window !== "undefined"
+                        ? window.location.origin
+                        : ""
+                    }/r/${link.code}`
+                  : "");
 
-            return (
-              <Card
-                key={link.id}
-                className={cn(
-                  "flex flex-col gap-2 rounded-2xl border bg-background/70 p-4 backdrop-blur-sm md:flex-row md:items-center md:justify-between",
-                  !link.isActive && "opacity-60"
-                )}
-              >
-                <div className="space-y-1">
-                  {/* Short URL / code */}
-                  <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
-                    {link.shortUrl ? (
-                      <a
-                        href={link.shortUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="truncate text-primary hover:underline"
+              let host: string | null = null;
+              try {
+                host = new URL(link.targetUrl).hostname;
+              } catch {
+                host = null;
+              }
+
+              const title =
+                host && link.code
+                  ? `${host} – ${link.code}`
+                  : host || link.code || "untitled";
+
+              return (
+                <article
+                  key={link.id}
+                  className={cn(
+                    "group rounded-3xl border border-white/5 bg-slate-900/70",
+                    "shadow-[0_18px_40px_rgba(15,23,42,0.9)] transition-all",
+                    "hover:border-sky-500/70 hover:bg-slate-900/90 hover:shadow-[0_24px_70px_rgba(15,23,42,1)]"
+                  )}
+                >
+                  <div className="flex items-stretch gap-4 px-4 py-3 md:px-5">
+                    {/* Left selector column */}
+                    <div className="flex flex-col items-center gap-3 pt-1">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-white/25 bg-slate-900 text-sky-400 focus:ring-sky-500/70"
+                      />
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-slate-950/60">
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 text-[11px] font-semibold text-slate-950">
+                          →
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Middle content column */}
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      {/* Title row */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="truncate text-[15px] font-semibold text-slate-50">
+                          {title}
+                        </h2>
+
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide",
+                            link.isActive
+                              ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30"
+                              : "bg-slate-700/60 text-slate-300 ring-1 ring-slate-500/40"
+                          )}
+                        >
+                          {link.isActive ? "ACTIVE" : "INACTIVE"}
+                        </span>
+                      </div>
+
+                      {/* Short link */}
+                      {composedShortUrl && (
+                        <div className="flex flex-wrap items-center gap-2 text-[13px]">
+                          <a
+                            href={composedShortUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-medium text-sky-300 hover:text-sky-200 hover:underline"
+                          >
+                            {composedShortUrl}
+                          </a>
+                        </div>
+                      )}
+
+                      {/* Long destination */}
+                      <div className="flex items-start gap-1.5 text-[13px] text-slate-300">
+                        <CornerDownRight className="mt-[2px] h-[14px] w-[14px] opacity-60" />
+                        <span className="truncate">{link.targetUrl}</span>
+                      </div>
+
+                      {/* Meta row */}
+                      <div className="mt-1.5 flex flex-wrap gap-4 text-[12px] text-slate-400">
+                        <span className="inline-flex items-center gap-1">
+                          <MousePointer2 className="h-[14px] w-[14px] opacity-60" />
+                          <span className="font-medium text-slate-100">
+                            {link.clicks ?? 0}
+                          </span>
+                          <span className="opacity-80">engagements</span>
+                        </span>
+
+                        <span className="inline-flex items-center gap-1">
+                          <CalendarDays className="h-[14px] w-[14px] opacity-60" />
+                          <span className="opacity-80">
+                            {link.createdLabel}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Right actions column */}
+                    <div className="flex items-center gap-2 pt-1">
+                      {/* Copy icon button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!composedShortUrl) return;
+                          if (typeof navigator === "undefined") return;
+
+                          navigator.clipboard
+                            .writeText(composedShortUrl)
+                            .then(() => {
+                              setCopiedId(link.id);
+                              setTimeout(() => setCopiedId(null), 1200);
+                            })
+                            .catch(() => {});
+                        }}
+                        className={cn(
+                          "inline-flex h-8 w-8 items-center justify-center rounded-lg",
+                          "border border-white/10 bg-white/5 text-slate-100",
+                          "transition hover:border-sky-500/60 hover:bg-slate-900"
+                        )}
+                        aria-label={isCopied ? "Copied" : "Copy short link"}
                       >
-                        {link.shortUrl}
-                      </a>
-                    ) : link.code ? (
-                      <span className="text-primary">
-                        /r/{link.code}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        No short URL
-                      </span>
-                    )}
-                    <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                      {link.isActive ? "Active" : "Inactive"}
-                    </span>
+                        {isCopied ? (
+                          <Check className="h-4 w-4 text-sky-400" />
+                        ) : (
+                          <Copy className="h-4 w-4 opacity-80" />
+                        )}
+                      </button>
+
+                      {/* View icon button */}
+                      <Link
+                        href={`/links/${link.id}`}
+                        className={cn(
+                          "inline-flex h-8 w-8 items-center justify-center rounded-lg",
+                          "border border-sky-500/70 bg-sky-500/20 text-sky-200",
+                          "shadow-[0_8px_26px_rgba(56,189,248,0.55)] transition",
+                          "hover:bg-sky-500/30"
+                        )}
+                        aria-label="View link analytics"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Link>
+
+                      {/* 3-dots menu button */}
+                      <LinkActionsMenu
+                        id={link.id}
+                        shortUrl={composedShortUrl}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg
+                                   border border-white/10 bg-white/5 text-slate-100
+                                   hover:bg-white/10"
+                      />
+                    </div>
                   </div>
-
-                  {/* Target URL */}
-                  <div className="truncate text-xs text-muted-foreground">
-                    {link.targetUrl}
-                  </div>
-
-                  {/* Meta */}
-                  <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground">
-                    <span>Clicks: {link.clicks ?? 0}</span>
-                    <span>Created: {link.createdLabel}</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="mt-2 flex flex-wrap items-center gap-2 md:mt-0 md:justify-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      if (!link.shortUrl) return; // ✅ guard null
-                      if (typeof navigator === "undefined") return;
-
-                      navigator.clipboard
-                        .writeText(link.shortUrl)
-                        .then(() => {
-                          setCopiedId(link.id);
-                          setTimeout(
-                            () => setCopiedId(null),
-                            1500
-                          );
-                        })
-                        .catch(() => {});
-                    }}
-                  >
-                    {isCopied ? "Copied" : "Copy"}
-                  </Button>
-
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                  >
-                    <a href={`/links/${link.id}`}>View</a>
-                  </Button>
-                </div>
-              </Card>
-            );
-          })
-        )}
-      </div>
+                </article>
+              );
+            })
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -326,3 +326,4 @@ export function CreateModal({
     </Dialog>
   );
 }
+export { CreateModal as CreateWorkspaceModal };

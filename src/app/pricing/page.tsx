@@ -114,11 +114,7 @@ const featureSections = [
   },
   {
     title: "Collaboration & support",
-    rows: [
-      "Team members",
-      "Priority support",
-      "Early feature access",
-    ],
+    rows: ["Team members", "Priority support", "Early feature access"],
   },
 ];
 
@@ -194,7 +190,7 @@ export default function PricingPage() {
   const [billing, setBilling] = useState<BillingPeriod>("monthly");
 
   return (
-    <main className="min-h-screen bg-[#020618] text-neutral-50 pb-0 -mt-24 md:-mt-28">
+    <main className="min-h-screen bg-[#020618] text-neutral-50 pb-0">
       {/* HERO */}
       <section className="pt-32 md:pt-40 pb-28 px-4 bg-gradient-to-br from-[#020618] via-[#0b1029] to-[#181b4a]">
         <div className="max-w-5xl mx-auto flex flex-col items-center gap-6 text-center">
@@ -251,10 +247,9 @@ export default function PricingPage() {
                 ? "from-[#111827] via-[#241b8c] to-[#020817]"
                 : "from-[#020817] via-[#241b8c] to-[#43C7FF]/10";
 
-            const borderGlow =
-              plan.highlighted
-                ? "border-[#43C7FF] shadow-[0_24px_90px_rgba(0,0,0,0.85)]"
-                : "border-slate-800/80 shadow-[0_18px_70px_rgba(0,0,0,0.8)]";
+            const borderGlow = plan.highlighted
+              ? "border-[#43C7FF] shadow-[0_24px_90px_rgba(0,0,0,0.85)]"
+              : "border-slate-800/80 shadow-[0_18px_70px_rgba(0,0,0,0.8)]";
 
             return (
               <Card
@@ -278,9 +273,7 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                <h2 className="text-xl font-semibold">
-                  {plan.name}
-                </h2>
+                <h2 className="text-xl font-semibold">{plan.name}</h2>
                 <p className="text-sm text-slate-300 mb-4">
                   {plan.tagline}
                 </p>
@@ -313,14 +306,11 @@ export default function PricingPage() {
 
                 <Button
                   size="sm"
-                  className={`
-                    w-full rounded-full text-sm font-semibold
-                    ${
-                      plan.highlighted
-                        ? "bg-[#43C7FF] hover:bg-[#30b2eb] text-slate-900"
-                        : "bg-transparent border border-slate-500 hover:bg-slate-900/60 text-slate-100"
-                    }
-                  `}
+                  className={`w-full rounded-full text-sm font-semibold ${
+                    plan.highlighted
+                      ? "bg-[#43C7FF] hover:bg-[#30b2eb] text-slate-900"
+                      : "bg-transparent border border-slate-500 hover:bg-slate-900/60 text-slate-100"
+                  }`}
                   asChild
                 >
                   <Link href="/signin">{plan.cta}</Link>
@@ -340,7 +330,8 @@ export default function PricingPage() {
                 Compare plans
               </h3>
               <p className="text-sm text-slate-400">
-                See what unlocks as you grow — from simple links to full-funnel routing.
+                See what unlocks as you grow — from simple links to
+                full-funnel routing.
               </p>
             </div>
             <div className="flex flex-wrap gap-3 text-xs text-slate-400">

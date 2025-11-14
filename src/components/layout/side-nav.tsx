@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,12 +13,14 @@ import {
   Globe2,
   Settings,
   Plus,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Links", href: "/links", icon: Link2 },
+  { label: "K-Cards", href: "/k-cards", icon: LayoutGrid },
   { label: "Kompi Codes™ (KR)", href: "/kr-codes", icon: QrCode },
   { label: "Bio Pages", href: "/bio-pages", icon: LayoutTemplate },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
@@ -39,19 +42,21 @@ export function SideNav() {
       )}
     >
       {/* Brand */}
-      <div className="flex items-center gap-3">
-        <div className="h-9 w-9 rounded-2xl bg-white text-black flex items-center justify-center text-base font-semibold">
-          K
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-white">
-            Kompi Links
-          </span>
-          <span className="text-xs text-slate-400">
-            Links, KR codes & hubs
-          </span>
-        </div>
-      </div>
+      <Link
+        href="/"
+        className="flex items-center gap-3 px-1.5 py-1.5"
+        aria-label="Kompi Dashboard Home"
+      >
+        <Image
+          src="/Kompiwhite.svg"
+          alt="Kompi"
+          width={112}
+          height={24}
+          priority
+          className="h-6 w-28"
+        />
+        <span className="sr-only">Kompi</span>
+      </Link>
 
       {/* Create new */}
       <Link
@@ -110,9 +115,7 @@ export function SideNav() {
           U
         </div>
         <div className="flex flex-col">
-          <span className="text-[11px] text-slate-300">
-            Logged in
-          </span>
+          <span className="text-[11px] text-slate-300">Logged in</span>
           <span className="text-xs text-white font-medium truncate">
             you@example.com
           </span>

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
+type RouteContext = {
+  params: { id: string };
+};
+
 async function getUserLink(userId: string, id: string) {
   return prisma.link.findFirst({
     where: {
@@ -14,13 +18,10 @@ async function getUserLink(userId: string, id: string) {
 }
 
 // Get a single link (for analytics / editing)
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_req: NextRequest, { params }: RouteContext) {
   try {
     const user = await requireUser();
-    const { id } = await params;
+    const { id } = params;
 
     const link = await getUserLink(user.id, id);
     if (!link) {
@@ -34,13 +35,10 @@ export async function GET(
 }
 
 // Update a link
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
     const user = await requireUser();
-    const { id } = await params;
+    const { id } = params;
 
     const link = await getUserLink(user.id, id);
     if (!link) {
@@ -49,8 +47,8 @@ export async function PATCH(
 
     const body = await req.json();
 
-    // Build update payload defensively to keep TS + Prisma happy
-    const data: any = {};
+    // Build update payload defensively
+    const data: Record<string, unknown> = {};
 
     if (typeof body.code === "string") {
       data.code = body.code;
@@ -79,7 +77,8 @@ export async function PATCH(
 
     const updated = await prisma.link.update({
       where: { id: link.id },
-      data: data as any,
+      // Let Prisma validate fields – we avoid `any` via a generic record cast
+      data: data as never,
     });
 
     return NextResponse.json(updated);
@@ -90,13 +89,10 @@ export async function PATCH(
 }
 
 // Delete a link
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   try {
     const user = await requireUser();
-    const { id } = await params;
+    const { id } = params;
 
     const link = await getUserLink(user.id, id);
     if (!link) {

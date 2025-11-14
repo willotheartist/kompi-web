@@ -2,21 +2,33 @@ import { prisma } from "@/lib/prisma";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
   LinksListClient,
-  LinkListItem,
+  type LinkListItem,
 } from "@/components/links/links-list-client";
+import { requireUser, getActiveWorkspace } from "@/lib/auth";
+import { CreateWorkspaceEmpty } from "@/components/dashboard/create-workspace-empty";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const linksRaw = await prisma.link.findMany({
+  const user = await requireUser();
+  const workspace = await getActiveWorkspace(user.id);
+
+  if (!workspace) {
+    return (
+      <DashboardLayout>
+        <CreateWorkspaceEmpty />
+      </DashboardLayout>
+    );
+  }
+
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const rows = await prisma.link.findMany({
+    where: { workspaceId: workspace.id },
     orderBy: { createdAt: "desc" },
     take: 200,
   });
 
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
-  const links: LinkListItem[] = linksRaw.map((link: any) => {
+  const links: LinkListItem[] = rows.map((link) => {
     const code = link.code ?? null;
     const shortUrl = code ? `${base}/r/${code}` : null;
 
@@ -37,7 +49,7 @@ export default async function Page() {
 
   return (
     <DashboardLayout>
-      <LinksListClient links={links} />
+      <LinksListClient links={links} workspaceId={workspace.id} />
     </DashboardLayout>
   );
 }

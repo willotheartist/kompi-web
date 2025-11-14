@@ -1,0 +1,261 @@
+# 📁 kompi-web - Project Structure
+
+*Generated on: 14/11/2025, 13:44:38*
+
+## 📋 Quick Overview
+
+| Metric | Value |
+|--------|-------|
+| 📄 Total Files | 108 |
+| 📁 Total Folders | 56 |
+| 🌳 Max Depth | 6 levels |
+| 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
+
+## ⭐ Important Files
+
+- 🟡 🚫 **.gitignore** - Git ignore rules
+- 🟡 🐳 **Dockerfile** - Docker container
+- 🔴 📖 **README.md** - Project documentation
+- 🟡 🐳 **docker-compose.yml** - Docker compose
+- 🔵 🔍 **eslint.config.mjs** - ESLint config
+- 🟡 ▲ **next.config.ts** - Next.js config
+- 🔴 📦 **package.json** - Package configuration
+- 🟡 🔷 **tsconfig.json** - TypeScript config
+
+## 📊 File Statistics
+
+### By File Type
+
+- ⚛️ **.tsx** (React TypeScript files): 50 files (46.3%)
+- 🔷 **.ts** (TypeScript files): 22 files (20.4%)
+- 🎨 **.svg** (SVG images): 7 files (6.5%)
+- 📄 **.zip** (Other files): 6 files (5.6%)
+- 📄 **.sql** (Other files): 5 files (4.6%)
+- ⚙️ **.json** (JSON files): 3 files (2.8%)
+- 📖 **.md** (Markdown files): 2 files (1.9%)
+- 📄 **.mjs** (Other files): 2 files (1.9%)
+- 🚫 **.gitignore** (Git ignore): 1 files (0.9%)
+- 🐳 **.dockerfile** (Docker files): 1 files (0.9%)
+- ⚙️ **.yml** (YAML files): 1 files (0.9%)
+- ⚙️ **.yaml** (YAML files): 1 files (0.9%)
+- ⚙️ **.toml** (TOML files): 1 files (0.9%)
+- 📄 **.prisma** (Other files): 1 files (0.9%)
+- 🖼️ **.png** (PNG images): 1 files (0.9%)
+- 📄 **.sh** (Other files): 1 files (0.9%)
+- 🖼️ **.ico** (Icon files): 1 files (0.9%)
+- 🎨 **.css** (Stylesheets): 1 files (0.9%)
+- 📜 **.js** (JavaScript files): 1 files (0.9%)
+
+### By Category
+
+- **React**: 50 files (46.3%)
+- **TypeScript**: 22 files (20.4%)
+- **Other**: 15 files (13.9%)
+- **Assets**: 9 files (8.3%)
+- **Config**: 6 files (5.6%)
+- **DevOps**: 2 files (1.9%)
+- **Docs**: 2 files (1.9%)
+- **Styles**: 1 files (0.9%)
+- **JavaScript**: 1 files (0.9%)
+
+### 📁 Largest Directories
+
+- **root**: 108 files
+- **src**: 72 files
+- **src/components**: 34 files
+- **src/app**: 33 files
+- **src/app/api**: 13 files
+
+## 🌳 Directory Structure
+
+```
+kompi-web/
+├── 🟡 🚫 **.gitignore**
+├── 📄 auth-bundle.zip
+├── ⚙️ components.json
+├── 🟡 🐳 **docker-compose.yml**
+├── 🟡 🐳 **Dockerfile**
+├── 🔵 🔍 **eslint.config.mjs**
+├── 📄 kompi-analytics-debug.zip
+├── 📄 kompi-kr-codes-api.zip
+├── 📄 kompi-kr-codes-support.zip
+├── 📄 kompi-kr-codes-ui.zip
+├── 📄 kompi-web-upload.zip
+├── 🔷 next-env.d.ts
+├── 🟡 ▲ **next.config.ts**
+├── 🔴 📦 **package.json**
+├── ⚙️ pnpm-lock.yaml
+├── 📄 postcss.config.mjs
+├── 📂 prisma/
+│   ├── 📂 migrations/
+│   │   ├── 📂 20251108223758_init/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251108224855_add_clicks_to_links/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251108230708_add_click_events/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251108231306_add_bio_page/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251108232240_auth_schema_update/
+│   │   │   └── 📄 migration.sql
+│   │   └── ⚙️ migration_lock.toml
+│   └── 📄 schema.prisma
+├── 📖 project_structure.md
+├── 🌐 public/
+│   ├── 🎨 file.svg
+│   ├── 🎨 globe.svg
+│   ├── 🎨 Kompi..svg
+│   ├── 🖼️ kompiphoto.png
+│   ├── 🎨 Kompiwhite.svg
+│   ├── 🎨 next.svg
+│   ├── 🎨 vercel.svg
+│   └── 🎨 window.svg
+├── 🔷 qrcode.d.ts
+├── 🔴 📖 **README.md**
+├── 📂 scripts/
+│   └── 📄 smoke.sh
+├── 📁 src/
+│   ├── 🚀 app/
+│   │   ├── 📂 [code]/
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 analytics/
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── 🔌 api/
+│   │   │   ├── 📂 auth/
+│   │   │   │   └── 📂 [...nextauth]/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 bio/
+│   │   │   │   ├── 📂 bootstrap/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   ├── 📂 links/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 health/
+│   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 kr-codes/
+│   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   ├── 📂 style/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   └── 📂 svg/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 links/
+│   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   ├── 📂 analytics/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   ├── 📂 qr/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   └── 🔷 route.ts
+│   │   │   └── 📂 workspaces/
+│   │   │   │   └── 🔷 route.ts
+│   │   ├── 📂 dashboard/
+│   │   │   ├── 📂 kr-codes/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 links/
+│   │   │   │   └── 📂 new/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── 🖼️ favicon.ico
+│   │   ├── 📂 features/
+│   │   │   └── 📂 url-shortener/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   ├── 🎨 globals.css
+│   │   ├── 📂 kr-codes/
+│   │   │   ├── 📂 page.jsrtener/
+│   │   │   │   └── 📜 page.js
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── ⚛️ layout.tsx
+│   │   ├── 📂 links/
+│   │   │   ├── 📂 [id]/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 new/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── ⚛️ not-found.tsx
+│   │   ├── 📂 p/
+│   │   │   └── 📂 [slug]/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   ├── ⚛️ page.tsx
+│   │   ├── 📂 pricing/
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 r/
+│   │   │   └── 📂 [code]/
+│   │   │   │   └── 🔷 route.ts
+│   │   └── 📂 signin/
+│   │   │   └── ⚛️ page.tsx
+│   ├── 🧩 components/
+│   │   ├── 📂 analytics/
+│   │   │   └── ⚛️ analytics-overview.tsx
+│   │   ├── 📂 bio/
+│   │   │   └── ⚛️ bio-card.tsx
+│   │   ├── 📂 dashboard/
+│   │   │   ├── ⚛️ create-modal.tsx
+│   │   │   ├── ⚛️ create-workspace-empty.tsx
+│   │   │   ├── ⚛️ dashboard-layout.tsx
+│   │   │   ├── ⚛️ dashboard-shell.tsx
+│   │   │   ├── ⚛️ dashboard-topbar.tsx
+│   │   │   └── ⚛️ glass-card.tsx
+│   │   ├── ⚛️ features-megamenu.tsx
+│   │   ├── ⚛️ footer-cta.tsx
+│   │   ├── 📂 kr-codes/
+│   │   │   └── ⚛️ KRCodesPage.tsx
+│   │   ├── 📂 layout/
+│   │   │   └── ⚛️ side-nav.tsx
+│   │   ├── 📂 links/
+│   │   │   ├── ⚛️ create-link-form.tsx
+│   │   │   ├── ⚛️ create-link-page.tsx
+│   │   │   ├── ⚛️ link-actions-menu.tsx
+│   │   │   ├── ⚛️ link-analytics-chart.tsx
+│   │   │   ├── ⚛️ link-analytics-client.tsx
+│   │   │   ├── ⚛️ links-list-client.tsx
+│   │   │   └── ⚛️ links-table.tsx
+│   │   ├── ⚛️ navbar-gate.tsx
+│   │   ├── ⚛️ navbar.tsx
+│   │   ├── ⚛️ providers.tsx
+│   │   ├── 🎨 ui/
+│   │   │   ├── ⚛️ button.tsx
+│   │   │   ├── ⚛️ card.tsx
+│   │   │   ├── ⚛️ dialog.tsx
+│   │   │   ├── ⚛️ input.tsx
+│   │   │   ├── ⚛️ select.tsx
+│   │   │   ├── ⚛️ skeleton.tsx
+│   │   │   ├── ⚛️ sonner.tsx
+│   │   │   └── ⚛️ textarea.tsx
+│   │   ├── ⚛️ user-menu.tsx
+│   │   └── 📂 workspaces/
+│   │   │   ├── ⚛️ create-workspace-cta.tsx
+│   │   │   ├── ⚛️ create-workspace-modal.tsx
+│   │   │   └── ⚛️ workspace-switcher.tsx
+│   └── 📚 lib/
+│   │   ├── 🔷 analytics-overview.ts
+│   │   ├── 🔷 auth.ts
+│   │   ├── 🔷 fonts.ts
+│   │   ├── 🔷 prisma.ts
+│   │   └── 🔷 utils.ts
+└── 🟡 🔷 **tsconfig.json**
+```
+
+## 📖 Legend
+
+### File Types
+- 🚫 DevOps: Git ignore
+- 🐳 DevOps: Docker files
+- 📖 Docs: Markdown files
+- 📄 Other: Other files
+- ⚙️ Config: JSON files
+- ⚙️ Config: YAML files
+- 🔷 TypeScript: TypeScript files
+- ⚙️ Config: YAML files
+- ⚙️ Config: TOML files
+- 🎨 Assets: SVG images
+- 🖼️ Assets: PNG images
+- ⚛️ React: React TypeScript files
+- 🖼️ Assets: Icon files
+- 🎨 Styles: Stylesheets
+- 📜 JavaScript: JavaScript files
+
+### Importance Levels
+- 🔴 Critical: Essential project files
+- 🟡 High: Important configuration files
+- 🔵 Medium: Helpful but not essential files

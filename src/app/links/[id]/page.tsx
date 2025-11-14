@@ -7,8 +7,12 @@ import {
 } from "@/components/links/link-analytics-client";
 
 type PageProps = {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 };
+
+type ClickEventRecord = Awaited<
+  ReturnType<typeof prisma.clickEvent.findMany>
+>[number];
 
 function getDeviceBucket(ua: string | null): string {
   if (!ua) return "Other";
@@ -22,7 +26,7 @@ function getDeviceBucket(ua: string | null): string {
 }
 
 export default async function Page({ params }: PageProps) {
-  const { id } = await params;
+  const { id } = params;
   if (!id) notFound();
 
   let link = await prisma.link.findUnique({ where: { id } });
@@ -48,13 +52,12 @@ export default async function Page({ params }: PageProps) {
   const thirtyDaysAgo = new Date(now);
   thirtyDaysAgo.setDate(now.getDate() - 30);
 
-  // Last 7 / 30 days — explicitly type `e` to satisfy TS
-  const last7 = events.filter((e: any) => {
+  const last7 = events.filter((e: ClickEventRecord) => {
     const createdAt = new Date(e.createdAt);
     return createdAt >= sevenDaysAgo;
   }).length;
 
-  const last30 = events.filter((e: any) => {
+  const last30 = events.filter((e: ClickEventRecord) => {
     const createdAt = new Date(e.createdAt);
     return createdAt >= thirtyDaysAgo;
   }).length;
@@ -63,7 +66,7 @@ export default async function Page({ params }: PageProps) {
   const prev7Start = new Date(sevenDaysAgo);
   prev7Start.setDate(prev7Start.getDate() - 7);
 
-  const prev7 = events.filter((e: any) => {
+  const prev7 = events.filter((e: ClickEventRecord) => {
     const createdAt = new Date(e.createdAt);
     return createdAt >= prev7Start && createdAt < sevenDaysAgo;
   }).length;
@@ -91,7 +94,7 @@ export default async function Page({ params }: PageProps) {
     const end = new Date(day);
     end.setHours(23, 59, 59, 999);
 
-    const count = events.filter((e: any) => {
+    const count = events.filter((e: ClickEventRecord) => {
       const createdAt = new Date(e.createdAt);
       return createdAt >= start && createdAt <= end;
     }).length;
@@ -101,7 +104,7 @@ export default async function Page({ params }: PageProps) {
 
   // Top referrers
   const refCounts = new Map<string, number>();
-  for (const e of events as any[]) {
+  for (const e of events) {
     const key = e.referer || "Direct";
     refCounts.set(key, (refCounts.get(key) || 0) + 1);
   }
@@ -113,7 +116,7 @@ export default async function Page({ params }: PageProps) {
 
   // Device breakdown
   const deviceCounts = new Map<string, number>();
-  for (const e of events as any[]) {
+  for (const e of events) {
     const bucket = getDeviceBucket(e.userAgent || null);
     deviceCounts.set(bucket, (deviceCounts.get(bucket) || 0) + 1);
   }
