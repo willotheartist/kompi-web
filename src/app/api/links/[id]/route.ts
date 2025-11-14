@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
-type RouteContext = {
-  params: { id: string };
-};
-
 async function getUserLink(userId: string, id: string) {
   return prisma.link.findFirst({
     where: {
@@ -18,10 +14,13 @@ async function getUserLink(userId: string, id: string) {
 }
 
 // Get a single link (for analytics / editing)
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+export async function GET(
+  _req: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   try {
     const user = await requireUser();
-    const { id } = params;
+    const { id } = await context.params;
 
     const link = await getUserLink(user.id, id);
     if (!link) {
@@ -35,10 +34,13 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 }
 
 // Update a link
-export async function PATCH(req: NextRequest, { params }: RouteContext) {
+export async function PATCH(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   try {
     const user = await requireUser();
-    const { id } = params;
+    const { id } = await context.params;
 
     const link = await getUserLink(user.id, id);
     if (!link) {
@@ -47,8 +49,15 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
     const body = await req.json();
 
-    // Build update payload defensively
-    const data: Record<string, unknown> = {};
+    // Build update payload defensively to keep TS + Prisma happy
+    const data: {
+      code?: string;
+      targetUrl?: string;
+      url?: string;
+      title?: string;
+      tags?: string[];
+      isActive?: boolean;
+    } = {};
 
     if (typeof body.code === "string") {
       data.code = body.code;
@@ -77,8 +86,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
     const updated = await prisma.link.update({
       where: { id: link.id },
-      // Let Prisma validate fields – we avoid `any` via a generic record cast
-      data: data as never,
+      data,
     });
 
     return NextResponse.json(updated);
@@ -89,10 +97,13 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 }
 
 // Delete a link
-export async function DELETE(_req: NextRequest, { params }: RouteContext) {
+export async function DELETE(
+  _req: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   try {
     const user = await requireUser();
-    const { id } = params;
+    const { id } = await context.params;
 
     const link = await getUserLink(user.id, id);
     if (!link) {
