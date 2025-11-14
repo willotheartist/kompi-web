@@ -6,7 +6,7 @@ type RouteContext = {
   params: { id: string };
 };
 
-type Style = {
+type QRStyle = {
   fg?: string;
   bg?: string;
   size?: number;
@@ -25,28 +25,23 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const style: Style = (code.style as Style | null) ?? {};
-
-  const fg = style.fg ?? "#000000";
-  const rawBg = style.bg ?? "#ffffff";
-  const bg = rawBg === "transparent" ? "#0000" : rawBg;
-  const margin = style.margin ?? 2;
-  const size = style.size ?? 240;
-  const ecLevel = style.ecLevel ?? "M";
+  const style = (code.style ?? {}) as QRStyle;
 
   const svg = await QRCode.toString(code.destination, {
     type: "svg",
-    width: size,
-    margin,
-    errorCorrectionLevel: ecLevel,
     color: {
-      dark: fg,
-      light: bg,
+      dark: style.fg ?? "#000000",
+      light:
+        (style.bg ?? "#ffffff") === "transparent"
+          ? "#0000"
+          : style.bg ?? "#ffffff",
     },
+    errorCorrectionLevel: style.ecLevel ?? "M",
+    margin: style.margin ?? 2,
+    width: style.size ?? 240,
   });
 
   return new NextResponse(svg, {
-    status: 200,
     headers: {
       "Content-Type": "image/svg+xml",
       "Cache-Control": "no-store",

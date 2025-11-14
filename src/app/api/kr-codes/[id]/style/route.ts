@@ -1,3 +1,4 @@
+// src/app/api/kr-codes/[id]/style/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
@@ -18,7 +19,16 @@ type RouteContext = {
   params: { id: string };
 };
 
-type StyleObject = Record<string, unknown>;
+type StyleObject = {
+  fg?: string;
+  bg?: string;
+  size?: number;
+  margin?: number;
+  logoUrl?: string | null;
+  cornerRadius?: number;
+  ecLevel?: "L" | "M" | "Q" | "H";
+  [key: string]: unknown;
+};
 
 export async function GET(
   _req: NextRequest,
@@ -31,7 +41,8 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  return NextResponse.json((code.style as StyleObject | null) ?? {});
+  const style = (code.style ?? {}) as StyleObject;
+  return NextResponse.json(style);
 }
 
 export async function PATCH(
@@ -41,11 +52,8 @@ export async function PATCH(
   const { id } = params;
 
   const session = await getServerSession(authOptions);
-
-  let userId: string | undefined;
-  if (session?.user && "id" in session.user) {
-    userId = (session.user as { id: string }).id;
-  }
+  const userId =
+    (session?.user as { id?: string } | undefined)?.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -60,9 +68,11 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const parsed = StyleSchema.parse(await req.json().catch(() => ({})));
-  const currentStyle: StyleObject =
-    (code.style as StyleObject | null) ?? {};
+  const parsed = StyleSchema.parse(
+    await req.json().catch(() => ({})),
+  );
+
+  const currentStyle = (code.style ?? {}) as StyleObject;
 
   const updated = await prisma.kRCode.update({
     where: { id },
