@@ -15,10 +15,6 @@ const StyleSchema = z.object({
   ecLevel: z.enum(["L", "M", "Q", "H"]).optional(),
 });
 
-type RouteContext = {
-  params: { id: string };
-};
-
 type StyleObject = {
   fg?: string;
   bg?: string;
@@ -32,9 +28,9 @@ type StyleObject = {
 
 export async function GET(
   _req: NextRequest,
-  { params }: RouteContext,
+  context: { params: Promise<{ id: string }> },
 ) {
-  const { id } = params;
+  const { id } = await context.params;
 
   const code = await prisma.kRCode.findUnique({ where: { id } });
   if (!code) {
@@ -47,9 +43,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: RouteContext,
+  context: { params: Promise<{ id: string }> },
 ) {
-  const { id } = params;
+  const { id } = await context.params;
 
   const session = await getServerSession(authOptions);
   const userId =
