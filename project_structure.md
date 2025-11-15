@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 14/11/2025, 13:44:38*
+*Generated on: 15/11/2025, 21:51:04*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 108 |
-| 📁 Total Folders | 56 |
+| 📄 Total Files | 139 |
+| 📁 Total Folders | 71 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,45 +26,46 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 50 files (46.3%)
-- 🔷 **.ts** (TypeScript files): 22 files (20.4%)
-- 🎨 **.svg** (SVG images): 7 files (6.5%)
-- 📄 **.zip** (Other files): 6 files (5.6%)
-- 📄 **.sql** (Other files): 5 files (4.6%)
-- ⚙️ **.json** (JSON files): 3 files (2.8%)
-- 📖 **.md** (Markdown files): 2 files (1.9%)
-- 📄 **.mjs** (Other files): 2 files (1.9%)
-- 🚫 **.gitignore** (Git ignore): 1 files (0.9%)
-- 🐳 **.dockerfile** (Docker files): 1 files (0.9%)
-- ⚙️ **.yml** (YAML files): 1 files (0.9%)
-- ⚙️ **.yaml** (YAML files): 1 files (0.9%)
-- ⚙️ **.toml** (TOML files): 1 files (0.9%)
-- 📄 **.prisma** (Other files): 1 files (0.9%)
-- 🖼️ **.png** (PNG images): 1 files (0.9%)
-- 📄 **.sh** (Other files): 1 files (0.9%)
-- 🖼️ **.ico** (Icon files): 1 files (0.9%)
-- 🎨 **.css** (Stylesheets): 1 files (0.9%)
-- 📜 **.js** (JavaScript files): 1 files (0.9%)
+- ⚛️ **.tsx** (React TypeScript files): 67 files (48.2%)
+- 🔷 **.ts** (TypeScript files): 24 files (17.3%)
+- 📄 **.zip** (Other files): 12 files (8.6%)
+- 🎨 **.svg** (SVG images): 7 files (5.0%)
+- 🎨 **.css** (Stylesheets): 6 files (4.3%)
+- 📄 **.sql** (Other files): 5 files (3.6%)
+- ⚙️ **.json** (JSON files): 3 files (2.2%)
+- 📖 **.md** (Markdown files): 2 files (1.4%)
+- 📄 **.mjs** (Other files): 2 files (1.4%)
+- 🚫 **.gitignore** (Git ignore): 1 files (0.7%)
+- 🐳 **.dockerfile** (Docker files): 1 files (0.7%)
+- ⚙️ **.yml** (YAML files): 1 files (0.7%)
+- ⚙️ **.yaml** (YAML files): 1 files (0.7%)
+- ⚙️ **.toml** (TOML files): 1 files (0.7%)
+- 📄 **.prisma** (Other files): 1 files (0.7%)
+- 🖼️ **.png** (PNG images): 1 files (0.7%)
+- 📄 **.sh** (Other files): 1 files (0.7%)
+- 🖼️ **.ico** (Icon files): 1 files (0.7%)
+- 📜 **.js** (JavaScript files): 1 files (0.7%)
+- 📄 **.tsbuildinfo** (Other files): 1 files (0.7%)
 
 ### By Category
 
-- **React**: 50 files (46.3%)
-- **TypeScript**: 22 files (20.4%)
-- **Other**: 15 files (13.9%)
-- **Assets**: 9 files (8.3%)
-- **Config**: 6 files (5.6%)
-- **DevOps**: 2 files (1.9%)
-- **Docs**: 2 files (1.9%)
-- **Styles**: 1 files (0.9%)
-- **JavaScript**: 1 files (0.9%)
+- **React**: 67 files (48.2%)
+- **TypeScript**: 24 files (17.3%)
+- **Other**: 22 files (15.8%)
+- **Assets**: 9 files (6.5%)
+- **Config**: 6 files (4.3%)
+- **Styles**: 6 files (4.3%)
+- **DevOps**: 2 files (1.4%)
+- **Docs**: 2 files (1.4%)
+- **JavaScript**: 1 files (0.7%)
 
 ### 📁 Largest Directories
 
-- **root**: 108 files
-- **src**: 72 files
-- **src/components**: 34 files
-- **src/app**: 33 files
-- **src/app/api**: 13 files
+- **root**: 139 files
+- **src**: 96 files
+- **src/app**: 50 files
+- **src/components**: 41 files
+- **src/app/api**: 14 files
 
 ## 🌳 Directory Structure
 
@@ -76,11 +77,17 @@ kompi-web/
 ├── 🟡 🐳 **docker-compose.yml**
 ├── 🟡 🐳 **Dockerfile**
 ├── 🔵 🔍 **eslint.config.mjs**
+├── 📄 k-cards-dashboard.zip
 ├── 📄 kompi-analytics-debug.zip
+├── 📄 kompi-kcards-context.zip
 ├── 📄 kompi-kr-codes-api.zip
+├── 📄 kompi-kr-codes-button.zip
 ├── 📄 kompi-kr-codes-support.zip
 ├── 📄 kompi-kr-codes-ui.zip
 ├── 📄 kompi-web-upload.zip
+├── 📄 link-analytics-debug.zip
+├── 📄 link-routing-check.zip
+├── 📄 links-grid-with-dashboard.zip
 ├── 🔷 next-env.d.ts
 ├── 🟡 ▲ **next.config.ts**
 ├── 🔴 📦 **package.json**
@@ -116,8 +123,6 @@ kompi-web/
 │   └── 📄 smoke.sh
 ├── 📁 src/
 │   ├── 🚀 app/
-│   │   ├── 📂 [code]/
-│   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 analytics/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🔌 api/
@@ -147,27 +152,58 @@ kompi-web/
 │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 settings/
+│   │   │   │   └── 📂 profile/
+│   │   │   │   │   └── 🔷 route.ts
 │   │   │   └── 📂 workspaces/
 │   │   │   │   └── 🔷 route.ts
 │   │   ├── 📂 dashboard/
+│   │   │   ├── 📂 k-cards/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 kr-codes/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 links/
 │   │   │   │   └── 📂 new/
 │   │   │   │   │   └── ⚛️ page.tsx
-│   │   │   └── ⚛️ page.tsx
+│   │   │   ├── ⚛️ page.tsx
+│   │   │   ├── 📂 settings/
+│   │   │   │   ├── 📂 advanced/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 billing/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 branding/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 domains/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 integrations/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── ⚛️ layout.tsx
+│   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   └── 📂 profile/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── 📂 support/
+│   │   │   │   ├── ⚛️ layout.tsx
+│   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🖼️ favicon.ico
 │   │   ├── 📂 features/
 │   │   │   └── 📂 url-shortener/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🎨 globals.css
+│   │   ├── 📂 k-cards/
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── 🎨 kompi-marketing.css
 │   │   ├── 📂 kr-codes/
 │   │   │   ├── 📂 page.jsrtener/
 │   │   │   │   └── 📜 page.js
 │   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 KR-Codes-QR-Code-Generator/
+│   │   │   ├── 🎨 kr-codes.css
+│   │   │   └── ⚛️ page.tsx
 │   │   ├── ⚛️ layout.tsx
 │   │   ├── 📂 links/
 │   │   │   ├── 📂 [id]/
+│   │   │   │   ├── 📂 edit/
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 new/
 │   │   │   │   └── ⚛️ page.tsx
@@ -178,7 +214,8 @@ kompi-web/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── ⚛️ page.tsx
 │   │   ├── 📂 pricing/
-│   │   │   └── ⚛️ page.tsx
+│   │   │   ├── ⚛️ page.tsx
+│   │   │   └── 🎨 pricing.css
 │   │   ├── 📂 r/
 │   │   │   └── 📂 [code]/
 │   │   │   │   └── 🔷 route.ts
@@ -197,7 +234,12 @@ kompi-web/
 │   │   │   ├── ⚛️ dashboard-topbar.tsx
 │   │   │   └── ⚛️ glass-card.tsx
 │   │   ├── ⚛️ features-megamenu.tsx
+│   │   ├── 🎨 footer-cta.css
 │   │   ├── ⚛️ footer-cta.tsx
+│   │   ├── 📂 k-cards/
+│   │   │   ├── 🔷 kcard-theme-presets.ts
+│   │   │   ├── ⚛️ KCardsPage.tsx
+│   │   │   └── ⚛️ KCardThemeSection.tsx
 │   │   ├── 📂 kr-codes/
 │   │   │   └── ⚛️ KRCodesPage.tsx
 │   │   ├── 📂 layout/
@@ -205,14 +247,18 @@ kompi-web/
 │   │   ├── 📂 links/
 │   │   │   ├── ⚛️ create-link-form.tsx
 │   │   │   ├── ⚛️ create-link-page.tsx
+│   │   │   ├── ⚛️ edit-link-form.tsx
 │   │   │   ├── ⚛️ link-actions-menu.tsx
 │   │   │   ├── ⚛️ link-analytics-chart.tsx
 │   │   │   ├── ⚛️ link-analytics-client.tsx
 │   │   │   ├── ⚛️ links-list-client.tsx
 │   │   │   └── ⚛️ links-table.tsx
 │   │   ├── ⚛️ navbar-gate.tsx
+│   │   ├── 🎨 navbar.css
 │   │   ├── ⚛️ navbar.tsx
 │   │   ├── ⚛️ providers.tsx
+│   │   ├── 📂 settings/
+│   │   │   └── ⚛️ profile-settings-client.tsx
 │   │   ├── 🎨 ui/
 │   │   │   ├── ⚛️ button.tsx
 │   │   │   ├── ⚛️ card.tsx
@@ -233,7 +279,8 @@ kompi-web/
 │   │   ├── 🔷 fonts.ts
 │   │   ├── 🔷 prisma.ts
 │   │   └── 🔷 utils.ts
-└── 🟡 🔷 **tsconfig.json**
+├── 🟡 🔷 **tsconfig.json**
+└── 📄 tsconfig.tsbuildinfo
 ```
 
 ## 📖 Legend
@@ -250,9 +297,9 @@ kompi-web/
 - ⚙️ Config: TOML files
 - 🎨 Assets: SVG images
 - 🖼️ Assets: PNG images
+- 🎨 Styles: Stylesheets
 - ⚛️ React: React TypeScript files
 - 🖼️ Assets: Icon files
-- 🎨 Styles: Stylesheets
 - 📜 JavaScript: JavaScript files
 
 ### Importance Levels

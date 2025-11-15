@@ -7,7 +7,7 @@ import {
 } from "@/components/links/link-analytics-client";
 
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 type ClickEventRecord = Awaited<
@@ -25,16 +25,20 @@ function getDeviceBucket(ua: string | null): string {
   return "Other";
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function Page({ params }: PageProps) {
-  const { id } = params;
+  const { id } = await params;
   if (!id) notFound();
 
-  let link = await prisma.link.findUnique({ where: { id } });
+  const identifier = id.trim();
 
-  // Also allow looking up by code if direct ID lookup fails
-  if (!link) {
-    link = await prisma.link.findFirst({ where: { code: id } });
-  }
+  const link = await prisma.link.findFirst({
+    where: {
+      OR: [{ id: identifier }, { code: identifier }],
+    },
+  });
+
   if (!link) notFound();
 
   const [totalClicks, events] = await Promise.all([

@@ -1,8 +1,14 @@
+// src/components/k-cards/KCardsPage.tsx
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
-  Smartphone,
   Share2,
   UserCircle2,
   Palette,
@@ -31,52 +36,18 @@ import {
   Mail,
   Globe2,
 } from "lucide-react";
+import type React from "react";
+
+import { KCardThemeSection } from "./KCardThemeSection";
+import {
+  DEFAULT_KCARD_THEME,
+  type KCardThemeState,
+  type KCardButtonStyle,
+  type KCardButtonShadow,
+  type KCardFontToken,
+} from "./kcard-theme-presets";
 
 type DesignSection = "header" | "theme" | "text" | "buttons" | "colors";
-
-type ThemePreset = {
-  id: string;
-  name: string;
-  wallpaper: string;
-  background: string;
-  buttonColor: string;
-  buttonTextColor: string;
-};
-
-const THEME_PRESETS: ThemePreset[] = [
-  {
-    id: "neon",
-    name: "Neon",
-    wallpaper: "linear-gradient(135deg,#22c55e,#a855f7,#f97316)",
-    background: "#020617",
-    buttonColor: "#020617",
-    buttonTextColor: "#f9fafb",
-  },
-  {
-    id: "sunset",
-    name: "Sunset",
-    wallpaper: "linear-gradient(135deg,#f97316,#ec4899,#6366f1)",
-    background: "#020617",
-    buttonColor: "#020617",
-    buttonTextColor: "#fefce8",
-  },
-  {
-    id: "air",
-    name: "Air",
-    wallpaper: "linear-gradient(135deg,#e0f2fe,#e5e7eb,#f9fafb)",
-    background: "#ffffff",
-    buttonColor: "#020617",
-    buttonTextColor: "#f9fafb",
-  },
-  {
-    id: "midnight",
-    name: "Midnight",
-    wallpaper: "linear-gradient(135deg,#020617,#020617,#020617)",
-    background: "#020617",
-    buttonColor: "#0f172a",
-    buttonTextColor: "#f9fafb",
-  },
-];
 
 const FONT_OPTIONS = [
   { value: "system", label: "System" },
@@ -84,8 +55,8 @@ const FONT_OPTIONS = [
   { value: "display", label: "Display" },
 ];
 
-const BUTTON_STYLES = ["solid", "glass", "outline"] as const;
-type ButtonStyle = (typeof BUTTON_STYLES)[number];
+const BUTTON_STYLES: KCardButtonStyle[] = ["solid", "glass", "outline"];
+const BUTTON_SHADOWS: KCardButtonShadow[] = ["none", "soft", "hard"];
 
 type KCardLink = {
   id: string;
@@ -107,7 +78,7 @@ const SOCIAL_ICON_MAP: Record<
   Instagram,
   YouTube: Youtube,
   TikTok: Music2,
-  Twitter: Facebook, // placeholder, adjust when you add X icon
+  Twitter: Facebook, // placeholder
   LinkedIn: Linkedin,
   WhatsApp: MessageCircle,
   Email: Mail,
@@ -128,36 +99,11 @@ export default function KCardsPage() {
     "Designer · Creator · Founder"
   );
 
-  // theme
-  const [themeId, setThemeId] = useState<string>("neon");
-  const activeTheme =
-    THEME_PRESETS.find((t) => t.id === themeId) ?? THEME_PRESETS[0];
-  const [pageBackground, setPageBackground] = useState<string>(
-    activeTheme.background
-  );
-  const [wallpaper, setWallpaper] = useState<string>(
-    activeTheme.wallpaper
-  );
+  // theme — single source of truth for all style tokens
+  const [theme, setTheme] = useState<KCardThemeState>(DEFAULT_KCARD_THEME);
 
-  // text
-  const [titleFont, setTitleFont] = useState<string>("display");
-  const [titleColor, setTitleColor] = useState<string>("#f9fafb");
+  // keep title size as an independent tweak (optional to move into theme later)
   const [titleSize, setTitleSize] = useState<"small" | "large">("small");
-  const [pageFont, setPageFont] = useState<string>("system");
-  const [pageTextColor, setPageTextColor] = useState<string>("#e5e7eb");
-
-  // buttons
-  const [buttonStyle, setButtonStyle] = useState<ButtonStyle>("solid");
-  const [buttonRadius, setButtonRadius] = useState<number>(24);
-  const [buttonShadow, setButtonShadow] = useState<"none" | "soft" | "hard">(
-    "soft"
-  );
-  const [buttonColor, setButtonColor] = useState<string>(
-    activeTheme.buttonColor
-  );
-  const [buttonTextColor, setButtonTextColor] = useState<string>(
-    activeTheme.buttonTextColor
-  );
 
   // links
   const [links, setLinks] = useState<KCardLink[]>(INITIAL_LINKS);
@@ -168,6 +114,20 @@ export default function KCardsPage() {
     "YouTube",
     "Website",
   ]);
+
+  const {
+    wallpaper,
+    pageBackground,
+    buttonColor,
+    buttonTextColor,
+    titleFont,
+    pageFont,
+    titleColor,
+    pageTextColor,
+    buttonStyle,
+    buttonRadius,
+    buttonShadow,
+  } = theme;
 
   const previewTitleFont = useMemo(() => {
     switch (titleFont) {
@@ -230,12 +190,26 @@ export default function KCardsPage() {
     );
   }
 
-  function applyTheme(theme: ThemePreset) {
-    setThemeId(theme.id);
-    setWallpaper(theme.wallpaper);
-    setPageBackground(theme.background);
-    setButtonColor(theme.buttonColor);
-    setButtonTextColor(theme.buttonTextColor);
+  // wrappers so panels mutate the same theme state
+  function setPageBackgroundColor(value: string) {
+    setTheme((prev: KCardThemeState) => ({
+      ...prev,
+      pageBackground: value,
+    }));
+  }
+
+  function setButtonColorValue(value: string) {
+    setTheme((prev: KCardThemeState) => ({
+      ...prev,
+      buttonColor: value,
+    }));
+  }
+
+  function setButtonTextColorValue(value: string) {
+    setTheme((prev: KCardThemeState) => ({
+      ...prev,
+      buttonTextColor: value,
+    }));
   }
 
   const wallpaperStyle: React.CSSProperties = {
@@ -340,59 +314,71 @@ export default function KCardsPage() {
               )}
 
               {section === "theme" && (
-                <ThemeSection
-                  themeId={themeId}
-                  pageBackground={pageBackground}
-                  onBackgroundChange={setPageBackground}
-                  activeTheme={activeTheme}
-                  onApplyTheme={applyTheme}
-                />
+                <KCardThemeSection value={theme} onChange={setTheme} />
               )}
 
               {section === "text" && (
                 <TextSection
                   titleFont={titleFont}
-                  setTitleFont={setTitleFont}
+                  setTitleFont={(v) =>
+                    setTheme((prev) => ({ ...prev, titleFont: v }))
+                  }
                   titleColor={titleColor}
-                  setTitleColor={setTitleColor}
+                  setTitleColor={(v) =>
+                    setTheme((prev) => ({ ...prev, titleColor: v }))
+                  }
                   titleSize={titleSize}
                   setTitleSize={setTitleSize}
                   pageFont={pageFont}
-                  setPageFont={setPageFont}
+                  setPageFont={(v) =>
+                    setTheme((prev) => ({ ...prev, pageFont: v }))
+                  }
                   pageTextColor={pageTextColor}
-                  setPageTextColor={setPageTextColor}
+                  setPageTextColor={(v) =>
+                    setTheme((prev) => ({ ...prev, pageTextColor: v }))
+                  }
                 />
               )}
 
               {section === "buttons" && (
                 <ButtonsSection
                   buttonStyle={buttonStyle}
-                  setButtonStyle={setButtonStyle}
+                  setButtonStyle={(v) =>
+                    setTheme((prev) => ({ ...prev, buttonStyle: v }))
+                  }
                   buttonRadius={buttonRadius}
-                  setButtonRadius={setButtonRadius}
+                  setButtonRadius={(v) =>
+                    setTheme((prev) => ({ ...prev, buttonRadius: v }))
+                  }
                   buttonShadow={buttonShadow}
-                  setButtonShadow={setButtonShadow}
+                  setButtonShadow={(v) =>
+                    setTheme((prev) => ({ ...prev, buttonShadow: v }))
+                  }
                   buttonColor={buttonColor}
-                  setButtonColor={setButtonColor}
+                  setButtonColor={setButtonColorValue}
                   buttonTextColor={buttonTextColor}
-                  setButtonTextColor={setButtonTextColor}
+                  setButtonTextColor={setButtonTextColorValue}
                 />
               )}
 
               {section === "colors" && (
                 <ColorsSection
                   titleColor={titleColor}
-                  setTitleColor={setTitleColor}
+                  setTitleColor={(v) =>
+                    setTheme((prev) => ({ ...prev, titleColor: v }))
+                  }
                   pageTextColor={pageTextColor}
-                  setPageTextColor={setPageTextColor}
+                  setPageTextColor={(v) =>
+                    setTheme((prev) => ({ ...prev, pageTextColor: v }))
+                  }
                   buttonColor={buttonColor}
-                  setButtonColor={setButtonColor}
+                  setButtonColor={setButtonColorValue}
                   buttonTextColor={buttonTextColor}
-                  setButtonTextColor={setButtonTextColor}
+                  setButtonTextColor={setButtonTextColorValue}
                 />
               )}
 
-              {/* Social icons (same everywhere) */}
+              {/* Social icons */}
               <div className="space-y-3 border-t border-slate-800/70 pt-4">
                 <p className="text-xs font-medium text-slate-300">
                   Social icons
@@ -424,7 +410,7 @@ export default function KCardsPage() {
           </CardContent>
         </Card>
 
-        {/* Live preview – larger, less boxed */}
+        {/* Live preview */}
         <Card className="bg-transparent border-none shadow-none flex justify-center">
           <CardContent className="flex justify-center">
             <div className="relative mx-auto h-[620px] w-[340px] rounded-[38px] border border-slate-800 bg-slate-950/90 p-4 shadow-[0_40px_120px_rgba(0,0,0,0.8)]">
@@ -475,7 +461,7 @@ export default function KCardsPage() {
                     </div>
                   </div>
 
-                  {/* socials – icons only */}
+                  {/* socials */}
                   <div className="flex flex-wrap items-center justify-center gap-2">
                     {socials.map((s) => {
                       const Icon = SOCIAL_ICON_MAP[s];
@@ -522,7 +508,7 @@ export default function KCardsPage() {
         </Card>
       </div>
 
-      {/* Links manager – like Linktree links screen, but compact */}
+      {/* Links manager */}
       <Card className="bg-slate-950/80 border-slate-800/80 shadow-lg">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between text-sm font-semibold text-slate-100">
@@ -684,85 +670,15 @@ function HeaderSection({
   );
 }
 
-type ThemeSectionProps = {
-  themeId: string;
-  pageBackground: string;
-  onBackgroundChange: (v: string) => void;
-  activeTheme: ThemePreset;
-  onApplyTheme: (t: ThemePreset) => void;
-};
-
-function ThemeSection({
-  themeId,
-  pageBackground,
-  onBackgroundChange,
-  activeTheme,
-  onApplyTheme,
-}: ThemeSectionProps) {
-  return (
-    <div className="space-y-4">
-      <p className="text-xs font-medium text-slate-300">Theme</p>
-
-      <div className="grid gap-3 sm:grid-cols-4">
-        {THEME_PRESETS.map((theme) => {
-          const active = theme.id === themeId;
-          return (
-            <button
-              key={theme.id}
-              type="button"
-              onClick={() => onApplyTheme(theme)}
-              className={cn(
-                "flex flex-col gap-2 rounded-2xl p-2 text-left text-[11px] transition",
-                active
-                  ? "bg-slate-900 border border-slate-100"
-                  : "bg-slate-900/40 border border-slate-700 hover:border-slate-400"
-              )}
-            >
-              <div
-                className="h-16 w-full rounded-xl border border-slate-900"
-                style={{ background: theme.wallpaper }}
-              />
-              <span className="truncate text-slate-200">{theme.name}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="space-y-2">
-        <p className="text-xs font-medium text-slate-300">
-          Page background
-        </p>
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            className="h-8 w-10 cursor-pointer rounded border border-slate-700 bg-transparent"
-            value={pageBackground}
-            onChange={(e) => onBackgroundChange(e.target.value)}
-          />
-          <Input
-            value={pageBackground}
-            onChange={(e) => onBackgroundChange(e.target.value)}
-            className="bg-slate-900/80 border-slate-700 text-xs text-slate-100 placeholder:text-slate-500"
-          />
-        </div>
-        <p className="text-[10px] text-slate-500">
-          Wallpaper colors follow the theme; background controls the card
-          surface behind your content.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 type TextSectionProps = {
-  titleFont: string;
-  setTitleFont: (v: string) => void;
+  titleFont: KCardFontToken;
+  setTitleFont: (v: KCardFontToken) => void;
   titleColor: string;
   setTitleColor: (v: string) => void;
   titleSize: "small" | "large";
   setTitleSize: (v: "small" | "large") => void;
-  pageFont: string;
-  setPageFont: (v: string) => void;
+  pageFont: KCardFontToken;
+  setPageFont: (v: KCardFontToken) => void;
   pageTextColor: string;
   setPageTextColor: (v: string) => void;
 };
@@ -905,12 +821,12 @@ function TextSection({
 }
 
 type ButtonsSectionProps = {
-  buttonStyle: ButtonStyle;
-  setButtonStyle: (v: ButtonStyle) => void;
+  buttonStyle: KCardButtonStyle;
+  setButtonStyle: (v: KCardButtonStyle) => void;
   buttonRadius: number;
   setButtonRadius: (v: number) => void;
-  buttonShadow: "none" | "soft" | "hard";
-  setButtonShadow: (v: "none" | "soft" | "hard") => void;
+  buttonShadow: KCardButtonShadow;
+  setButtonShadow: (v: KCardButtonShadow) => void;
   buttonColor: string;
   setButtonColor: (v: string) => void;
   buttonTextColor: string;
@@ -980,13 +896,11 @@ function ButtonsSection({
             Shadow
           </label>
           <div className="inline-flex rounded-full bg-slate-900/60 p-1 text-[11px] border border-slate-700/80">
-            {["none", "soft", "hard"].map((s) => (
+            {BUTTON_SHADOWS.map((s) => (
               <button
                 key={s}
                 type="button"
-                onClick={() =>
-                  setButtonShadow(s as "none" | "soft" | "hard")
-                }
+                onClick={() => setButtonShadow(s)}
                 className={cn(
                   "flex-1 rounded-full px-3 py-1 capitalize",
                   buttonShadow === s

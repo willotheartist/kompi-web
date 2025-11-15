@@ -39,9 +39,18 @@ export type LinkListItem = {
 type LinksListClientProps = {
   links: LinkListItem[];
   workspaceId?: string;
+  /**
+   * Optional handler for activating/deactivating a link.
+   * Parent can wire this to a server action or API call.
+   */
+  onToggleActive?: (linkId: string, nextActive: boolean) => void;
 };
 
-export function LinksListClient({ links, workspaceId }: LinksListClientProps) {
+export function LinksListClient({
+  links,
+  workspaceId,
+  onToggleActive,
+}: LinksListClientProps) {
   const [query, setQuery] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -74,9 +83,7 @@ export function LinksListClient({ links, workspaceId }: LinksListClientProps) {
     <div className={cn("space-y-5", onest.className)}>
       {/* Header + search + create */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-[20px] font-semibold text-white">
-          Your links
-        </h1>
+        <h1 className="text-[20px] font-semibold text-white">Your links</h1>
 
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
           <Button
@@ -114,7 +121,7 @@ export function LinksListClient({ links, workspaceId }: LinksListClientProps) {
             {workspaceId ? (
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="mt-5 rounded-2xl bg-white/95 px-5 py-2 text-sm font-medium text-slate-900 hover:bg.white">
+                  <Button className="mt-5 rounded-2xl bg-white/95 px-5 py-2 text-sm font-medium text-slate-900 hover:bg-white">
                     Create link
                   </Button>
                 </DialogTrigger>
@@ -134,7 +141,7 @@ export function LinksListClient({ links, workspaceId }: LinksListClientProps) {
         // List
         <div className="space-y-3">
           {filtered.length === 0 ? (
-            <Card className="rounded-3xl border border.white/10 bg-slate-900/80 p-4 text-sm text-slate-300">
+            <Card className="rounded-3xl border border-white/10 bg-slate-900/80 p-4 text-sm text-slate-300">
               No links found. Try a different search.
             </Card>
           ) : (
@@ -162,6 +169,16 @@ export function LinksListClient({ links, workspaceId }: LinksListClientProps) {
                   ? `${host} – ${link.code}`
                   : host || link.code || "untitled";
 
+              // Use site favicon as the “logo bubble” where possible
+              const faviconStyle =
+                host != null
+                  ? {
+                      backgroundImage: `url(https://${host}/favicon.ico)`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }
+                  : undefined;
+
               return (
                 <article
                   key={link.id}
@@ -178,10 +195,16 @@ export function LinksListClient({ links, workspaceId }: LinksListClientProps) {
                         type="checkbox"
                         className="h-4 w-4 rounded border-white/25 bg-slate-900 text-sky-400 focus:ring-sky-500/70"
                       />
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-slate-950/60">
-                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 text-[11px] font-semibold text-slate-950">
-                          →
-                        </span>
+                      <div
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-slate-950/60"
+                        style={faviconStyle}
+                      >
+                        {/* Fallback arrow when we don't have a favicon */}
+                        {!host && (
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 text-[11px] font-semibold text-slate-950">
+                            →
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -246,6 +269,29 @@ export function LinksListClient({ links, workspaceId }: LinksListClientProps) {
 
                     {/* Right actions column */}
                     <div className="flex items-center gap-2 pt-1">
+                      {/* Active / inactive toggle */}
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={link.isActive}
+                        onClick={() =>
+                          onToggleActive?.(link.id, !link.isActive)
+                        }
+                        className={cn(
+                          "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition",
+                          link.isActive
+                            ? "border-emerald-400 bg-emerald-500/80"
+                            : "border-slate-500 bg-slate-700"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform",
+                            link.isActive ? "translate-x-4" : "translate-x-1"
+                          )}
+                        />
+                      </button>
+
                       {/* Copy icon button */}
                       <button
                         type="button"
@@ -293,9 +339,11 @@ export function LinksListClient({ links, workspaceId }: LinksListClientProps) {
                       <LinkActionsMenu
                         id={link.id}
                         shortUrl={composedShortUrl}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg
-                                   border border-white/10 bg-white/5 text-slate-100
-                                   hover:bg-white/10"
+                        className={cn(
+                          "inline-flex h-8 w-8 items-center justify-center rounded-lg",
+                          "border border-white/15 bg-white/5 text-white",
+                          "hover:bg-white/10"
+                        )}
                       />
                     </div>
                   </div>

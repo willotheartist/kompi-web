@@ -136,3 +136,232 @@ body {
 :root {
   --radius-pill: 999px;
 }
+
+/* W&F – KR Codes public page */
+
+.wf-kr-main {
+  min-height: 100vh;
+  background-color: var(--color-bg, #f7f7f3);
+  color: var(--color-text, #111111);
+}
+
+.wf-hero {
+  padding: 96px 0 80px;
+}
+
+.wf-hero-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.wf-eyebrow {
+  margin: 0 0 16px;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-subtle, #6b6b6b);
+}
+
+.wf-hero-title {
+  margin: 0;
+  font-family: var(--font-primary, system-ui);
+  font-weight: 800;
+  font-size: 3rem;
+  line-height: 1.05;
+}
+
+.wf-hero-title-accent {
+  font-family: var(--font-accent, "Times New Roman", serif);
+  font-style: italic;
+  border-bottom: 3px solid var(--color-accent, #d4ff3e);
+}
+
+.wf-hero-sub {
+  margin: 24px 0 0;
+  max-width: 640px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--color-subtle, #6b6b6b);
+}
+
+.wf-hero-actions {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.wf-btn-primary,
+.wf-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.wf-btn-primary {
+  background-color: var(--color-accent, #d4ff3e);
+  color: var(--color-text, #111111);
+}
+
+.wf-btn-secondary {
+  background-color: transparent;
+  color: var(--color-text, #111111);
+  border-color: var(--color-border, #e2e2dc);
+}
+
+.wf-hero-footnote {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--color-subtle, #6b6b6b);
+}
+
+/* =========================
+   W&F Design System – scoped base
+   ========================= */
+
+:root {
+  /* Core W&F colors (do NOT conflict with Tailwind/oklch tokens) */
+  --color-bg: #f7f7f3;
+  --color-surface: #ffffff;
+  --color-border: #e2e2dc;
+  --color-text: #111111;
+  --color-subtle: #6b6b6b;
+  --color-accent: #d4ff3e;
+  --color-accent-soft: #f6ffe0;
+
+  /* W&F radii & shadows (namespaced) */
+  --wf-radius-md: 16px;
+  --wf-radius-lg: 24px;
+  --wf-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+  --wf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Opt-in wrapper: any tree inside .wf-root uses the W&F look */
+.wf-root {
+  font-family: var(--font-primary, system-ui);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Shared W&F section container helper */
+.wf-section {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-inline: 32px;
+}
+
+@media (max-width: 960px) {
+  .wf-section {
+    padding-inline: 20px;
+  }
+}
+
+/* =========================
+   W&F Navbar
+   ========================= */
+
+.wf-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.wf-nav-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.wf-nav-left,
+.wf-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.wf-nav-logo {
+  font-family: var(--font-primary, system-ui);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.wf-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.9rem;
+}
+
+.wf-nav-link {
+  position: relative;
+  padding: 4px 0;
+  color: var(--color-subtle);
+  text-decoration: none;
+  transition: color 0.18s ease-out;
+}
+
+.wf-nav-link:hover {
+  color: var(--color-text);
+}
+
+.wf-nav-link--active {
+  color: var(--color-text);
+}
+
+.wf-nav-link--active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background-color: var(--color-accent);
+}
+
+.wf-nav-ctas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wf-nav-ghost {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.wf-nav-primary {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: none;
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--wf-shadow-sm, 0 2px 4px rgba(0,0,0,0.04));
+}
+
+@media (max-width: 900px) {
+  .wf-nav-inner {
+    padding-inline: 20px;
+  }
+}

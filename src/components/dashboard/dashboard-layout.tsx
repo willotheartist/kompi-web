@@ -24,20 +24,13 @@ const navItems = [
   { href: "/k-cards", label: "K-Cards", icon: LayoutTemplate },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/kr-codes", label: "Kompi Codes", icon: QrCode },
-  { href: "/settings", label: "Settings", icon: Settings },
+  // 🔁 changed from "/settings" to "/dashboard/settings"
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    const saved = window.localStorage.getItem("sidebarCollapsed");
-    return saved === "true";
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("sidebarCollapsed", String(collapsed));
-  }, [collapsed]);
+  // ❌ no localStorage here – this avoids hydration mismatch
+  const [collapsed, setCollapsed] = useState<boolean>(false);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-[#020817] via-[#030b1f] to-[#020817] text-slate-50">
@@ -218,9 +211,22 @@ function Topbar() {
                 </div>
               </div>
 
-              <MenuItem href="/dashboard/profile" label="Profile" onClick={() => setOpen(false)} />
-              <MenuItem href="/settings" label="Settings" onClick={() => setOpen(false)} />
-              <MenuItem href="/support" label="Support" onClick={() => setOpen(false)} />
+              {/* 🔁 updated routes to new dashboard settings paths */}
+              <MenuItem
+                href="/dashboard/settings/profile"
+                label="Profile"
+                onClick={() => setOpen(false)}
+              />
+              <MenuItem
+                href="/dashboard/settings"
+                label="Settings"
+                onClick={() => setOpen(false)}
+              />
+              <MenuItem
+                href="/dashboard/support"
+                label="Support"
+                onClick={() => setOpen(false)}
+              />
 
               <div className="my-1 h-px bg-white/10" />
 
@@ -254,7 +260,7 @@ function MenuItem({
     <Link
       href={href}
       onClick={onClick}
-      className="block rounded-lg px-2.5 py-2 text-sm text-zinc-200 hover:bg-white/5 hover:text-white transition"
+      className="block rounded-lg px-2.5 py-2 text-sm text-zinc-200 hover:bg:white/5 hover:text-white transition hover:bg-white/5"
       role="menuitem"
     >
       {label}

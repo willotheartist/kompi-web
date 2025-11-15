@@ -217,7 +217,7 @@ export function FeaturesMegaMenu() {
                       ].join(" ")}
                     >
                       {c.label}
-                      {isActive && <span className="ml-1 text-[#365DFF]">▸</span>}
+                      {isActive && <span className="ml-1 text-[color:var(--color-accent)]">▸</span>}
                     </button>
                   </li>
                 );
@@ -262,7 +262,7 @@ export function FeaturesMegaMenu() {
                   Featured
                 </div>
 
-                <div className="rounded-xl border border-neutral-200 p-4 bg-[radial-gradient(120%_120%_at_80%_0%,rgba(54,93,255,0.12),transparent_40%)]">
+                <div className="rounded-xl border border-neutral-200 p-4 bg-[radial-gradient(120%_120%_at_80%_0%,rgba(0,0,0,0.08),transparent_40%)]">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-900 text-white ring-1 ring-black/5">
                       <Link2 className="h-4 w-4" />
@@ -281,7 +281,7 @@ export function FeaturesMegaMenu() {
 
               <Link
                 href="/signin"
-                className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[#365DFF] px-5 py-2.5 text-[14px] font-semibold text-white hover:brightness-110 transition-all shadow-[0_14px_40px_rgba(54,93,255,0.35)]"
+                className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--color-accent)] px-5 py-2.5 text-[14px] font-semibold text-white hover:brightness-110 transition-all shadow-[0_14px_40px_rgba(0,0,0,0.35)]"
               >
                 Try Kompi free
               </Link>

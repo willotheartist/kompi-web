@@ -6,10 +6,11 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { FeaturesMegaMenu } from "@/components/features-megamenu";
+import "./navbar.css";
 
-const ACTIVE_BLUE_CLASS = "text-[#365DFF]";
-const ACTIVE_BLUE_BG = "bg-[#365DFF]";
-const ACTIVE_BLUE_SHADOW = "shadow-[0_10px_30px_rgba(54,93,255,0.45)]";
+const ACTIVE_BLUE_CLASS = "wf-nav-link-active";
+const ACTIVE_BLUE_BG = "wf-nav-cta-primary";
+const ACTIVE_BLUE_SHADOW = "wf-nav-cta-primary-shadow";
 
 export function Navbar() {
   const [hidden, setHidden] = useState(false);
@@ -34,8 +35,8 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const linkBase = "text-sm font-medium transition-colors hover:text-white";
-  const inactiveColor = "text-zinc-100";
+  const linkBase = "wf-nav-link";
+  const inactiveColor = "";
   const activeColor = ACTIVE_BLUE_CLASS;
 
   const isPricing = pathname?.startsWith("/pricing");
@@ -43,29 +44,28 @@ export function Navbar() {
   return (
     <div
       className={[
-        "fixed inset-x-0 top-0 z-50 flex justify-center transition-all duration-300",
-        hidden ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100",
-        atTop ? "mt-4" : "mt-2",
+        "fixed inset-x-0 top-0 z-50 flex justify-center",
+        "transition-all duration-300",
+        hidden ? "wf-nav-hidden" : "wf-nav-visible",
+        atTop ? "wf-nav-top" : "wf-nav-scrolled",
       ].join(" ")}
     >
       <header
         className={[
+          "wf-nav-shell",
           "w-full max-w-7xl",
-          "px-6 py-4",
-          "rounded-3xl",
-          "bg-[#03071E]/95 backdrop-blur-2xl",
-          "shadow-[0_18px_70px_rgba(3,7,18,0.55)]",
-          "border border-white/10",
-          "flex items-center justify-between gap-6",
+          "px-4 md:px-6 py-3 md:py-4",
+          "rounded-2xl md:rounded-3xl",
+          "flex items-center justify-between gap-4 md:gap-6",
         ].join(" ")}
       >
         {/* LOGO */}
         <Link
           href="/"
-          className="flex items-center hover:opacity-95 transition-opacity"
+          className="wf-nav-logo"
         >
           <Image
-            src="/Kompiwhite.svg"
+            src="/Kompi..svg"
             alt="Kompi"
             width={120}
             height={40}
@@ -75,8 +75,8 @@ export function Navbar() {
         </Link>
 
         {/* NAV (DESKTOP) */}
-        <nav className="hidden md:flex items-center gap-8">
-          <div className="text-zinc-100">
+        <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+          <div className="wf-nav-link-wrap">
             <FeaturesMegaMenu />
           </div>
 
@@ -93,13 +93,12 @@ export function Navbar() {
         </nav>
 
         {/* RIGHT CTAs */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <Link
             href="/signin"
             className={[
-              "hidden md:inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium",
-              "border border-white/18",
-              "text-zinc-100 hover:text-white hover:border-white/40 transition-colors",
+              "wf-nav-cta-secondary",
+              "hidden md:inline-flex",
             ].join(" ")}
           >
             Log in
@@ -108,11 +107,11 @@ export function Navbar() {
           <Link
             href="/signin"
             className={[
-              "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold",
+              "inline-flex items-center justify-center",
+              "text-sm font-semibold",
+              "rounded-full px-4 py-2",
               ACTIVE_BLUE_BG,
-              "text-white",
               ACTIVE_BLUE_SHADOW,
-              "hover:brightness-110 transition-all",
             ].join(" ")}
           >
             Sign up free
@@ -177,8 +176,8 @@ function SolutionsMegaMenu() {
         className={[
           "inline-flex items-center gap-1",
           "text-sm font-medium",
-          open ? ACTIVE_BLUE_CLASS : "text-zinc-100",
-          "hover:text-white transition-colors",
+          "wf-nav-link",
+          open ? "wf-nav-link-active" : "",
         ].join(" ")}
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -196,47 +195,43 @@ function SolutionsMegaMenu() {
           onMouseEnter={openNow}
           onMouseLeave={scheduleClose}
           className={[
+            "wf-nav-solutions-panel",
             "absolute left-1/2 top-8 -translate-x-1/2",
-            "w-[340px]",
-            "rounded-2xl border border-white/10",
-            "bg-[#04071F]/98 backdrop-blur-2xl",
-            "shadow-[0_22px_80px_rgba(3,7,18,0.9)]",
-            "p-4 grid gap-2",
           ].join(" ")}
           role="dialog"
         >
           <Link
             href="/#solutions-agencies"
-            className="group flex flex-col gap-1 rounded-xl px-3 py-2 hover:bg-white/5 transition-colors"
+            className="wf-nav-solutions-item group"
           >
-            <span className="text-sm font-semibold text-white">
-              Studios & agencies
+            <span className="wf-nav-solutions-title">
+              Studios &amp; agencies
             </span>
-            <span className="text-xs text-zinc-400 group-hover:text-zinc-300">
+            <span className="wf-nav-solutions-body">
               Client workspaces, branded links, clean reporting.
             </span>
           </Link>
 
           <Link
             href="/#solutions-creators"
-            className="group flex flex-col gap-1 rounded-xl px-3 py-2 hover:bg-white/5 transition-colors"
+            className="wf-nav-solutions-item group"
           >
-            <span className="text-sm font-semibold text-white">
-              Creators & personal brands
+            <span className="wf-nav-solutions-title">
+              Creators &amp; personal brands
             </span>
-            <span className="text-xs text-zinc-400 group-hover:text-zinc-300">
+            <span className="wf-nav-solutions-body">
               Link-in-bio, Kompi Codes™, offers in one hub.
             </span>
           </Link>
 
           <Link
             href="/#solutions-teams"
-            className="group flex flex-col gap-1 rounded-xl px-3 py-2 hover:bg-white/5 transition-colors"
+            className="wf-nav-solutions-item group"
           >
-            <span className="text-sm font-semibold text-white">
-              Growth & marketing teams
+            <span className="wf-nav-solutions-title">
+              Growth &amp; marketing teams
             </span>
-            <span className="text-xs text-zinc-400 group-hover:text-zinc-300">
+            <span className="wf-nav-solutions-body">
               Smart routing, analytics, multi-brand control.
             </span>
           </Link>

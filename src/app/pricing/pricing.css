@@ -1,0 +1,406 @@
+/* Kompi Pricing – W&F Design System v1.1
+   Patterns: HeroA, ValueGrid, Comparison, CTA_Footer (via shared component)
+*/
+
+.wf-pricing-page {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Inter Tight", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+/* Sections & layout */
+
+.wf-section {
+  padding-block: 72px;
+}
+
+@media (min-width: 1024px) {
+  .wf-section {
+    padding-block: 88px;
+  }
+}
+
+/* Hero – no more forced 100vh; more like Perk: hero + cards share the first screen */
+
+.wf-pricing-hero {
+  padding-top: 128px;
+  padding-bottom: 40px;
+}
+
+@media (min-width: 1024px) {
+  .wf-pricing-hero {
+    padding-top: 140px;
+    padding-bottom: 48px;
+  }
+}
+
+.wf-pricing-container {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .wf-pricing-container {
+    padding-inline: 1.25rem;
+  }
+}
+
+/* HeroA content */
+
+.wf-pricing-hero-shell {
+  max-width: 40rem;
+  margin-inline: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1.25rem;
+}
+
+.wf-pricing-eyebrow {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-subtle);
+}
+
+.wf-pricing-hero-heading {
+  font-size: clamp(2.4rem, 4vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.wf-pricing-hero-body {
+  font-size: 0.95rem;
+  color: var(--color-subtle);
+  line-height: 1.6;
+}
+
+/* Billing toggle – compact segmented control */
+
+.wf-billing-toggle {
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.18rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  font-size: 0.78rem;
+  width: auto;
+  max-width: 100%;
+}
+
+.wf-billing-toggle-btn {
+  min-width: 96px;
+  padding-inline: 1.1rem;
+  padding-block: 0.45rem;
+  border-radius: 999px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-subtle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 0.35rem;
+  white-space: nowrap;
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out,
+    transform 160ms ease-out;
+}
+
+.wf-billing-toggle-btn-right {
+  padding-inline: 1.2rem;
+}
+
+.wf-billing-toggle-btn-active {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  transform: translateY(-1px);
+}
+
+.wf-billing-toggle-pill {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding-inline: 0.4rem;
+}
+
+/* Plans section – sits close under hero */
+
+.wf-pricing-plans {
+  background-color: var(--color-bg);
+  padding-top: 0;
+  padding-bottom: 80px;
+}
+
+/* Plan cards */
+
+.wf-plan-card {
+  border-radius: 1.5rem;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding: 1.5rem;
+  box-shadow: none;
+  transition:
+    transform 180ms ease-out,
+    border-color 180ms ease-out,
+    background-color 180ms ease-out;
+}
+
+.wf-plan-card:hover {
+  transform: translateY(-3px);
+  background-color: var(--color-bg);
+}
+
+.wf-plan-card-standard {
+  border-color: var(--color-border);
+}
+
+.wf-plan-card-highlighted {
+  border-color: var(--color-accent);
+}
+
+.wf-plan-pill {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 0.7rem;
+  padding-block: 0.25rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  margin-bottom: 0.6rem;
+}
+
+.wf-plan-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.wf-plan-tagline {
+  font-size: 0.85rem;
+  color: var(--color-subtle);
+  margin-bottom: 1rem;
+}
+
+.wf-plan-price-block {
+  margin-bottom: 1.1rem;
+}
+
+.wf-plan-price-row {
+  display: flex;
+  align-items: baseline;
+  column-gap: 0.35rem;
+}
+
+.wf-plan-price {
+  font-size: 1.9rem;
+  font-weight: 600;
+}
+
+.wf-plan-price-suffix {
+  font-size: 0.85rem;
+  color: var(--color-subtle);
+}
+
+.wf-plan-price-sub {
+  font-size: 0.8rem;
+  color: var(--color-subtle);
+}
+
+.wf-plan-price-best {
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+  color: var(--color-subtle);
+}
+
+/* Features list */
+
+.wf-plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  display: grid;
+  row-gap: 0.4rem;
+  font-size: 0.83rem;
+  color: var(--color-text);
+}
+
+.wf-plan-feature-row {
+  display: flex;
+  column-gap: 0.45rem;
+  align-items: flex-start;
+}
+
+.wf-plan-feature-dot {
+  margin-top: 0.4rem;
+  height: 0.3rem;
+  width: 0.3rem;
+  border-radius: 999px;
+  background-color: var(--color-accent);
+}
+
+/* Plan CTAs */
+
+.wf-plan-cta {
+  width: 100%;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.wf-plan-cta-primary {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  border: none;
+}
+
+.wf-plan-cta-primary:hover {
+  filter: brightness(1.03);
+}
+
+.wf-plan-cta-secondary {
+  background-color: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.wf-plan-cta-secondary:hover {
+  background-color: var(--color-bg);
+}
+
+/* Comparison section */
+
+.wf-pricing-compare {
+  background-color: var(--color-bg);
+  padding-top: 0;
+  padding-bottom: 3rem;
+}
+
+.wf-compare-shell {
+  border-radius: 1.75rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .wf-compare-shell {
+    padding: 2.25rem;
+  }
+}
+
+.wf-compare-header {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .wf-compare-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    column-gap: 1.5rem;
+  }
+}
+
+.wf-compare-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.wf-compare-body {
+  font-size: 0.9rem;
+  color: var(--color-subtle);
+  max-width: 26rem;
+}
+
+.wf-compare-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--color-subtle);
+}
+
+.wf-compare-tags span {
+  padding-inline: 0.55rem;
+  padding-block: 0.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+}
+
+/* Table */
+
+.wf-compare-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.wf-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+@media (min-width: 768px) {
+  .wf-compare-table {
+    font-size: 0.85rem;
+  }
+}
+
+.wf-compare-th-feature {
+  text-align: left;
+  padding: 0.5rem 0.75rem 0.6rem 0;
+  font-weight: 500;
+  color: var(--color-subtle);
+}
+
+.wf-compare-th {
+  text-align: center;
+  padding: 0.5rem 0.75rem 0.6rem;
+  font-weight: 500;
+}
+
+.wf-compare-section-row {
+  background-color: var(--color-bg);
+}
+
+.wf-compare-section-cell {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-subtle);
+}
+
+.wf-compare-row {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wf-compare-cell-feature {
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  color: var(--color-text);
+}
+
+.wf-compare-cell {
+  text-align: center;
+  padding: 0.5rem 0.75rem;
+  color: var(--color-text);
+}

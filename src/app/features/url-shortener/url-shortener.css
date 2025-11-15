@@ -1,0 +1,357 @@
+/* All styles scoped to the URL Shortener page */
+.wf-url-shortener {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Layout primitives */
+.wf-url-shortener .wf-bg-page {
+  background-color: var(--color-bg);
+}
+
+.wf-url-shortener .wf-text-main {
+  color: var(--color-text);
+}
+
+.wf-url-shortener .wf-section {
+  padding: 72px 0;
+}
+
+.wf-url-shortener .wf-section-tight {
+  padding: 48px 0;
+}
+
+@media (min-width: 768px) {
+  .wf-url-shortener .wf-section {
+    padding: 96px 0;
+  }
+}
+
+.wf-url-shortener .wf-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .wf-url-shortener .wf-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* HeroA layout */
+.wf-url-shortener .wf-section-hero {
+  display: block;
+}
+
+.wf-url-shortener .wf-heroA-layout {
+  display: grid;
+  gap: 2.75rem;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .wf-url-shortener .wf-heroA-layout {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+  }
+}
+
+/* Cards & surfaces */
+.wf-url-shortener .wf-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.wf-url-shortener .wf-card-lg {
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.wf-url-shortener .wf-card-soft {
+  background-color: var(--color-accent-soft);
+}
+
+.wf-url-shortener .wf-value-card {
+  height: 100%;
+}
+
+.wf-url-shortener .wf-testimonials-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.wf-url-shortener .wf-testimonial-card {
+  min-width: 260px;
+  max-width: 320px;
+}
+
+/* Text utilities */
+.wf-url-shortener .text-subtle {
+  color: var(--color-subtle);
+}
+
+.wf-url-shortener .wf-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-subtle);
+}
+
+.wf-url-shortener .wf-meta {
+  font-size: 0.75rem;
+  color: var(--color-subtle);
+}
+
+.wf-url-shortener .wf-body-lg {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.wf-url-shortener .wf-body-md {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.wf-url-shortener .wf-body-sm {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.wf-url-shortener .wf-body-xs {
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+/* Headings */
+.wf-url-shortener .wf-hero-title {
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.wf-url-shortener .wf-section-title {
+  font-size: clamp(2rem, 3vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.wf-url-shortener .wf-section-title-sm {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.wf-url-shortener .wf-card-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.wf-url-shortener .wf-side-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Buttons */
+.wf-url-shortener .wf-btn-primary {
+  border-radius: 999px;
+  padding-inline: 1.75rem;
+  padding-block: 0.75rem;
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.wf-url-shortener .wf-btn-primary:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.wf-url-shortener .wf-btn-secondary {
+  border-radius: 999px !important;
+  padding-inline: 1.5rem;
+  padding-block: 0.75rem;
+  border-color: var(--color-border) !important;
+  background-color: transparent;
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.wf-url-shortener .wf-btn-secondary:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.wf-url-shortener .wf-btn-secondary-on-surface {
+  border-radius: 999px !important;
+  padding-inline: 1.25rem;
+  padding-block: 0.5rem;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  font-size: 0.8rem;
+}
+
+.wf-url-shortener .wf-btn-ghost-on-surface {
+  border-radius: 999px !important;
+  padding-inline: 1.25rem;
+  padding-block: 0.5rem;
+  background-color: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  font-size: 0.8rem;
+}
+
+.wf-url-shortener .wf-btn-ghost-on-surface:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Quiet inline links (for relocated footer links) */
+.wf-url-shortener .wf-quiet-link {
+  position: relative;
+  padding-bottom: 1px;
+}
+
+.wf-url-shortener .wf-quiet-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background-color: var(--color-subtle);
+  transition: width 0.18s ease-out;
+}
+
+.wf-url-shortener .wf-quiet-link:hover::after {
+  width: 100%;
+}
+
+/* Pills & dots */
+.wf-url-shortener .wf-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: var(--color-border);
+}
+
+.wf-url-shortener .wf-dot-lime {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background-color: var(--color-accent);
+}
+
+.wf-url-shortener .wf-pill-outline {
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.wf-url-shortener .wf-pill-soft {
+  border-radius: 999px;
+  background-color: var(--color-accent-soft);
+  padding: 0.25rem 0.75rem;
+}
+
+/* Hero preview specifics */
+.wf-url-shortener .wf-hero-preview-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.wf-url-shortener .wf-hero-preview {
+  font-size: 0.85rem;
+}
+
+.wf-url-shortener .wf-input-muted {
+  border-radius: 999px;
+  background-color: rgba(0, 0, 0, 0.02);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.7rem;
+  color: var(--color-subtle);
+}
+
+.wf-url-shortener .wf-input-main {
+  border-radius: 999px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 0.4rem 0.75rem;
+}
+
+.wf-url-shortener .wf-stat-chip {
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Logos bar */
+.wf-url-shortener .wf-logo-pill {
+  position: relative;
+}
+
+.wf-url-shortener .wf-logo-pill::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background-color: var(--color-accent);
+}
+
+/* Steps */
+.wf-url-shortener .wf-step-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wf-url-shortener .wf-step-badge {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 16px;
+  background-color: var(--color-text);
+  color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.wf-url-shortener .wf-step-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Stats row */
+.wf-url-shortener .wf-stats-card {
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.wf-url-shortener .wf-stat-tile {
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* FAQ + CTA */
+.wf-url-shortener .wf-faq-card {
+  padding: 1rem 1.25rem;
+}
+
+.wf-url-shortener .wf-cta-side {
+  padding: 1.75rem 1.75rem;
+}

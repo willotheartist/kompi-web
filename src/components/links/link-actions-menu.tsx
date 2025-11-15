@@ -12,13 +12,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  MoreVertical,
-  FileText,
-  Copy,
-  QrCode,
-  Trash2,
-} from "lucide-react";
+import { FileText, Copy, QrCode, Trash2 } from "lucide-react";
 
 type Props = {
   id: string;
@@ -29,6 +23,7 @@ type Props = {
 export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
   const [open, setOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const qrUrl = `/api/links/${id}/qr`;
@@ -43,10 +38,6 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this link? This will also remove its analytics.")) {
-      return;
-    }
-
     setDeleting(true);
     try {
       const res = await fetch(`/api/links/${id}`, { method: "DELETE" });
@@ -54,6 +45,8 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
         alert("Failed to delete link");
         return;
       }
+
+      setDeleteOpen(false);
       window.location.reload();
     } finally {
       setDeleting(false);
@@ -64,20 +57,24 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
     <>
       <div className="relative">
         {/* Trigger */}
-        <Button
+        <button
           type="button"
-          variant="ghost"
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-lg border border-white/10",
-            "bg-slate-950/70 text-slate-300 shadow-[0_10px_30px_rgba(15,23,42,0.8)]",
-            "hover:border-sky-500/70 hover:bg-slate-900 hover:text-white",
+            "inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10",
+            "bg-slate-950/70 text-white shadow-[0_10px_30px_rgba(15,23,42,0.8)]",
+            "hover:border-sky-500/70 hover:bg-slate-900",
             className
           )}
           onClick={() => setOpen((v) => !v)}
           aria-label="More actions"
         >
-          <MoreVertical className="h-4 w-4 text-white/80" />
-        </Button>
+          {/* 3 white dots */}
+          <span className="flex items-center gap-[2px]">
+            <span className="h-[3px] w-[3px] rounded-full bg-white" />
+            <span className="h-[3px] w-[3px] rounded-full bg-white" />
+            <span className="h-[3px] w-[3px] rounded-full bg-white" />
+          </span>
+        </button>
 
         {/* Dropdown */}
         {open && (
@@ -131,11 +128,14 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
                 <button
                   type="button"
                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-red-400 hover:bg-red-950/40 hover:text-red-300"
-                  onClick={handleDelete}
+                  onClick={() => {
+                    setDeleteOpen(true);
+                    setOpen(false);
+                  }}
                   disabled={deleting}
                 >
                   <Trash2 className="h-4 w-4" />
-                  <span>{deleting ? "Deleting…" : "Delete link"}</span>
+                  <span>Delete link</span>
                 </button>
               </li>
             </ul>
@@ -172,6 +172,46 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
                 Download PNG
               </a>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation modal */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-sm border border-white/10 bg-slate-950/95">
+          <DialogHeader>
+            <DialogTitle className="text-slate-50">
+              Delete this link?
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              This will permanently remove the link and its analytics. This
+              action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4 rounded-xl border border-white/5 bg-slate-900/80 px-3 py-2 text-xs text-slate-400">
+            <span className="font-mono text-slate-100">{shortUrl}</span>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-slate-600/70 bg-slate-900 text-slate-200 hover:bg-slate-800"
+              onClick={() => setDeleteOpen(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              className="bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_12px_30px_rgba(37,99,235,0.65)] hover:brightness-110"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting…" : "Delete link"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

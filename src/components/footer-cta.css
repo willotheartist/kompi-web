@@ -1,0 +1,247 @@
+/* CTA_Footer – Kompi
+   Lime accent footer on W&F Design System v1.1
+*/
+
+.wf-footer {
+  margin-top: 8rem;
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  font-family: "Inter Tight", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+.wf-footer-inner {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  padding-block: 2.5rem 4rem;
+}
+
+@media (max-width: 640px) {
+  .wf-footer-inner {
+    padding-inline: 1.25rem;
+  }
+}
+
+.wf-footer-shell {
+  border-radius: 2rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.45);
+}
+
+@media (min-width: 768px) {
+  .wf-footer-shell {
+    border-radius: 2.5rem;
+  }
+}
+
+.wf-footer-shell-inner {
+  position: relative;
+  padding: 2.5rem 1.75rem 2.75rem;
+  display: flex;
+  flex-direction: column;
+  row-gap: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .wf-footer-shell-inner {
+    padding: 3.25rem 2.75rem 3.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .wf-footer-shell-inner {
+    padding-inline: 3.5rem;
+  }
+}
+
+/* Top: logo + CTAs */
+
+.wf-footer-top {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1.75rem;
+  align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+  .wf-footer-top {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.wf-footer-logo-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.wf-footer-logo {
+  position: relative;
+  width: 10rem;
+  height: 4rem;
+}
+
+@media (min-width: 768px) {
+  .wf-footer-logo {
+    width: 13rem;
+    height: 5rem;
+  }
+}
+
+.wf-footer-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+}
+
+/* Buttons use shadcn Button but we override to W&F tokens */
+
+.wf-footer-cta-secondary {
+  border-radius: 999px;
+  padding-inline: 1.75rem;
+  padding-block: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-color: var(--color-border);
+  background-color: transparent;
+  color: var(--color-text);
+}
+
+.wf-footer-cta-secondary:hover {
+  background-color: var(--color-bg);
+  border-color: var(--color-text);
+}
+
+.wf-footer-cta-primary {
+  border-radius: 999px;
+  padding-inline: 2rem;
+  padding-block: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.wf-footer-cta-primary:hover {
+  filter: brightness(1.03);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* Columns */
+
+.wf-footer-columns {
+  display: grid;
+  gap: 1.75rem;
+  font-size: 0.8rem;
+}
+
+@media (min-width: 768px) {
+  .wf-footer-columns {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.wf-footer-column {
+  min-width: 0;
+}
+
+.wf-footer-column-title {
+  margin-bottom: 0.75rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-subtle);
+}
+
+.wf-footer-column-title-main {
+  font-family: "Inter Tight", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+.wf-footer-column-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  row-gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--color-subtle);
+}
+
+/* Links */
+
+.wf-footer-link {
+  text-decoration: none;
+  color: inherit;
+  transition:
+    color 140ms ease-out,
+    text-decoration-color 140ms ease-out;
+  text-underline-offset: 0.16em;
+  text-decoration-thickness: 0.09em;
+  text-decoration-color: transparent;
+}
+
+.wf-footer-link:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+/* Bottom row */
+
+.wf-footer-bottom {
+  border-top: 1px solid var(--color-border);
+  padding-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1rem;
+  font-size: 0.72rem;
+  color: var(--color-subtle);
+}
+
+@media (min-width: 768px) {
+  .wf-footer-bottom {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.wf-footer-meta {
+  margin: 0;
+}
+
+.wf-footer-social-row {
+  display: flex;
+  align-items: center;
+  column-gap: 0.5rem;
+}
+
+/* Social icons */
+
+.wf-footer-social {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    background-color 140ms ease-out,
+    border-color 140ms ease-out,
+    transform 140ms ease-out;
+}
+
+.wf-footer-social:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-text);
+  transform: translateY(-1px);
+}

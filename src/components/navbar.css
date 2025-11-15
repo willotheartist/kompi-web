@@ -1,0 +1,202 @@
+/* W&F Top Nav pattern – Kompi */
+
+.wf-nav-top {
+  margin-top: 1rem;
+}
+
+.wf-nav-scrolled {
+  margin-top: 0.5rem;
+}
+
+.wf-nav-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wf-nav-hidden {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.wf-nav-shell {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  
+  backdrop-filter: blur(20px);
+  font-family: "Inter Tight", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+/* Logo */
+
+.wf-nav-logo {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 0.5rem;
+  text-decoration: none;
+  transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+.wf-nav-logo:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+/* Center links */
+
+.wf-nav-link-wrap {
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+/* Links */
+
+.wf-nav-link {
+  color: var(--color-subtle);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  transition: color 160ms ease-out;
+}
+
+.wf-nav-link:hover {
+  color: var(--color-text);
+}
+
+.wf-nav-link-active {
+  color: var(--color-accent);
+}
+
+/* CTAs */
+
+.wf-nav-cta-secondary {
+  border-radius: 999px;
+  padding-inline: 1rem;
+  padding-block: 0.45rem;
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-subtle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition:
+    color 160ms ease-out,
+    border-color 160ms ease-out,
+    background-color 160ms ease-out;
+}
+
+.wf-nav-cta-secondary:hover {
+  color: var(--color-text);
+  border-color: var(--color-text);
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.wf-nav-cta-primary {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  border-radius: 999px;
+  text-decoration: none;
+  
+  transition:
+    box-shadow 160ms ease-out,
+    transform 160ms ease-out,
+    filter 160ms ease-out;
+}
+
+.wf-nav-cta-primary-shadow {
+  /* kept as a separate tokened class to respect original constant structure */
+}
+
+.wf-nav-cta-primary:hover {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.36);
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+/* Solutions megamenu */
+
+.wf-nav-solutions-panel {
+  width: 340px;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(18px);
+  display: grid;
+  gap: 0.4rem;
+}
+
+.wf-nav-solutions-item {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.25rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  transition: background-color 140ms ease-out;
+}
+
+.wf-nav-solutions-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.wf-nav-solutions-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.wf-nav-solutions-body {
+  font-size: 0.78rem;
+  color: var(--color-subtle);
+}
+
+/* --- Kompi: 90s 3D toggle shadow for primary nav CTA --- */
+
+.wf-nav-cta-primary-shadow {
+  /* Kill any legacy glow attached to this helper class */
+  box-shadow: none !important;
+}
+
+.wf-nav-cta-primary {
+  /* Solid, offset shadow = 3D badge */
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 1) !important;
+  transform: translateY(-1px);
+  transition:
+    box-shadow 140ms ease-out,
+    transform 140ms ease-out,
+    filter 140ms ease-out;
+}
+
+.wf-nav-cta-primary:hover {
+  /* Slightly “pressed” but still chunky */
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 1) !important;
+  transform: translateY(0);
+  filter: brightness(1.03);
+}
+
+/* --- Override: 90s 3D shadow only on hover for primary nav CTA --- */
+
+.wf-nav-cta-primary-shadow {
+  /* Ensure this helper class never adds its own shadow */
+  box-shadow: none !important;
+}
+
+.wf-nav-cta-primary {
+  box-shadow: none !important;
+  transform: translateY(0);
+  transition:
+    box-shadow 140ms ease-out,
+    transform 140ms ease-out,
+    filter 140ms ease-out;
+}
+
+.wf-nav-cta-primary:hover {
+  /* Solid offset "toggle" shadow only on hover */
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 1) !important;
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+}
