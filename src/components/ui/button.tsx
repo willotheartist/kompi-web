@@ -6,20 +6,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 active:scale-[0.97] shadow-md ring-offset-white",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--color-bg)] disabled:pointer-events-none disabled:opacity-60 active:scale-[0.97]",
   {
     variants: {
       variant: {
         default:
-          "bg-neutral-900 text-white hover:bg-neutral-800 focus-visible:ring-neutral-900",
+          "bg-[color:var(--color-accent)] text-[color:var(--color-text)] shadow-sm hover:brightness-105",
         outline:
-          "bg-white text-neutral-900 border border-neutral-200 hover:bg-neutral-50 focus-visible:ring-neutral-300 shadow-sm",
+          "border border-[color:var(--color-border)] bg-transparent text-[color:var(--color-text)] hover:border-[color:var(--color-accent)] hover:bg-[color:var(--color-accent-soft)]",
         subtle:
-          "bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus-visible:ring-neutral-200 shadow-sm",
+          "bg-[color:var(--color-surface)] text-[color:var(--color-text)] shadow-sm hover:bg-[color:var(--color-bg)]",
         ghost:
-          "bg-transparent text-neutral-700 hover:bg-neutral-100 focus-visible:ring-neutral-200 shadow-none",
+          "bg-transparent text-[color:var(--color-text)] shadow-none hover:bg-[color:var(--color-surface)]",
         destructive:
-          "bg-red-600 text-white hover:bg-red-500 focus-visible:ring-red-600",
+          "border border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-text)] hover:border-[color:var(--color-accent)] hover:bg-[color:var(--color-accent-soft)]",
       },
       size: {
         default: "h-10 px-5",

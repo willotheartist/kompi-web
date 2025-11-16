@@ -47,14 +47,16 @@
 }
 
 .wf-url-shortener .wf-heroA-layout {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 2.75rem;
   align-items: center;
 }
 
 @media (min-width: 768px) {
   .wf-url-shortener .wf-heroA-layout {
-    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
   }
 }
 
@@ -355,3 +357,17 @@
 .wf-url-shortener .wf-cta-side {
   padding: 1.75rem 1.75rem;
 }
+
+/* ---------- CLEAN PADDING SYSTEM (Kompi uniform rhythm) ---------- */
+.wf-url-shortener .wf-card { padding: 1.5rem; }
+.wf-url-shortener .wf-card-lg { padding: 2rem; }
+.wf-url-shortener .wf-card-soft { padding: 1.5rem; }
+.wf-url-shortener .wf-value-card { padding: 1.5rem; }
+.wf-url-shortener .wf-testimonial-card { padding: 1.5rem; }
+.wf-url-shortener .wf-stats-card { padding: 1.5rem 1.5rem 1.75rem; }
+.wf-url-shortener .wf-faq-card { padding: 1.25rem 1.5rem; }
+.wf-url-shortener .wf-cta-side { padding: 2rem; }
+.wf-url-shortener .wf-step-card { padding: 1.5rem; }
+
+/* Fix navbar overlap */
+.wf-url-shortener { padding-top: 80px; }

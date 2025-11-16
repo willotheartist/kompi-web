@@ -1,12 +1,12 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 15/11/2025, 21:51:04*
+*Generated on: 16/11/2025, 00:29:16*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 139 |
+| 📄 Total Files | 142 |
 | 📁 Total Folders | 71 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
@@ -26,13 +26,13 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 67 files (48.2%)
-- 🔷 **.ts** (TypeScript files): 24 files (17.3%)
-- 📄 **.zip** (Other files): 12 files (8.6%)
-- 🎨 **.svg** (SVG images): 7 files (5.0%)
-- 🎨 **.css** (Stylesheets): 6 files (4.3%)
-- 📄 **.sql** (Other files): 5 files (3.6%)
-- ⚙️ **.json** (JSON files): 3 files (2.2%)
+- ⚛️ **.tsx** (React TypeScript files): 68 files (47.9%)
+- 🔷 **.ts** (TypeScript files): 24 files (16.9%)
+- 📄 **.zip** (Other files): 12 files (8.5%)
+- 🎨 **.css** (Stylesheets): 8 files (5.6%)
+- 🎨 **.svg** (SVG images): 7 files (4.9%)
+- 📄 **.sql** (Other files): 5 files (3.5%)
+- ⚙️ **.json** (JSON files): 3 files (2.1%)
 - 📖 **.md** (Markdown files): 2 files (1.4%)
 - 📄 **.mjs** (Other files): 2 files (1.4%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.7%)
@@ -49,22 +49,22 @@
 
 ### By Category
 
-- **React**: 67 files (48.2%)
-- **TypeScript**: 24 files (17.3%)
-- **Other**: 22 files (15.8%)
-- **Assets**: 9 files (6.5%)
-- **Config**: 6 files (4.3%)
-- **Styles**: 6 files (4.3%)
+- **React**: 68 files (47.9%)
+- **TypeScript**: 24 files (16.9%)
+- **Other**: 22 files (15.5%)
+- **Assets**: 9 files (6.3%)
+- **Styles**: 8 files (5.6%)
+- **Config**: 6 files (4.2%)
 - **DevOps**: 2 files (1.4%)
 - **Docs**: 2 files (1.4%)
 - **JavaScript**: 1 files (0.7%)
 
 ### 📁 Largest Directories
 
-- **root**: 139 files
-- **src**: 96 files
-- **src/app**: 50 files
-- **src/components**: 41 files
+- **root**: 142 files
+- **src**: 99 files
+- **src/app**: 51 files
+- **src/components**: 43 files
 - **src/app/api**: 14 files
 
 ## 🌳 Directory Structure
@@ -187,7 +187,8 @@ kompi-web/
 │   │   ├── 🖼️ favicon.ico
 │   │   ├── 📂 features/
 │   │   │   └── 📂 url-shortener/
-│   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   └── 🎨 url-shortener.css
 │   │   ├── 🎨 globals.css
 │   │   ├── 📂 k-cards/
 │   │   │   └── ⚛️ page.tsx
@@ -269,6 +270,8 @@ kompi-web/
 │   │   │   ├── ⚛️ sonner.tsx
 │   │   │   └── ⚛️ textarea.tsx
 │   │   ├── ⚛️ user-menu.tsx
+│   │   ├── 🎨 why-kompi.css
+│   │   ├── ⚛️ why-kompi.tsx
 │   │   └── 📂 workspaces/
 │   │   │   ├── ⚛️ create-workspace-cta.tsx
 │   │   │   ├── ⚛️ create-workspace-modal.tsx

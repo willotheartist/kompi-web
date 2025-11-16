@@ -271,435 +271,441 @@ export default function KRCodesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
-          KR Codes™
-        </h1>
-        <p className="text-sm text-slate-400">
-          Create new codes and track scans across all your campaigns.
-        </p>
-      </div>
+    <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
+      <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8 md:gap-8 md:pb-12">
+        {/* Dashboard/PageHeader */}
+        <header className="wf-dashboard-header flex flex-col gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-3xl">
+            KR Codes
+            <span className="ml-1 font-serif italic text-[color:var(--color-subtle)]">
+              ™
+            </span>
+          </h1>
+          <p className="max-w-xl text-sm text-[color:var(--color-subtle)] md:text-base">
+            Create new codes and track scans across all your campaigns
+            from a single workspace view.
+          </p>
+        </header>
 
-      {/* Two-column layout */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.1fr)]">
-        {/* LEFT: create + list */}
-        <div className="flex flex-col gap-6">
-          {/* Create card */}
-          <Card className="bg-slate-950/70 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-base font-semibold text-slate-100">
-                Create KR Code
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Hover banner */}
-              <div className="rounded-xl bg-slate-900/80 px-4 py-2 text-xs text-slate-200">
-                {activeType.description}
-              </div>
-
-              {/* Type pills */}
-              <div className="flex flex-wrap gap-2">
-                {CONTENT_TYPES.map((t) => {
-                  const active = t.id === contentType;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setContentType(t.id)}
-                      onMouseEnter={() => setHoverType(t.id)}
-                      onMouseLeave={() => setHoverType(null)}
-                      className={[
-                        "rounded-full px-3 py-1.5 text-xs font-medium tracking-wide uppercase border transition",
-                        active
-                          ? "border-slate-100 bg-slate-100 text-slate-950 shadow-sm"
-                          : "border-slate-700/80 bg-slate-900/40 text-slate-200 hover:border-slate-400/80 hover:bg-slate-900",
-                      ].join(" ")}
-                    >
-                      {t.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <form
-                className="space-y-4"
-                onSubmit={form.handleSubmit(onSubmit)}
-              >
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-300">
-                    Title (optional)
-                  </label>
-                  <Input
-                    className="bg-slate-900/80 border-slate-700 text-slate-100 placeholder:text-slate-500"
-                    placeholder="Spring campaign flyer"
-                    {...form.register("title")}
-                  />
+        {/* Two-column layout */}
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.1fr)]">
+          {/* LEFT: create + list */}
+          <div className="flex flex-col gap-6">
+            {/* Create card */}
+            <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+              <CardHeader className="border-b border-[var(--color-border)] pb-4">
+                <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
+                  Create KR Code
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                {/* Hover banner */}
+                <div className="rounded-xl bg-[var(--color-bg)] px-4 py-2 text-xs text-[color:var(--color-text)]">
+                  {activeType.description}
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-300">
-                    Destination URL
-                  </label>
-                  <Input
-                    className="bg-slate-900/80 border-slate-700 text-slate-100 placeholder:text-slate-500"
-                    placeholder={destinationPlaceholder(contentType)}
-                    {...form.register("destination")}
-                  />
-                  {form.formState.errors.destination && (
-                    <p className="text-xs text-red-400">
-                      {form.formState.errors.destination.message}
-                    </p>
-                  )}
+                {/* Type pills */}
+                <div className="flex flex-wrap gap-2">
+                  {CONTENT_TYPES.map((t) => {
+                    const active = t.id === contentType;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setContentType(t.id)}
+                        onMouseEnter={() => setHoverType(t.id)}
+                        onMouseLeave={() => setHoverType(null)}
+                        className={[
+                          "rounded-full px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] border transition",
+                          active
+                            ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-bg)] shadow-sm"
+                            : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]",
+                        ].join(" ")}
+                      >
+                        {t.label}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {/* UTM toggle */}
-                <button
-                  type="button"
-                  onClick={() => setShowUtms((s) => !s)}
-                  className="text-[11px] text-sky-400 hover:underline"
+                <form
+                  className="space-y-4"
+                  onSubmit={form.handleSubmit(onSubmit)}
                 >
-                  {showUtms
-                    ? "Hide UTM tracking"
-                    : "Add UTM tracking (optional)"}
-                </button>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[color:var(--color-text)]">
+                      Title (optional)
+                    </label>
+                    <Input
+                      className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                      placeholder="Spring campaign flyer"
+                      {...form.register("title")}
+                    />
+                  </div>
 
-                {showUtms && (
-                  <div className="space-y-3">
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-slate-300">
-                          UTM Source
-                        </label>
-                        <Input
-                          className="bg-slate-900/80 border-slate-700 text-slate-100 placeholder:text-slate-500"
-                          placeholder="poster"
-                          {...form.register("utm_source")}
-                        />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[color:var(--color-text)]">
+                      Destination URL
+                    </label>
+                    <Input
+                      className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                      placeholder={destinationPlaceholder(contentType)}
+                      {...form.register("destination")}
+                    />
+                    {form.formState.errors.destination && (
+                      <p className="text-xs text-red-400">
+                        {form.formState.errors.destination.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* UTM toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setShowUtms((s) => !s)}
+                    className="text-[11px] font-medium text-[color:var(--color-accent)] hover:underline"
+                  >
+                    {showUtms
+                      ? "Hide UTM tracking"
+                      : "Add UTM tracking (optional)"}
+                  </button>
+
+                  {showUtms && (
+                    <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            UTM Source
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="poster"
+                            {...form.register("utm_source")}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            UTM Medium
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="qr"
+                            {...form.register("utm_medium")}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            UTM Campaign
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="spring_launch"
+                            {...form.register("utm_campaign")}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            UTM Term
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="headline_a"
+                            {...form.register("utm_term")}
+                          />
+                        </div>
                       </div>
+
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-slate-300">
-                          UTM Medium
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          UTM Content (optional)
                         </label>
-                        <Input
-                          className="bg-slate-900/80 border-slate-700 text-slate-100 placeholder:text-slate-500"
-                          placeholder="qr"
-                          {...form.register("utm_medium")}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-slate-300">
-                          UTM Campaign
-                        </label>
-                        <Input
-                          className="bg-slate-900/80 border-slate-700 text-slate-100 placeholder:text-slate-500"
-                          placeholder="spring_launch"
-                          {...form.register("utm_campaign")}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-slate-300">
-                          UTM Term
-                        </label>
-                        <Input
-                          className="bg-slate-900/80 border-slate-700 text-slate-100 placeholder:text-slate-500"
-                          placeholder="headline_a"
-                          {...form.register("utm_term")}
+                        <Textarea
+                          rows={2}
+                          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          placeholder="Any extra labels for this code…"
+                          {...form.register("utm_content")}
                         />
                       </div>
                     </div>
+                  )}
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-slate-300">
-                        UTM Content (optional)
-                      </label>
-                      <Textarea
-                        rows={2}
-                        className="bg-slate-900/80 border-slate-700 text-slate-100 placeholder:text-slate-500"
-                        placeholder="Any extra labels for this code…"
-                        {...form.register("utm_content")}
+                  <div className="flex flex-col gap-4 border-t border-[var(--color-border)] pt-3 md:flex-row md:items-center md:justify-between">
+                    <div className="text-xs text-[color:var(--color-subtle)]">
+                      <div>Destination preview:</div>
+                      <div className="mt-1 break-all text-[11px] text-[color:var(--color-text)]">
+                        {urlPreview || "—"}
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={creating}
+                      className="md:min-w-[160px] rounded-full bg-[var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] hover:opacity-90 disabled:opacity-70"
+                    >
+                      {creating ? "Creating…" : "Create KR Code"}
+                    </Button>
+                  </div>
+
+                  {error && (
+                    <p className="pt-1 text-xs text-red-400">{error}</p>
+                  )}
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* List / tracking */}
+            <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between gap-2 border-b border-[var(--color-border)] pb-4">
+                <div>
+                  <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
+                    Your KR Codes
+                  </CardTitle>
+                  <p className="mt-1 text-xs text-[color:var(--color-subtle)]">
+                    {workspace
+                      ? `Workspace: ${workspace.name}`
+                      : "No workspace yet — we’ll create one when you generate your first code."}
+                  </p>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {loading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3"
+                      >
+                        <Skeleton className="h-12 w-12 rounded-xl" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-3 w-40 rounded-full" />
+                          <Skeleton className="h-3 w-64 rounded-full" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : codes.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] p-6 text-center text-sm text-[color:var(--color-subtle)]">
+                    No KR Codes yet. Create your first one above to start
+                    tracking scans.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {codes.map((code) => (
+                      <div
+                        key={code.id}
+                        className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3 md:flex-row md:items-center md:justify-between"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="hidden rounded-xl bg-[var(--color-surface)] p-2 md:block">
+                            <QRCode
+                              value={code.destination}
+                              size={56}
+                              fgColor="#FFFFFF"
+                              bgColor="#020617"
+                              level="M"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-sm font-medium text-[color:var(--color-text)]">
+                              {code.title || "Untitled KR Code"}
+                            </div>
+                            <div className="break-all text-[11px] text-[color:var(--color-subtle)]">
+                              {code.destination}
+                            </div>
+                            <div className="text-[11px] text-[color:var(--color-subtle)]">
+                              {code.type ? `Type: ${code.type} • ` : ""}
+                              Created{" "}
+                              {new Date(
+                                code.createdAt,
+                              ).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4 text-xs">
+                          <div className="flex flex-col items-end">
+                            <span className="text-[color:var(--color-subtle)]">
+                              Total scans
+                            </span>
+                            <span className="text-base font-semibold text-[color:var(--color-text)]">
+                              {code.totalClicks ?? 0}
+                            </span>
+                          </div>
+                          <Link
+                            href={`/api/kr-codes/${code.id}/svg`}
+                            target="_blank"
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
+                            >
+                              Download SVG
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* RIGHT: preview + design */}
+          <Card className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+            <CardHeader className="border-b border-[var(--color-border)] pb-4">
+              <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
+                Live Preview &amp; Design
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6 pt-4">
+              {/* Preview */}
+              <div className="flex flex-col items-center justify-center gap-4">
+                <div
+                  className="rounded-2xl p-4"
+                  style={{ backgroundColor: style.bg }}
+                >
+                  <QRCode
+                    value={urlPreview || "https://kompi.app"}
+                    size={style.size}
+                    fgColor={style.fg}
+                    bgColor={style.bg}
+                    level={style.ecLevel}
+                  />
+                </div>
+                <p className="max-w-xs text-center text-xs text-[color:var(--color-subtle)]">
+                  This is a preview of your KR Code. The final printed code
+                  will use your workspace’s domain and redirect through Kompi
+                  for full analytics.
+                </p>
+              </div>
+
+              <div className="h-px w-full bg-[var(--color-border)]" />
+
+              {/* Design controls */}
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-[color:var(--color-text)]">
+                      Foreground (dots)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+                        value={style.fg}
+                        onChange={(e) =>
+                          setStyle((s) => ({ ...s, fg: e.target.value }))
+                        }
+                      />
+                      <Input
+                        className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
+                        value={style.fg}
+                        onChange={(e) =>
+                          setStyle((s) => ({ ...s, fg: e.target.value }))
+                        }
                       />
                     </div>
                   </div>
-                )}
 
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between pt-2">
-                  <div className="text-xs text-slate-400">
-                    <div>Destination preview:</div>
-                    <div className="mt-1 break-all text-[11px] text-slate-200">
-                      {urlPreview || "—"}
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-[color:var(--color-text)]">
+                      Background
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+                        value={style.bg}
+                        onChange={(e) =>
+                          setStyle((s) => ({ ...s, bg: e.target.value }))
+                        }
+                      />
+                      <Input
+                        className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
+                        value={style.bg}
+                        onChange={(e) =>
+                          setStyle((s) => ({ ...s, bg: e.target.value }))
+                        }
+                      />
                     </div>
                   </div>
-
-                  <Button
-                    type="submit"
-                    disabled={creating}
-                    className="md:min-w-[160px] bg-slate-100 text-slate-950 hover:bg-white"
-                  >
-                    {creating ? "Creating…" : "Create KR Code"}
-                  </Button>
                 </div>
 
-                {error && (
-                  <p className="text-xs text-red-400 pt-1">{error}</p>
-                )}
-              </form>
-            </CardContent>
-          </Card>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[color:var(--color-text)]">
+                      Size ({style.size}px)
+                    </label>
+                    <input
+                      type="range"
+                      min={128}
+                      max={320}
+                      value={style.size}
+                      onChange={(e) =>
+                        setStyle((s) => ({
+                          ...s,
+                          size: Number(e.target.value),
+                        }))
+                      }
+                      className="w-full accent-[var(--color-accent)]"
+                    />
+                  </div>
 
-          {/* List / tracking */}
-          <Card className="bg-slate-950/70 border-slate-800">
-            <CardHeader className="flex flex-row items-center justify-between gap-2">
-              <div>
-                <CardTitle className="text-sm font-semibold text-slate-100">
-                  Your KR Codes
-                </CardTitle>
-                <p className="mt-1 text-xs text-slate-400">
-                  {workspace
-                    ? `Workspace: ${workspace.name}`
-                    : "No workspace yet — we’ll create one when you generate your first code."}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[color:var(--color-text)]">
+                      Margin ({style.margin})
+                    </label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={8}
+                      value={style.margin}
+                      onChange={(e) =>
+                        setStyle((s) => ({
+                          ...s,
+                          margin: Number(e.target.value),
+                        }))
+                      }
+                      className="w-full accent-[var(--color-accent)]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[color:var(--color-text)]">
+                    Error correction
+                  </label>
+                  <div className="flex gap-2 text-xs">
+                    {(["L", "M", "Q", "H"] as const).map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        className={`rounded-full border px-3 py-1 text-[11px] ${
+                          style.ecLevel === level
+                            ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-bg)]"
+                            : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
+                        }`}
+                        onClick={() =>
+                          setStyle((s) => ({ ...s, ecLevel: level }))
+                        }
+                      >
+                        {level}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-[color:var(--color-subtle)]">
+                  Frames, logo upload, and advanced shapes will plug into
+                  this same design system later – without changing how you
+                  create codes.
                 </p>
               </div>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 rounded-xl border border-slate-800/80 bg-slate-950/60 p-3"
-                    >
-                      <Skeleton className="h-12 w-12 rounded-lg" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-3 w-40" />
-                        <Skeleton className="h-3 w-64" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : codes.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6 text-center text-sm text-slate-400">
-                  No KR Codes yet. Create your first one above to start
-                  tracking scans.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {codes.map((code) => (
-                    <div
-                      key={code.id}
-                      className="flex flex-col gap-3 rounded-xl border border-slate-800/80 bg-slate-950/60 p-3 md:flex-row md:items-center md:justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="hidden md:block rounded-lg bg-slate-900/80 p-2">
-                          <QRCode
-                            value={code.destination}
-                            size={56}
-                            fgColor="#FFFFFF"
-                            bgColor="#020617"
-                            level="M"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="text-sm font-medium text-slate-100">
-                            {code.title || "Untitled KR Code"}
-                          </div>
-                          <div className="text-[11px] text-slate-400 break-all">
-                            {code.destination}
-                          </div>
-                          <div className="text-[11px] text-slate-500">
-                            {code.type ? `Type: ${code.type} • ` : ""}
-                            Created{" "}
-                            {new Date(
-                              code.createdAt,
-                            ).toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-4 text-xs">
-                        <div className="flex flex-col items-end">
-                          <span className="text-slate-400">
-                            Total scans
-                          </span>
-                          <span className="text-base font-semibold text-slate-100">
-                            {code.totalClicks ?? 0}
-                          </span>
-                        </div>
-                        <Link
-                          href={`/api/kr-codes/${code.id}/svg`}
-                          target="_blank"
-                        >
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-slate-700 text-xs text-slate-100 hover:bg-slate-900/80"
-                          >
-                            Download SVG
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
-
-        {/* RIGHT: preview + design */}
-        <Card className="bg-slate-950/70 border-slate-800 h-full flex flex-col">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold text-slate-100">
-              Live Preview & Design
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-6">
-            {/* Preview */}
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div
-                className="rounded-2xl p-4"
-                style={{ backgroundColor: style.bg }}
-              >
-                <QRCode
-                  value={urlPreview || "https://kompi.app"}
-                  size={style.size}
-                  fgColor={style.fg}
-                  bgColor={style.bg}
-                  level={style.ecLevel}
-                />
-              </div>
-              <p className="text-xs text-center text-slate-400 max-w-xs">
-                This is a preview of your KR Code. The final printed code
-                will use your workspace’s domain and redirect through
-                Kompi for full analytics.
-              </p>
-            </div>
-
-            <div className="h-px w-full bg-slate-800/80" />
-
-            {/* Design controls */}
-            <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-slate-300">
-                    Foreground (dots)
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      className="h-8 w-10 cursor-pointer rounded border border-slate-700 bg-transparent"
-                      value={style.fg}
-                      onChange={(e) =>
-                        setStyle((s) => ({ ...s, fg: e.target.value }))
-                      }
-                    />
-                    <Input
-                      className="bg-slate-900/80 border-slate-700 text-slate-100 text-xs"
-                      value={style.fg}
-                      onChange={(e) =>
-                        setStyle((s) => ({ ...s, fg: e.target.value }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-slate-300">
-                    Background
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      className="h-8 w-10 cursor-pointer rounded border border-slate-700 bg-transparent"
-                      value={style.bg}
-                      onChange={(e) =>
-                        setStyle((s) => ({ ...s, bg: e.target.value }))
-                      }
-                    />
-                    <Input
-                      className="bg-slate-900/80 border-slate-700 text-slate-100 text-xs"
-                      value={style.bg}
-                      onChange={(e) =>
-                        setStyle((s) => ({ ...s, bg: e.target.value }))
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-300">
-                    Size ({style.size}px)
-                  </label>
-                  <input
-                    type="range"
-                    min={128}
-                    max={320}
-                    value={style.size}
-                    onChange={(e) =>
-                      setStyle((s) => ({
-                        ...s,
-                        size: Number(e.target.value),
-                      }))
-                    }
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-300">
-                    Margin ({style.margin})
-                  </label>
-                  <input
-                    type="range"
-                    min={0}
-                    max={8}
-                    value={style.margin}
-                    onChange={(e) =>
-                      setStyle((s) => ({
-                        ...s,
-                        margin: Number(e.target.value),
-                      }))
-                    }
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-300">
-                  Error correction
-                </label>
-                <div className="flex gap-2 text-xs">
-                  {(["L", "M", "Q", "H"] as const).map((level) => (
-                    <button
-                      key={level}
-                      type="button"
-                      className={`rounded-full px-3 py-1 border text-[11px] ${
-                        style.ecLevel === level
-                          ? "border-slate-100 bg-slate-100 text-slate-950"
-                          : "border-slate-700 text-slate-300 hover:border-slate-400"
-                      }`}
-                      onClick={() =>
-                        setStyle((s) => ({ ...s, ecLevel: level }))
-                      }
-                    >
-                      {level}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <p className="text-[11px] text-slate-500">
-                Frames, logo upload, and advanced shapes will plug into
-                this same design system later – without changing how you
-                create codes.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

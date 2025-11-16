@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FooterCTA } from "@/components/footer-cta";
+import { WhyKompi } from "@/components/why-kompi";
 import "./pricing.css";
 
 type BillingPeriod = "monthly" | "yearly";
@@ -365,6 +366,13 @@ export default function PricingPage() {
               </table>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Why Kompi – 3-card widget near bottom */}
+      <section className="wf-section wf-pricing-why">
+        <div className="wf-pricing-container">
+          <WhyKompi />
         </div>
       </section>
 

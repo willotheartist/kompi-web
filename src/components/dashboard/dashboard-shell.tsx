@@ -102,40 +102,79 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
     <>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <header className="flex items-start justify-between gap-4 pb-2 border-b border-white/5">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-semibold">Kompi Dashboard</h1>
-              <span className="px-2 py-0.5 rounded-full text-xs bg-white/5 text-slate-300 border border-white/10">
+        <header
+          className="flex items-start justify-between gap-4 pb-4 border-b"
+          style={{ borderColor: "var(--color-border)" }}
+        >
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-semibold leading-tight">
+                Kompi{" "}
+                <span
+                  style={{
+                    fontFamily:
+                      "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
+                    fontStyle: "italic",
+                    borderBottom: "2px solid var(--color-accent)",
+                  }}
+                >
+                  Dashboard
+                </span>
+              </h1>
+              <span
+                className="px-3 py-1 rounded-full text-xs"
+                style={{
+                  backgroundColor: "var(--color-accent-soft)",
+                  color: "var(--color-text)",
+                  border: "1px solid var(--color-border)",
+                }}
+              >
                 Workspace: Studio
               </span>
             </div>
-            <p className="text-sm text-slate-400">
+            <p
+              className="text-sm max-w-xl"
+              style={{ color: "var(--color-subtle)" }}
+            >
               {dashboardMode === "overview"
                 ? "Your Kompi links, Kompi Codes™ (KR), bio pages and activity at a glance."
                 : "Performance view with key metrics across your Kompi stack."}
             </p>
           </div>
 
-          <div className="flex flex-col items-end gap-2">
-            <div className="inline-flex items-center bg-white/5 border border-white/10 rounded-2xl p-1 gap-1">
+          <div className="flex flex-col items-end gap-3">
+            <div
+              className="inline-flex items-center rounded-full p-1 gap-1"
+              style={{
+                backgroundColor: "var(--color-surface)",
+                border: "1px solid var(--color-border)",
+              }}
+            >
               <button
                 onClick={() => setDashboardMode("overview")}
-                className={`px-3 py-1.5 rounded-2xl text-xs font-medium ${
+                className="px-3 py-1.5 rounded-full text-xs font-medium"
+                style={
                   dashboardMode === "overview"
-                    ? "bg-white text-slate-900"
-                    : "text-slate-300"
-                }`}
+                    ? {
+                        backgroundColor: "var(--color-accent-soft)",
+                        color: "var(--color-text)",
+                      }
+                    : { color: "var(--color-subtle)" }
+                }
               >
                 Overview
               </button>
               <button
                 onClick={() => setDashboardMode("performance")}
-                className={`px-3 py-1.5 rounded-2xl text-xs font-medium ${
+                className="px-3 py-1.5 rounded-full text-xs font-medium"
+                style={
                   dashboardMode === "performance"
-                    ? "bg-white text-slate-900"
-                    : "text-slate-300"
-                }`}
+                    ? {
+                        backgroundColor: "var(--color-accent-soft)",
+                        color: "var(--color-text)",
+                      }
+                    : { color: "var(--color-subtle)" }
+                }
               >
                 Performance
               </button>
@@ -145,7 +184,12 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
             <Button
               type="button"
               onClick={() => setCreateOpen(true)}
-              className="mt-1 h-9 px-3 rounded-2xl text-xs bg-white text-slate-900 hover:bg-slate-100 inline-flex items-center gap-2 shadow-[0_10px_40px_rgba(15,23,42,0.6)]"
+              className="mt-1 h-9 px-4 rounded-full text-xs inline-flex items-center gap-2"
+              style={{
+                backgroundColor: "var(--color-text)",
+                color: "var(--color-bg)",
+                borderRadius: "999px",
+              }}
             >
               <Plus className="h-3.5 w-3.5" />
               Create
@@ -159,40 +203,68 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
           <GlassCard className="space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">
+                <p
+                  className="text-[11px] font-semibold tracking-[0.16em] uppercase"
+                  style={{ color: "var(--color-subtle)" }}
+                >
                   Quick create
                 </p>
                 <h2 className="text-lg font-semibold">
                   Create a{" "}
-                  {quickMode === "link"
-                    ? "short link"
-                    : "Kompi Code™ (KR)"}{" "}
+                  <span
+                    style={{
+                      fontFamily:
+                        "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {quickMode === "link"
+                      ? "short link"
+                      : "Kompi Code™ (KR)"}
+                  </span>{" "}
                   in seconds
                 </h2>
-                <p className="text-sm text-slate-400">
+                <p
+                  className="text-sm"
+                  style={{ color: "var(--color-subtle)" }}
+                >
                   Smart defaults from your active workspace. Analytics
                   included.
                 </p>
               </div>
-              <div className="flex items-center gap-1 bg-white/5 rounded-full p-1">
+              <div
+                className="flex items-center gap-1 rounded-full p-1"
+                style={{
+                  backgroundColor: "var(--color-bg)",
+                  border: "1px solid var(--color-border)",
+                }}
+              >
                 <button
                   onClick={() => setQuickMode("link")}
-                  className={`px-3 py-1.5 rounded-full text-xs flex items-center ${
+                  className="px-3 py-1.5 rounded-full text-xs flex items-center"
+                  style={
                     quickMode === "link"
-                      ? "bg-white text-slate-900 font-semibold"
-                      : "text-slate-200"
-                  }`}
+                      ? {
+                          backgroundColor: "var(--color-accent-soft)",
+                          color: "var(--color-text)",
+                        }
+                      : { color: "var(--color-subtle)" }
+                  }
                 >
                   <Link2 className="h-3.5 w-3.5 mr-1" />
                   Short link
                 </button>
                 <button
                   onClick={() => setQuickMode("kr")}
-                  className={`px-3 py-1.5 rounded-full text-xs flex items-center ${
+                  className="px-3 py-1.5 rounded-full text-xs flex items-center"
+                  style={
                     quickMode === "kr"
-                      ? "bg-white text-slate-900 font-semibold"
-                      : "text-slate-200"
-                  }`}
+                      ? {
+                          backgroundColor: "var(--color-accent-soft)",
+                          color: "var(--color-text)",
+                        }
+                      : { color: "var(--color-subtle)" }
+                  }
                 >
                   <QrCode className="h-3.5 w-3.5 mr-1" />
                   KR code
@@ -208,7 +280,12 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
                 value={quickUrl}
                 onChange={(e) => setQuickUrl(e.target.value)}
                 disabled={isCreating}
-                className="bg-white/5 border-white/15 text-sm placeholder:text-slate-500"
+                className="text-sm"
+                style={{
+                  backgroundColor: "var(--color-bg)",
+                  borderColor: "var(--color-border)",
+                  color: "var(--color-text)",
+                }}
                 placeholder={
                   quickMode === "link"
                     ? "Paste any long URL to shorten with Kompi..."
@@ -218,7 +295,13 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
               <Button
                 type="submit"
                 disabled={isCreating}
-                className="whitespace-nowrap rounded-2xl px-6 text-sm bg-white text-slate-900 hover:bg-slate-100 disabled:opacity-60"
+                className="whitespace-nowrap rounded-full px-6 text-sm"
+                style={{
+                  backgroundColor: "var(--color-text)",
+                  color: "var(--color-bg)",
+                  borderRadius: "999px",
+                  opacity: isCreating ? 0.7 : 1,
+                }}
               >
                 {isCreating
                   ? "Working..."
@@ -228,42 +311,63 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
               </Button>
             </form>
 
-            <div className="flex flex-wrap gap-4 text-xs text-slate-400">
+            <div
+              className="flex flex-wrap gap-4 text-xs"
+              style={{ color: "var(--color-subtle)" }}
+            >
               <span>Auto-UTMs from workspace rules</span>
               <span>•</span>
-              <span>Instant analytics & history</span>
+              <span>Instant analytics &amp; history</span>
               <span>•</span>
-              <span>KR-ready for print & screens</span>
+              <span>KR-ready for print &amp; screens</span>
             </div>
           </GlassCard>
 
           {/* Metrics snapshot */}
           <GlassCard className="grid grid-cols-3 gap-4 items-stretch">
             <div>
-              <p className="text-xs text-slate-400 mb-1">
+              <p
+                className="mb-1 text-xs"
+                style={{ color: "var(--color-subtle)" }}
+              >
                 Last 7 days clicks
               </p>
               <p className="text-2xl font-semibold">12,480</p>
-              <p className="text-xs text-emerald-400 flex items-center gap-1">
+              <p
+                className="text-xs flex items-center gap-1"
+                style={{ color: "var(--color-accent)" }}
+              >
                 <ArrowUpRight className="h-4 w-4" />
                 +18% vs previous
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">
+              <p
+                className="mb-1 text-xs"
+                style={{ color: "var(--color-subtle)" }}
+              >
                 Active Kompi links
               </p>
               <p className="text-2xl font-semibold">238</p>
-              <p className="text-xs text-slate-400">
+              <p
+                className="text-xs"
+                style={{ color: "var(--color-subtle)" }}
+              >
                 Across 3 workspaces
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">
+              <p
+                className="mb-1 text-xs"
+                style={{ color: "var(--color-subtle)" }}
+              >
                 KR code scans
               </p>
               <p className="text-2xl font-semibold">4,102</p>
-              <p className="text-xs text-emerald-400 flex items-center gap-1">
+              <p
+                className="text-xs flex items-center gap-1"
+                style={{ color: "var(--color-accent)" }}
+              >
                 <Zap className="h-4 w-4" />
                 +36% this week
               </p>
@@ -276,36 +380,60 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
           <GlassCard>
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-xs text-slate-400 uppercase tracking-[0.16em]">
+                <p
+                  className="text-xs uppercase tracking-[0.16em]"
+                  style={{ color: "var(--color-subtle)" }}
+                >
                   Getting started
                 </p>
                 <h3 className="text-base font-semibold">
-                  60% complete — finish setting up Kompi
+                  <span
+                    style={{
+                      fontFamily:
+                        "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    60% complete
+                  </span>{" "}
+                  — finish setting up Kompi
                 </h3>
               </div>
             </div>
-            <ul className="space-y-2 text-sm text-slate-200">
+            <ul
+              className="space-y-2 text-sm"
+              style={{ color: "var(--color-text)" }}
+            >
               <li>✅ Create your first Kompi link</li>
               <li>✅ Publish a Link-in-bio page</li>
               <li>✅ Generate at least one Kompi Code™ (KR)</li>
               <li>⬜ Connect your custom domain</li>
-              <li>⬜ Invite a teammate & assign roles</li>
+              <li>⬜ Invite a teammate &amp; assign roles</li>
             </ul>
           </GlassCard>
 
           <GlassCard>
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-xs text-slate-400 uppercase tracking-[0.16em]">
+                <p
+                  className="text-xs uppercase tracking-[0.16em]"
+                  style={{ color: "var(--color-subtle)" }}
+                >
                   Activity
                 </p>
                 <h3 className="text-base font-semibold">
-                  Clicks & scans at a glance
+                  Clicks &amp; scans at a glance
                 </h3>
               </div>
-              <BarChart3 className="h-5 w-5 text-slate-400" />
+              <BarChart3
+                className="h-5 w-5"
+                style={{ color: "var(--color-subtle)" }}
+              />
             </div>
-            <div className="h-24 rounded-2xl bg-white/5 flex items-end gap-1 px-2 pb-2">
+            <div
+              className="h-24 rounded-2xl flex items-end gap-1 px-2 pb-2"
+              style={{ backgroundColor: "var(--color-bg)" }}
+            >
               {[8, 10, 7, 12, 16, 14, 18].map((v, i) => (
                 <motion.div
                   key={i}
@@ -315,11 +443,15 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
                     opacity: 1,
                   }}
                   transition={{ delay: 0.04 * i, duration: 0.3 }}
-                  className="flex-1 rounded-full bg-gradient-to-t from-[#22d3ee] via-[#4f46e5] to-[#a855f7]"
+                  className="flex-1 rounded-full"
+                  style={{ backgroundColor: "var(--color-accent-soft)" }}
                 />
               ))}
             </div>
-            <p className="mt-2 text-xs text-slate-400">
+            <p
+              className="mt-2 text-xs"
+              style={{ color: "var(--color-subtle)" }}
+            >
               Wire this to real Prisma analytics when you’re ready.
             </p>
           </GlassCard>
@@ -329,17 +461,32 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
         <GlassCard>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-xs text-slate-400 uppercase tracking-[0.16em]">
+              <p
+                className="text-xs uppercase tracking-[0.16em]"
+                style={{ color: "var(--color-subtle)" }}
+              >
                 Recent links
               </p>
               <h3 className="text-base font-semibold">
-                Manage and track your latest Kompi links
+                Manage and track your latest{" "}
+                <span
+                  style={{
+                    fontFamily:
+                      "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
+                    fontStyle: "italic",
+                  }}
+                >
+                  Kompi links
+                </span>
               </h3>
             </div>
           </div>
 
           {links.length === 0 ? (
-            <p className="text-sm text-slate-400">
+            <p
+              className="text-sm"
+              style={{ color: "var(--color-subtle)" }}
+            >
               You don&apos;t have any Kompi links yet. Create one above
               to see it here instantly.
             </p>
@@ -356,37 +503,40 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
                 return (
                   <button
                     key={link.id}
-                    onClick={() =>
-                      router.push(`/links/${link.id}`)
-                    }
-                    className="w-full text-left rounded-2xl bg-white/5 hover:bg-white/10 transition-all px-4 py-3 flex flex-col md:flex-row md:items-center gap-2 md:gap-4"
+                    onClick={() => router.push(`/links/${link.id}`)}
+                    className="w-full text-left rounded-2xl px-4 py-3 flex flex-col md:flex-row md:items-center gap-2 md:gap-4 transition-colors"
+                    style={{
+                      backgroundColor: "var(--color-bg)",
+                    }}
                   >
                     <div className="flex-1 min-w-0">
                       {short && (
-                        <p className="text-sm font-semibold text-slate-50 truncate">
+                        <p className="text-sm font-semibold truncate">
                           {short}
                         </p>
                       )}
-                      <p className="text-xs md:text-sm text-slate-400 truncate">
+                      <p
+                        className="text-xs md:text-sm truncate"
+                        style={{ color: "var(--color-subtle)" }}
+                      >
                         {link.targetUrl}
                       </p>
                     </div>
-                    <div className="flex items-center gap-6 text-xs md:text-sm text-slate-300">
+                    <div
+                      className="flex items-center gap-6 text-xs md:text-sm"
+                      style={{ color: "var(--color-subtle)" }}
+                    >
                       <div className="flex flex-col items-start">
                         <span className="font-semibold">
                           {clicks}
                         </span>
-                        <span className="text-[10px] text-slate-500">
-                          clicks
-                        </span>
+                        <span className="text-[10px]">clicks</span>
                       </div>
                       <div className="flex flex-col items-start">
                         <span className="font-semibold">
                           {created}
                         </span>
-                        <span className="text-[10px] text-slate-500">
-                          created
-                        </span>
+                        <span className="text-[10px]">created</span>
                       </div>
                     </div>
                   </button>

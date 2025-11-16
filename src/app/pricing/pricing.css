@@ -1,5 +1,5 @@
 /* Kompi Pricing – W&F Design System v1.1
-   Patterns: HeroA, ValueGrid, Comparison, CTA_Footer (via shared component)
+   Patterns: HeroA, ValueGrid, Comparison, WhyKompi, CTA_Footer (via shared component)
 */
 
 .wf-pricing-page {
@@ -404,3 +404,13 @@
   padding: 0.5rem 0.75rem;
   color: var(--color-text);
 }
+
+/* Why Kompi section wrapper */
+
+.wf-pricing-why {
+  background-color: var(--color-bg);
+  padding-top: 0;
+  padding-bottom: 3.5rem;
+}
+/* Fix navbar overlap */
+.wf-pricing-page { padding-top: 80px; }

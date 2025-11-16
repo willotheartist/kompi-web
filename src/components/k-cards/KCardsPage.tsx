@@ -166,11 +166,11 @@ export default function KCardsPage() {
     if (buttonStyle === "solid") {
       style.backgroundColor = buttonColor;
       style.color = buttonTextColor;
-      style.border = "1px solid rgba(15,23,42,0.65)";
+      style.border = "1px solid var(--color-border)";
     } else if (buttonStyle === "glass") {
       style.backgroundColor = "rgba(15,23,42,0.35)";
-      style.color = "#f9fafb";
-      style.border = "1px solid rgba(148,163,184,0.4)";
+      style.color = "var(--color-text)";
+      style.border = "1px solid var(--color-border)";
       style.backdropFilter = "blur(12px)";
     } else {
       style.backgroundColor = "transparent";
@@ -213,7 +213,8 @@ export default function KCardsPage() {
   }
 
   const wallpaperStyle: React.CSSProperties = {
-    background: wallpaper,
+    // Respect design system: flat color only, no gradients
+    backgroundColor: pageBackground || wallpaper,
   };
 
   function updateLink(id: string, patch: Partial<KCardLink>) {
@@ -235,356 +236,360 @@ export default function KCardsPage() {
   const visibleLinks = links.filter((l) => l.enabled);
 
   return (
-    <div className="space-y-6">
-      {/* Top header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-50">
-            K-Cards
-          </h1>
-          <p className="text-sm text-slate-400">
-            Design your page, preview it, then publish with a single Kompi
-            link.
-          </p>
+    <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
+      <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8 md:gap-8 md:pb-12">
+        {/* Top header */}
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-3xl">
+              K-Cards
+            </h1>
+            <p className="text-sm text-[color:var(--color-subtle)] md:text-base">
+              Design your page, preview it, then publish with a single Kompi
+              link.
+            </p>
+          </div>
+          <Button className="inline-flex items-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-semibold text-[color:var(--color-text)] hover:opacity-90">
+            <Share2 className="h-4 w-4" />
+            Publish K-Card
+          </Button>
         </div>
-        <Button className="bg-slate-100 text-slate-950 hover:bg-white">
-          <Share2 className="h-4 w-4 mr-2" />
-          Publish K-Card
-        </Button>
-      </div>
 
-      {/* Main layout: design + preview */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1.3fr)] items-start">
-        {/* Design panel */}
-        <Card className="bg-slate-950/80 border-slate-800/80 shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold text-slate-100">
-              Design
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-400">
-              Switch sections on the left. Tweak controls in the center.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex gap-6">
-            {/* Section nav */}
-            <nav className="w-40 shrink-0 space-y-1 border-r border-slate-800/70 pr-4">
-              <SectionButton
-                label="Header"
-                icon={UserCircle2}
-                active={section === "header"}
-                onClick={() => setSection("header")}
-              />
-              <SectionButton
-                label="Theme"
-                icon={Palette}
-                active={section === "theme"}
-                onClick={() => setSection("theme")}
-              />
-              <SectionButton
-                label="Text"
-                icon={Type}
-                active={section === "text"}
-                onClick={() => setSection("text")}
-              />
-              <SectionButton
-                label="Buttons"
-                icon={Square}
-                active={section === "buttons"}
-                onClick={() => setSection("buttons")}
-              />
-              <SectionButton
-                label="Colors"
-                icon={Palette}
-                active={section === "colors"}
-                onClick={() => setSection("colors")}
-              />
-            </nav>
-
-            {/* Section content */}
-            <div className="flex-1 space-y-6">
-              {section === "header" && (
-                <HeaderSection
-                  profileLayout={profileLayout}
-                  setProfileLayout={setProfileLayout}
-                  title={title}
-                  setTitle={setTitle}
-                  subtitle={subtitle}
-                  setSubtitle={setSubtitle}
+        {/* Main layout: design + preview */}
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1.3fr)]">
+          {/* Design panel */}
+          <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+            <CardHeader className="border-b border-[var(--color-border)] pb-3">
+              <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
+                Design
+              </CardTitle>
+              <CardDescription className="text-xs text-[color:var(--color-subtle)]">
+                Switch sections on the left. Tweak controls in the center.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex gap-6 pt-4">
+              {/* Section nav */}
+              <nav className="w-40 shrink-0 space-y-1 border-r border-[var(--color-border)] pr-4">
+                <SectionButton
+                  label="Header"
+                  icon={UserCircle2}
+                  active={section === "header"}
+                  onClick={() => setSection("header")}
                 />
-              )}
-
-              {section === "theme" && (
-                <KCardThemeSection value={theme} onChange={setTheme} />
-              )}
-
-              {section === "text" && (
-                <TextSection
-                  titleFont={titleFont}
-                  setTitleFont={(v) =>
-                    setTheme((prev) => ({ ...prev, titleFont: v }))
-                  }
-                  titleColor={titleColor}
-                  setTitleColor={(v) =>
-                    setTheme((prev) => ({ ...prev, titleColor: v }))
-                  }
-                  titleSize={titleSize}
-                  setTitleSize={setTitleSize}
-                  pageFont={pageFont}
-                  setPageFont={(v) =>
-                    setTheme((prev) => ({ ...prev, pageFont: v }))
-                  }
-                  pageTextColor={pageTextColor}
-                  setPageTextColor={(v) =>
-                    setTheme((prev) => ({ ...prev, pageTextColor: v }))
-                  }
+                <SectionButton
+                  label="Theme"
+                  icon={Palette}
+                  active={section === "theme"}
+                  onClick={() => setSection("theme")}
                 />
-              )}
-
-              {section === "buttons" && (
-                <ButtonsSection
-                  buttonStyle={buttonStyle}
-                  setButtonStyle={(v) =>
-                    setTheme((prev) => ({ ...prev, buttonStyle: v }))
-                  }
-                  buttonRadius={buttonRadius}
-                  setButtonRadius={(v) =>
-                    setTheme((prev) => ({ ...prev, buttonRadius: v }))
-                  }
-                  buttonShadow={buttonShadow}
-                  setButtonShadow={(v) =>
-                    setTheme((prev) => ({ ...prev, buttonShadow: v }))
-                  }
-                  buttonColor={buttonColor}
-                  setButtonColor={setButtonColorValue}
-                  buttonTextColor={buttonTextColor}
-                  setButtonTextColor={setButtonTextColorValue}
+                <SectionButton
+                  label="Text"
+                  icon={Type}
+                  active={section === "text"}
+                  onClick={() => setSection("text")}
                 />
-              )}
-
-              {section === "colors" && (
-                <ColorsSection
-                  titleColor={titleColor}
-                  setTitleColor={(v) =>
-                    setTheme((prev) => ({ ...prev, titleColor: v }))
-                  }
-                  pageTextColor={pageTextColor}
-                  setPageTextColor={(v) =>
-                    setTheme((prev) => ({ ...prev, pageTextColor: v }))
-                  }
-                  buttonColor={buttonColor}
-                  setButtonColor={setButtonColorValue}
-                  buttonTextColor={buttonTextColor}
-                  setButtonTextColor={setButtonTextColorValue}
+                <SectionButton
+                  label="Buttons"
+                  icon={Square}
+                  active={section === "buttons"}
+                  onClick={() => setSection("buttons")}
                 />
-              )}
+                <SectionButton
+                  label="Colors"
+                  icon={Palette}
+                  active={section === "colors"}
+                  onClick={() => setSection("colors")}
+                />
+              </nav>
 
-              {/* Social icons */}
-              <div className="space-y-3 border-t border-slate-800/70 pt-4">
-                <p className="text-xs font-medium text-slate-300">
-                  Social icons
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {SOCIAL_OPTIONS.map((social) => {
-                    const active = socials.includes(social);
-                    const Icon = SOCIAL_ICON_MAP[social];
-                    return (
-                      <button
-                        key={social}
-                        type="button"
-                        onClick={() => toggleSocial(social)}
-                        className={cn(
-                          "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[11px] transition",
-                          active
-                            ? "border-slate-100 bg-slate-100 text-slate-950"
-                            : "border-slate-700 bg-slate-900/40 text-slate-200 hover:border-slate-400"
-                        )}
-                        aria-label={social}
-                      >
-                        <Icon className="h-3.5 w-3.5" />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              {/* Section content */}
+              <div className="flex-1 space-y-6">
+                {section === "header" && (
+                  <HeaderSection
+                    profileLayout={profileLayout}
+                    setProfileLayout={setProfileLayout}
+                    title={title}
+                    setTitle={setTitle}
+                    subtitle={subtitle}
+                    setSubtitle={setSubtitle}
+                  />
+                )}
 
-        {/* Live preview */}
-        <Card className="bg-transparent border-none shadow-none flex justify-center">
-          <CardContent className="flex justify-center">
-            <div className="relative mx-auto h-[620px] w-[340px] rounded-[38px] border border-slate-800 bg-slate-950/90 p-4 shadow-[0_40px_120px_rgba(0,0,0,0.8)]">
-              <div className="absolute inset-x-24 -top-1 h-3 rounded-b-full bg-slate-900" />
-              <div
-                className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl"
-                style={wallpaperStyle}
-              >
-                <div
-                  className={cn(
-                    "flex-1 p-5 flex flex-col gap-4",
-                    previewBodyFont
-                  )}
-                  style={{ backgroundColor: pageBackground }}
-                >
-                  {/* header */}
-                  <div
-                    className={cn(
-                      "flex flex-col items-center gap-2 text-center",
-                      previewTitleFont,
-                      titleSize === "large" ? "mt-4" : "mt-2"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex items-center justify-center rounded-full border border-white/25 bg-black/20",
-                        profileLayout === "classic"
-                          ? "h-14 w-14"
-                          : "h-18 w-18"
-                      )}
-                    >
-                      <UserCircle2 className="h-7 w-7 text-white/90" />
-                    </div>
-                    <div
-                      className={cn(
-                        "font-semibold",
-                        titleSize === "large" ? "text-base" : "text-sm"
-                      )}
-                      style={{ color: titleColor }}
-                    >
-                      {title || "@yourname"}
-                    </div>
-                    <div
-                      className="text-[11px]"
-                      style={{ color: pageTextColor }}
-                    >
-                      {subtitle || "Short bio line for your card."}
-                    </div>
-                  </div>
+                {section === "theme" && (
+                  <KCardThemeSection value={theme} onChange={setTheme} />
+                )}
 
-                  {/* socials */}
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    {socials.map((s) => {
-                      const Icon = SOCIAL_ICON_MAP[s];
+                {section === "text" && (
+                  <TextSection
+                    titleFont={titleFont}
+                    setTitleFont={(v) =>
+                      setTheme((prev) => ({ ...prev, titleFont: v }))
+                    }
+                    titleColor={titleColor}
+                    setTitleColor={(v) =>
+                      setTheme((prev) => ({ ...prev, titleColor: v }))
+                    }
+                    titleSize={titleSize}
+                    setTitleSize={setTitleSize}
+                    pageFont={pageFont}
+                    setPageFont={(v) =>
+                      setTheme((prev) => ({ ...prev, pageFont: v }))
+                    }
+                    pageTextColor={pageTextColor}
+                    setPageTextColor={(v) =>
+                      setTheme((prev) => ({ ...prev, pageTextColor: v }))
+                    }
+                  />
+                )}
+
+                {section === "buttons" && (
+                  <ButtonsSection
+                    buttonStyle={buttonStyle}
+                    setButtonStyle={(v) =>
+                      setTheme((prev) => ({ ...prev, buttonStyle: v }))
+                    }
+                    buttonRadius={buttonRadius}
+                    setButtonRadius={(v) =>
+                      setTheme((prev) => ({ ...prev, buttonRadius: v }))
+                    }
+                    buttonShadow={buttonShadow}
+                    setButtonShadow={(v) =>
+                      setTheme((prev) => ({ ...prev, buttonShadow: v }))
+                    }
+                    buttonColor={buttonColor}
+                    setButtonColor={setButtonColorValue}
+                    buttonTextColor={buttonTextColor}
+                    setButtonTextColor={setButtonTextColorValue}
+                  />
+                )}
+
+                {section === "colors" && (
+                  <ColorsSection
+                    titleColor={titleColor}
+                    setTitleColor={(v) =>
+                      setTheme((prev) => ({ ...prev, titleColor: v }))
+                    }
+                    pageTextColor={pageTextColor}
+                    setPageTextColor={(v) =>
+                      setTheme((prev) => ({ ...prev, pageTextColor: v }))
+                    }
+                    buttonColor={buttonColor}
+                    setButtonColor={setButtonColorValue}
+                    buttonTextColor={buttonTextColor}
+                    setButtonTextColor={setButtonTextColorValue}
+                  />
+                )}
+
+                {/* Social icons */}
+                <div className="space-y-3 border-t border-[var(--color-border)] pt-4">
+                  <p className="text-xs font-medium text-[color:var(--color-text)]">
+                    Social icons
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {SOCIAL_OPTIONS.map((social) => {
+                      const active = socials.includes(social);
+                      const Icon = SOCIAL_ICON_MAP[social];
                       return (
-                        <span
-                          key={s}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/20 text-slate-100/90"
+                        <button
+                          key={social}
+                          type="button"
+                          onClick={() => toggleSocial(social)}
+                          className={cn(
+                            "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[11px] transition",
+                            active
+                              ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-bg)]"
+                              : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
+                          )}
+                          aria-label={social}
                         >
                           <Icon className="h-3.5 w-3.5" />
-                        </span>
+                        </button>
                       );
                     })}
                   </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                  {/* links */}
-                  <div className="mt-2 space-y-2">
-                    {visibleLinks.length === 0 ? (
-                      <div className="rounded-full border border-dashed border-white/10 bg-black/10 px-4 py-2 text-center text-[11px] text-slate-300">
-                        Add a link below to see it here.
-                      </div>
-                    ) : (
-                      visibleLinks.slice(0, 5).map((link) => (
-                        <button
-                          key={link.id}
-                          type="button"
-                          className="flex w-full items-center justify-center px-4 py-2.5 text-[11px] font-medium transition"
-                          style={buttonBaseStyles}
-                        >
-                          <span className="truncate">
-                            {link.title || "Untitled link"}
-                          </span>
-                        </button>
-                      ))
+          {/* Live preview */}
+          <Card className="flex justify-center border-none bg-transparent shadow-none">
+            <CardContent className="flex justify-center pt-0">
+              <div className="relative mx-auto h-[620px] w-[340px] rounded-[38px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_40px_120px_rgba(0,0,0,0.55)]">
+                <div className="absolute inset-x-24 -top-1 h-3 rounded-b-full bg-[var(--color-bg)]" />
+                <div
+                  className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl"
+                  style={wallpaperStyle}
+                >
+                  <div
+                    className={cn(
+                      "flex h-full w-full flex-col gap-4 p-5",
+                      previewBodyFont
                     )}
-                  </div>
+                  >
+                    {/* header */}
+                    <div
+                      className={cn(
+                        "flex flex-col items-center gap-2 text-center",
+                        previewTitleFont,
+                        titleSize === "large" ? "mt-4" : "mt-2"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "flex items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg)]",
+                          profileLayout === "classic"
+                            ? "h-14 w-14"
+                            : "h-18 w-18"
+                        )}
+                      >
+                        <UserCircle2 className="h-7 w-7 text-[color:var(--color-text)]" />
+                      </div>
+                      <div
+                        className={cn(
+                          "font-semibold",
+                          titleSize === "large" ? "text-base" : "text-sm"
+                        )}
+                        style={{ color: titleColor }}
+                      >
+                        {title || "@yourname"}
+                      </div>
+                      <div
+                        className="text-[11px]"
+                        style={{ color: pageTextColor }}
+                      >
+                        {subtitle || "Short bio line for your card."}
+                      </div>
+                    </div>
 
-                  <div className="mt-auto pt-4 text-center text-[10px] text-slate-400">
-                    kompi.app/yourcard · Analytics included
+                    {/* socials */}
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {socials.map((s) => {
+                        const Icon = SOCIAL_ICON_MAP[s];
+                        return (
+                          <span
+                            key={s}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-bg)] text-[color:var(--color-text)]"
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                          </span>
+                        );
+                      })}
+                    </div>
+
+                    {/* links */}
+                    <div className="mt-2 space-y-2">
+                      {visibleLinks.length === 0 ? (
+                        <div className="rounded-full border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-center text-[11px] text-[color:var(--color-subtle)]">
+                          Add a link below to see it here.
+                        </div>
+                      ) : (
+                        visibleLinks.slice(0, 5).map((link) => (
+                          <button
+                            key={link.id}
+                            type="button"
+                            className="flex w-full items-center justify-center px-4 py-2.5 text-[11px] font-medium transition"
+                            style={buttonBaseStyles}
+                          >
+                            <span className="truncate">
+                              {link.title || "Untitled link"}
+                            </span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="mt-auto pt-4 text-center text-[10px] text-[color:var(--color-subtle)]">
+                      kompi.app/yourcard · Analytics included
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Links manager */}
+        <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
+              <span>Links</span>
+              <Button
+                type="button"
+                size="sm"
+                className="h-8 rounded-full border border-[var(--color-border)] bg-[var(--color-accent)] px-3 text-xs font-medium text-[color:var(--color-text)] hover:opacity-90"
+                onClick={addLink}
+              >
+                <Link2 className="mr-1.5 h-3.5 w-3.5" />
+                Add link
+              </Button>
+            </CardTitle>
+            <CardDescription className="text-xs text-[color:var(--color-subtle)]">
+              Manage the links that appear on this K-Card.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {links.map((link) => (
+              <div
+                key={link.id}
+                className="flex flex-col gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 md:flex-row md:items-center md:gap-4"
+              >
+                <div className="flex-1 space-y-2">
+                  <Input
+                    value={link.title}
+                    onChange={(e) =>
+                      updateLink(link.id, { title: e.target.value })
+                    }
+                    className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                    placeholder="Link title"
+                  />
+                  <Input
+                    value={link.url}
+                    onChange={(e) =>
+                      updateLink(link.id, { url: e.target.value })
+                    }
+                    className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                    placeholder="https://"
+                  />
+                </div>
+                <div className="flex items-center gap-2 self-start md:self-auto">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateLink(link.id, { enabled: !link.enabled })
+                    }
+                    className={cn(
+                      "inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium transition",
+                      link.enabled
+                        ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[color:var(--color-text)]"
+                        : "border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-subtle)]"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "mr-1 h-2 w-2 rounded-full",
+                        link.enabled
+                          ? "bg-[var(--color-accent)]"
+                          : "bg-[var(--color-border)]"
+                      )}
+                    />
+                    {link.enabled ? "On" : "Off"}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {links.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-6 text-center text-sm text-[color:var(--color-subtle)]">
+                No links yet. Click{" "}
+                <span className="font-medium">Add link</span> to start
+                building your K-Card.
+              </div>
+            )}
           </CardContent>
         </Card>
-      </div>
-
-      {/* Links manager */}
-      <Card className="bg-slate-950/80 border-slate-800/80 shadow-lg">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center justify-between text-sm font-semibold text-slate-100">
-            <span>Links</span>
-            <Button
-              type="button"
-              size="sm"
-              className="h-8 rounded-full bg-slate-100 text-slate-950 hover:bg-white text-xs"
-              onClick={addLink}
-            >
-              <Link2 className="h-3.5 w-3.5 mr-1.5" />
-              Add link
-            </Button>
-          </CardTitle>
-          <CardDescription className="text-xs text-slate-400">
-            Manage the links that appear on this K-Card.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {links.map((link) => (
-            <div
-              key={link.id}
-              className="flex flex-col gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/60 px-4 py-3 md:flex-row md:items-center md:gap-4"
-            >
-              <div className="flex-1 space-y-2">
-                <Input
-                  value={link.title}
-                  onChange={(e) =>
-                    updateLink(link.id, { title: e.target.value })
-                  }
-                  className="bg-slate-950/70 border-slate-800 text-sm text-slate-100 placeholder:text-slate-500"
-                  placeholder="Link title"
-                />
-                <Input
-                  value={link.url}
-                  onChange={(e) =>
-                    updateLink(link.id, { url: e.target.value })
-                  }
-                  className="bg-slate-950/70 border-slate-800 text-xs text-slate-100 placeholder:text-slate-500"
-                  placeholder="https://"
-                />
-              </div>
-              <div className="flex items-center gap-2 self-start md:self-auto">
-                <button
-                  type="button"
-                  onClick={() =>
-                    updateLink(link.id, { enabled: !link.enabled })
-                  }
-                  className={cn(
-                    "inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium transition",
-                    link.enabled
-                      ? "bg-emerald-400/10 text-emerald-300 border-emerald-400/40"
-                      : "bg-slate-900/60 text-slate-400 border-slate-700"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "mr-1 h-2 w-2 rounded-full",
-                      link.enabled ? "bg-emerald-400" : "bg-slate-500"
-                    )}
-                  />
-                  {link.enabled ? "On" : "Off"}
-                </button>
-              </div>
-            </div>
-          ))}
-
-          {links.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 px-4 py-6 text-center text-sm text-slate-400">
-              No links yet. Click <span className="font-medium">Add link</span>{" "}
-              to start building your K-Card.
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+      </section>
+    </main>
   );
 }
 
@@ -609,19 +614,23 @@ function HeaderSection({
 }: HeaderSectionProps) {
   return (
     <div className="space-y-4">
-      <p className="text-xs font-medium text-slate-300">Header</p>
+      <p className="text-xs font-medium text-[color:var(--color-text)]">
+        Header
+      </p>
 
       <div className="space-y-2">
-        <p className="text-[11px] text-slate-400">Profile image layout</p>
-        <div className="inline-flex rounded-full bg-slate-900/60 p-1 text-[11px] border border-slate-700/80">
+        <p className="text-[11px] text-[color:var(--color-subtle)]">
+          Profile image layout
+        </p>
+        <div className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1 text-[11px]">
           <button
             type="button"
             onClick={() => setProfileLayout("classic")}
             className={cn(
               "flex-1 rounded-full px-3 py-1",
               profileLayout === "classic"
-                ? "bg-slate-100 text-slate-950"
-                : "text-slate-300"
+                ? "bg-[var(--color-text)] text-[var(--color-bg)]"
+                : "text-[color:var(--color-subtle)]"
             )}
           >
             Classic
@@ -632,8 +641,8 @@ function HeaderSection({
             className={cn(
               "flex-1 rounded-full px-3 py-1",
               profileLayout === "hero"
-                ? "bg-slate-100 text-slate-950"
-                : "text-slate-300"
+                ? "bg-[var(--color-text)] text-[var(--color-bg)]"
+                : "text-[color:var(--color-subtle)]"
             )}
           >
             Hero
@@ -643,25 +652,25 @@ function HeaderSection({
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Title
           </label>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="bg-slate-900/80 border-slate-700 text-sm text-slate-100 placeholder:text-slate-500"
+            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
             maxLength={40}
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Subtitle
           </label>
           <Textarea
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
             rows={2}
-            className="bg-slate-900/80 border-slate-700 text-sm text-slate-100 placeholder:text-slate-500"
+            className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
             maxLength={80}
           />
         </div>
@@ -697,23 +706,25 @@ function TextSection({
 }: TextSectionProps) {
   return (
     <div className="space-y-4">
-      <p className="text-xs font-medium text-slate-300">Text</p>
+      <p className="text-xs font-medium text-[color:var(--color-text)]">
+        Text
+      </p>
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Title font
           </label>
           <Select value={titleFont} onValueChange={setTitleFont}>
-            <SelectTrigger className="bg-slate-900/80 border-slate-700 text-xs text-slate-100">
+            <SelectTrigger className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]">
               <SelectValue placeholder="Font" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-700">
+            <SelectContent className="border border-[var(--color-border)] bg-[var(--color-surface)]">
               {FONT_OPTIONS.map((f) => (
                 <SelectItem
                   key={f.value}
                   value={f.value}
-                  className="text-xs text-slate-100"
+                  className="text-xs text-[color:var(--color-text)]"
                 >
                   {f.label}
                 </SelectItem>
@@ -723,39 +734,39 @@ function TextSection({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Title color
           </label>
           <div className="flex items-center gap-3">
             <input
               type="color"
-              className="h-8 w-10 cursor-pointer rounded border border-slate-700 bg-transparent"
+              className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
               value={titleColor}
               onChange={(e) => setTitleColor(e.target.value)}
             />
             <Input
               value={titleColor}
               onChange={(e) => setTitleColor(e.target.value)}
-              className="bg-slate-900/80 border-slate-700 text-xs text-slate-100 placeholder:text-slate-500"
+              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
             />
           </div>
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)] items-center">
+      <div className="grid items-center gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)]">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Title size
           </label>
-          <div className="inline-flex rounded-full bg-slate-900/60 p-1 text-[11px] border border-slate-700/80">
+          <div className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1 text-[11px]">
             <button
               type="button"
               onClick={() => setTitleSize("small")}
               className={cn(
                 "flex-1 rounded-full px-3 py-1",
                 titleSize === "small"
-                  ? "bg-slate-100 text-slate-950"
-                  : "text-slate-300"
+                  ? "bg-[var(--color-text)] text-[var(--color-bg)]"
+                  : "text-[color:var(--color-subtle)]"
               )}
             >
               Small
@@ -766,8 +777,8 @@ function TextSection({
               className={cn(
                 "flex-1 rounded-full px-3 py-1",
                 titleSize === "large"
-                  ? "bg-slate-100 text-slate-950"
-                  : "text-slate-300"
+                  ? "bg-[var(--color-text)] text-[var(--color-bg)]"
+                  : "text-[color:var(--color-subtle)]"
               )}
             >
               Large
@@ -776,19 +787,19 @@ function TextSection({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Page font
           </label>
           <Select value={pageFont} onValueChange={setPageFont}>
-            <SelectTrigger className="bg-slate-900/80 border-slate-700 text-xs text-slate-100">
+            <SelectTrigger className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]">
               <SelectValue placeholder="Font" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-700">
+            <SelectContent className="border border-[var(--color-border)] bg-[var(--color-surface)]">
               {FONT_OPTIONS.map((f) => (
                 <SelectItem
                   key={f.value}
                   value={f.value}
-                  className="text-xs text-slate-100"
+                  className="text-xs text-[color:var(--color-text)]"
                 >
                   {f.label}
                 </SelectItem>
@@ -799,20 +810,20 @@ function TextSection({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-slate-300">
+        <label className="text-xs font-medium text-[color:var(--color-text)]">
           Page text color
         </label>
         <div className="flex items-center gap-3">
           <input
             type="color"
-            className="h-8 w-10 cursor-pointer rounded border border-slate-700 bg-transparent"
+            className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
             value={pageTextColor}
             onChange={(e) => setPageTextColor(e.target.value)}
           />
           <Input
             value={pageTextColor}
             onChange={(e) => setPageTextColor(e.target.value)}
-            className="bg-slate-900/80 border-slate-700 text-xs text-slate-100 placeholder:text-slate-500"
+            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
           />
         </div>
       </div>
@@ -847,11 +858,13 @@ function ButtonsSection({
 }: ButtonsSectionProps) {
   return (
     <div className="space-y-4">
-      <p className="text-xs font-medium text-slate-300">Buttons</p>
+      <p className="text-xs font-medium text-[color:var(--color-text)]">
+        Buttons
+      </p>
 
       <div className="space-y-1.5">
-        <p className="text-[11px] text-slate-400">Style</p>
-        <div className="inline-flex rounded-full bg-slate-900/60 p-1 text-[11px] border border-slate-700/80">
+        <p className="text-[11px] text-[color:var(--color-subtle)]">Style</p>
+        <div className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1 text-[11px]">
           {BUTTON_STYLES.map((style) => (
             <button
               key={style}
@@ -860,8 +873,8 @@ function ButtonsSection({
               className={cn(
                 "flex-1 rounded-full px-3 py-1 capitalize",
                 buttonStyle === style
-                  ? "bg-slate-100 text-slate-950"
-                  : "text-slate-300"
+                  ? "bg-[var(--color-text)] text-[var(--color-bg)]"
+                  : "text-[color:var(--color-subtle)]"
               )}
             >
               {style}
@@ -872,11 +885,13 @@ function ButtonsSection({
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Corners
           </label>
           <div className="flex items-center gap-3">
-            <span className="text-[11px] text-slate-500">Square</span>
+            <span className="text-[11px] text-[color:var(--color-subtle)]">
+              Square
+            </span>
             <input
               type="range"
               min={4}
@@ -885,17 +900,19 @@ function ButtonsSection({
               onChange={(e) =>
                 setButtonRadius(Number(e.target.value))
               }
-              className="flex-1"
+              className="flex-1 accent-[var(--color-accent)]"
             />
-            <span className="text-[11px] text-slate-500">Round</span>
+            <span className="text-[11px] text-[color:var(--color-subtle)]">
+              Round
+            </span>
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Shadow
           </label>
-          <div className="inline-flex rounded-full bg-slate-900/60 p-1 text-[11px] border border-slate-700/80">
+          <div className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1 text-[11px]">
             {BUTTON_SHADOWS.map((s) => (
               <button
                 key={s}
@@ -904,8 +921,8 @@ function ButtonsSection({
                 className={cn(
                   "flex-1 rounded-full px-3 py-1 capitalize",
                   buttonShadow === s
-                    ? "bg-slate-100 text-slate-950"
-                    : "text-slate-300"
+                    ? "bg-[var(--color-text)] text-[var(--color-bg)]"
+                    : "text-[color:var(--color-subtle)]"
                 )}
               >
                 {s}
@@ -917,39 +934,39 @@ function ButtonsSection({
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Button color
           </label>
           <div className="flex items-center gap-3">
             <input
               type="color"
-              className="h-8 w-10 cursor-pointer rounded border border-slate-700 bg-transparent"
+              className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
               value={buttonColor}
               onChange={(e) => setButtonColor(e.target.value)}
             />
             <Input
               value={buttonColor}
               onChange={(e) => setButtonColor(e.target.value)}
-              className="bg-slate-900/80 border-slate-700 text-xs text-slate-100 placeholder:text-slate-500"
+              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">
+          <label className="text-xs font-medium text-[color:var(--color-text)]">
             Button text
           </label>
           <div className="flex items-center gap-3">
             <input
               type="color"
-              className="h-8 w-10 cursor-pointer rounded border border-slate-700 bg-transparent"
+              className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
               value={buttonTextColor}
               onChange={(e) => setButtonTextColor(e.target.value)}
             />
             <Input
               value={buttonTextColor}
               onChange={(e) => setButtonTextColor(e.target.value)}
-              className="bg-slate-900/80 border-slate-700 text-xs text-slate-100 placeholder:text-slate-500"
+              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
             />
           </div>
         </div>
@@ -981,7 +998,9 @@ function ColorsSection({
 }: ColorsSectionProps) {
   return (
     <div className="space-y-4">
-      <p className="text-xs font-medium text-slate-300">Colors</p>
+      <p className="text-xs font-medium text-[color:var(--color-text)]">
+        Colors
+      </p>
 
       <div className="grid gap-3 md:grid-cols-2">
         <ColorField
@@ -1031,8 +1050,8 @@ function SectionButton({
       className={cn(
         "flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs transition-colors",
         active
-          ? "bg-slate-100 text-slate-950"
-          : "text-slate-300 hover:bg-slate-900/70"
+          ? "bg-[var(--color-text)] text-[var(--color-bg)]"
+          : "text-[color:var(--color-subtle)] hover:bg-[var(--color-bg)]"
       )}
     >
       <Icon className="h-4 w-4" />
@@ -1050,20 +1069,20 @@ type ColorFieldProps = {
 function ColorField({ label, value, onChange }: ColorFieldProps) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-medium text-slate-300">
+      <label className="text-xs font-medium text-[color:var(--color-text)]">
         {label}
       </label>
       <div className="flex items-center gap-3">
         <input
           type="color"
-          className="h-8 w-10 cursor-pointer rounded border border-slate-700 bg-transparent"
+          className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="bg-slate-900/80 border-slate-700 text-xs text-slate-100 placeholder:text-slate-500"
+          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
         />
       </div>
     </div>

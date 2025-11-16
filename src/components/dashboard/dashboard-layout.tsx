@@ -28,32 +28,50 @@ const navItems = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
+// Pattern: Shell/DashboardShell
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   // ❌ no localStorage here – this avoids hydration mismatch
   const [collapsed, setCollapsed] = useState<boolean>(false);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-[#020817] via-[#030b1f] to-[#020817] text-slate-50">
-      {/* Sidebar */}
+    <div
+      className={cn("wf-dashboard-shell", "flex min-h-screen")}
+      style={{
+        backgroundColor: "var(--color-bg)",
+        color: "var(--color-text)",
+      }}
+    >
+      {/* Shell/AppSidebar */}
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      {/* Main content area */}
-      <div className="flex-1 min-w-0">
-        {/* Top bar */}
-        <div className="sticky top-0 z-40 border-b border-white/10 bg-[#050816]/70 backdrop-blur-xl">
-          <div className="mx-auto w-full max-w-6xl px-4">
+      {/* Shell/Main */}
+      <div className="wf-dashboard-main flex min-w-0 flex-1 flex-col">
+        {/* Shell/Topbar */}
+        <div
+          className={cn(
+            "wf-dashboard-topbar-shell sticky top-0 z-40",
+            "backdrop-blur-md"
+          )}
+          style={{
+            backgroundColor: "var(--color-surface)",
+            borderBottom: "1px solid var(--color-border)",
+          }}
+        >
+          <div className="wf-dashboard-container mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
             <Topbar />
           </div>
         </div>
 
-        {/* Page content */}
-        <main className="mx-auto w-full max-w-6xl p-6">{children}</main>
+        {/* Content */}
+        <main className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
+          {children}
+        </main>
       </div>
     </div>
   );
 }
 
-/* ---------------- Sidebar ---------------- */
+/* ---------------- Sidebar (Shell/AppSidebar) ---------------- */
 
 function Sidebar({
   collapsed,
@@ -66,33 +84,50 @@ function Sidebar({
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 80 : 240 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
+      animate={{ width: collapsed ? 72 : 256 }}
+      transition={{ duration: 0.22, ease: "easeInOut" }}
       className={cn(
-        "h-screen sticky top-0 left-0 border-r border-white/10",
-        "bg-white/[0.04] backdrop-blur-2xl",
-        "flex flex-col justify-between"
+        "wf-dashboard-sidebar",
+        "sticky left-0 top-0 flex h-screen flex-col justify-between"
       )}
+      style={{
+        backgroundColor: "var(--color-surface)",
+        borderRight: "1px solid var(--color-border)",
+      }}
     >
-      <div className="flex flex-col gap-6 py-6 px-3">
-        {/* Logo */}
+      <div className="flex flex-col gap-6 px-3 py-6">
+        {/* Logo + console label */}
         <Link
           href="/dashboard"
           className={cn(
-            "flex items-center",
+            "wf-dashboard-logo flex items-center",
             collapsed ? "justify-center" : "justify-start px-1.5"
           )}
           aria-label="Kompi Dashboard Home"
         >
           {!collapsed && (
-            <Image
-              src="/Kompiwhite.svg"
-              alt="Kompi"
-              width={112}
-              height={24}
-              priority
-              className="h-6 w-28"
-            />
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/Kompiwhite.svg"
+                  alt="Kompi"
+                  width={112}
+                  height={24}
+                  priority
+                  className="h-6 w-28"
+                />
+              </div>
+              <span
+                className="text-[11px] uppercase tracking-[0.16em]"
+                style={{
+                  color: "var(--color-subtle)",
+                  fontFamily: "var(--font-instrument-serif)",
+                  fontStyle: "italic",
+                }}
+              >
+                workspace console
+              </span>
+            </div>
           )}
 
           {collapsed && (
@@ -109,7 +144,7 @@ function Sidebar({
         </Link>
 
         {/* Nav items */}
-        <nav className="flex flex-col gap-1">
+        <nav className="wf-dashboard-nav flex flex-col gap-1">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active =
               href === "/dashboard"
@@ -121,14 +156,48 @@ function Sidebar({
                 key={href}
                 href={href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-xl transition-colors",
-                  active
-                    ? "bg-white/10 text-cyan-300"
-                    : "text-slate-200 hover:bg-white/10 hover:text-cyan-300"
+                  "wf-dashboard-nav-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition",
+                  collapsed && "justify-center"
                 )}
+                style={{
+                  backgroundColor: active
+                    ? "var(--color-accent-soft)"
+                    : "transparent",
+                  color: active
+                    ? "var(--color-text)"
+                    : "var(--color-subtle)",
+                }}
               >
-                <Icon className="h-5 w-5 shrink-0" />
-                {!collapsed && <span className="text-sm">{label}</span>}
+                {!collapsed && (
+                  <span
+                    className="wf-dashboard-nav-accent h-6 w-1 rounded-full"
+                    style={{
+                      backgroundColor: "var(--color-accent)",
+                    }}
+                    aria-hidden="true"
+                  />
+                )}
+                <Icon
+                  className={cn(
+                    "h-5 w-5 shrink-0",
+                    !collapsed && "group-hover:translate-x-0.5 transition-transform"
+                  )}
+                />
+                {!collapsed && (
+                  <span
+                    className="truncate"
+                    style={
+                      active
+                        ? {
+                            fontFamily: "var(--font-instrument-serif)",
+                            fontStyle: "italic",
+                          }
+                        : undefined
+                    }
+                  >
+                    {label}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -138,7 +207,13 @@ function Sidebar({
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center justify-center w-full py-3 border-t border-white/10 text-slate-400 hover:text-cyan-300 transition"
+        className={cn(
+          "wf-dashboard-sidebar-toggle flex w-full items-center justify-center py-3 text-xs font-medium uppercase tracking-wide"
+        )}
+        style={{
+          borderTop: "1px solid var(--color-border)",
+          color: "var(--color-subtle)",
+        }}
       >
         <AnimatePresence initial={false} mode="wait">
           {collapsed ? (
@@ -147,7 +222,7 @@ function Sidebar({
               initial={{ opacity: 0, rotate: -90 }}
               animate={{ opacity: 1, rotate: 0 }}
               exit={{ opacity: 0, rotate: 90 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.18 }}
             >
               <ChevronRight className="h-4 w-4" />
             </motion.div>
@@ -157,7 +232,7 @@ function Sidebar({
               initial={{ opacity: 0, rotate: 90 }}
               animate={{ opacity: 1, rotate: 0 }}
               exit={{ opacity: 0, rotate: -90 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.18 }}
             >
               <ChevronLeft className="h-4 w-4" />
             </motion.div>
@@ -168,7 +243,7 @@ function Sidebar({
   );
 }
 
-/* ---------------- Topbar w/ avatar menu ---------------- */
+/* ---------------- Topbar w/ avatar menu (Shell/Topbar) ---------------- */
 
 function Topbar() {
   const { data } = useSession();
@@ -179,16 +254,49 @@ function Topbar() {
   const menuRef = useOutsideClose<HTMLDivElement>(open, () => setOpen(false));
 
   return (
-    <div className="h-14 flex items-center justify-between">
-      <div className="text-sm text-zinc-400">
-        <span className="font-medium text-zinc-100">Dashboard</span>
+    <div className="flex h-16 items-center justify-between gap-4">
+      {/* Page title / meta */}
+      <div className="flex min-w-0 flex-col">
+        <div className="flex items-center gap-2">
+          <span
+            className="text-[11px] font-medium uppercase tracking-[0.16em]"
+            style={{
+              color: "var(--color-subtle)",
+            }}
+          >
+            Kompi dashboard
+          </span>
+          <span
+            className="h-[2px] w-6 rounded-full"
+            style={{ backgroundColor: "var(--color-accent)" }}
+          />
+        </div>
+        <div className="mt-1 flex items-baseline gap-2 text-sm font-semibold sm:text-base">
+          <span>Today&apos;s</span>
+          <span
+            style={{
+              fontFamily: "var(--font-instrument-serif)",
+              fontStyle: "italic",
+            }}
+          >
+            workspace
+          </span>
+        </div>
       </div>
 
+      {/* Account menu */}
       <div className="relative" ref={menuRef}>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="h-9 w-9 rounded-full bg-zinc-800/80 border border-white/10 flex items-center justify-center text-sm font-semibold text-white hover:bg-zinc-700/70 transition"
+          className={cn(
+            "wf-dashboard-avatar-btn flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition"
+          )}
+          style={{
+            backgroundColor: "var(--color-surface)",
+            border: "1px solid var(--color-accent)",
+            color: "var(--color-text)",
+          }}
           aria-label="Open account menu"
         >
           {initial}
@@ -200,13 +308,28 @@ function Topbar() {
               initial={{ opacity: 0, y: -6, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
-              transition={{ duration: 0.14 }}
-              className="absolute right-0 mt-2 w-56 rounded-xl border border-white/10 bg-[#0A0E23]/95 backdrop-blur-xl shadow-[0_18px_60px_rgba(0,0,0,0.65)] p-1.5 z-50"
+              transition={{ duration: 0.16 }}
+              className="wf-dashboard-account-menu absolute right-0 z-50 mt-2 w-56 rounded-2xl p-1.5"
+              style={{
+                backgroundColor: "var(--color-surface)",
+                border: "1px solid var(--color-border)",
+              }}
               role="menu"
             >
               <div className="px-2.5 py-2">
-                <div className="text-xs text-zinc-400">Signed in as</div>
-                <div className="text-sm font-medium text-zinc-100 truncate">
+                <div
+                  className="text-xs"
+                  style={{ color: "var(--color-subtle)" }}
+                >
+                  Signed in as
+                </div>
+                <div
+                  className="truncate text-sm font-medium"
+                  style={{
+                    fontFamily: "var(--font-instrument-serif)",
+                    fontStyle: "italic",
+                  }}
+                >
                   {display}
                 </div>
               </div>
@@ -228,10 +351,16 @@ function Topbar() {
                 onClick={() => setOpen(false)}
               />
 
-              <div className="my-1 h-px bg-white/10" />
+              <div
+                className="my-1 h-px"
+                style={{ backgroundColor: "var(--color-border)" }}
+              />
 
               <button
-                className="w-full text-left rounded-lg px-2.5 py-2 text-sm text-red-300 hover:bg-white/5 hover:text-red-200 transition"
+                className={cn(
+                  "wf-dashboard-account-menu-signout w-full rounded-lg px-2.5 py-2 text-left text-sm font-medium transition"
+                )}
+                style={{ color: "var(--color-subtle)" }}
                 onClick={() => {
                   setOpen(false);
                   signOut({ callbackUrl: "/" });
@@ -260,17 +389,30 @@ function MenuItem({
     <Link
       href={href}
       onClick={onClick}
-      className="block rounded-lg px-2.5 py-2 text-sm text-zinc-200 hover:bg:white/5 hover:text-white transition hover:bg-white/5"
+      className={cn(
+        "wf-dashboard-account-menu-item block rounded-lg px-2.5 py-2 text-sm transition"
+      )}
       role="menuitem"
+      style={{ color: "var(--color-text)" }}
     >
-      {label}
+      <span
+        style={{
+          fontFamily: "var(--font-instrument-serif)",
+          fontStyle: "italic",
+        }}
+      >
+        {label}
+      </span>
     </Link>
   );
 }
 
 /* ---------------- utils ---------------- */
 
-function useOutsideClose<T extends HTMLElement>(open: boolean, onClose: () => void) {
+function useOutsideClose<T extends HTMLElement>(
+  open: boolean,
+  onClose: () => void
+) {
   const ref = useRef<T | null>(null);
   useEffect(() => {
     if (!open) return;

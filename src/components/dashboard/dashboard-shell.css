@@ -1,0 +1,65 @@
+.wf-dashboard-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.wf-dashboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .wf-dashboard-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.wf-dashboard-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wf-dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Dashboard/DataTable card shell */
+.wf-dashboard-table-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition:
+    background-color 180ms ease-out,
+    border-color 180ms ease-out,
+    box-shadow 180ms ease-out,
+    transform 180ms ease-out;
+}
+
+.wf-dashboard-table-card:hover {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+/* Dashboard/EmptyState */
+.wf-dashboard-empty-state {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+/* Dashboard/InlineNotice */
+.wf-dashboard-inline-notice {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}

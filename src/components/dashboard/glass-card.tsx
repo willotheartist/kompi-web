@@ -1,3 +1,4 @@
+// src/components/dashboard/glass-card.tsx
 "use client";
 
 import { motion } from "framer-motion";
@@ -14,11 +15,11 @@ export function GlassCard({ className, children }: GlassCardProps) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className={cn(
-        "bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl",
-        "shadow-[0_18px_55px_rgba(3,7,18,0.75)] p-5",
-        className
-      )}
+      className={cn("wf-dashboard-panel rounded-3xl p-5", className)}
+      style={{
+        backgroundColor: "var(--color-surface)",
+        border: "1px solid var(--color-border)",
+      }}
     >
       {children}
     </motion.div>

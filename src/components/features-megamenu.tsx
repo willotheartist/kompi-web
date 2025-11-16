@@ -41,15 +41,15 @@ const CATEGORIES: Category[] = [
         icon: Link2,
       },
       {
-        title: "Bio pages",
-        desc: "Polished link-in-bio hubs for real brands.",
-        href: "#",
+        title: "KR Codes",
+        desc: "Generate Kompi KR Codes for print, events and packaging.",
+        href: "/KR-Codes-QR-Code-Generator",
         icon: LayoutGrid,
       },
       {
         title: "Kompi Codes™ (QR)",
-        desc: "On-brand QR codes for print, events and packaging.",
-        href: "#",
+        desc: "On-brand QR codes for campaigns and offline journeys.",
+        href: "/KR-Codes-QR-Code-Generator",
         icon: QrCode,
       },
     ],
@@ -170,7 +170,7 @@ export function FeaturesMegaMenu() {
         onMouseEnter={openNow}
         onMouseLeave={scheduleClose}
         onClick={() => (open ? setOpen(false) : setOpen(true))}
-        className="inline-flex items-center gap-1 text-sm font-medium text-zinc-100 hover:text-white transition-colors px-1 py-1"
+        className="inline-flex items-center gap-1 px-1 py-1 text-sm font-medium text-[color:var(--color-text)] transition-colors hover:text-[color:var(--color-accent)]"
       >
         <span>Features</span>
         <ChevronDown
@@ -185,19 +185,18 @@ export function FeaturesMegaMenu() {
           onMouseEnter={openNow}
           onMouseLeave={scheduleClose}
           className="
-            fixed left-1/2 -translate-x-1/2 top-24 z-[60]
+            fixed left-1/2 top-24 z-[60] grid
             w-[min(1120px,100vw-40px)]
+            -translate-x-1/2
             overflow-hidden rounded-3xl
-            border border-neutral-200/70
-            bg-white text-neutral-900
-            shadow-[0_30px_120px_rgba(3,7,18,0.28)]
-            backdrop-blur
-            grid [grid-template-columns:270px_1fr_360px]
+            border border-[color:var(--color-border)]
+            bg-[color:var(--color-surface)] text-[color:var(--color-text)]
+            [grid-template-columns:260px_1fr_340px]
           "
         >
           {/* Left rail */}
-          <div className="bg-neutral-50 border-r border-neutral-200 p-3">
-            <div className="px-2 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
+          <div className="border-r border-[color:var(--color-border)] bg-[color:var(--color-bg)] p-3">
+            <div className="px-2 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
               Explore
             </div>
             <ul className="flex flex-col gap-2">
@@ -210,14 +209,18 @@ export function FeaturesMegaMenu() {
                       onMouseEnter={() => setActive(c.id)}
                       onFocus={() => setActive(c.id)}
                       className={[
-                        "w-full text-left rounded-2xl px-4 py-3 text-[15px] transition-colors",
+                        "w-full rounded-2xl px-4 py-3 text-left text-[15px] transition-colors",
                         isActive
-                          ? "bg-white shadow-sm text-neutral-900"
-                          : "text-neutral-700 hover:bg-white/70",
+                          ? "bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
+                          : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-surface)]",
                       ].join(" ")}
                     >
-                      {c.label}
-                      {isActive && <span className="ml-1 text-[color:var(--color-accent)]">▸</span>}
+                      <span className="inline-flex items-center gap-2">
+                        <span>{c.label}</span>
+                        {isActive && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--color-accent)]" />
+                        )}
+                      </span>
                     </button>
                   </li>
                 );
@@ -227,8 +230,13 @@ export function FeaturesMegaMenu() {
 
           {/* Middle column */}
           <div className="p-4">
-            <div className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
-              {activeCat.label}
+            <div className="flex items-center justify-between pb-2">
+              <div className="flex items-center gap-2 px-1">
+                <span className="h-4 w-0.5 rounded-full bg-[color:var(--color-accent)]" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+                  {activeCat.label}
+                </span>
+              </div>
             </div>
             <div className="grid gap-2">
               {activeCat.items.map((it) => {
@@ -237,16 +245,18 @@ export function FeaturesMegaMenu() {
                   <Link
                     key={it.title}
                     href={it.href}
-                    className="group flex items-start gap-4 rounded-2xl px-4 py-3 hover:bg-neutral-50 transition-colors"
+                    className="group flex items-start gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-[color:var(--color-bg)]"
                   >
-                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-white ring-1 ring-black/5">
+                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="leading-tight">
-                      <div className="text-[15px] font-semibold text-neutral-900 group-hover:underline underline-offset-2">
+                      <div className="text-[15px] font-semibold text-[color:var(--color-text)] group-hover:text-[color:var(--color-accent)]">
                         {it.title}
                       </div>
-                      <div className="text-[13px] text-neutral-500">{it.desc}</div>
+                      <div className="text-[13px] text-[color:var(--color-subtle)]">
+                        {it.desc}
+                      </div>
                     </div>
                   </Link>
                 );
@@ -256,23 +266,24 @@ export function FeaturesMegaMenu() {
 
           {/* Right featured */}
           <div className="p-4">
-            <div className="flex h-full flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-5 shadow-[0_16px_50px_rgba(0,0,0,0.06)]">
+            <div className="flex h-full flex-col justify-between rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)] p-5">
               <div className="space-y-3">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
                   Featured
                 </div>
 
-                <div className="rounded-xl border border-neutral-200 p-4 bg-[radial-gradient(120%_120%_at_80%_0%,rgba(0,0,0,0.08),transparent_40%)]">
+                <div className="space-y-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-900 text-white ring-1 ring-black/5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]">
                       <Link2 className="h-4 w-4" />
                     </div>
                     <div className="leading-tight">
-                      <div className="text-[15px] font-semibold">
+                      <div className="text-[15px] font-semibold text-[color:var(--color-text)]">
                         One workspace, everything tracked
                       </div>
-                      <div className="text-[13px] text-neutral-500">
-                        Ship links, bio pages and Kompi Codes™ — then report in minutes.
+                      <div className="text-[13px] text-[color:var(--color-subtle)]">
+                        Ship short links, KR Codes and Kompi Codes™ — then
+                        report in minutes.
                       </div>
                     </div>
                   </div>
@@ -281,7 +292,7 @@ export function FeaturesMegaMenu() {
 
               <Link
                 href="/signin"
-                className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--color-accent)] px-5 py-2.5 text-[14px] font-semibold text-white hover:brightness-110 transition-all shadow-[0_14px_40px_rgba(0,0,0,0.35)]"
+                className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--color-accent)] px-5 py-2.5 text-[14px] font-semibold text-[color:var(--color-text)] transition-colors hover:brightness-105"
               >
                 Try Kompi free
               </Link>

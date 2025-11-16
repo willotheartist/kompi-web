@@ -16,18 +16,26 @@ export function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [atTop, setAtTop] = useState(true);
   const lastYRef = useRef(0);
+  const ignoreScrollUntil = useRef(Date.now() + 150); // <<< hydration safe
   const pathname = usePathname();
 
   useEffect(() => {
+    ignoreScrollUntil.current = Date.now() + 150;
+
     const handleScroll = () => {
+      // Ignore scroll for first ~150ms to prevent hydration hiding navbar
+      if (Date.now() < ignoreScrollUntil.current) return;
+
       const y = window.scrollY || 0;
       const diff = y - lastYRef.current;
 
       setAtTop(y < 8);
+
       if (Math.abs(diff) > 4) {
         if (y > 40 && diff > 0) setHidden(true);
         else setHidden(false);
       }
+
       lastYRef.current = y;
     };
 
@@ -60,10 +68,7 @@ export function Navbar() {
         ].join(" ")}
       >
         {/* LOGO */}
-        <Link
-          href="/"
-          className="wf-nav-logo"
-        >
+        <Link href="/" className="wf-nav-logo">
           <Image
             src="/Kompi..svg"
             alt="Kompi"
@@ -84,9 +89,7 @@ export function Navbar() {
 
           <Link
             href="/pricing"
-            className={[linkBase, isPricing ? activeColor : inactiveColor].join(
-              " "
-            )}
+            className={[linkBase, isPricing ? activeColor : inactiveColor].join(" ")}
           >
             Pricing
           </Link>
@@ -96,10 +99,7 @@ export function Navbar() {
         <div className="flex items-center gap-2.5">
           <Link
             href="/signin"
-            className={[
-              "wf-nav-cta-secondary",
-              "hidden md:inline-flex",
-            ].join(" ")}
+            className={["wf-nav-cta-secondary", "hidden md:inline-flex"].join(" ")}
           >
             Log in
           </Link>
@@ -122,7 +122,7 @@ export function Navbar() {
   );
 }
 
-/** Solutions mega menu (hover-intent with small leave delay) */
+/** Solutions mega menu (hover intent with small leave delay) */
 function SolutionsMegaMenu() {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -140,11 +140,9 @@ function SolutionsMegaMenu() {
   };
   const scheduleClose = () => {
     clearCloseTimer();
-    // small grace period so cursor can travel from trigger to panel
     closeTimer.current = setTimeout(() => setOpen(false), 150);
   };
 
-  // Optional: close on click outside / Esc
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
@@ -200,22 +198,14 @@ function SolutionsMegaMenu() {
           ].join(" ")}
           role="dialog"
         >
-          <Link
-            href="/#solutions-agencies"
-            className="wf-nav-solutions-item group"
-          >
-            <span className="wf-nav-solutions-title">
-              Studios &amp; agencies
-            </span>
+          <Link href="/#solutions-agencies" className="wf-nav-solutions-item group">
+            <span className="wf-nav-solutions-title">Studios &amp; agencies</span>
             <span className="wf-nav-solutions-body">
               Client workspaces, branded links, clean reporting.
             </span>
           </Link>
 
-          <Link
-            href="/#solutions-creators"
-            className="wf-nav-solutions-item group"
-          >
+          <Link href="/#solutions-creators" className="wf-nav-solutions-item group">
             <span className="wf-nav-solutions-title">
               Creators &amp; personal brands
             </span>
@@ -224,13 +214,8 @@ function SolutionsMegaMenu() {
             </span>
           </Link>
 
-          <Link
-            href="/#solutions-teams"
-            className="wf-nav-solutions-item group"
-          >
-            <span className="wf-nav-solutions-title">
-              Growth &amp; marketing teams
-            </span>
+          <Link href="/#solutions-teams" className="wf-nav-solutions-item group">
+            <span className="wf-nav-solutions-title">Growth &amp; marketing teams</span>
             <span className="wf-nav-solutions-body">
               Smart routing, analytics, multi-brand control.
             </span>

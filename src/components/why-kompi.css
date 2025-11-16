@@ -1,0 +1,197 @@
+/* Section */
+
+.wk-section {
+  margin-top: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.wk-header {
+  max-width: 40rem;
+}
+
+.wk-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-subtle);
+}
+
+.wk-title {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.wk-sub {
+  font-size: 0.95rem;
+  color: var(--color-subtle);
+}
+
+
+/* Stage */
+
+.wk-stage {
+  width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  height: 380px;
+  overflow: visible;
+  z-index: 1;
+}
+
+.wk-track {
+  position: absolute;
+  inset: 0;
+}
+
+
+/* Card base */
+
+.wk-card {
+  width: 400px;
+  height: 360px;
+  position: absolute;
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  transition:
+    transform 1200ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 1200ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+
+/* Tones */
+
+.wk-tone-light {
+  background: var(--color-surface);
+}
+
+.wk-tone-soft {
+  background: var(--color-accent-soft);
+}
+
+.wk-tone-dark {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+
+/* Slot layout */
+
+.wk-hidden {
+  transform: translateX(-200px) scale(0.7);
+  opacity: 0;
+  z-index: 0;
+}
+
+.wk-left {
+  transform: translateX(0px) scale(0.92);
+  opacity: 0.9;
+  z-index: 1;
+}
+
+.wk-center {
+  transform: translateX(350px) scale(1.08);
+  z-index: 3;
+  opacity: 1;
+}
+
+.wk-right {
+  transform: translateX(700px) scale(0.92);
+  opacity: 0.9;
+  z-index: 1;
+}
+
+
+/* Content */
+
+.wk-media {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+}
+
+.wk-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.wk-card-body {
+  font-size: 0.92rem;
+  color: var(--color-subtle);
+}
+
+.wk-tone-dark .wk-card-body {
+  color: var(--color-bg);
+}
+
+
+/* CTA */
+
+.wk-cta {
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.wk-tone-dark .wk-cta {
+  background: var(--color-bg);
+}
+
+
+/* Controls (always visible) */
+
+.wk-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.6rem;
+  z-index: 10;
+  position: relative;
+}
+
+.wk-dots {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.wk-dot {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.wk-dot.active {
+  width: 14px;
+  background: var(--color-text);
+  border-color: var(--color-text);
+}
+
+.wk-arrows {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.wk-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  font-size: 1.1rem;
+}

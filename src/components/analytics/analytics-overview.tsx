@@ -33,6 +33,14 @@ const DEVICE_LABELS: Record<string, string> = {
   unknown: "Unknown",
 };
 
+const DEVICE_COLORS: string[] = [
+  "var(--color-accent)",
+  "var(--color-accent-soft)",
+  "var(--color-text)",
+  "var(--color-subtle)",
+  "var(--color-border)",
+];
+
 export function AnalyticsOverview({ data }: Props) {
   const { dateRange, totalEngagements, topDate } = data;
 
@@ -58,75 +66,94 @@ export function AnalyticsOverview({ data }: Props) {
   const countries = data.byCountry;
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Top bar with range + filters */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="wf-dashboard-main flex flex-col gap-6">
+      {/* Dashboard/PageHeader + FilterBar */}
+      <div className="wf-dashboard-header border-b border-[color:var(--color-border)] pb-4">
         <div className="space-y-1">
-          <h1 className="text-xl font-semibold tracking-tight text-white">
-            Analytics
-          </h1>
-          <p className="text-sm text-slate-400">
+          <div className="inline-flex items-center gap-2">
+            <span className="inline-flex h-5 w-1 rounded-full bg-[color:var(--color-accent)]" />
+            <h1 className="text-xl font-semibold tracking-tight text-[color:var(--color-text)]">
+              Analytics
+            </h1>
+          </div>
+          <p className="text-sm text-[color:var(--color-subtle)]">
             Overview of engagements across all Links and Kompi Codes™ in this
             workspace.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <div className="rounded-full bg-slate-900/70 border border-white/10 px-3 py-1 text-slate-200">
-            {fromLabel} — {toLabel}
+        <div className="wf-dashboard-filters mt-4 flex flex-col gap-2 text-sm md:mt-0 md:flex-row md:items-center md:justify-end">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-accent-soft)] bg-[color:var(--color-accent-soft)] px-3 py-1 text-xs text-[color:var(--color-text)]">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[color:var(--color-accent)]" />
+            <span>
+              {fromLabel} — {toLabel}
+            </span>
           </div>
-          <Button variant="outline" size="sm" className="border-white/10">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 rounded-full px-3 text-xs"
+          >
             Add filters
           </Button>
         </div>
       </div>
 
-      {/* Cards grid – mimics Bitly layout */}
+      {/* Cards grid – Dashboard layout */}
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* Top performing date */}
-        <Card className="border-white/10 bg-slate-900/60 backdrop-blur-xl lg:col-span-1">
+        {/* Top performing date – Stats card */}
+        <Card className="lg:col-span-1">
           <CardContent className="flex h-full flex-col justify-between gap-4 p-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
                 Top performing date
               </p>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-[color:var(--color-subtle)]">
                 by total engagements
               </p>
             </div>
 
             {topDate ? (
               <>
-                <div>
-                  <p className="text-2xl font-semibold text-white">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[color:var(--color-accent)]">
+                    Peak activity
+                  </p>
+                  <p className="text-2xl font-semibold text-[color:var(--color-text)]">
                     {format(new Date(topDate.date), "MMMM d, yyyy")}
                   </p>
-                  <p className="mt-1 text-sm text-slate-400">
-                    {topDate.count.toLocaleString()} engagements
+                  <p className="mt-1 text-sm text-[color:var(--color-subtle)]">
+                    <span className="font-semibold text-[color:var(--color-accent)]">
+                      {topDate.count.toLocaleString()}
+                    </span>{" "}
+                    engagements
                   </p>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-[color:var(--color-subtle)]">
                   Based on activity across all Links and Kompi Codes™.
                 </p>
               </>
             ) : (
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-[color:var(--color-subtle)]">
                 No activity during this range yet.
               </p>
             )}
           </CardContent>
         </Card>
 
-        {/* Device donut */}
-        <Card className="border-white/10 bg-slate-900/60 backdrop-blur-xl lg:col-span-2">
+        {/* Device donut – Dashboard/Stats + Chart */}
+        <Card className="lg:col-span-2">
           <CardContent className="flex h-full flex-col gap-4 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
                   Total engagements by device
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-white">
-                  {totalEngagements.toLocaleString()} engagements
+                <p className="mt-1 text-2xl font-semibold text-[color:var(--color-text)]">
+                  <span className="text-[color:var(--color-accent)]">
+                    {totalEngagements.toLocaleString()}
+                  </span>{" "}
+                  engagements
                 </p>
               </div>
             </div>
@@ -144,22 +171,49 @@ export function AnalyticsOverview({ data }: Props) {
                       paddingAngle={4}
                     >
                       {deviceChart.map((_, idx) => (
-                        <Cell key={idx} />
+                        <Cell
+                          key={idx}
+                          fill={
+                            DEVICE_COLORS[idx % DEVICE_COLORS.length] ??
+                            "var(--color-accent)"
+                          }
+                        />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "1px solid var(--color-border)",
+                        background: "var(--color-surface)",
+                        color: "var(--color-text)",
+                        fontSize: 12,
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
               <div className="flex flex-1 flex-col justify-center gap-2 text-sm">
-                {deviceChart.map((d) => (
+                {deviceChart.map((d, idx) => (
                   <div
                     key={d.name}
-                    className="flex items-center justify-between text-slate-200"
+                    className="flex items-center justify-between text-[color:var(--color-text)]"
                   >
-                    <span>{d.name}</span>
-                    <span className="text-slate-400">
-                      {d.value.toLocaleString()} · {d.percent.toFixed(1)}%
+                    <span className="inline-flex items-center gap-2">
+                      <span
+                        className="inline-block h-2.5 w-2.5 rounded-full"
+                        style={{
+                          backgroundColor:
+                            DEVICE_COLORS[idx % DEVICE_COLORS.length] ??
+                            "var(--color-accent)",
+                        }}
+                      />
+                      <span>{d.name}</span>
+                    </span>
+                    <span className="text-[color:var(--color-subtle)]">
+                      {d.value.toLocaleString()} ·{" "}
+                      <span className="text-[color:var(--color-accent)]">
+                        {d.percent.toFixed(1)}%
+                      </span>
                     </span>
                   </div>
                 ))}
@@ -169,25 +223,53 @@ export function AnalyticsOverview({ data }: Props) {
         </Card>
 
         {/* Timeseries line chart */}
-        <Card className="border-white/10 bg-slate-900/60 backdrop-blur-xl lg:col-span-2">
+        <Card className="lg:col-span-2">
           <CardContent className="h-64 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
                 Total engagements over time
               </p>
             </div>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.timeseries}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" tickMargin={8} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="var(--color-border)"
+                />
+                <XAxis
+                  dataKey="date"
+                  tickMargin={8}
+                  tick={{ fill: "var(--color-subtle)", fontSize: 11 }}
+                  axisLine={{ stroke: "var(--color-border)" }}
+                  tickLine={{ stroke: "var(--color-border)" }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: "var(--color-subtle)", fontSize: 11 }}
+                  axisLine={{ stroke: "var(--color-border)" }}
+                  tickLine={{ stroke: "var(--color-border)" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 8,
+                    border: "1px solid var(--color-border)",
+                    background: "var(--color-surface)",
+                    color: "var(--color-text)",
+                    fontSize: 12,
+                  }}
+                />
                 <Line
                   type="monotone"
                   dataKey="count"
+                  stroke="var(--color-accent)"
                   strokeWidth={2}
                   dot={false}
-                  activeDot={{ r: 4 }}
+                  activeDot={{
+                    r: 4,
+                    fill: "var(--color-accent)",
+                    stroke: "var(--color-bg)",
+                  }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -195,44 +277,67 @@ export function AnalyticsOverview({ data }: Props) {
         </Card>
 
         {/* Referrer bar chart */}
-        <Card className="border-white/10 bg-slate-900/60 backdrop-blur-xl">
+        <Card>
           <CardContent className="h-64 p-4">
-            <div className="mb-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
                 Total engagements by referrer
               </p>
             </div>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={referrerChart}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="var(--color-border)"
+                />
                 <XAxis
                   dataKey="name"
                   tickMargin={8}
-                  tick={{ fontSize: 11 }}
+                  tick={{ fontSize: 11, fill: "var(--color-subtle)" }}
                   interval={0}
                   angle={-20}
                   textAnchor="end"
+                  axisLine={{ stroke: "var(--color-border)" }}
+                  tickLine={{ stroke: "var(--color-border)" }}
                 />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]} />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: "var(--color-subtle)", fontSize: 11 }}
+                  axisLine={{ stroke: "var(--color-border)" }}
+                  tickLine={{ stroke: "var(--color-border)" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 8,
+                    border: "1px solid var(--color-border)",
+                    background: "var(--color-surface)",
+                    color: "var(--color-text)",
+                    fontSize: 12,
+                  }}
+                />
+                <Bar
+                  dataKey="value"
+                  radius={[4, 4, 0, 0]}
+                  fill="var(--color-accent)"
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Country table */}
-        <Card className="border-white/10 bg-slate-900/60 backdrop-blur-xl lg:col-span-3">
+        {/* Country table – Dashboard/DataTableBlock */}
+        <Card className="lg:col-span-3">
           <CardContent className="p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
                 Total engagements by location
               </p>
             </div>
 
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="border-b border-white/5 text-xs uppercase text-slate-400">
+                <thead className="border-b border-[color:var(--color-border)] text-xs uppercase text-[color:var(--color-subtle)]">
                   <tr>
                     <th className="py-2 pr-4 text-left">#</th>
                     <th className="py-2 pr-4 text-left">Country</th>
@@ -249,19 +354,21 @@ export function AnalyticsOverview({ data }: Props) {
                     return (
                       <tr
                         key={c.country + idx}
-                        className="border-b border-white/5 last:border-0"
+                        className="border-b border-[color:var(--color-border)] last:border-0"
                       >
-                        <td className="py-2 pr-4 text-slate-500">
+                        <td className="py-2 pr-4 text-[color:var(--color-subtle)]">
                           {idx + 1}
                         </td>
-                        <td className="py-2 pr-4 text-slate-100">
+                        <td className="py-2 pr-4 text-[color:var(--color-text)]">
                           {c.country}
                         </td>
-                        <td className="py-2 pr-4 text-right text-slate-100">
+                        <td className="py-2 pr-4 text-right text-[color:var(--color-text)]">
                           {c.count.toLocaleString()}
                         </td>
-                        <td className="py-2 pl-4 text-right text-slate-400">
-                          {pct.toFixed(1)}%
+                        <td className="py-2 pl-4 text-right text-[color:var(--color-subtle)]">
+                          <span className="font-medium text-[color:var(--color-accent)]">
+                            {pct.toFixed(1)}%
+                          </span>
                         </td>
                       </tr>
                     );
@@ -270,7 +377,7 @@ export function AnalyticsOverview({ data }: Props) {
                     <tr>
                       <td
                         colSpan={4}
-                        className="py-6 text-center text-slate-400"
+                        className="py-6 text-center text-[color:var(--color-subtle)]"
                       >
                         No engagement data yet for this range.
                       </td>
