@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 16/11/2025, 00:29:16*
+*Generated on: 17/11/2025, 20:08:14*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 142 |
-| 📁 Total Folders | 71 |
+| 📄 Total Files | 155 |
+| 📁 Total Folders | 72 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,46 +26,46 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 68 files (47.9%)
-- 🔷 **.ts** (TypeScript files): 24 files (16.9%)
-- 📄 **.zip** (Other files): 12 files (8.5%)
-- 🎨 **.css** (Stylesheets): 8 files (5.6%)
-- 🎨 **.svg** (SVG images): 7 files (4.9%)
-- 📄 **.sql** (Other files): 5 files (3.5%)
-- ⚙️ **.json** (JSON files): 3 files (2.1%)
-- 📖 **.md** (Markdown files): 2 files (1.4%)
-- 📄 **.mjs** (Other files): 2 files (1.4%)
-- 🚫 **.gitignore** (Git ignore): 1 files (0.7%)
-- 🐳 **.dockerfile** (Docker files): 1 files (0.7%)
-- ⚙️ **.yml** (YAML files): 1 files (0.7%)
-- ⚙️ **.yaml** (YAML files): 1 files (0.7%)
-- ⚙️ **.toml** (TOML files): 1 files (0.7%)
-- 📄 **.prisma** (Other files): 1 files (0.7%)
-- 🖼️ **.png** (PNG images): 1 files (0.7%)
-- 📄 **.sh** (Other files): 1 files (0.7%)
-- 🖼️ **.ico** (Icon files): 1 files (0.7%)
-- 📜 **.js** (JavaScript files): 1 files (0.7%)
-- 📄 **.tsbuildinfo** (Other files): 1 files (0.7%)
+- ⚛️ **.tsx** (React TypeScript files): 72 files (46.5%)
+- 🔷 **.ts** (TypeScript files): 24 files (15.5%)
+- 📄 **.zip** (Other files): 12 files (7.7%)
+- 🎨 **.css** (Stylesheets): 10 files (6.5%)
+- 🖼️ **.png** (PNG images): 8 files (5.2%)
+- 🎨 **.svg** (SVG images): 7 files (4.5%)
+- 📄 **.sql** (Other files): 5 files (3.2%)
+- ⚙️ **.json** (JSON files): 3 files (1.9%)
+- 📖 **.md** (Markdown files): 2 files (1.3%)
+- 📄 **.mjs** (Other files): 2 files (1.3%)
+- 🚫 **.gitignore** (Git ignore): 1 files (0.6%)
+- 🐳 **.dockerfile** (Docker files): 1 files (0.6%)
+- ⚙️ **.yml** (YAML files): 1 files (0.6%)
+- ⚙️ **.yaml** (YAML files): 1 files (0.6%)
+- ⚙️ **.toml** (TOML files): 1 files (0.6%)
+- 📄 **.prisma** (Other files): 1 files (0.6%)
+- 📄 **.sh** (Other files): 1 files (0.6%)
+- 🖼️ **.ico** (Icon files): 1 files (0.6%)
+- 📜 **.js** (JavaScript files): 1 files (0.6%)
+- 📄 **.tsbuildinfo** (Other files): 1 files (0.6%)
 
 ### By Category
 
-- **React**: 68 files (47.9%)
-- **TypeScript**: 24 files (16.9%)
-- **Other**: 22 files (15.5%)
-- **Assets**: 9 files (6.3%)
-- **Styles**: 8 files (5.6%)
-- **Config**: 6 files (4.2%)
-- **DevOps**: 2 files (1.4%)
-- **Docs**: 2 files (1.4%)
-- **JavaScript**: 1 files (0.7%)
+- **React**: 72 files (46.5%)
+- **TypeScript**: 24 files (15.5%)
+- **Other**: 22 files (14.2%)
+- **Assets**: 16 files (10.3%)
+- **Styles**: 10 files (6.5%)
+- **Config**: 6 files (3.9%)
+- **DevOps**: 2 files (1.3%)
+- **Docs**: 2 files (1.3%)
+- **JavaScript**: 1 files (0.6%)
 
 ### 📁 Largest Directories
 
-- **root**: 142 files
-- **src**: 99 files
-- **src/app**: 51 files
-- **src/components**: 43 files
-- **src/app/api**: 14 files
+- **root**: 155 files
+- **src**: 105 files
+- **src/app**: 52 files
+- **src/components**: 48 files
+- **public**: 15 files
 
 ## 🌳 Directory Structure
 
@@ -112,7 +112,14 @@ kompi-web/
 │   ├── 🎨 file.svg
 │   ├── 🎨 globe.svg
 │   ├── 🎨 Kompi..svg
+│   ├── 🖼️ kompifive.png
+│   ├── 🖼️ kompifour.png
+│   ├── 🖼️ kompione.png
 │   ├── 🖼️ kompiphoto.png
+│   ├── 🖼️ kompiseven.png
+│   ├── 🖼️ kompisix.png
+│   ├── 🖼️ kompithree.png
+│   ├── 🖼️ kompitwo.png
 │   ├── 🎨 Kompiwhite.svg
 │   ├── 🎨 next.svg
 │   ├── 🎨 vercel.svg
@@ -190,6 +197,8 @@ kompi-web/
 │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   └── 🎨 url-shortener.css
 │   │   ├── 🎨 globals.css
+│   │   ├── 📂 growth/
+│   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 k-cards/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🎨 kompi-marketing.css
@@ -231,6 +240,7 @@ kompi-web/
 │   │   │   ├── ⚛️ create-modal.tsx
 │   │   │   ├── ⚛️ create-workspace-empty.tsx
 │   │   │   ├── ⚛️ dashboard-layout.tsx
+│   │   │   ├── 🎨 dashboard-shell.css
 │   │   │   ├── ⚛️ dashboard-shell.tsx
 │   │   │   ├── ⚛️ dashboard-topbar.tsx
 │   │   │   └── ⚛️ glass-card.tsx
@@ -241,6 +251,10 @@ kompi-web/
 │   │   │   ├── 🔷 kcard-theme-presets.ts
 │   │   │   ├── ⚛️ KCardsPage.tsx
 │   │   │   └── ⚛️ KCardThemeSection.tsx
+│   │   ├── 🎨 kompi-promo-cards.css
+│   │   ├── ⚛️ KompiPerks.tsx
+│   │   ├── ⚛️ KompiPromoCards.tsx
+│   │   ├── ⚛️ KPromo.tsx
 │   │   ├── 📂 kr-codes/
 │   │   │   └── ⚛️ KRCodesPage.tsx
 │   │   ├── 📂 layout/

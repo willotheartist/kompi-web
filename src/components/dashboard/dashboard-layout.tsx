@@ -109,7 +109,7 @@ function Sidebar({
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <Image
-                  src="/Kompiwhite.svg"
+                  src="/Kompi..svg"
                   alt="Kompi"
                   width={112}
                   height={24}
@@ -121,11 +121,11 @@ function Sidebar({
                 className="text-[11px] uppercase tracking-[0.16em]"
                 style={{
                   color: "var(--color-subtle)",
-                  fontFamily: "var(--font-instrument-serif)",
+                  fontFamily: "Instrument Serif, system-ui, serif",
                   fontStyle: "italic",
                 }}
               >
-                workspace console
+                {/* optional console label */}
               </span>
             </div>
           )}
@@ -156,7 +156,7 @@ function Sidebar({
                 key={href}
                 href={href}
                 className={cn(
-                  "wf-dashboard-nav-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition",
+                  "wf-dashboard-nav-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
                   collapsed && "justify-center"
                 )}
                 style={{
@@ -180,22 +180,25 @@ function Sidebar({
                 <Icon
                   className={cn(
                     "h-5 w-5 shrink-0",
-                    !collapsed && "group-hover:translate-x-0.5 transition-transform"
+                    !collapsed &&
+                      "group-hover:translate-x-0.5 transition-transform"
                   )}
                 />
                 {!collapsed && (
-                  <span
-                    className="truncate"
-                    style={
-                      active
-                        ? {
-                            fontFamily: "var(--font-instrument-serif)",
-                            fontStyle: "italic",
-                          }
-                        : undefined
-                    }
-                  >
-                    {label}
+                  <span className="truncate">
+                    {active ? (
+                      <span
+                        style={{
+                          fontFamily:
+                            "Instrument Serif, system-ui, serif",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        {label}
+                      </span>
+                    ) : (
+                      label
+                    )}
                   </span>
                 )}
               </Link>
@@ -259,28 +262,9 @@ function Topbar() {
       <div className="flex min-w-0 flex-col">
         <div className="flex items-center gap-2">
           <span
-            className="text-[11px] font-medium uppercase tracking-[0.16em]"
-            style={{
-              color: "var(--color-subtle)",
-            }}
-          >
-            Kompi dashboard
-          </span>
-          <span
             className="h-[2px] w-6 rounded-full"
             style={{ backgroundColor: "var(--color-accent)" }}
           />
-        </div>
-        <div className="mt-1 flex items-baseline gap-2 text-sm font-semibold sm:text-base">
-          <span>Today&apos;s</span>
-          <span
-            style={{
-              fontFamily: "var(--font-instrument-serif)",
-              fontStyle: "italic",
-            }}
-          >
-            workspace
-          </span>
         </div>
       </div>
 
@@ -326,7 +310,7 @@ function Topbar() {
                 <div
                   className="truncate text-sm font-medium"
                   style={{
-                    fontFamily: "var(--font-instrument-serif)",
+                    fontFamily: "Instrument Serif, system-ui, serif",
                     fontStyle: "italic",
                   }}
                 >
@@ -397,7 +381,7 @@ function MenuItem({
     >
       <span
         style={{
-          fontFamily: "var(--font-instrument-serif)",
+          fontFamily: "Instrument Serif, system-ui, serif",
           fontStyle: "italic",
         }}
       >

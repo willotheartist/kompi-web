@@ -36,6 +36,7 @@ export const authOptions: NextAuthOptions = {
         email?: string;
       };
 
+      // When a user signs in, persist id + email onto the token
       if (user) {
         if ("id" in user && typeof user.id === "string") {
           mutableToken.id = user.id;
@@ -54,6 +55,7 @@ export const authOptions: NextAuthOptions = {
           email?: string;
         };
 
+        // Always expose id + email on session.user for downstream code
         session.user = {
           ...session.user,
           id: typedToken.id,
@@ -74,17 +76,65 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-export async function getSession() {
+/**
+ * Convenience helper: use this instead of calling getServerSession everywhere.
+ */
+export async function auth() {
   return getServerSession(authOptions);
 }
 
-export async function requireUser() {
-  const session = await getServerSession(authOptions);
-  let email = session?.user?.email as string | undefined;
+export async function getSession() {
+  return auth();
+}
 
+/**
+ * Robust user lookup:
+ * - Prefer session.user.id if present
+ * - Fallback to session.user.email
+ * - In development, optionally use DEV_EMAIL
+ */
+export async function requireUser() {
+  const session = await auth();
+
+  // If no session at all, try DEV_EMAIL (dev) or bail
+  if (!session || !session.user) {
+    let email: string | undefined;
+
+    if (process.env.NODE_ENV === "development" && process.env.DEV_EMAIL) {
+      email = process.env.DEV_EMAIL;
+    } else {
+      throw new Error("Unauthorized");
+    }
+
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      user = await prisma.user.create({ data: { email } });
+    }
+    return user;
+  }
+
+  // At this point we know session.user exists
+  const { id, email: sessionEmail } = session.user as {
+    id?: string | null;
+    email?: string | null;
+  };
+
+  const userId = id ?? undefined;
+  let email = sessionEmail ?? undefined;
+
+  // 1) Try by id first if we have it
+  if (userId) {
+    const byId = await prisma.user.findUnique({ where: { id: userId } });
+    if (byId) {
+      return byId;
+    }
+    // fall through to email next
+  }
+
+  // 2) Need an email to continue; fallback to DEV_EMAIL in dev
   if (!email) {
     if (process.env.NODE_ENV === "development" && process.env.DEV_EMAIL) {
-      email = process.env.DEV_EMAIL as string;
+      email = process.env.DEV_EMAIL;
     } else {
       throw new Error("Unauthorized");
     }

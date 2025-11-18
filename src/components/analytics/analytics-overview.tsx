@@ -1,6 +1,7 @@
 // src/components/analytics/analytics-overview.tsx
 "use client";
 
+import Image from "next/image";
 import { format } from "date-fns";
 import {
   LineChart,
@@ -64,171 +65,136 @@ export function AnalyticsOverview({ data }: Props) {
   }));
 
   const countries = data.byCountry;
+  const countriesSorted = [...countries].sort((a, b) => b.count - a.count);
+
+  const totalDays = data.timeseries.length || 1;
+  const activeDays = data.timeseries.filter((d) => d.count > 0).length;
+  const avgPerDay = totalEngagements / totalDays;
+  const uniqueDevices = data.byDevice.filter((d) => d.count > 0).length;
+  const topCountry = countriesSorted[0]?.country ?? "—";
 
   return (
     <div className="wf-dashboard-main flex flex-col gap-6">
-      {/* Dashboard/PageHeader + FilterBar */}
+      {/* Pattern: DashboardPageHeaderA */}
       <div className="wf-dashboard-header border-b border-[color:var(--color-border)] pb-4">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-2">
-            <span className="inline-flex h-5 w-1 rounded-full bg-[color:var(--color-accent)]" />
-            <h1 className="text-xl font-semibold tracking-tight text-[color:var(--color-text)]">
-              Analytics
-            </h1>
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2">
+              <span className="inline-flex h-5 w-1 rounded-full bg-[color:var(--color-accent)]" />
+              <h1 className="text-xl font-semibold tracking-tight text-[color:var(--color-text)]">
+                Insights
+              </h1>
+            </div>
+            <p className="text-sm text-[color:var(--color-subtle)]">
+              Lifetime insights across your Links and Kompi Codes™ in this
+              workspace.
+            </p>
           </div>
-          <p className="text-sm text-[color:var(--color-subtle)]">
-            Overview of engagements across all Links and Kompi Codes™ in this
-            workspace.
-          </p>
-        </div>
 
-        <div className="wf-dashboard-filters mt-4 flex flex-col gap-2 text-sm md:mt-0 md:flex-row md:items-center md:justify-end">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-accent-soft)] bg-[color:var(--color-accent-soft)] px-3 py-1 text-xs text-[color:var(--color-text)]">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[color:var(--color-accent)]" />
-            <span>
-              {fromLabel} — {toLabel}
-            </span>
+          <div className="wf-dashboard-filters flex flex-col gap-2 text-xs md:flex-row md:items-center md:justify-end">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-1">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[color:var(--color-accent)]" />
+              <span className="font-medium text-[color:var(--color-text)]">
+                {fromLabel} — {toLabel}
+              </span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-full px-3 text-xs"
+            >
+              Add filters
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 rounded-full px-3 text-xs"
-          >
-            Add filters
-          </Button>
         </div>
       </div>
 
-      {/* Cards grid – Dashboard layout */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        {/* Top performing date – Stats card */}
-        <Card className="lg:col-span-1">
-          <CardContent className="flex h-full flex-col justify-between gap-4 p-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
-                Top performing date
-              </p>
-              <p className="text-[11px] text-[color:var(--color-subtle)]">
-                by total engagements
-              </p>
-            </div>
+      {/* Pattern: StatsRowA – lifetime KPI row */}
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+          <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
+              Total engagements
+            </p>
+            <p className="text-2xl font-semibold text-[color:var(--color-text)]">
+              {totalEngagements.toLocaleString()}
+            </p>
+            <p className="text-xs text-[color:var(--color-subtle)]">
+              Across the selected date range.
+            </p>
+          </CardContent>
+        </Card>
 
+        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+          <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
+              Avg engagements / day
+            </p>
+            <p className="text-2xl font-semibold text-[color:var(--color-text)]">
+              {avgPerDay.toFixed(1)}
+            </p>
+            <p className="text-xs text-[color:var(--color-subtle)]">
+              Based on {totalDays.toLocaleString()} days of activity.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+          <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
+              Active days
+            </p>
+            <p className="text-2xl font-semibold text-[color:var(--color-text)]">
+              {activeDays.toLocaleString()}
+            </p>
+            <p className="text-xs text-[color:var(--color-subtle)]">
+              Days with at least one engagement.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+          <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
+              Audience snapshot
+            </p>
+            <p className="text-sm font-semibold text-[color:var(--color-text)]">
+              {uniqueDevices} device types · Top: {topCountry}
+            </p>
             {topDate ? (
-              <>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[color:var(--color-accent)]">
-                    Peak activity
-                  </p>
-                  <p className="text-2xl font-semibold text-[color:var(--color-text)]">
-                    {format(new Date(topDate.date), "MMMM d, yyyy")}
-                  </p>
-                  <p className="mt-1 text-sm text-[color:var(--color-subtle)]">
-                    <span className="font-semibold text-[color:var(--color-accent)]">
-                      {topDate.count.toLocaleString()}
-                    </span>{" "}
-                    engagements
-                  </p>
-                </div>
-                <p className="text-[11px] text-[color:var(--color-subtle)]">
-                  Based on activity across all Links and Kompi Codes™.
-                </p>
-              </>
+              <p className="text-xs text-[color:var(--color-subtle)]">
+                Peak on{" "}
+                <span className="font-medium text-[color:var(--color-accent)]">
+                  {format(new Date(topDate.date), "MMM d")}
+                </span>{" "}
+                with {topDate.count.toLocaleString()} engagements.
+              </p>
             ) : (
-              <p className="text-sm text-[color:var(--color-subtle)]">
-                No activity during this range yet.
+              <p className="text-xs text-[color:var(--color-subtle)]">
+                Peak activity data will appear once you start getting clicks.
               </p>
             )}
           </CardContent>
         </Card>
+      </div>
 
-        {/* Device donut – Dashboard/Stats + Chart */}
-        <Card className="lg:col-span-2">
-          <CardContent className="flex h-full flex-col gap-4 p-4">
-            <div className="flex items-center justify-between">
-              <div>
+      {/* Pattern: InsightsGridA – main charts row */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Activity over time */}
+        <Card className="lg:col-span-2 border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+          <CardContent className="h-64 px-6 py-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="space-y-0.5">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
-                  Total engagements by device
+                  Activity
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-[color:var(--color-text)]">
-                  <span className="text-[color:var(--color-accent)]">
-                    {totalEngagements.toLocaleString()}
-                  </span>{" "}
-                  engagements
+                <p className="text-xs text-[color:var(--color-subtle)]">
+                  Total engagements over time.
                 </p>
               </div>
-            </div>
-
-            <div className="flex flex-1 flex-col gap-4 md:flex-row">
-              <div className="h-48 flex-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={deviceChart}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={4}
-                    >
-                      {deviceChart.map((_, idx) => (
-                        <Cell
-                          key={idx}
-                          fill={
-                            DEVICE_COLORS[idx % DEVICE_COLORS.length] ??
-                            "var(--color-accent)"
-                          }
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: 8,
-                        border: "1px solid var(--color-border)",
-                        background: "var(--color-surface)",
-                        color: "var(--color-text)",
-                        fontSize: 12,
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-1 flex-col justify-center gap-2 text-sm">
-                {deviceChart.map((d, idx) => (
-                  <div
-                    key={d.name}
-                    className="flex items-center justify-between text-[color:var(--color-text)]"
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <span
-                        className="inline-block h-2.5 w-2.5 rounded-full"
-                        style={{
-                          backgroundColor:
-                            DEVICE_COLORS[idx % DEVICE_COLORS.length] ??
-                            "var(--color-accent)",
-                        }}
-                      />
-                      <span>{d.name}</span>
-                    </span>
-                    <span className="text-[color:var(--color-subtle)]">
-                      {d.value.toLocaleString()} ·{" "}
-                      <span className="text-[color:var(--color-accent)]">
-                        {d.percent.toFixed(1)}%
-                      </span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Timeseries line chart */}
-        <Card className="lg:col-span-2">
-          <CardContent className="h-64 p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
-                Total engagements over time
-              </p>
+              <span className="rounded-full bg-[color:var(--color-bg)] px-2 py-1 text-[10px] font-medium text-[color:var(--color-subtle)]">
+                Timeseries
+              </span>
             </div>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.timeseries}>
@@ -276,63 +242,201 @@ export function AnalyticsOverview({ data }: Props) {
           </CardContent>
         </Card>
 
-        {/* Referrer bar chart */}
-        <Card>
-          <CardContent className="h-64 p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
-                Total engagements by referrer
-              </p>
+        {/* Devices donut */}
+        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+          <CardContent className="flex h-64 flex-col gap-4 px-6 py-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
+                  Devices
+                </p>
+                <p className="text-xs text-[color:var(--color-subtle)]">
+                  Where your audience is engaging from.
+                </p>
+              </div>
             </div>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={referrerChart}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="var(--color-border)"
-                />
-                <XAxis
-                  dataKey="name"
-                  tickMargin={8}
-                  tick={{ fontSize: 11, fill: "var(--color-subtle)" }}
-                  interval={0}
-                  angle={-20}
-                  textAnchor="end"
-                  axisLine={{ stroke: "var(--color-border)" }}
-                  tickLine={{ stroke: "var(--color-border)" }}
-                />
-                <YAxis
-                  allowDecimals={false}
-                  tick={{ fill: "var(--color-subtle)", fontSize: 11 }}
-                  axisLine={{ stroke: "var(--color-border)" }}
-                  tickLine={{ stroke: "var(--color-border)" }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 8,
-                    border: "1px solid var(--color-border)",
-                    background: "var(--color-surface)",
-                    color: "var(--color-text)",
-                    fontSize: 12,
-                  }}
-                />
-                <Bar
-                  dataKey="value"
-                  radius={[4, 4, 0, 0]}
-                  fill="var(--color-accent)"
-                />
-              </BarChart>
-            </ResponsiveContainer>
+
+            <div className="flex flex-1 flex-col gap-4 md:flex-row">
+              <div className="h-40 flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={deviceChart}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={4}
+                    >
+                      {deviceChart.map((_, idx) => (
+                        <Cell
+                          key={idx}
+                          fill={
+                            DEVICE_COLORS[idx % DEVICE_COLORS.length] ??
+                            "var(--color-accent)"
+                          }
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "1px solid var(--color-border)",
+                        background: "var(--color-surface)",
+                        color: "var(--color-text)",
+                        fontSize: 12,
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex flex-1 flex-col justify-center gap-2 text-xs">
+                {deviceChart.map((d, idx) => (
+                  <div
+                    key={d.name}
+                    className="flex items-center justify-between text-[color:var(--color-text)]"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <span
+                        className="inline-block h-2.5 w-2.5 rounded-full"
+                        style={{
+                          backgroundColor:
+                            DEVICE_COLORS[idx % DEVICE_COLORS.length] ??
+                            "var(--color-accent)",
+                        }}
+                      />
+                      <span>{d.name}</span>
+                    </span>
+                    <span className="text-[color:var(--color-subtle)]">
+                      {d.value.toLocaleString()} ·{" "}
+                      <span className="text-[color:var(--color-accent)]">
+                        {d.percent.toFixed(1)}%
+                      </span>
+                    </span>
+                  </div>
+                ))}
+                {deviceChart.length === 0 && (
+                  <p className="text-xs text-[color:var(--color-subtle)]">
+                    Device breakdown will appear once you start getting
+                    engagements.
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Pattern: PromoBandA – unlock insights CTA */}
+      <Card className="border-none bg-[color:var(--color-accent-soft)]">
+        <CardContent className="flex flex-col gap-6 px-6 py-6 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-xl space-y-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-accent)]">
+              Unlock powerful insights
+            </p>
+            <h2 className="text-lg font-semibold leading-snug text-[color:var(--color-text)]">
+              See what&apos;s working, optimise links, and understand your
+              audience in one place.
+            </h2>
+            <ul className="list-disc space-y-1 pl-4 text-sm text-[color:var(--color-text)]">
+              <li>Spot your top-performing links in seconds.</li>
+              <li>Understand your audience by country and device.</li>
+              <li>Share performance with collaborators or clients.</li>
+            </ul>
+            <Button className="mt-3 rounded-full px-4 text-sm">
+              Explore link analytics
+            </Button>
+          </div>
+
+          <div className="mt-2 flex w-full max-w-xs items-center justify-center md:mt-0 md:justify-end">
+            <div className="relative h-40 w-64">
+              <Image
+                src="/kompione.png"
+                alt="Kompi analytics illustration"
+                fill
+                className="rounded-2xl object-contain"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Pattern: InsightsGridB – sources + geography */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Referrer bar chart */}
+        <Card className="lg:col-span-1 border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+          <CardContent className="h-64 px-6 py-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
+                  Top traffic sources
+                </p>
+                <p className="text-xs text-[color:var(--color-subtle)]">
+                  Where engagements are coming from.
+                </p>
+              </div>
+            </div>
+            {referrerChart.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={referrerChart}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="var(--color-border)"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    tickMargin={8}
+                    tick={{ fontSize: 11, fill: "var(--color-subtle)" }}
+                    interval={0}
+                    angle={-20}
+                    textAnchor="end"
+                    axisLine={{ stroke: "var(--color-border)" }}
+                    tickLine={{ stroke: "var(--color-border)" }}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fill: "var(--color-subtle)", fontSize: 11 }}
+                    axisLine={{ stroke: "var(--color-border)" }}
+                    tickLine={{ stroke: "var(--color-border)" }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 8,
+                      border: "1px solid var(--color-border)",
+                      background: "var(--color-surface)",
+                      color: "var(--color-text)",
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar
+                    dataKey="value"
+                    radius={[4, 4, 0, 0]}
+                    fill="var(--color-accent)"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-start text-xs text-[color:var(--color-subtle)]">
+                Referrer insights will appear once traffic starts hitting your
+                links.
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Country table – Dashboard/DataTableBlock */}
-        <Card className="lg:col-span-3">
-          <CardContent className="p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
-                Total engagements by location
-              </p>
+        {/* Country table */}
+        <Card className="lg:col-span-2 border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+          <CardContent className="px-6 py-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-subtle)]">
+                  Audience by location
+                </p>
+                <p className="text-xs text-[color:var(--color-subtle)]">
+                  Countries ranked by total engagements.
+                </p>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -342,11 +446,11 @@ export function AnalyticsOverview({ data }: Props) {
                     <th className="py-2 pr-4 text-left">#</th>
                     <th className="py-2 pr-4 text-left">Country</th>
                     <th className="py-2 pr-4 text-right">Engagements</th>
-                    <th className="py-2 pl-4 text-right">%</th>
+                    <th className="py-2 pl-4 text-right">Share</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {countries.map((c, idx) => {
+                  {countriesSorted.map((c, idx) => {
                     const pct =
                       totalEngagements === 0
                         ? 0
@@ -373,13 +477,14 @@ export function AnalyticsOverview({ data }: Props) {
                       </tr>
                     );
                   })}
-                  {countries.length === 0 && (
+                  {countriesSorted.length === 0 && (
                     <tr>
                       <td
                         colSpan={4}
                         className="py-6 text-center text-[color:var(--color-subtle)]"
                       >
-                        No engagement data yet for this range.
+                        Location data will appear as soon as people start
+                        engaging with your links.
                       </td>
                     </tr>
                   )}

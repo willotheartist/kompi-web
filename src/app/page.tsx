@@ -1,12 +1,16 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ReactNode, CSSProperties } from "react";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { KompiPromoCards } from "@/components/KompiPromoCards";
+import KPromo from "@/components/KPromo";
 import "./kompi-marketing.css";
+import KompiPerks from "@/components/KompiPerks";
+
 
 export const dynamic = "force-static";
 
@@ -17,62 +21,124 @@ export default function HomePage() {
 
       <motion.main
         className="wf-main"
+        style={{ paddingTop: "var(--navbar-height, 4.5rem)" }} // space for fixed navbar
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         {/* HeroA – Calm Product Hero */}
-        <Section className="wf-section-hero">
+        <Section
+          className="wf-section-hero"
+          style={{ minHeight: "100vh" }} // hero 100vh
+        >
           <Container>
             <motion.div
-              className="wf-hero-layout"
+              className="wf-hero-grid"
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.32, ease: "easeOut" }}
             >
-              <p className="wf-eyebrow">
-                Kompi Links · For studios, agencies &amp; modern creators
-              </p>
+              {/* Hero copy */}
+              <div className="wf-hero-copy">
+                <p className="wf-eyebrow">
+                  Kompi Links · For studios, agencies &amp; modern creators
+                </p>
 
-              <Heading as="h1" className="wf-hero-heading">
-                Run your links, bios &amp; campaigns
-                <span className="wf-hero-heading-line">
-                  from one{" "}
-                  <span className="wf-serif-accent">opinionated</span> platform.
-                </span>
-              </Heading>
+                <Heading as="h1" className="wf-hero-heading">
+                  Run your links, bios &amp; campaigns
+                  <span className="wf-hero-heading-line">
+                    from one{" "}
+                    <span className="wf-serif-accent">opinionated</span>{" "}
+                    platform.
+                  </span>
+                </Heading>
 
-              <p className="wf-hero-body">
-                Short links, smart bio pages, QR codes and live analytics — in a
-                UI that doesn&apos;t feel like 2013. Built so you can sell,
-                report and grow without duct-taping five tools.
-              </p>
+                <p className="wf-hero-body">
+                  Short links, smart bio pages, QR codes and live analytics —
+                  in a UI that doesn&apos;t feel like 2013. Built so you can
+                  sell, report and grow without duct-taping five tools.
+                </p>
 
-              <motion.div
-                className="wf-hero-ctas"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08, duration: 0.24, ease: "easeOut" }}
-              >
-                <Button asChild className="wf-btn-primary">
-                  <Link href="/signin">Start free in 30 seconds</Link>
-                </Button>
-                <Button asChild variant="outline" className="wf-btn-secondary">
-                  <Link href="/pricing">View pricing</Link>
-                </Button>
-              </motion.div>
+                <motion.div
+                  className="wf-hero-ctas"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: 0.08,
+                    duration: 0.24,
+                    ease: "easeOut",
+                  }}
+                >
+                  <Button asChild className="wf-btn-primary">
+                    <Link href="/signin">Start free in 30 seconds</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="wf-btn-secondary"
+                  >
+                    <Link href="/pricing">View pricing</Link>
+                  </Button>
+                </motion.div>
 
-              <motion.p
-                className="wf-hero-meta"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.14, duration: 0.22, ease: "easeOut" }}
-              >
-                No credit card. Unlimited links on launch promo.
-              </motion.p>
+                <motion.p
+                  className="wf-hero-meta"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: 0.14,
+                    duration: 0.22,
+                    ease: "easeOut",
+                  }}
+                >
+                  No credit card. Unlimited links on launch promo.
+                </motion.p>
+              </div>
+
+              {/* Hero visual: K-Cards + QR */}
+              <div className="wf-hero-visual">
+                <div className="wf-hero-device">
+                  <div className="wf-hero-device-header">
+                    <span className="wf-pill-soft">K-Cards · QR ready</span>
+                    <span className="wf-small">Live campaign snapshot</span>
+                  </div>
+
+                  <div className="wf-hero-device-body">
+                    <div className="wf-hero-link-card">
+                      <span className="wf-hero-link-label">
+                        kompi.app/willo
+                      </span>
+                      <span className="wf-hero-link-meta">
+                        Studio workspace · Smart link
+                      </span>
+                      <div className="wf-hero-link-rows">
+                        <FakeRow
+                          label="K-Card tap"
+                          dest="Event landing page"
+                        />
+                        <FakeRow label="QR scan" dest="Offer microsite" />
+                        <FakeRow label="Social bio" dest="Creator hub" />
+                      </div>
+                    </div>
+
+                    <div className="wf-hero-qr-card">
+                      <div className="wf-hero-qr-placeholder" />
+                      <div className="wf-hero-qr-copy">
+                        <p className="wf-hero-qr-label">Scan to demo</p>
+                        <p className="wf-hero-qr-meta">
+                          Try a live Kompi link in under a minute.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           </Container>
         </Section>
+
+        {/* KPromo – Clickable world carousel */}
+        <KPromo />
 
         {/* LogosBar – Trusted By */}
         <Section className="wf-section-tight">
@@ -117,17 +183,18 @@ export default function HomePage() {
 
               <motion.div
                 id="features"
-                className="grid gap-4 md:grid-cols-3"
+                className="wf-value-grid"
                 initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.26, ease: "easeOut" }}
               >
-                <div className="wf-card">
+                <div className="wf-card wf-card-primary">
                   <h3 className="wf-card-title">Smarter short links</h3>
                   <p className="wf-card-body">
                     Branded, trackable links that load fast and plug straight
-                    into your reports.
+                    into your reports. Group by campaign, workspace or client —
+                    no spreadsheet cleanup.
                   </p>
                 </div>
 
@@ -135,7 +202,8 @@ export default function HomePage() {
                   <h3 className="wf-card-title">Beautiful bio pages</h3>
                   <p className="wf-card-body">
                     Opinionated link-in-bio layouts styled for real brands, not
-                    generic templates.
+                    generic templates. Ship pages your clients are happy to
+                    share.
                   </p>
                 </div>
 
@@ -143,7 +211,8 @@ export default function HomePage() {
                   <h3 className="wf-card-title">Live analytics</h3>
                   <p className="wf-card-body">
                     See clicks, referrers, devices and campaigns in one place —
-                    per link and per workspace.
+                    per link and per workspace. Export when the data team needs
+                    to go deeper.
                   </p>
                 </div>
               </motion.div>
@@ -172,10 +241,13 @@ export default function HomePage() {
         </Section>
 
         {/* HowItWorks – Kompi in your stack */}
-        <Section className="wf-band-accent-soft">
+        <Section
+          className="wf-band-accent-soft"
+          style={{ minHeight: "100vh" }} // Kompi in your stack 100vh
+        >
           <Container>
             <motion.div
-              className="grid gap-10 md:grid-cols-2 md:items-center"
+              className="wf-howitworks-grid"
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -193,7 +265,9 @@ export default function HomePage() {
                   follow the story instead of each platform.
                 </p>
                 <ul className="wf-bullet-list">
-                  <li>Use one link across Instagram, TikTok, X, email and QR.</li>
+                  <li>
+                    Use one link across Instagram, TikTok, X, email and QR.
+                  </li>
                   <li>Swap destinations without breaking old posts.</li>
                   <li>
                     Keep your team, clients and reports all in one workspace.
@@ -227,6 +301,7 @@ export default function HomePage() {
             </motion.div>
           </Container>
         </Section>
+        <KompiPerks />
 
         {/* ValueGrid – Personas / Who Kompi is for */}
         <Section>
@@ -251,7 +326,7 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="wf-persona-grid">
                 <PersonaCard
                   title="Creators"
                   bullet1="Turn one link into a home for your drops, streams and offers."
@@ -275,8 +350,42 @@ export default function HomePage() {
           </Container>
         </Section>
 
-        {/* ValueGrid – Analytics focus */}
+        {/* ValueGrid – KompiPromoCards (K-Cards + QR focus) */}
         <Section className="wf-band-surface">
+          <Container>
+            <motion.div
+              className="wf-kompi-promo-shell"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.26, ease: "easeOut" }}
+            >
+              <div className="wf-intro-block">
+                <p className="wf-eyebrow">Kompi in action</p>
+                <Heading as="h2" className="wf-section-heading">
+                  K-Cards, QR &amp;{" "}
+                  <span className="wf-serif-accent">links</span> in one view.
+                </Heading>
+                <p className="wf-section-intro">
+                  Give your team and clients a single source of truth — from
+                  physical cards to QR posters and short links, Kompi keeps the
+                  journey connected.
+                </p>
+              </div>
+
+              {/* Wrapper to keep KompiPromoCards contained & aligned */}
+              <div className="wf-kompi-promo-grid">
+                <KompiPromoCards />
+              </div>
+            </motion.div>
+          </Container>
+        </Section>
+
+        {/* ValueGrid – Analytics focus */}
+        <Section
+          className="wf-band-accent-soft"
+          style={{ minHeight: "100vh" }} // Analytics without the headache 100vh
+        >
           <Container>
             <motion.div
               className="wf-analytics-shell"
@@ -303,7 +412,7 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="grid w-full max-w-3xl gap-4 md:grid-cols-3">
+              <div className="wf-analytics-grid">
                 <AnalyticsPill
                   label="Per-link insights"
                   body="See performance by link, campaign or workspace in seconds."
@@ -391,12 +500,18 @@ export default function HomePage() {
 function Section({
   children,
   className,
+  style,
 }: {
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }) {
   const cls = ["wf-section", className].filter(Boolean).join(" ");
-  return <section className={cls}>{children}</section>;
+  return (
+    <section className={cls} style={style}>
+      {children}
+    </section>
+  );
 }
 
 function Container({
@@ -460,13 +575,7 @@ function PersonaCard({
   );
 }
 
-function AnalyticsPill({
-  label,
-  body,
-}: {
-  label: string;
-  body: string;
-}) {
+function AnalyticsPill({ label, body }: { label: string; body: string }) {
   return (
     <div className="wf-analytics-pill">
       <h3 className="wf-analytics-title">{label}</h3>

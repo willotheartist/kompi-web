@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pencil, Trash2 } from "lucide-react";
 
 const FormSchema = z.object({
   title: z.string().max(120).optional(),
@@ -131,10 +132,16 @@ export default function KRCodesPage() {
     useState<ContentTypeId | null>(null);
   const [showUtms, setShowUtms] = useState(false);
 
+  // which code’s download popover is open
+  const [downloadMenuFor, setDownloadMenuFor] = useState<string | null>(
+    null
+  );
+  // which code is currently asking for delete confirmation
+  const [deleteIntentFor, setDeleteIntentFor] = useState<string | null>(
+    null
+  );
+
   const form = useForm<FormValues>({
-    // NOTE: There is a known type mismatch between this version of zod
-    // and @hookform/resolvers. Runtime behavior is correct; we just
-    // silence TS here.
     // @ts-expect-error zodResolver schema type signature mismatch
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -270,6 +277,58 @@ export default function KRCodesPage() {
     }
   }
 
+  // Prefill the create form from an existing KR Code (lightweight "edit" flow).
+  function handleEdit(code: KRCode) {
+    form.reset({
+      title: code.title ?? "",
+      destination: code.destination,
+      utm_source: "",
+      utm_medium: "",
+      utm_campaign: "",
+      utm_term: "",
+      utm_content: "",
+    });
+
+    const styleFromCode = code.style;
+    if (styleFromCode) {
+      const { fg, bg, size, margin, ecLevel } = styleFromCode;
+      setStyle((prev) => ({
+        fg: (fg as string) || prev.fg,
+        bg: (bg as string) || prev.bg,
+        size: (size as number) || prev.size,
+        margin: (margin as number) || prev.margin,
+        ecLevel:
+          (ecLevel as StyleState["ecLevel"]) || prev.ecLevel,
+      }));
+    }
+
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  // Delete KR Code and remove from list (called only after branded confirm).
+  async function handleDelete(code: KRCode) {
+    setError(null);
+    try {
+      const res = await fetch(`/api/kr-codes/${code.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(`Failed with status ${res.status}`);
+      }
+      setCodes((prev) => prev.filter((c) => c.id !== code.id));
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete KR Code");
+    } finally {
+      setDeleteIntentFor((current) =>
+        current === code.id ? null : current
+      );
+    }
+  }
+
   return (
     <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
       <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8 md:gap-8 md:pb-12">
@@ -287,269 +346,169 @@ export default function KRCodesPage() {
           </p>
         </header>
 
-        {/* Two-column layout */}
+        {/* Row 1: create + preview */}
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.1fr)]">
-          {/* LEFT: create + list */}
-          <div className="flex flex-col gap-6">
-            {/* Create card */}
-            <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
-              <CardHeader className="border-b border-[var(--color-border)] pb-4">
-                <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
-                  Create KR Code
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                {/* Hover banner */}
-                <div className="rounded-xl bg-[var(--color-bg)] px-4 py-2 text-xs text-[color:var(--color-text)]">
-                  {activeType.description}
+          {/* LEFT: create */}
+          <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+            <CardHeader className="border-b border-[var(--color-border)] pb-4">
+              <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
+                Create KR Code
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              {/* Hover banner */}
+              <div className="rounded-xl bg-[var(--color-bg)] px-4 py-2 text-xs text-[color:var(--color-text)]">
+                {activeType.description}
+              </div>
+
+              {/* Type pills */}
+              <div className="flex flex-wrap gap-2">
+                {CONTENT_TYPES.map((t) => {
+                  const active = t.id === contentType;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setContentType(t.id)}
+                      onMouseEnter={() => setHoverType(t.id)}
+                      onMouseLeave={() => setHoverType(null)}
+                      className={[
+                        "rounded-full px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] border transition",
+                        active
+                          ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-bg)] shadow-sm"
+                          : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]",
+                      ].join(" ")}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <form
+                className="space-y-4"
+                onSubmit={form.handleSubmit(onSubmit)}
+              >
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[color:var(--color-text)]">
+                    Title (optional)
+                  </label>
+                  <Input
+                    className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                    placeholder="Spring campaign flyer"
+                    {...form.register("title")}
+                  />
                 </div>
 
-                {/* Type pills */}
-                <div className="flex flex-wrap gap-2">
-                  {CONTENT_TYPES.map((t) => {
-                    const active = t.id === contentType;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setContentType(t.id)}
-                        onMouseEnter={() => setHoverType(t.id)}
-                        onMouseLeave={() => setHoverType(null)}
-                        className={[
-                          "rounded-full px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] border transition",
-                          active
-                            ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-bg)] shadow-sm"
-                            : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]",
-                        ].join(" ")}
-                      >
-                        {t.label}
-                      </button>
-                    );
-                  })}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[color:var(--color-text)]">
+                    Destination URL
+                  </label>
+                  <Input
+                    className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                    placeholder={destinationPlaceholder(contentType)}
+                    {...form.register("destination")}
+                  />
+                  {form.formState.errors.destination && (
+                    <p className="text-xs text-red-400">
+                      {form.formState.errors.destination.message}
+                    </p>
+                  )}
                 </div>
 
-                <form
-                  className="space-y-4"
-                  onSubmit={form.handleSubmit(onSubmit)}
+                {/* UTM toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowUtms((s) => !s)}
+                  className="text-[11px] font-medium text-[color:var(--color-accent)] hover:underline"
                 >
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-[color:var(--color-text)]">
-                      Title (optional)
-                    </label>
-                    <Input
-                      className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                      placeholder="Spring campaign flyer"
-                      {...form.register("title")}
-                    />
-                  </div>
+                  {showUtms
+                    ? "Hide UTM tracking"
+                    : "Add UTM tracking (optional)"}
+                </button>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-[color:var(--color-text)]">
-                      Destination URL
-                    </label>
-                    <Input
-                      className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                      placeholder={destinationPlaceholder(contentType)}
-                      {...form.register("destination")}
-                    />
-                    {form.formState.errors.destination && (
-                      <p className="text-xs text-red-400">
-                        {form.formState.errors.destination.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* UTM toggle */}
-                  <button
-                    type="button"
-                    onClick={() => setShowUtms((s) => !s)}
-                    className="text-[11px] font-medium text-[color:var(--color-accent)] hover:underline"
-                  >
-                    {showUtms
-                      ? "Hide UTM tracking"
-                      : "Add UTM tracking (optional)"}
-                  </button>
-
-                  {showUtms && (
-                    <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-[color:var(--color-text)]">
-                            UTM Source
-                          </label>
-                          <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                            placeholder="poster"
-                            {...form.register("utm_source")}
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-[color:var(--color-text)]">
-                            UTM Medium
-                          </label>
-                          <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                            placeholder="qr"
-                            {...form.register("utm_medium")}
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-[color:var(--color-text)]">
-                            UTM Campaign
-                          </label>
-                          <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                            placeholder="spring_launch"
-                            {...form.register("utm_campaign")}
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-[color:var(--color-text)]">
-                            UTM Term
-                          </label>
-                          <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                            placeholder="headline_a"
-                            {...form.register("utm_term")}
-                          />
-                        </div>
-                      </div>
-
+                {showUtms && (
+                  <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
+                    <div className="grid gap-3 md:grid-cols-2">
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          UTM Content (optional)
+                          UTM Source
                         </label>
-                        <Textarea
-                          rows={2}
-                          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                          placeholder="Any extra labels for this code…"
-                          {...form.register("utm_content")}
+                        <Input
+                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          placeholder="poster"
+                          {...form.register("utm_source")}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          UTM Medium
+                        </label>
+                        <Input
+                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          placeholder="qr"
+                          {...form.register("utm_medium")}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          UTM Campaign
+                        </label>
+                        <Input
+                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          placeholder="spring_launch"
+                          {...form.register("utm_campaign")}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          UTM Term
+                        </label>
+                        <Input
+                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          placeholder="headline_a"
+                          {...form.register("utm_term")}
                         />
                       </div>
                     </div>
-                  )}
 
-                  <div className="flex flex-col gap-4 border-t border-[var(--color-border)] pt-3 md:flex-row md:items-center md:justify-between">
-                    <div className="text-xs text-[color:var(--color-subtle)]">
-                      <div>Destination preview:</div>
-                      <div className="mt-1 break-all text-[11px] text-[color:var(--color-text)]">
-                        {urlPreview || "—"}
-                      </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-[color:var(--color-text)]">
+                        UTM Content (optional)
+                      </label>
+                      <Textarea
+                        rows={2}
+                        className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                        placeholder="Any extra labels for this code…"
+                        {...form.register("utm_content")}
+                      />
                     </div>
-
-                    <Button
-                      type="submit"
-                      disabled={creating}
-                      className="md:min-w-[160px] rounded-full bg-[var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] hover:opacity-90 disabled:opacity-70"
-                    >
-                      {creating ? "Creating…" : "Create KR Code"}
-                    </Button>
-                  </div>
-
-                  {error && (
-                    <p className="pt-1 text-xs text-red-400">{error}</p>
-                  )}
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* List / tracking */}
-            <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between gap-2 border-b border-[var(--color-border)] pb-4">
-                <div>
-                  <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
-                    Your KR Codes
-                  </CardTitle>
-                  <p className="mt-1 text-xs text-[color:var(--color-subtle)]">
-                    {workspace
-                      ? `Workspace: ${workspace.name}`
-                      : "No workspace yet — we’ll create one when you generate your first code."}
-                  </p>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-4">
-                {loading ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3"
-                      >
-                        <Skeleton className="h-12 w-12 rounded-xl" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-3 w-40 rounded-full" />
-                          <Skeleton className="h-3 w-64 rounded-full" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : codes.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] p-6 text-center text-sm text-[color:var(--color-subtle)]">
-                    No KR Codes yet. Create your first one above to start
-                    tracking scans.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {codes.map((code) => (
-                      <div
-                        key={code.id}
-                        className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3 md:flex-row md:items-center md:justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="hidden rounded-xl bg-[var(--color-surface)] p-2 md:block">
-                            <QRCode
-                              value={code.destination}
-                              size={56}
-                              fgColor="#FFFFFF"
-                              bgColor="#020617"
-                              level="M"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <div className="text-sm font-medium text-[color:var(--color-text)]">
-                              {code.title || "Untitled KR Code"}
-                            </div>
-                            <div className="break-all text-[11px] text-[color:var(--color-subtle)]">
-                              {code.destination}
-                            </div>
-                            <div className="text-[11px] text-[color:var(--color-subtle)]">
-                              {code.type ? `Type: ${code.type} • ` : ""}
-                              Created{" "}
-                              {new Date(
-                                code.createdAt,
-                              ).toLocaleString()}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-4 text-xs">
-                          <div className="flex flex-col items-end">
-                            <span className="text-[color:var(--color-subtle)]">
-                              Total scans
-                            </span>
-                            <span className="text-base font-semibold text-[color:var(--color-text)]">
-                              {code.totalClicks ?? 0}
-                            </span>
-                          </div>
-                          <Link
-                            href={`/api/kr-codes/${code.id}/svg`}
-                            target="_blank"
-                          >
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
-                            >
-                              Download SVG
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+
+                <div className="flex flex-col gap-4 border-t border-[var(--color-border)] pt-3 md:flex-row md:items-center md:justify-between">
+                  <div className="text-xs text-[color:var(--color-subtle)]">
+                    <div>Destination preview:</div>
+                    <div className="mt-1 break-all text-[11px] text-[color:var(--color-text)]">
+                      {urlPreview || "—"}
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={creating}
+                    className="md:min-w-[160px] rounded-full bg-[var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] hover:opacity-90 disabled:opacity-70"
+                  >
+                    {creating ? "Creating…" : "Create KR Code"}
+                  </Button>
+                </div>
+
+                {error && (
+                  <p className="pt-1 text-xs text-red-400">{error}</p>
+                )}
+              </form>
+            </CardContent>
+          </Card>
 
           {/* RIGHT: preview + design */}
           <Card className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
@@ -705,6 +664,205 @@ export default function KRCodesPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Row 2: full-width "Your KR Codes" */}
+        <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 border-b border-[var(--color-border)] pb-4">
+            <div>
+              <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
+                Your KR Codes
+              </CardTitle>
+              <p className="mt-1 text-xs text-[color:var(--color-subtle)]">
+                {workspace
+                  ? `Workspace: ${workspace.name}`
+                  : "No workspace yet — we’ll create one when you generate your first code."}
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {loading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3"
+                  >
+                    <Skeleton className="h-12 w-12 rounded-xl" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-3 w-40 rounded-full" />
+                      <Skeleton className="h-3 w-64 rounded-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : codes.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] p-6 text-center text-sm text-[color:var(--color-subtle)]">
+                No KR Codes yet. Create your first one above to start
+                tracking scans.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {codes.map((code) => {
+                  const isMenuOpen = downloadMenuFor === code.id;
+                  const isDeleteOpen = deleteIntentFor === code.id;
+                  return (
+                    <div
+                      key={code.id}
+                      className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3 md:flex-row md:items-center md:justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="hidden rounded-xl bg-[var(--color-surface)] p-2 md:block">
+                          <QRCode
+                            value={code.destination}
+                            size={56}
+                            fgColor="#FFFFFF"
+                            bgColor="#020617"
+                            level="M"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="text-sm font-medium text-[color:var(--color-text)]">
+                            {code.title || "Untitled KR Code"}
+                          </div>
+                          <div className="break-all text-[11px] text-[color:var(--color-subtle)]">
+                            {code.destination}
+                          </div>
+                          <div className="text-[11px] text-[color:var(--color-subtle)]">
+                            {code.type ? `Type: ${code.type} • ` : ""}
+                            Created{" "}
+                            {new Date(
+                              code.createdAt,
+                            ).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-4 text-xs">
+                        <div className="flex flex-col items-end">
+                          <span className="text-[color:var(--color-subtle)]">
+                            Total scans
+                          </span>
+                          <span className="text-base font-semibold text-[color:var(--color-text)]">
+                            {code.totalClicks ?? 0}
+                          </span>
+                        </div>
+
+                        {/* Actions: Edit / Delete / Download + inline confirm */}
+                        <div className="relative flex items-center gap-1.5">
+                          {/* Edit icon button */}
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(code)}
+                            aria-label="Edit KR Code"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+
+                          {/* Delete icon button (opens confirm) */}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDeleteIntentFor((current) =>
+                                current === code.id ? null : code.id
+                              )
+                            }
+                            aria-label="Delete KR Code"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-red-500 hover:bg-[var(--color-bg)]"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+
+                          {/* Download button + popover */}
+                          <div className="relative ml-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
+                              onClick={() =>
+                                setDownloadMenuFor((current) =>
+                                  current === code.id ? null : code.id
+                                )
+                              }
+                            >
+                              Download
+                            </Button>
+
+                            {isMenuOpen && (
+                              <div
+                                className="absolute right-0 z-20 mt-2 w-40 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-1 shadow-md"
+                                onMouseLeave={() =>
+                                  setDownloadMenuFor(null)
+                                }
+                              >
+                                <Link
+                                  href={`/api/kr-codes/${code.id}/svg`}
+                                  target="_blank"
+                                  className="block rounded-xl px-3 py-2 text-[11px] text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
+                                  onClick={() => setDownloadMenuFor(null)}
+                                >
+                                  Download SVG
+                                </Link>
+                                <Link
+                                  href={`/api/kr-codes/${code.id}/png`}
+                                  target="_blank"
+                                  className="block rounded-xl px-3 py-2 text-[11px] text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
+                                  onClick={() => setDownloadMenuFor(null)}
+                                >
+                                  Download PNG
+                                </Link>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Inline delete confirmation popover */}
+                          {isDeleteOpen && (
+                            <div className="absolute right-0 top-full z-20 mt-2 w-60 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-md">
+                              <p className="text-xs font-medium text-[color:var(--color-text)]">
+                                Delete this{" "}
+                                <span
+                                  style={{
+                                    fontFamily:
+                                      "Instrument Serif, system-ui, serif",
+                                    fontStyle: "italic",
+                                  }}
+                                >
+                                  code
+                                </span>
+                                ?
+                              </p>
+                              <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+                                This action can’t be undone and will stop
+                                tracking scans from this KR Code.
+                              </p>
+                              <div className="mt-3 flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(code)}
+                                  className="inline-flex flex-1 items-center justify-center rounded-full bg-[var(--color-text)] px-3 py-1.5 text-xs font-semibold text-[var(--color-bg)] hover:opacity-90"
+                                >
+                                  Delete
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setDeleteIntentFor(null)}
+                                  className="inline-flex flex-1 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-xs font-medium text-[color:var(--color-text)] hover:bg-[var(--color-surface)]"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </section>
     </main>
   );

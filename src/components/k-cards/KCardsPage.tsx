@@ -1,7 +1,14 @@
 // src/components/k-cards/KCardsPage.tsx
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+  ChangeEvent,
+} from "react";
+
 import {
   Card,
   CardHeader,
@@ -20,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+
 import {
   Share2,
   UserCircle2,
@@ -35,10 +43,13 @@ import {
   MessageCircle,
   Mail,
   Globe2,
+  UploadCloud,
 } from "lucide-react";
+
 import type React from "react";
 
 import { KCardThemeSection } from "./KCardThemeSection";
+import { KCardPreview } from "./KCardPreview";
 import {
   DEFAULT_KCARD_THEME,
   type KCardThemeState,
@@ -47,7 +58,16 @@ import {
   type KCardFontToken,
 } from "./kcard-theme-presets";
 
-type DesignSection = "header" | "theme" | "text" | "buttons" | "colors";
+type DesignSection = "header" | "theme" | "text" | "buttons" | "colors" | "links";
+
+const SECTION_LABELS: Record<DesignSection, string> = {
+  header: "Header",
+  theme: "Theme",
+  text: "Text",
+  buttons: "Buttons",
+  colors: "Colors",
+  links: "Links",
+};
 
 const FONT_OPTIONS = [
   { value: "system", label: "System" },
@@ -68,7 +88,6 @@ type KCardLink = {
 const INITIAL_LINKS: KCardLink[] = [
   { id: "1", title: "Portfolio", url: "https://your-site.com", enabled: true },
   { id: "2", title: "Book a call", url: "https://cal.com", enabled: true },
-  { id: "3", title: "Shop", url: "https://shop.com", enabled: false },
 ];
 
 const SOCIAL_ICON_MAP: Record<
@@ -88,16 +107,53 @@ const SOCIAL_ICON_MAP: Record<
 const SOCIAL_OPTIONS = Object.keys(SOCIAL_ICON_MAP);
 
 export default function KCardsPage() {
-  const [section, setSection] = useState<DesignSection>("header");
+  // which section is currently "active" for the left nav
+  const [activeSection, setActiveSection] = useState<DesignSection>("header");
+
+  // refs for scroll + intersection observer
+  const headerRef = useRef<HTMLElement | null>(null);
+  const themeRef = useRef<HTMLElement | null>(null);
+  const textRef = useRef<HTMLElement | null>(null);
+  const buttonsRef = useRef<HTMLElement | null>(null);
+  const colorsRef = useRef<HTMLElement | null>(null);
+  const linksRef = useRef<HTMLElement | null>(null);
+
+  const sectionRefs: Record<
+    DesignSection,
+    React.RefObject<HTMLElement | null>
+  > = {
+    header: headerRef,
+    theme: themeRef,
+    text: textRef,
+    buttons: buttonsRef,
+    colors: colorsRef,
+    links: linksRef,
+  };
 
   // header
   const [profileLayout, setProfileLayout] = useState<"classic" | "hero">(
     "classic"
   );
   const [title, setTitle] = useState("@yourname");
-  const [subtitle, setSubtitle] = useState(
-    "Designer · Creator · Founder"
-  );
+  const [subtitle, setSubtitle] = useState("Designer · Creator · Founder");
+
+  // profile image
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  function handleAvatarChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setAvatarPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setAvatarPreview((prev) => {
+      if (prev && prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev);
+      }
+      return url;
+    });
+  }
 
   // theme — single source of truth for all style tokens
   const [theme, setTheme] = useState<KCardThemeState>(DEFAULT_KCARD_THEME);
@@ -166,11 +222,11 @@ export default function KCardsPage() {
     if (buttonStyle === "solid") {
       style.backgroundColor = buttonColor;
       style.color = buttonTextColor;
-      style.border = "1px solid var(--color-border)";
+      style.border = "1px solid rgba(15,23,42,0.5)";
     } else if (buttonStyle === "glass") {
       style.backgroundColor = "rgba(15,23,42,0.35)";
-      style.color = "var(--color-text)";
-      style.border = "1px solid var(--color-border)";
+      style.color = "var(--color-surface)";
+      style.border = "1px solid rgba(15,23,42,0.35)";
       style.backdropFilter = "blur(12px)";
     } else {
       style.backgroundColor = "transparent";
@@ -191,13 +247,6 @@ export default function KCardsPage() {
   }
 
   // wrappers so panels mutate the same theme state
-  function setPageBackgroundColor(value: string) {
-    setTheme((prev: KCardThemeState) => ({
-      ...prev,
-      pageBackground: value,
-    }));
-  }
-
   function setButtonColorValue(value: string) {
     setTheme((prev: KCardThemeState) => ({
       ...prev,
@@ -213,8 +262,7 @@ export default function KCardsPage() {
   }
 
   const wallpaperStyle: React.CSSProperties = {
-    // Respect design system: flat color only, no gradients
-    backgroundColor: pageBackground || wallpaper,
+    background: wallpaper,
   };
 
   function updateLink(id: string, patch: Partial<KCardLink>) {
@@ -235,76 +283,131 @@ export default function KCardsPage() {
 
   const visibleLinks = links.filter((l) => l.enabled);
 
+  // IntersectionObserver for auto-highlight in the sections list
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Track which section is most visible
+        let bestId: DesignSection | null = null;
+        let bestRatio = 0;
+
+        entries.forEach((entry) => {
+          const idAttr = entry.target.getAttribute("data-section-id");
+          const id = idAttr as DesignSection | null;
+          if (!id) return;
+
+          const ratio = entry.intersectionRatio;
+
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestId = id;
+          }
+        });
+
+        // Only update when a section is meaningfully visible
+        if (bestId && bestRatio > 0.2) {
+          setActiveSection(bestId);
+        }
+      },
+      {
+        root: null,
+        threshold: [0.2, 0.4, 0.6],
+      }
+    );
+
+    (Object.keys(sectionRefs) as DesignSection[]).forEach((key) => {
+      const el = sectionRefs[key].current;
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [sectionRefs]);
+
+  function scrollToSection(id: DesignSection) {
+    const el = sectionRefs[id].current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
-    <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
-      <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8 md:gap-8 md:pb-12">
-        {/* Top header */}
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-3xl">
-              K-Cards
-            </h1>
-            <p className="text-sm text-[color:var(--color-subtle)] md:text-base">
-              Design your page, preview it, then publish with a single Kompi
-              link.
+    <div
+      className="wf-dashboard-main w-full"
+      style={{ backgroundColor: "var(--color-bg)" }}
+    >
+      <div className="mx-auto flex w-full max-w-6xl gap-8 px-4 py-6 sm:px-6 lg:px-8">
+        {/* LEFT: Sections list */}
+        <aside className="hidden w-40 shrink-0 lg:block">
+          <div className="sticky top-20">
+            <p
+              className="mb-4 text-[11px] font-medium uppercase tracking-[0.16em]"
+              style={{ color: "var(--color-subtle)" }}
+            >
+              Sections
             </p>
+            <nav className="space-y-1">
+              {(Object.keys(SECTION_LABELS) as DesignSection[]).map((id) => {
+                const active = activeSection === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => scrollToSection(id)}
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-full px-3 py-1.5 text-left text-xs transition",
+                      active
+                        ? "bg-[var(--color-accent-soft)]"
+                        : "hover:bg-[var(--color-surface)]"
+                    )}
+                    style={{
+                      color: active
+                        ? "var(--color-text)"
+                        : "var(--color-subtle)",
+                    }}
+                  >
+                    <span>{SECTION_LABELS[id]}</span>
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{
+                        backgroundColor: active
+                          ? "var(--color-accent)"
+                          : "transparent",
+                      }}
+                    />
+                  </button>
+                );
+              })}
+            </nav>
           </div>
-          <Button className="inline-flex items-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-semibold text-[color:var(--color-text)] hover:opacity-90">
-            <Share2 className="h-4 w-4" />
-            Publish K-Card
-          </Button>
-        </div>
+        </aside>
 
-        {/* Main layout: design + preview */}
-        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1.3fr)]">
-          {/* Design panel */}
-          <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
-            <CardHeader className="border-b border-[var(--color-border)] pb-3">
-              <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
-                Design
-              </CardTitle>
-              <CardDescription className="text-xs text-[color:var(--color-subtle)]">
-                Switch sections on the left. Tweak controls in the center.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex gap-6 pt-4">
-              {/* Section nav */}
-              <nav className="w-40 shrink-0 space-y-1 border-r border-[var(--color-border)] pr-4">
-                <SectionButton
-                  label="Header"
-                  icon={UserCircle2}
-                  active={section === "header"}
-                  onClick={() => setSection("header")}
-                />
-                <SectionButton
-                  label="Theme"
-                  icon={Palette}
-                  active={section === "theme"}
-                  onClick={() => setSection("theme")}
-                />
-                <SectionButton
-                  label="Text"
-                  icon={Type}
-                  active={section === "text"}
-                  onClick={() => setSection("text")}
-                />
-                <SectionButton
-                  label="Buttons"
-                  icon={Square}
-                  active={section === "buttons"}
-                  onClick={() => setSection("buttons")}
-                />
-                <SectionButton
-                  label="Colors"
-                  icon={Palette}
-                  active={section === "colors"}
-                  onClick={() => setSection("colors")}
-                />
-              </nav>
-
-              {/* Section content */}
-              <div className="flex-1 space-y-6">
-                {section === "header" && (
+        {/* MIDDLE + RIGHT */}
+        <div className="flex w-full flex-1 gap-8">
+          {/* MIDDLE: editor stack */}
+          <div className="flex min-w-0 flex-1 flex-col gap-6">
+            {/* Header section */}
+            <section
+              ref={headerRef}
+              data-section-id="header"
+              className="scroll-mt-24"
+            >
+              <Card
+                className="rounded-2xl shadow-sm"
+                style={{ backgroundColor: "var(--color-surface)" }}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                    Header
+                  </CardTitle>
+                  <CardDescription
+                    className="text-xs"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
+                    Profile layout, avatar, title and subtitle for your K-Card.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
                   <HeaderSection
                     profileLayout={profileLayout}
                     setProfileLayout={setProfileLayout}
@@ -312,14 +415,62 @@ export default function KCardsPage() {
                     setTitle={setTitle}
                     subtitle={subtitle}
                     setSubtitle={setSubtitle}
+                    onAvatarChange={handleAvatarChange}
+                    avatarPreview={avatarPreview}
                   />
-                )}
+                </CardContent>
+              </Card>
+            </section>
 
-                {section === "theme" && (
+            {/* Theme section */}
+            <section
+              ref={themeRef}
+              data-section-id="theme"
+              className="scroll-mt-24"
+            >
+              <Card
+                className="rounded-2xl shadow-sm"
+                style={{ backgroundColor: "var(--color-surface)" }}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                    Theme
+                  </CardTitle>
+                  <CardDescription
+                    className="text-xs"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
+                    Background and overall visual style.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <KCardThemeSection value={theme} onChange={setTheme} />
-                )}
+                </CardContent>
+              </Card>
+            </section>
 
-                {section === "text" && (
+            {/* Text section */}
+            <section
+              ref={textRef}
+              data-section-id="text"
+              className="scroll-mt-24"
+            >
+              <Card
+                className="rounded-2xl shadow-sm"
+                style={{ backgroundColor: "var(--color-surface)" }}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                    Text
+                  </CardTitle>
+                  <CardDescription
+                    className="text-xs"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
+                    Typography and text colors for your K-Card.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <TextSection
                     titleFont={titleFont}
                     setTitleFont={(v) =>
@@ -340,9 +491,32 @@ export default function KCardsPage() {
                       setTheme((prev) => ({ ...prev, pageTextColor: v }))
                     }
                   />
-                )}
+                </CardContent>
+              </Card>
+            </section>
 
-                {section === "buttons" && (
+            {/* Buttons section */}
+            <section
+              ref={buttonsRef}
+              data-section-id="buttons"
+              className="scroll-mt-24"
+            >
+              <Card
+                className="rounded-2xl shadow-sm"
+                style={{ backgroundColor: "var(--color-surface)" }}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                    Buttons
+                  </CardTitle>
+                  <CardDescription
+                    className="text-xs"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
+                    Shape, shadow and colors for your primary links.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <ButtonsSection
                     buttonStyle={buttonStyle}
                     setButtonStyle={(v) =>
@@ -361,9 +535,32 @@ export default function KCardsPage() {
                     buttonTextColor={buttonTextColor}
                     setButtonTextColor={setButtonTextColorValue}
                   />
-                )}
+                </CardContent>
+              </Card>
+            </section>
 
-                {section === "colors" && (
+            {/* Colors section */}
+            <section
+              ref={colorsRef}
+              data-section-id="colors"
+              className="scroll-mt-24"
+            >
+              <Card
+                className="rounded-2xl shadow-sm"
+                style={{ backgroundColor: "var(--color-surface)" }}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                    Colors
+                  </CardTitle>
+                  <CardDescription
+                    className="text-xs"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
+                    Fine-tune title, text and button colors.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <ColorsSection
                     titleColor={titleColor}
                     setTitleColor={(v) =>
@@ -378,218 +575,156 @@ export default function KCardsPage() {
                     buttonTextColor={buttonTextColor}
                     setButtonTextColor={setButtonTextColorValue}
                   />
-                )}
+                </CardContent>
+              </Card>
+            </section>
 
-                {/* Social icons */}
-                <div className="space-y-3 border-t border-[var(--color-border)] pt-4">
-                  <p className="text-xs font-medium text-[color:var(--color-text)]">
-                    Social icons
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {SOCIAL_OPTIONS.map((social) => {
-                      const active = socials.includes(social);
-                      const Icon = SOCIAL_ICON_MAP[social];
-                      return (
-                        <button
-                          key={social}
-                          type="button"
-                          onClick={() => toggleSocial(social)}
-                          className={cn(
-                            "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[11px] transition",
-                            active
-                              ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-bg)]"
-                              : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
-                          )}
-                          aria-label={social}
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Live preview */}
-          <Card className="flex justify-center border-none bg-transparent shadow-none">
-            <CardContent className="flex justify-center pt-0">
-              <div className="relative mx-auto h-[620px] w-[340px] rounded-[38px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_40px_120px_rgba(0,0,0,0.55)]">
-                <div className="absolute inset-x-24 -top-1 h-3 rounded-b-full bg-[var(--color-bg)]" />
-                <div
-                  className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl"
-                  style={wallpaperStyle}
-                >
-                  <div
-                    className={cn(
-                      "flex h-full w-full flex-col gap-4 p-5",
-                      previewBodyFont
-                    )}
-                  >
-                    {/* header */}
-                    <div
-                      className={cn(
-                        "flex flex-col items-center gap-2 text-center",
-                        previewTitleFont,
-                        titleSize === "large" ? "mt-4" : "mt-2"
-                      )}
+            {/* Links manager */}
+            <section
+              ref={linksRef}
+              data-section-id="links"
+              className="scroll-mt-24"
+            >
+              <Card
+                className="rounded-2xl shadow-sm"
+                style={{ backgroundColor: "var(--color-surface)" }}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center justify-between text-sm font-semibold text-[var(--color-text)]">
+                    <span>Links</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="inline-flex h-8 items-center gap-2 rounded-full px-3 text-xs font-medium"
+                      style={{
+                        backgroundColor: "var(--color-accent)",
+                        color: "var(--color-text)",
+                      }}
+                      onClick={addLink}
                     >
-                      <div
-                        className={cn(
-                          "flex items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg)]",
-                          profileLayout === "classic"
-                            ? "h-14 w-14"
-                            : "h-18 w-18"
-                        )}
-                      >
-                        <UserCircle2 className="h-7 w-7 text-[color:var(--color-text)]" />
-                      </div>
-                      <div
-                        className={cn(
-                          "font-semibold",
-                          titleSize === "large" ? "text-base" : "text-sm"
-                        )}
-                        style={{ color: titleColor }}
-                      >
-                        {title || "@yourname"}
-                      </div>
-                      <div
-                        className="text-[11px]"
-                        style={{ color: pageTextColor }}
-                      >
-                        {subtitle || "Short bio line for your card."}
-                      </div>
-                    </div>
-
-                    {/* socials */}
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                      {socials.map((s) => {
-                        const Icon = SOCIAL_ICON_MAP[s];
-                        return (
-                          <span
-                            key={s}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-bg)] text-[color:var(--color-text)]"
-                          >
-                            <Icon className="h-3.5 w-3.5" />
-                          </span>
-                        );
-                      })}
-                    </div>
-
-                    {/* links */}
-                    <div className="mt-2 space-y-2">
-                      {visibleLinks.length === 0 ? (
-                        <div className="rounded-full border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-center text-[11px] text-[color:var(--color-subtle)]">
-                          Add a link below to see it here.
-                        </div>
-                      ) : (
-                        visibleLinks.slice(0, 5).map((link) => (
-                          <button
-                            key={link.id}
-                            type="button"
-                            className="flex w-full items-center justify-center px-4 py-2.5 text-[11px] font-medium transition"
-                            style={buttonBaseStyles}
-                          >
-                            <span className="truncate">
-                              {link.title || "Untitled link"}
-                            </span>
-                          </button>
-                        ))
-                      )}
-                    </div>
-
-                    <div className="mt-auto pt-4 text-center text-[10px] text-[color:var(--color-subtle)]">
-                      kompi.app/yourcard · Analytics included
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Links manager */}
-        <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
-              <span>Links</span>
-              <Button
-                type="button"
-                size="sm"
-                className="h-8 rounded-full border border-[var(--color-border)] bg-[var(--color-accent)] px-3 text-xs font-medium text-[color:var(--color-text)] hover:opacity-90"
-                onClick={addLink}
-              >
-                <Link2 className="mr-1.5 h-3.5 w-3.5" />
-                Add link
-              </Button>
-            </CardTitle>
-            <CardDescription className="text-xs text-[color:var(--color-subtle)]">
-              Manage the links that appear on this K-Card.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {links.map((link) => (
-              <div
-                key={link.id}
-                className="flex flex-col gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 md:flex-row md:items-center md:gap-4"
-              >
-                <div className="flex-1 space-y-2">
-                  <Input
-                    value={link.title}
-                    onChange={(e) =>
-                      updateLink(link.id, { title: e.target.value })
-                    }
-                    className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                    placeholder="Link title"
-                  />
-                  <Input
-                    value={link.url}
-                    onChange={(e) =>
-                      updateLink(link.id, { url: e.target.value })
-                    }
-                    className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                    placeholder="https://"
-                  />
-                </div>
-                <div className="flex items-center gap-2 self-start md:self-auto">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateLink(link.id, { enabled: !link.enabled })
-                    }
-                    className={cn(
-                      "inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium transition",
-                      link.enabled
-                        ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[color:var(--color-text)]"
-                        : "border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-subtle)]"
-                    )}
+                      <Link2 className="h-3.5 w-3.5" />
+                      Add link
+                    </Button>
+                  </CardTitle>
+                  <CardDescription
+                    className="text-xs"
+                    style={{ color: "var(--color-subtle)" }}
                   >
-                    <span
-                      className={cn(
-                        "mr-1 h-2 w-2 rounded-full",
-                        link.enabled
-                          ? "bg-[var(--color-accent)]"
-                          : "bg-[var(--color-border)]"
-                      )}
-                    />
-                    {link.enabled ? "On" : "Off"}
-                  </button>
-                </div>
-              </div>
-            ))}
+                    Manage the links that appear on this K-Card.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {links.map((link) => (
+                    <div
+                      key={link.id}
+                      className="flex flex-col gap-2 rounded-2xl px-4 py-3 md:flex-row md:items-center md:gap-0"
+                      style={{ backgroundColor: "var(--color-bg)" }}
+                    >
+                      <div className="flex-1 space-y-2">
+                        <Input
+                          value={link.title}
+                          onChange={(e) =>
+                            updateLink(link.id, { title: e.target.value })
+                          }
+                          className="h-9 rounded-2xl text-sm"
+                          style={{
+                            backgroundColor: "var(--color-surface)",
+                            color: "var(--color-text)",
+                            borderColor: "var(--color-border)",
+                          }}
+                          placeholder="Link title"
+                        />
+                        <Input
+                          value={link.url}
+                          onChange={(e) =>
+                            updateLink(link.id, { url: e.target.value })
+                          }
+                          className="h-9 rounded-2xl text-xs"
+                          style={{
+                            backgroundColor: "var(--color-surface)",
+                            color: "var(--color-text)",
+                            borderColor: "var(--color-border)",
+                          }}
+                          placeholder="https://"
+                        />
+                      </div>
+                      <div className="mt-1 flex items-center gap-2 self-start md:mt-0 md:self-auto">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateLink(link.id, { enabled: !link.enabled })
+                          }
+                          className={cn(
+                            "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium transition"
+                          )}
+                          style={{
+                            border: "1px solid var(--color-border)",
+                            backgroundColor: link.enabled
+                              ? "var(--color-accent-soft)"
+                              : "var(--color-surface)",
+                            color: link.enabled
+                              ? "var(--color-text)"
+                              : "var(--color-subtle)",
+                          }}
+                        >
+                          <span
+                            className={cn("mr-1 h-2 w-2 rounded-full")}
+                            style={{
+                              backgroundColor: link.enabled
+                                ? "var(--color-accent)"
+                                : "var(--color-border)",
+                            }}
+                          />
+                          {link.enabled ? "On" : "Off"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
 
-            {links.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-6 text-center text-sm text-[color:var(--color-subtle)]">
-                No links yet. Click{" "}
-                <span className="font-medium">Add link</span> to start
-                building your K-Card.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </section>
-    </main>
+                  {links.length === 0 && (
+                    <div
+                      className="rounded-2xl border border-dashed px-4 py-6 text-center text-sm"
+                      style={{
+                        borderColor: "var(--color-border)",
+                        backgroundColor: "var(--color-bg)",
+                        color: "var(--color-subtle)",
+                      }}
+                    >
+                      No links yet. Click{" "}
+                      <span className="font-medium">Add link</span> to start
+                      building your K-Card.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </section>
+          </div>
+
+          {/* RIGHT: Frozen preview (320 × 680, responsive) */}
+          <aside className="hidden w-[360px] shrink-0 lg:block">
+            <div className="sticky top-20 flex justify-end">
+              <KCardPreview
+                wallpaperStyle={wallpaperStyle}
+                pageBackground={pageBackground}
+                previewTitleFont={previewTitleFont}
+                previewBodyFont={previewBodyFont}
+                title={title}
+                subtitle={subtitle}
+                titleColor={titleColor}
+                pageTextColor={pageTextColor}
+                titleSize={titleSize}
+                profileLayout={profileLayout}
+                avatarPreview={avatarPreview}
+                socials={socials}
+                socialIconMap={SOCIAL_ICON_MAP}
+                visibleLinks={visibleLinks}
+                buttonBaseStyles={buttonBaseStyles}
+              />
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -602,6 +737,8 @@ type HeaderSectionProps = {
   setTitle: (v: string) => void;
   subtitle: string;
   setSubtitle: (v: string) => void;
+  onAvatarChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  avatarPreview: string | null;
 };
 
 function HeaderSection({
@@ -611,18 +748,64 @@ function HeaderSection({
   setTitle,
   subtitle,
   setSubtitle,
+  onAvatarChange,
+  avatarPreview,
 }: HeaderSectionProps) {
   return (
-    <div className="space-y-4">
-      <p className="text-xs font-medium text-[color:var(--color-text)]">
-        Header
-      </p>
+    <div className="space-y-6">
+      {/* Avatar upload */}
+      <div className="flex items-center gap-4">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-bg)]">
+          {avatarPreview ? (
+            <img
+              src={avatarPreview}
+              alt="Profile preview"
+              className="h-11 w-11 rounded-full object-cover"
+            />
+          ) : (
+            <UserCircle2 className="h-7 w-7" />
+          )}
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-[var(--color-text)]">
+            Profile image
+          </p>
+          <p
+            className="text-[11px]"
+            style={{ color: "var(--color-subtle)" }}
+          >
+            Upload an avatar for this K-Card. Square images work best.
+          </p>
+          <div className="flex items-center gap-2">
+            <label>
+              <span
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium"
+                style={{
+                  backgroundColor: "var(--color-surface)",
+                  border: "1px solid var(--color-border)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <UploadCloud className="h-3.5 w-3.5" />
+                Upload image
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={onAvatarChange}
+              />
+            </label>
+          </div>
+        </div>
+      </div>
 
+      {/* Layout toggle */}
       <div className="space-y-2">
-        <p className="text-[11px] text-[color:var(--color-subtle)]">
+        <p className="text-[11px] text-[var(--color-subtle)]">
           Profile image layout
         </p>
-        <div className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1 text-[11px]">
+        <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
           <button
             type="button"
             onClick={() => setProfileLayout("classic")}
@@ -630,7 +813,7 @@ function HeaderSection({
               "flex-1 rounded-full px-3 py-1",
               profileLayout === "classic"
                 ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                : "text-[color:var(--color-subtle)]"
+                : "text-[var(--color-subtle)]"
             )}
           >
             Classic
@@ -642,7 +825,7 @@ function HeaderSection({
               "flex-1 rounded-full px-3 py-1",
               profileLayout === "hero"
                 ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                : "text-[color:var(--color-subtle)]"
+                : "text-[var(--color-subtle)]"
             )}
           >
             Hero
@@ -650,27 +833,38 @@ function HeaderSection({
         </div>
       </div>
 
+      {/* Title + subtitle */}
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Title
           </label>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+            className="h-9 rounded-2xl text-sm"
+            style={{
+              backgroundColor: "var(--color-bg)",
+              color: "var(--color-text)",
+              borderColor: "var(--color-border)",
+            }}
             maxLength={40}
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Subtitle
           </label>
           <Textarea
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
             rows={2}
-            className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+            className="rounded-2xl text-sm"
+            style={{
+              backgroundColor: "var(--color-bg)",
+              color: "var(--color-text)",
+              borderColor: "var(--color-border)",
+            }}
             maxLength={80}
           />
         </div>
@@ -706,26 +900,28 @@ function TextSection({
 }: TextSectionProps) {
   return (
     <div className="space-y-4">
-      <p className="text-xs font-medium text-[color:var(--color-text)]">
-        Text
-      </p>
-
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Title font
           </label>
           <Select value={titleFont} onValueChange={setTitleFont}>
-            <SelectTrigger className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]">
+            <SelectTrigger
+              className="h-9 rounded-2xl text-xs"
+              style={{
+                backgroundColor: "var(--color-bg)",
+                color: "var(--color-text)",
+                borderColor: "var(--color-border)",
+              }}
+            >
               <SelectValue placeholder="Font" />
             </SelectTrigger>
-            <SelectContent className="border border-[var(--color-border)] bg-[var(--color-surface)]">
+            <SelectContent
+              className="text-xs"
+              style={{ backgroundColor: "var(--color-surface)" }}
+            >
               {FONT_OPTIONS.map((f) => (
-                <SelectItem
-                  key={f.value}
-                  value={f.value}
-                  className="text-xs text-[color:var(--color-text)]"
-                >
+                <SelectItem key={f.value} value={f.value}>
                   {f.label}
                 </SelectItem>
               ))}
@@ -734,20 +930,25 @@ function TextSection({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Title color
           </label>
           <div className="flex items-center gap-3">
             <input
               type="color"
-              className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+              className="h-8 w-10 cursor-pointer rounded bg-transparent"
               value={titleColor}
               onChange={(e) => setTitleColor(e.target.value)}
             />
             <Input
               value={titleColor}
               onChange={(e) => setTitleColor(e.target.value)}
-              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+              className="h-9 rounded-2xl text-xs"
+              style={{
+                backgroundColor: "var(--color-bg)",
+                color: "var(--color-text)",
+                borderColor: "var(--color-border)",
+              }}
             />
           </div>
         </div>
@@ -755,10 +956,10 @@ function TextSection({
 
       <div className="grid items-center gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)]">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Title size
           </label>
-          <div className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1 text-[11px]">
+          <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
             <button
               type="button"
               onClick={() => setTitleSize("small")}
@@ -766,7 +967,7 @@ function TextSection({
                 "flex-1 rounded-full px-3 py-1",
                 titleSize === "small"
                   ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                  : "text-[color:var(--color-subtle)]"
+                  : "text-[var(--color-subtle)]"
               )}
             >
               Small
@@ -778,7 +979,7 @@ function TextSection({
                 "flex-1 rounded-full px-3 py-1",
                 titleSize === "large"
                   ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                  : "text-[color:var(--color-subtle)]"
+                  : "text-[var(--color-subtle)]"
               )}
             >
               Large
@@ -787,20 +988,26 @@ function TextSection({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Page font
           </label>
           <Select value={pageFont} onValueChange={setPageFont}>
-            <SelectTrigger className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]">
+            <SelectTrigger
+              className="h-9 rounded-2xl text-xs"
+              style={{
+                backgroundColor: "var(--color-bg)",
+                color: "var(--color-text)",
+                borderColor: "var(--color-border)",
+              }}
+            >
               <SelectValue placeholder="Font" />
             </SelectTrigger>
-            <SelectContent className="border border-[var(--color-border)] bg-[var(--color-surface)]">
+            <SelectContent
+              className="text-xs"
+              style={{ backgroundColor: "var(--color-surface)" }}
+            >
               {FONT_OPTIONS.map((f) => (
-                <SelectItem
-                  key={f.value}
-                  value={f.value}
-                  className="text-xs text-[color:var(--color-text)]"
-                >
+                <SelectItem key={f.value} value={f.value}>
                   {f.label}
                 </SelectItem>
               ))}
@@ -810,20 +1017,25 @@ function TextSection({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-[color:var(--color-text)]">
+        <label className="text-xs font-medium text-[var(--color-text)]">
           Page text color
         </label>
         <div className="flex items-center gap-3">
           <input
             type="color"
-            className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+            className="h-8 w-10 cursor-pointer rounded bg-transparent"
             value={pageTextColor}
             onChange={(e) => setPageTextColor(e.target.value)}
           />
           <Input
             value={pageTextColor}
             onChange={(e) => setPageTextColor(e.target.value)}
-            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+            className="h-9 rounded-2xl text-xs"
+            style={{
+              backgroundColor: "var(--color-bg)",
+              color: "var(--color-text)",
+              borderColor: "var(--color-border)",
+            }}
           />
         </div>
       </div>
@@ -858,13 +1070,9 @@ function ButtonsSection({
 }: ButtonsSectionProps) {
   return (
     <div className="space-y-4">
-      <p className="text-xs font-medium text-[color:var(--color-text)]">
-        Buttons
-      </p>
-
       <div className="space-y-1.5">
-        <p className="text-[11px] text-[color:var(--color-subtle)]">Style</p>
-        <div className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1 text-[11px]">
+        <p className="text-[11px] text-[var(--color-subtle)]">Style</p>
+        <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
           {BUTTON_STYLES.map((style) => (
             <button
               key={style}
@@ -874,7 +1082,7 @@ function ButtonsSection({
                 "flex-1 rounded-full px-3 py-1 capitalize",
                 buttonStyle === style
                   ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                  : "text-[color:var(--color-subtle)]"
+                  : "text-[var(--color-subtle)]"
               )}
             >
               {style}
@@ -885,11 +1093,11 @@ function ButtonsSection({
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Corners
           </label>
           <div className="flex items-center gap-3">
-            <span className="text-[11px] text-[color:var(--color-subtle)]">
+            <span className="text-[11px] text-[var(--color-subtle)]">
               Square
             </span>
             <input
@@ -897,22 +1105,20 @@ function ButtonsSection({
               min={4}
               max={30}
               value={buttonRadius}
-              onChange={(e) =>
-                setButtonRadius(Number(e.target.value))
-              }
+              onChange={(e) => setButtonRadius(Number(e.target.value))}
               className="flex-1 accent-[var(--color-accent)]"
             />
-            <span className="text-[11px] text-[color:var(--color-subtle)]">
+            <span className="text-[11px] text-[var(--color-subtle)]">
               Round
             </span>
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Shadow
           </label>
-          <div className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1 text-[11px]">
+          <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
             {BUTTON_SHADOWS.map((s) => (
               <button
                 key={s}
@@ -922,7 +1128,7 @@ function ButtonsSection({
                   "flex-1 rounded-full px-3 py-1 capitalize",
                   buttonShadow === s
                     ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                    : "text-[color:var(--color-subtle)]"
+                    : "text-[var(--color-subtle)]"
                 )}
               >
                 {s}
@@ -934,39 +1140,49 @@ function ButtonsSection({
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Button color
           </label>
           <div className="flex items-center gap-3">
             <input
               type="color"
-              className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+              className="h-8 w-10 cursor-pointer rounded bg-transparent"
               value={buttonColor}
               onChange={(e) => setButtonColor(e.target.value)}
             />
             <Input
               value={buttonColor}
               onChange={(e) => setButtonColor(e.target.value)}
-              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+              className="h-9 rounded-2xl text-xs"
+              style={{
+                backgroundColor: "var(--color-bg)",
+                color: "var(--color-text)",
+                borderColor: "var(--color-border)",
+              }}
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[color:var(--color-text)]">
+          <label className="text-xs font-medium text-[var(--color-text)]">
             Button text
           </label>
           <div className="flex items-center gap-3">
             <input
               type="color"
-              className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+              className="h-8 w-10 cursor-pointer rounded bg-transparent"
               value={buttonTextColor}
               onChange={(e) => setButtonTextColor(e.target.value)}
             />
             <Input
               value={buttonTextColor}
               onChange={(e) => setButtonTextColor(e.target.value)}
-              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+              className="h-9 rounded-2xl text-xs"
+              style={{
+                backgroundColor: "var(--color-bg)",
+                color: "var(--color-text)",
+                borderColor: "var(--color-border)",
+              }}
             />
           </div>
         </div>
@@ -998,16 +1214,8 @@ function ColorsSection({
 }: ColorsSectionProps) {
   return (
     <div className="space-y-4">
-      <p className="text-xs font-medium text-[color:var(--color-text)]">
-        Colors
-      </p>
-
       <div className="grid gap-3 md:grid-cols-2">
-        <ColorField
-          label="Title"
-          value={titleColor}
-          onChange={setTitleColor}
-        />
+        <ColorField label="Title" value={titleColor} onChange={setTitleColor} />
         <ColorField
           label="Page text"
           value={pageTextColor}
@@ -1030,36 +1238,6 @@ function ColorsSection({
 
 /* ---------- Shared bits ---------- */
 
-type SectionButtonProps = {
-  label: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  active: boolean;
-  onClick: () => void;
-};
-
-function SectionButton({
-  label,
-  icon: Icon,
-  active,
-  onClick,
-}: SectionButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs transition-colors",
-        active
-          ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-          : "text-[color:var(--color-subtle)] hover:bg-[var(--color-bg)]"
-      )}
-    >
-      <Icon className="h-4 w-4" />
-      <span>{label}</span>
-    </button>
-  );
-}
-
 type ColorFieldProps = {
   label: string;
   value: string;
@@ -1069,20 +1247,25 @@ type ColorFieldProps = {
 function ColorField({ label, value, onChange }: ColorFieldProps) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-medium text-[color:var(--color-text)]">
+      <label className="text-xs font-medium text-[var(--color-text)]">
         {label}
       </label>
       <div className="flex items-center gap-3">
         <input
           type="color"
-          className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+          className="h-8 w-10 cursor-pointer rounded bg-transparent"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+          className="h-9 rounded-2xl text-xs"
+          style={{
+            backgroundColor: "var(--color-bg)",
+            color: "var(--color-text)",
+            borderColor: "var(--color-border)",
+          }}
         />
       </div>
     </div>
