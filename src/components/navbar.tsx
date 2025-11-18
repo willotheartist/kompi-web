@@ -16,15 +16,23 @@ export function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [atTop, setAtTop] = useState(true);
   const lastYRef = useRef(0);
-  const ignoreScrollUntil = useRef(Date.now() + 150); // <<< hydration safe
+  const ignoreScrollUntil = useRef<number | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    ignoreScrollUntil.current = Date.now() + 150;
+    // Initialize the ignore window once on mount to avoid hydration issues
+    if (ignoreScrollUntil.current === null) {
+      ignoreScrollUntil.current = Date.now() + 150;
+    }
 
     const handleScroll = () => {
       // Ignore scroll for first ~150ms to prevent hydration hiding navbar
-      if (Date.now() < ignoreScrollUntil.current) return;
+      if (
+        ignoreScrollUntil.current !== null &&
+        Date.now() < ignoreScrollUntil.current
+      ) {
+        return;
+      }
 
       const y = window.scrollY || 0;
       const diff = y - lastYRef.current;
@@ -89,7 +97,9 @@ export function Navbar() {
 
           <Link
             href="/pricing"
-            className={[linkBase, isPricing ? activeColor : inactiveColor].join(" ")}
+            className={[linkBase, isPricing ? activeColor : inactiveColor].join(
+              " "
+            )}
           >
             Pricing
           </Link>
@@ -99,7 +109,9 @@ export function Navbar() {
         <div className="flex items-center gap-2.5">
           <Link
             href="/signin"
-            className={["wf-nav-cta-secondary", "hidden md:inline-flex"].join(" ")}
+            className={["wf-nav-cta-secondary", "hidden md:inline-flex"].join(
+              " "
+            )}
           >
             Log in
           </Link>
@@ -205,7 +217,10 @@ function SolutionsMegaMenu() {
             </span>
           </Link>
 
-          <Link href="/#solutions-creators" className="wf-nav-solutions-item group">
+          <Link
+            href="/#solutions-creators"
+            className="wf-nav-solutions-item group"
+          >
             <span className="wf-nav-solutions-title">
               Creators &amp; personal brands
             </span>
@@ -215,7 +230,9 @@ function SolutionsMegaMenu() {
           </Link>
 
           <Link href="/#solutions-teams" className="wf-nav-solutions-item group">
-            <span className="wf-nav-solutions-title">Growth &amp; marketing teams</span>
+            <span className="wf-nav-solutions-title">
+              Growth &amp; marketing teams
+            </span>
             <span className="wf-nav-solutions-body">
               Smart routing, analytics, multi-brand control.
             </span>

@@ -1,12 +1,12 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 17/11/2025, 20:08:14*
+*Generated on: 18/11/2025, 13:43:12*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 155 |
+| 📄 Total Files | 157 |
 | 📁 Total Folders | 72 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
@@ -26,11 +26,11 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 72 files (46.5%)
-- 🔷 **.ts** (TypeScript files): 24 files (15.5%)
-- 📄 **.zip** (Other files): 12 files (7.7%)
-- 🎨 **.css** (Stylesheets): 10 files (6.5%)
-- 🖼️ **.png** (PNG images): 8 files (5.2%)
+- ⚛️ **.tsx** (React TypeScript files): 73 files (46.5%)
+- 🔷 **.ts** (TypeScript files): 25 files (15.9%)
+- 📄 **.zip** (Other files): 12 files (7.6%)
+- 🎨 **.css** (Stylesheets): 10 files (6.4%)
+- 🖼️ **.png** (PNG images): 8 files (5.1%)
 - 🎨 **.svg** (SVG images): 7 files (4.5%)
 - 📄 **.sql** (Other files): 5 files (3.2%)
 - ⚙️ **.json** (JSON files): 3 files (1.9%)
@@ -49,22 +49,22 @@
 
 ### By Category
 
-- **React**: 72 files (46.5%)
-- **TypeScript**: 24 files (15.5%)
-- **Other**: 22 files (14.2%)
-- **Assets**: 16 files (10.3%)
-- **Styles**: 10 files (6.5%)
-- **Config**: 6 files (3.9%)
+- **React**: 73 files (46.5%)
+- **TypeScript**: 25 files (15.9%)
+- **Other**: 22 files (14.0%)
+- **Assets**: 16 files (10.2%)
+- **Styles**: 10 files (6.4%)
+- **Config**: 6 files (3.8%)
 - **DevOps**: 2 files (1.3%)
 - **Docs**: 2 files (1.3%)
 - **JavaScript**: 1 files (0.6%)
 
 ### 📁 Largest Directories
 
-- **root**: 155 files
-- **src**: 105 files
-- **src/app**: 52 files
-- **src/components**: 48 files
+- **root**: 157 files
+- **src**: 107 files
+- **src/app**: 53 files
+- **src/components**: 49 files
 - **public**: 15 files
 
 ## 🌳 Directory Structure
@@ -146,6 +146,7 @@ kompi-web/
 │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 kr-codes/
 │   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   ├── 🔷 route.ts
 │   │   │   │   │   ├── 📂 style/
 │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   └── 📂 svg/
@@ -249,6 +250,7 @@ kompi-web/
 │   │   ├── ⚛️ footer-cta.tsx
 │   │   ├── 📂 k-cards/
 │   │   │   ├── 🔷 kcard-theme-presets.ts
+│   │   │   ├── ⚛️ KCardPreview.tsx
 │   │   │   ├── ⚛️ KCardsPage.tsx
 │   │   │   └── ⚛️ KCardThemeSection.tsx
 │   │   ├── 🎨 kompi-promo-cards.css
