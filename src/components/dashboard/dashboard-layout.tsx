@@ -16,6 +16,7 @@ import {
   ChevronRight,
   QrCode,
   LayoutTemplate,
+  ChevronDown,
 } from "lucide-react";
 
 const navItems = [
@@ -24,13 +25,11 @@ const navItems = [
   { href: "/k-cards", label: "K-Cards", icon: LayoutTemplate },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/kr-codes", label: "Kompi Codes", icon: QrCode },
-  // 🔁 changed from "/settings" to "/dashboard/settings"
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 // Pattern: Shell/DashboardShell
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // ❌ no localStorage here – this avoids hydration mismatch
   const [collapsed, setCollapsed] = useState<boolean>(false);
 
   return (
@@ -41,12 +40,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         color: "var(--color-text)",
       }}
     >
-      {/* Shell/AppSidebar */}
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      {/* Shell/Main */}
       <div className="wf-dashboard-main flex min-w-0 flex-1 flex-col">
-        {/* Shell/Topbar */}
         <div
           className={cn(
             "wf-dashboard-topbar-shell sticky top-0 z-40",
@@ -57,13 +53,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             borderBottom: "1px solid var(--color-border)",
           }}
         >
-          <div className="wf-dashboard-container mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="wf-dashboard-container mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <Topbar />
           </div>
         </div>
 
-        {/* Content */}
-        <main className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
+        <main className="wf-dashboard-content mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
           {children}
         </main>
       </div>
@@ -96,7 +91,6 @@ function Sidebar({
       }}
     >
       <div className="flex flex-col gap-6 px-3 py-6">
-        {/* Logo + console label */}
         <Link
           href="/dashboard"
           className={cn(
@@ -124,9 +118,7 @@ function Sidebar({
                   fontFamily: "Instrument Serif, system-ui, serif",
                   fontStyle: "italic",
                 }}
-              >
-                {/* optional console label */}
-              </span>
+              ></span>
             </div>
           )}
 
@@ -143,7 +135,6 @@ function Sidebar({
           <span className="sr-only">Kompi</span>
         </Link>
 
-        {/* Nav items */}
         <nav className="wf-dashboard-nav flex flex-col gap-1">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active =
@@ -207,7 +198,6 @@ function Sidebar({
         </nav>
       </div>
 
-      {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
         className={cn(
@@ -246,46 +236,82 @@ function Sidebar({
   );
 }
 
-/* ---------------- Topbar w/ avatar menu (Shell/Topbar) ---------------- */
+/* ---------------- Topbar w/ Linktree-style account pill ---------------- */
 
 function Topbar() {
   const { data } = useSession();
-  const display = data?.user?.name || data?.user?.email || "User";
+  const email = data?.user?.email ?? "";
+  const name = data?.user?.name ?? "";
+  const display = name || email || "User";
   const initial = (display?.trim()?.[0] ?? "U").toUpperCase();
+
+  const planLabel = "Free";
 
   const [open, setOpen] = useState(false);
   const menuRef = useOutsideClose<HTMLDivElement>(open, () => setOpen(false));
 
   return (
     <div className="flex h-16 items-center justify-between gap-4">
-      {/* Page title / meta */}
+      {/* Left: workspace label */}
       <div className="flex min-w-0 flex-col">
-        <div className="flex items-center gap-2">
-          <span
-            className="h-[2px] w-6 rounded-full"
-            style={{ backgroundColor: "var(--color-accent)" }}
-          />
-        </div>
+        <span
+          className="text-[11px] uppercase tracking-[0.16em]"
+          style={{ color: "var(--color-subtle)" }}
+        >
+          Workspace
+        </span>
+        <span className="text-sm font-medium">
+          Kompi Studio
+        </span>
       </div>
 
-      {/* Account menu */}
+      {/* Right: compact account control */}
       <div className="relative" ref={menuRef}>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className={cn(
-            "wf-dashboard-avatar-btn flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition"
-          )}
+          className="inline-flex items-center gap-2 text-sm font-medium"
           style={{
-            backgroundColor: "var(--color-surface)",
-            border: "1px solid var(--color-accent)",
+            backgroundColor: "transparent",
+            border: "none",
             color: "var(--color-text)",
           }}
           aria-label="Open account menu"
         >
-          {initial}
+          <span className="truncate max-w-[160px]">
+            {display}
+          </span>
+
+          <span
+            className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide"
+            style={{
+              backgroundColor: "var(--color-accent-soft)",
+              border: "1px solid var(--color-border)",
+              color: "var(--color-text)",
+            }}
+          >
+            {planLabel}
+          </span>
+
+          <div className="flex items-center gap-1">
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold"
+              style={{
+                backgroundColor: "var(--color-bg)",
+                border: "1px solid var(--color-accent)",
+                color: "var(--color-text)",
+              }}
+            >
+              {initial}
+            </div>
+            <ChevronDown
+              className="h-4 w-4"
+              style={{ color: "var(--color-subtle)" }}
+            />
+          </div>
         </button>
 
+        {/* Dropdown */}
         <AnimatePresence>
           {open && (
             <motion.div
@@ -293,45 +319,51 @@ function Topbar() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
               transition={{ duration: 0.16 }}
-              className="wf-dashboard-account-menu absolute right-0 z-50 mt-2 w-56 rounded-2xl p-1.5"
+              className="wf-dashboard-account-menu absolute right-0 z-50 mt-2 w-72 rounded-2xl p-1.5"
               style={{
                 backgroundColor: "var(--color-surface)",
                 border: "1px solid var(--color-border)",
               }}
               role="menu"
             >
-              <div className="px-2.5 py-2">
+              {/* Header row */}
+              <div className="flex items-center gap-3 px-3 py-3">
                 <div
-                  className="text-xs"
-                  style={{ color: "var(--color-subtle)" }}
-                >
-                  Signed in as
-                </div>
-                <div
-                  className="truncate text-sm font-medium"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
                   style={{
-                    fontFamily: "Instrument Serif, system-ui, serif",
-                    fontStyle: "italic",
+                    backgroundColor: "var(--color-bg)",
+                    color: "var(--color-text)",
                   }}
                 >
-                  {display}
+                  {initial}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span
+                    className="text-xs"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
+                    Signed in as
+                  </span>
+                  <span className="truncate text-sm font-medium">
+                    {display}
+                  </span>
                 </div>
               </div>
 
-              {/* 🔁 updated routes to new dashboard settings paths */}
+              <div
+                className="my-1 h-px"
+                style={{ backgroundColor: "var(--color-border)" }}
+              />
+
+              {/* Workspace actions */}
               <MenuItem
-                href="/dashboard/settings/profile"
-                label="Profile"
+                href="/dashboard"
+                label="Switch workspace"
                 onClick={() => setOpen(false)}
               />
               <MenuItem
-                href="/dashboard/settings"
-                label="Settings"
-                onClick={() => setOpen(false)}
-              />
-              <MenuItem
-                href="/dashboard/support"
-                label="Support"
+                href="/dashboard?createWorkspace=1"
+                label="Create new workspace"
                 onClick={() => setOpen(false)}
               />
 
@@ -340,6 +372,51 @@ function Topbar() {
                 style={{ backgroundColor: "var(--color-border)" }}
               />
 
+              {/* Account / billing */}
+              <MenuItem
+                href="/dashboard/settings/profile"
+                label="Account"
+                onClick={() => setOpen(false)}
+              />
+              <MenuItem
+                href="/dashboard/settings"
+                label="Workspace settings"
+                onClick={() => setOpen(false)}
+              />
+              <MenuItem
+                href="/pricing"
+                label="Upgrade"
+                onClick={() => setOpen(false)}
+              />
+
+              <div
+                className="my-1 h-px"
+                style={{ backgroundColor: "var(--color-border)" }}
+              />
+
+              {/* Support / feedback */}
+              <MenuItem
+                href="/dashboard/support"
+                label="Ask a question"
+                onClick={() => setOpen(false)}
+              />
+              <MenuItem
+                href="/dashboard/support"
+                label="Help topics"
+                onClick={() => setOpen(false)}
+              />
+              <MenuItem
+                href="/dashboard/support"
+                label="Share feedback"
+                onClick={() => setOpen(false)}
+              />
+
+              <div
+                className="my-1 h-px"
+                style={{ backgroundColor: "var(--color-border)" }}
+              />
+
+              {/* Sign out */}
               <button
                 className={cn(
                   "wf-dashboard-account-menu-signout w-full rounded-lg px-2.5 py-2 text-left text-sm font-medium transition"
@@ -350,7 +427,7 @@ function Topbar() {
                   signOut({ callbackUrl: "/" });
                 }}
               >
-                Sign out
+                Log out
               </button>
             </motion.div>
           )}
@@ -359,6 +436,7 @@ function Topbar() {
     </div>
   );
 }
+
 
 function MenuItem({
   href,
@@ -379,14 +457,7 @@ function MenuItem({
       role="menuitem"
       style={{ color: "var(--color-text)" }}
     >
-      <span
-        style={{
-          fontFamily: "Instrument Serif, system-ui, serif",
-          fontStyle: "italic",
-        }}
-      >
-        {label}
-      </span>
+      <span>{label}</span>
     </Link>
   );
 }

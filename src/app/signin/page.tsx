@@ -12,7 +12,7 @@ function SignInInner() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
   const error = searchParams.get("error");
-  const [loading, setLoading] = useState<"google" | "dev" | null>(null);
+  const [loading, setLoading] = useState<"google" | null>(null);
 
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-white">
@@ -63,31 +63,8 @@ function SignInInner() {
                 {loading === "google" ? "Signing in…" : "Continue with Google"}
               </Button>
 
-              <div className="relative py-2">
-                <div className="h-px bg-border" />
-                <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-white px-2 text-[10px] uppercase tracking-wide text-muted-foreground">
-                  or
-                </span>
-              </div>
-
-              {/* Dev/testing button */}
-              <Button
-                className="w-full h-11 text-base"
-                variant="outline"
-                onClick={() => {
-                  setLoading("dev");
-                  signIn("credentials", {
-                    callbackUrl,
-                    email: "dev@example.com",
-                  });
-                }}
-                disabled={loading !== null}
-              >
-                {loading === "dev" ? "Continuing…" : "Continue (dev)"}
-              </Button>
-
               {/* Forgot links – blue + bigger */}
-              <div className="flex items-center justify-between text-sm pt-1">
+              <div className="flex items-center justify-between text-sm pt-3">
                 <a
                   href="#"
                   className="text-blue-600 hover:text-blue-700 font-medium"

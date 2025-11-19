@@ -106,7 +106,24 @@ const SOCIAL_ICON_MAP: Record<
 
 const SOCIAL_OPTIONS = Object.keys(SOCIAL_ICON_MAP);
 
-export default function KCardsPage() {
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+export type KCardsInitialData = {
+  profileLayout?: "classic" | "hero";
+  title?: string;
+  subtitle?: string;
+  titleSize?: "small" | "large";
+  theme?: KCardThemeState;
+  links?: KCardLink[];
+  socials?: string[];
+  avatarDataUrl?: string | null;
+};
+
+type KCardsPageProps = {
+  initialData?: KCardsInitialData | null;
+};
+
+export default function KCardsPage({ initialData }: KCardsPageProps) {
   // which section is currently "active" for the left nav
   const [activeSection, setActiveSection] = useState<DesignSection>("header");
 
@@ -132,44 +149,58 @@ export default function KCardsPage() {
 
   // header
   const [profileLayout, setProfileLayout] = useState<"classic" | "hero">(
-    "classic"
+    initialData?.profileLayout === "hero" ? "hero" : "classic"
   );
-  const [title, setTitle] = useState("@yourname");
-  const [subtitle, setSubtitle] = useState("Designer · Creator · Founder");
+  const [title, setTitle] = useState(initialData?.title ?? "@yourname");
+  const [subtitle, setSubtitle] = useState(initialData?.subtitle ?? "Designer · Creator · Founder");
 
-  // profile image
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  // profile image – persisted as data URL in K-Card JSON
+  const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(
+    initialData?.avatarDataUrl ?? null
+  );
+  const avatarPreview = avatarDataUrl;
 
   function handleAvatarChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) {
-      setAvatarPreview(null);
+      setAvatarDataUrl(null);
       return;
     }
-    const url = URL.createObjectURL(file);
-    setAvatarPreview((prev) => {
-      if (prev && prev.startsWith("blob:")) {
-        URL.revokeObjectURL(prev);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result;
+      if (typeof result === "string") {
+        setAvatarDataUrl(result);
       }
-      return url;
-    });
+    };
+    reader.readAsDataURL(file);
   }
 
   // theme — single source of truth for all style tokens
-  const [theme, setTheme] = useState<KCardThemeState>(DEFAULT_KCARD_THEME);
+  const [theme, setTheme] = useState<KCardThemeState>(
+    (initialData?.theme as KCardThemeState | undefined) ?? DEFAULT_KCARD_THEME
+  );
 
-  // keep title size as an independent tweak (optional to move into theme later)
-  const [titleSize, setTitleSize] = useState<"small" | "large">("small");
+  // keep title size as an independent tweak
+  const [titleSize, setTitleSize] = useState<"small" | "large">(
+    initialData?.titleSize === "large" ? "large" : "small"
+  );
 
   // links
-  const [links, setLinks] = useState<KCardLink[]>(INITIAL_LINKS);
+  const [links, setLinks] = useState<KCardLink[]>(
+    (initialData?.links as KCardLink[] | undefined) ?? INITIAL_LINKS
+  );
 
   // socials
-  const [socials, setSocials] = useState<string[]>([
-    "Instagram",
-    "YouTube",
-    "Website",
-  ]);
+  const [socials, setSocials] = useState<string[]>(
+    initialData?.socials ?? ["Instagram", "YouTube", "Website"]
+  );
+
+  // autosave state
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInitialLoadRef = useRef(true);
 
   const {
     wallpaper,
@@ -283,6 +314,54 @@ export default function KCardsPage() {
 
   const visibleLinks = links.filter((l) => l.enabled);
 
+  // -------- Autosave whenever relevant state changes --------
+  useEffect(() => {
+    if (isInitialLoadRef.current) {
+      return;
+    }
+
+    const payload = {
+      profileLayout,
+      title,
+      subtitle,
+      titleSize,
+      theme,
+      links,
+      socials,
+      avatarDataUrl,
+    };
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    setSaveStatus("saving");
+
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/k-cards", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) throw new Error("Failed to save K-Card");
+
+        setSaveStatus("saved");
+        setLastSavedAt(new Date().toLocaleTimeString());
+      } catch (err) {
+        console.error("Failed to autosave K-Card", err);
+        setSaveStatus("error");
+      }
+    }, 800);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [profileLayout, title, subtitle, titleSize, theme, links, socials, avatarDataUrl]);
+
   // IntersectionObserver for auto-highlight in the sections list
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -379,6 +458,16 @@ export default function KCardsPage() {
                 );
               })}
             </nav>
+            {/* Tiny save indicator */}
+            <div
+              className="mt-4 text-[11px]"
+              style={{ color: "var(--color-subtle)" }}
+            >
+              {saveStatus === "saving" && "Saving…"}
+              {saveStatus === "saved" &&
+                (lastSavedAt ? `Saved ${lastSavedAt}` : "Saved")}
+              {saveStatus === "error" && "Error saving – changes kept locally"}
+            </div>
           </div>
         </aside>
 

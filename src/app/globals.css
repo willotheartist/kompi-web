@@ -237,6 +237,12 @@ body {
   --color-accent: #d4ff3e;
   --color-accent-soft: #f6ffe0;
 
+  /* Additional accent colors */
+  --color-accent-pink: #fe8ef1;
+  --color-accent-green: #beff51;
+  --color-accent-blue-soft: #a1c8ff;
+  --color-accent-pink-soft: #fab9fa;
+
   /* W&F radii & shadows (namespaced) */
   --wf-radius-md: 16px;
   --wf-radius-lg: 24px;

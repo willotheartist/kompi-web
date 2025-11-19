@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 
-function useClickOutside<T extends HTMLElement>(open: boolean, onClose: () => void) {
+function useClickOutside<T extends HTMLElement>(
+  open: boolean,
+  onClose: () => void
+) {
   const ref = useRef<T | null>(null);
   useEffect(() => {
     if (!open) return;
@@ -37,9 +40,17 @@ export function DashboardTopbar() {
 
   return (
     <div className="flex items-center justify-between gap-4">
-      {/* Left: product title or breadcrumb placeholder */}
-      <div className="text-sm text-zinc-400">
-        <span className="font-medium text-zinc-200">Dashboard</span>
+      {/* Left: product title / breadcrumb placeholder */}
+      <div
+        className="text-sm"
+        style={{ color: "var(--color-subtle)" }}
+      >
+        <span
+          className="font-medium"
+          style={{ color: "var(--color-text)" }}
+        >
+          Dashboard
+        </span>
       </div>
 
       {/* Right: avatar/menu */}
@@ -47,7 +58,12 @@ export function DashboardTopbar() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="h-9 w-9 rounded-full bg-zinc-800/80 border border-white/10 flex items-center justify-center text-sm font-semibold text-white hover:bg-zinc-700/70 transition"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition"
+          style={{
+            backgroundColor: "var(--color-surface)",
+            border: "1px solid var(--color-border)",
+            color: "var(--color-text)",
+          }}
           aria-label="Open account menu"
         >
           {initial}
@@ -55,22 +71,52 @@ export function DashboardTopbar() {
 
         {open && (
           <div
-            className="absolute right-0 mt-2 w-56 rounded-xl border border-white/10 bg-[#0A0E23]/95 backdrop-blur-xl shadow-[0_18px_60px_rgba(0,0,0,0.65)] p-1.5 z-50"
+            className="absolute right-0 z-50 mt-2 w-56 rounded-2xl p-1.5"
+            style={{
+              backgroundColor: "var(--color-surface)",
+              border: "1px solid var(--color-border)",
+            }}
             role="menu"
           >
             <div className="px-2.5 py-2">
-              <div className="text-xs text-zinc-400">Signed in as</div>
-              <div className="text-sm font-medium text-zinc-100 truncate">{display}</div>
+              <div
+                className="text-xs"
+                style={{ color: "var(--color-subtle)" }}
+              >
+                Signed in as
+              </div>
+              <div
+                className="truncate text-sm font-medium"
+                style={{ color: "var(--color-text)" }}
+              >
+                {display}
+              </div>
             </div>
 
-            <MenuItem href="/dashboard/profile" label="Profile" onClick={() => setOpen(false)} />
-            <MenuItem href="/dashboard/settings" label="Settings" onClick={() => setOpen(false)} />
-            <MenuItem href="/support" label="Support" onClick={() => setOpen(false)} />
+            <MenuItem
+              href="/dashboard/profile"
+              label="Profile"
+              onClick={() => setOpen(false)}
+            />
+            <MenuItem
+              href="/dashboard/settings"
+              label="Settings"
+              onClick={() => setOpen(false)}
+            />
+            <MenuItem
+              href="/support"
+              label="Support"
+              onClick={() => setOpen(false)}
+            />
 
-            <div className="my-1 h-px bg-white/10" />
+            <div
+              className="my-1 h-px"
+              style={{ backgroundColor: "var(--color-border)" }}
+            />
 
             <button
-              className="w-full text-left rounded-lg px-2.5 py-2 text-sm text-red-300 hover:bg-white/5 hover:text-red-200 transition"
+              className="w-full rounded-lg px-2.5 py-2 text-sm text-left transition"
+              style={{ color: "var(--color-subtle)" }}
               onClick={() => {
                 setOpen(false);
                 // After sign out, send back to homepage (or change to /signin)
@@ -99,8 +145,9 @@ function MenuItem({
     <Link
       href={href}
       onClick={onClick}
-      className="block rounded-lg px-2.5 py-2 text-sm text-zinc-200 hover:bg-white/5 hover:text-white transition"
+      className="block rounded-lg px-2.5 py-2 text-sm transition"
       role="menuitem"
+      style={{ color: "var(--color-text)" }}
     >
       {label}
     </Link>

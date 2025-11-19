@@ -75,10 +75,7 @@ const toneBg = (tone?: PerkCard["tone"]) => {
 
 export default function KompiPerks() {
   return (
-    <section
-      className="kperks"
-      aria-label="Kompi features and perks"
-    >
+    <section className="kperks" aria-label="Kompi features and perks">
       {/* Heading / intro */}
       <div className="kperks-inner">
         <motion.div
@@ -88,11 +85,13 @@ export default function KompiPerks() {
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.32, ease: "easeOut" }}
         >
-          <p className="kperks-eyebrow">Kompi perks</p>
-          <h2 className="kperks-heading">
-            Make every{" "}
-            <span className="kperks-serif">touchpoint</span> feel intentional.
-          </h2>
+          <div className="kperks-head-main">
+            <p className="kperks-eyebrow">Kompi perks</p>
+            <h2 className="kperks-heading">
+              Make every{" "}
+              <span className="kperks-serif">touchpoint</span> feel intentional.
+            </h2>
+          </div>
           <p className="kperks-intro">
             From first tap to final report, Kompi keeps links, QR codes and bio
             pages under one roof — so your campaigns feel designed, not duct
@@ -100,6 +99,16 @@ export default function KompiPerks() {
           </p>
         </motion.div>
       </div>
+
+      {/* DEBUG spacer: if you don't see this gap, KompiPerks.tsx is not the component being rendered */}
+      <div
+        style={{
+          height: "160px",
+          width: "100%",
+          // uncomment if you want to see it visually:
+          // backgroundColor: "rgba(255,0,0,0.05)",
+        }}
+      />
 
       {/* Full-width horizontal strip */}
       <motion.div
@@ -129,9 +138,7 @@ export default function KompiPerks() {
                   <h3 className="kperks-card-title">
                     {perk.title}{" "}
                     {perk.accent && (
-                      <span className="kperks-card-accent">
-                        {perk.accent}
-                      </span>
+                      <span className="kperks-card-accent">{perk.accent}</span>
                     )}
                   </h3>
                   <p className="kperks-card-copy">{perk.body}</p>
@@ -156,21 +163,26 @@ export default function KompiPerks() {
         }
 
         .kperks-inner {
-          max-width: 1180px;
+          max-width: 1240px;
           margin: 0 auto;
-          padding: 0 24px;
+          padding: 0 20px;
         }
 
         .kperks-head {
+          display: grid;
+          grid-template-columns: minmax(0, 2.3fr) minmax(0, 2fr);
+          column-gap: 32px;
+          row-gap: 12px;
+          align-items: flex-start;
+          max-width: 100%;
+        }
+
+        .kperks-head-main {
           max-width: 640px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          margin-bottom: 28px;
         }
 
         .kperks-eyebrow {
-          margin: 0 0 4px;
+          margin: 0 0 10px;
           font-size: 13px;
           letter-spacing: 0.16em;
           text-transform: uppercase;
@@ -178,9 +190,9 @@ export default function KompiPerks() {
         }
 
         .kperks-heading {
-          margin: 0;
-          font-size: 32px;
-          line-height: 1.15;
+          margin: 0 0 12px;
+          font-size: clamp(2.1rem, 2.3vw + 1.1rem, 2.7rem);
+          line-height: 1.08;
           font-weight: 700;
         }
 
@@ -192,19 +204,17 @@ export default function KompiPerks() {
         }
 
         .kperks-intro {
-          margin: 4px 0 0;
+          margin: 12px 0 0;
           font-size: 15px;
           line-height: 1.7;
           color: var(--color-subtle);
-          max-width: 520px;
+          max-width: 460px;
         }
 
-        /* Full-width band for scroller */
         .kperks-band {
           width: 100vw;
           margin-left: calc(50% - 50vw);
           margin-right: calc(50% - 50vw);
-          margin-top: 32px;
         }
 
         .kperks-scroller {
@@ -233,6 +243,7 @@ export default function KompiPerks() {
           display: flex;
           flex-direction: column;
           overflow: hidden;
+          background: var(--color-surface);
         }
 
         .kperks-image-wrap {
@@ -287,7 +298,7 @@ export default function KompiPerks() {
         .kperks-cta {
           margin-top: 14px;
           align-self: flex-start;
-          border-radius: 999px;
+          border-radius: 12px;
           border: 1px solid var(--color-border);
           padding: 8px 16px;
           font-size: 13px;
@@ -298,8 +309,8 @@ export default function KompiPerks() {
           align-items: center;
           gap: 6px;
           cursor: pointer;
-          transition: transform 0.16s ease-out, box-shadow 0.16s ease-out,
-            background-color 0.16s ease-out;
+          transition: background-color 0.16s ease-out,
+            border-color 0.16s ease-out, transform 0.16s ease-out;
         }
 
         .kperks-cta-icon {
@@ -308,11 +319,10 @@ export default function KompiPerks() {
 
         .kperks-cta:hover {
           transform: translateY(-1px);
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
           background: var(--color-accent-soft);
+          border-color: var(--color-accent);
         }
 
-        /* Responsive */
         @media (max-width: 900px) {
           .kperks {
             padding: 72px 0 88px;
@@ -323,15 +333,16 @@ export default function KompiPerks() {
           }
 
           .kperks-head {
-            margin-bottom: 24px;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 12px;
+          }
+
+          .kperks-intro {
+            max-width: 100%;
           }
 
           .kperks-heading {
             font-size: 26px;
-          }
-
-          .kperks-band {
-            margin-top: 24px;
           }
 
           .kperks-track {

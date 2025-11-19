@@ -6,11 +6,11 @@ import { FooterCTA } from "@/components/footer-cta";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { KompiPromoCards } from "@/components/KompiPromoCards";
 import KPromo from "@/components/KPromo";
 import "./kompi-marketing.css";
 import KompiPerks from "@/components/KompiPerks";
-
+import KRow from "@/components/KRow";
+import KBenefits from "@/components/KBenefits";
 
 export const dynamic = "force-static";
 
@@ -27,10 +27,7 @@ export default function HomePage() {
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         {/* HeroA – Calm Product Hero */}
-        <Section
-          className="wf-section-hero"
-          style={{ minHeight: "100vh" }} // hero 100vh
-        >
+        <Section className="wf-section-hero">
           <Container>
             <motion.div
               className="wf-hero-grid"
@@ -140,30 +137,6 @@ export default function HomePage() {
         {/* KPromo – Clickable world carousel */}
         <KPromo />
 
-        {/* LogosBar – Trusted By */}
-        <Section className="wf-section-tight">
-          <Container>
-            <motion.div
-              className="wf-logos-card"
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-            >
-              <p className="wf-logos-label">
-                TRUSTED BY TEAMS ON{" "}
-                <span className="wf-serif-accent">K-Cards</span>
-              </p>
-              <div className="wf-logos-row">
-                <span>STUDIO WILLO</span>
-                <span>LOOP LAB</span>
-                <span>BRIGHT PIXEL</span>
-                <span>NORTHSIDE AUDIO</span>
-              </div>
-            </motion.div>
-          </Container>
-        </Section>
-
         {/* ValueGrid – Core benefits + pricing teaser */}
         <Section>
           <Container>
@@ -241,10 +214,7 @@ export default function HomePage() {
         </Section>
 
         {/* HowItWorks – Kompi in your stack */}
-        <Section
-          className="wf-band-accent-soft"
-          style={{ minHeight: "100vh" }} // Kompi in your stack 100vh
-        >
+        <Section className="wf-band-accent-soft">
           <Container>
             <motion.div
               className="wf-howitworks-grid"
@@ -301,6 +271,8 @@ export default function HomePage() {
             </motion.div>
           </Container>
         </Section>
+
+        {/* KompiPerks – horizontal perks strip */}
         <KompiPerks />
 
         {/* ValueGrid – Personas / Who Kompi is for */}
@@ -350,42 +322,14 @@ export default function HomePage() {
           </Container>
         </Section>
 
-        {/* ValueGrid – KompiPromoCards (K-Cards + QR focus) */}
-        <Section className="wf-band-surface">
-          <Container>
-            <motion.div
-              className="wf-kompi-promo-shell"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.26, ease: "easeOut" }}
-            >
-              <div className="wf-intro-block">
-                <p className="wf-eyebrow">Kompi in action</p>
-                <Heading as="h2" className="wf-section-heading">
-                  K-Cards, QR &amp;{" "}
-                  <span className="wf-serif-accent">links</span> in one view.
-                </Heading>
-                <p className="wf-section-intro">
-                  Give your team and clients a single source of truth — from
-                  physical cards to QR posters and short links, Kompi keeps the
-                  journey connected.
-                </p>
-              </div>
+        {/* KRow – horizontal campaign cards */}
+        <KRow />
 
-              {/* Wrapper to keep KompiPromoCards contained & aligned */}
-              <div className="wf-kompi-promo-grid">
-                <KompiPromoCards />
-              </div>
-            </motion.div>
-          </Container>
-        </Section>
+        {/* KBenefits – case-study style band */}
+        <KBenefits />
 
-        {/* ValueGrid – Analytics focus */}
-        <Section
-          className="wf-band-accent-soft"
-          style={{ minHeight: "100vh" }} // Analytics without the headache 100vh
-        >
+        {/* Analytics focus */}
+        <Section className="wf-band-accent-soft">
           <Container>
             <motion.div
               className="wf-analytics-shell"
@@ -526,7 +470,7 @@ function Container({
 }
 
 function Heading({
-  as: Tag = "h2",
+  as: Tag = "h1",
   children,
   align = "left",
   className,

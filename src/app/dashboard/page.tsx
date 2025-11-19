@@ -2,17 +2,37 @@ import { prisma } from "@/lib/prisma";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
   DashboardShell,
-  LinkSummary,
+  type LinkSummary,
 } from "@/components/dashboard/dashboard-shell";
+import { requireUser, getActiveWorkspace } from "@/lib/auth";
+import { CreateWorkspaceEmpty } from "@/components/dashboard/create-workspace-empty";
 
 export const dynamic = "force-dynamic";
+
+type PageProps = {
+  searchParams?: {
+    workspaceId?: string;
+  };
+};
 
 type LinkRecord = Awaited<
   ReturnType<typeof prisma.link.findMany>
 >[number];
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: PageProps) {
+  const user = await requireUser();
+  const workspace = await getActiveWorkspace(user.id, searchParams?.workspaceId);
+
+  if (!workspace) {
+    return (
+      <DashboardLayout>
+        <CreateWorkspaceEmpty />
+      </DashboardLayout>
+    );
+  }
+
   const linksRaw = await prisma.link.findMany({
+    where: { workspaceId: workspace.id },
     orderBy: { createdAt: "desc" },
     take: 15,
   });

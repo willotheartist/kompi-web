@@ -2,7 +2,12 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -51,40 +56,83 @@ export function CreateWorkspaceCTA() {
   return (
     <>
       <Button
-        className="rounded-full px-5"
         onClick={() => setOpen(true)}
+        disabled={pending}
+        className="px-5 text-sm font-medium"
+        style={{
+          borderRadius: "999px",
+          backgroundColor: "var(--color-accent)",
+          color: "var(--color-text)",
+        }}
       >
         Create workspace
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md"
+          style={{
+            backgroundColor: "var(--color-surface)",
+            borderColor: "var(--color-border)",
+            borderRadius: "var(--radius-md)",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
           <DialogHeader>
-            <DialogTitle>Create a workspace</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-[var(--color-text)]">
+              Create a workspace
+            </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <label className="text-sm text-muted-foreground">
-              Workspace name
-            </label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={suggested}
-            />
-            {error && (
-              <p className="text-xs text-red-500">{error}</p>
-            )}
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <label className="text-xs font-medium" style={{ color: "var(--color-subtle)" }}>
+                Workspace name
+              </label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={suggested}
+                className="text-sm"
+                style={{
+                  borderRadius: "var(--radius-md)",
+                  borderColor: "var(--color-border)",
+                  backgroundColor: "var(--color-surface)",
+                  color: "var(--color-text)",
+                }}
+              />
+              {error && (
+                <p className="text-xs" style={{ color: "var(--color-text)" }}>
+                  {error}
+                </p>
+              )}
+            </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <Button
                 variant="outline"
                 onClick={() => setOpen(false)}
                 disabled={pending}
+                className="px-4 text-sm"
+                style={{
+                  borderRadius: "999px",
+                  borderColor: "var(--color-border)",
+                  backgroundColor: "transparent",
+                  color: "var(--color-text)",
+                }}
               >
                 Cancel
               </Button>
-              <Button onClick={onCreate} disabled={pending}>
+              <Button
+                onClick={onCreate}
+                disabled={pending}
+                className="px-5 text-sm font-medium"
+                style={{
+                  borderRadius: "999px",
+                  backgroundColor: "var(--color-accent)",
+                  color: "var(--color-text)",
+                }}
+              >
                 {pending ? "Creating…" : "Create workspace"}
               </Button>
             </div>

@@ -8,11 +8,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+// Pattern: Settings/DetailSection
 export default function DashboardBillingSettingsPage() {
   const currentPlan = {
     name: "Free",
     price: "£0 / month",
-    description: "Perfect while you&apos;re testing Kompi.",
+    description: "Perfect while you're testing Kompi.",
     features: [
       "Unlimited short links",
       "1 workspace",
@@ -22,33 +23,65 @@ export default function DashboardBillingSettingsPage() {
   };
 
   return (
-    <div className="flex-1 space-y-6 px-4 py-6 lg:px-8 text-slate-100">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight">Billing & plan</h1>
-        <p className="text-sm text-slate-400">
-          Review your current plan. Billing integration will be added here later.
+    <section
+      className="wf-settings-billing flex flex-1 flex-col gap-6"
+      style={{ color: "var(--color-text)" }}
+    >
+      <header className="flex flex-col gap-1">
+        <h1 className="text-xl font-semibold tracking-tight">
+          <span
+            style={{
+              fontFamily:
+                "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
+              fontStyle: "italic",
+            }}
+          >
+            Billing &amp; plan
+          </span>
+        </h1>
+        <p
+          className="text-sm max-w-xl"
+          style={{ color: "var(--color-subtle)" }}
+        >
+          Review your current plan. Billing integration will be added here
+          later.
         </p>
-      </div>
+      </header>
 
-      <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+      <Card
+        className="rounded-2xl"
+        style={{
+          backgroundColor: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+        }}
+      >
         <CardHeader>
           <CardTitle className="text-base">Current plan</CardTitle>
-          <CardDescription>
-            Plan details are static for now. Stripe / Lemon Squeezy will plug in here.
+          <CardDescription
+            style={{ color: "var(--color-subtle)" }}
+          >
+            Plan details are static for now. Stripe / Lemon Squeezy will plug
+            in here.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-baseline justify-between gap-4">
             <div>
               <p className="text-sm font-medium">{currentPlan.name}</p>
-              <p className="text-xs text-slate-400">
+              <p
+                className="text-xs"
+                style={{ color: "var(--color-subtle)" }}
+              >
                 {currentPlan.description}
               </p>
             </div>
             <p className="text-base font-semibold">{currentPlan.price}</p>
           </div>
 
-          <ul className="space-y-1 text-sm text-slate-400">
+          <ul
+            className="space-y-1 text-sm"
+            style={{ color: "var(--color-subtle)" }}
+          >
             {currentPlan.features.map((f) => (
               <li key={f}>• {f}</li>
             ))}
@@ -63,12 +96,15 @@ export default function DashboardBillingSettingsPage() {
             </Button>
           </div>
 
-          <p className="text-xs text-slate-400">
-            Detailed invoices, tax information, and payment methods will live here once
-            billing is connected.
+          <p
+            className="text-xs"
+            style={{ color: "var(--color-subtle)" }}
+          >
+            Detailed invoices, tax information, and payment methods will live
+            here once billing is connected.
           </p>
         </CardContent>
       </Card>
-    </div>
+    </section>
   );
 }

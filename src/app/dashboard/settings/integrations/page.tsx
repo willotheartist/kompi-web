@@ -18,39 +18,79 @@ const integrations = [
     name: "Meta Pixel",
     category: "Analytics",
     status: "Coming soon",
-    description: "Track conversions from Kompi links into your Meta ad campaigns.",
+    description:
+      "Track conversions from Kompi links into your Meta ad campaigns.",
   },
   {
     name: "Webhooks",
     category: "Automation",
     status: "Coming soon",
-    description: "Trigger external tools when links are created or clicked.",
+    description:
+      "Trigger external tools when links are created or clicked.",
   },
 ];
 
+// Pattern: Settings/IntegrationsGrid
 export default function DashboardIntegrationsSettingsPage() {
   return (
-    <div className="flex-1 space-y-6 px-4 py-6 lg:px-8 text-slate-100">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight">Integrations</h1>
-        <p className="text-sm text-slate-400">
-          Connect analytics and automation tools. For now, this is a preview of what&apos;s coming.
+    <section
+      className="wf-settings-integrations flex flex-1 flex-col gap-6"
+      style={{ color: "var(--color-text)" }}
+    >
+      <header className="flex flex-col gap-1">
+        <h1 className="text-xl font-semibold tracking-tight">
+          <span
+            style={{
+              fontFamily:
+                "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
+              fontStyle: "italic",
+            }}
+          >
+            Integrations
+          </span>
+        </h1>
+        <p
+          className="text-sm max-w-xl"
+          style={{ color: "var(--color-subtle)" }}
+        >
+          Connect analytics and automation tools. For now, this is a preview of
+          what's coming.
         </p>
-      </div>
+      </header>
 
       <div className="grid gap-4 md:grid-cols-2">
         {integrations.map((integration) => (
           <Card
             key={integration.name}
-            className="flex flex-col border-white/10 bg-white/5 backdrop-blur-sm"
+            className="flex flex-col rounded-2xl"
+            style={{
+              backgroundColor: "var(--color-surface)",
+              border: "1px solid var(--color-border)",
+            }}
           >
             <CardHeader>
-              <CardTitle className="text-base">{integration.name}</CardTitle>
-              <CardDescription>{integration.description}</CardDescription>
+              <CardTitle className="text-base">
+                {integration.name}
+              </CardTitle>
+              <CardDescription
+                style={{ color: "var(--color-subtle)" }}
+              >
+                {integration.description}
+              </CardDescription>
             </CardHeader>
-            <CardContent className="mt-auto flex items-center justify-between gap-2 text-xs text-slate-400">
-              <span>{integration.category}</span>
-              <Button size="sm" variant="outline" disabled>
+            <CardContent className="mt-auto flex items-center justify-between gap-2 text-xs">
+              <span style={{ color: "var(--color-subtle)" }}>
+                {integration.category}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled
+                style={{
+                  borderColor: "var(--color-border)",
+                  color: "var(--color-subtle)",
+                }}
+              >
                 {integration.status}
               </Button>
             </CardContent>
@@ -58,9 +98,13 @@ export default function DashboardIntegrationsSettingsPage() {
         ))}
       </div>
 
-      <p className="text-xs text-slate-400">
-        If there&apos;s an integration you&apos;d like to see prioritised, drop a note on the Support page.
+      <p
+        className="text-xs"
+        style={{ color: "var(--color-subtle)" }}
+      >
+        If there's an integration you'd like to see prioritised, drop a note on
+        the Support page.
       </p>
-    </div>
+    </section>
   );
 }

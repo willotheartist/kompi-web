@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -24,15 +25,24 @@ interface Props {
 }
 
 export function WorkspaceSwitcher({ workspaces, activeWorkspaceId }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
 
+  const buildUrlWithWorkspace = (id: string) => {
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    params.set("workspaceId", id);
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  };
+
   const switchWorkspace = (id: string) => {
     startTransition(() => {
-      const url = new URL(window.location.href);
-      url.searchParams.set("workspaceId", id);
-      window.location.href = url.toString();
+      const next = buildUrlWithWorkspace(id);
+      router.push(next);
     });
   };
 
@@ -46,7 +56,7 @@ export function WorkspaceSwitcher({ workspaces, activeWorkspaceId }: Props) {
       const res = await fetch("/api/workspaces", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name: name.trim() }),
       });
 
       if (!res.ok) {
@@ -58,9 +68,8 @@ export function WorkspaceSwitcher({ workspaces, activeWorkspaceId }: Props) {
       setOpen(false);
       setName("");
 
-      const url = new URL(window.location.href);
-      url.searchParams.set("workspaceId", ws.id);
-      window.location.href = url.toString();
+      const next = buildUrlWithWorkspace(ws.id);
+      router.push(next);
     });
   };
 
@@ -78,6 +87,7 @@ export function WorkspaceSwitcher({ workspaces, activeWorkspaceId }: Props) {
           {w.name}
         </Button>
       ))}
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button

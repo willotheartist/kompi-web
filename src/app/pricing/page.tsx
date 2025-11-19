@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FooterCTA } from "@/components/footer-cta";
 import { WhyKompi } from "@/components/why-kompi";
+import { GoProBanner } from "@/components/GoProBanner";
+import GoProModal from "@/components/modals/GoProModal";
 import "./pricing.css";
 
 type BillingPeriod = "monthly" | "yearly";
@@ -190,194 +192,209 @@ function cell(planId: Plan["id"], row: string): string {
 
 export default function PricingPage() {
   const [billing, setBilling] = useState<BillingPeriod>("monthly");
+  const [showProModal, setShowProModal] = useState(false);
 
   return (
-    <main className="wf-pricing-page">
-      {/* HeroA – Pricing hero with billing toggle */}
-      <section className="wf-section wf-pricing-hero">
-        <div className="wf-pricing-container">
-          <div className="wf-pricing-hero-shell">
-            <p className="wf-pricing-eyebrow">Kompi pricing</p>
-            <h1 className="wf-pricing-hero-heading">
-              Pricing for the next generation of links.
-            </h1>
-            <p className="wf-pricing-hero-body">
-              Start free. Scale into Kompi Codes™, smart redirects, branded hubs
-              and studio-grade analytics — without switching tools.
-            </p>
+    <>
+      <main className="wf-pricing-page">
+        {/* Top Go Pro banner */}
+        <GoProBanner onGoProClick={() => setShowProModal(true)} />
 
-            {/* Billing toggle */}
-            <div className="wf-billing-toggle">
-              <button
-                type="button"
-                onClick={() => setBilling("monthly")}
-                className={
-                  "wf-billing-toggle-btn" +
-                  (billing === "monthly" ? " wf-billing-toggle-btn-active" : "")
-                }
-              >
-                Monthly
-              </button>
-              <button
-                type="button"
-                onClick={() => setBilling("yearly")}
-                className={
-                  "wf-billing-toggle-btn wf-billing-toggle-btn-right" +
-                  (billing === "yearly" ? " wf-billing-toggle-btn-active" : "")
-                }
-              >
-                <span>Yearly</span>
-                <span className="wf-billing-toggle-pill">
-                  save up to 20%
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* HeroA – Pricing hero with billing toggle */}
+        <section className="wf-section wf-pricing-hero">
+          <div className="wf-pricing-container">
+            <div className="wf-pricing-hero-shell">
+              <p className="wf-pricing-eyebrow">Kompi pricing</p>
+              <h1 className="wf-pricing-hero-heading">
+                Pricing for the next generation of links.
+              </h1>
+              <p className="wf-pricing-hero-body">
+                Start free. Scale into Kompi Codes™, smart redirects, branded
+                hubs and studio-grade analytics — without switching tools.
+              </p>
 
-      {/* ValueGrid – Plan cards */}
-      <section className="wf-section wf-pricing-plans">
-        <div className="wf-pricing-container">
-          <div className="grid gap-5 md:grid-cols-3">
-            {plans.map((plan) => {
-              const price = formatPrice(plan, billing);
-              const label = subLabel(plan, billing);
-
-              const highlightClass = plan.highlighted
-                ? "wf-plan-card-highlighted"
-                : "wf-plan-card-standard";
-
-              return (
-                <Card
-                  key={plan.id}
-                  className={[
-                    "wf-plan-card",
-                    highlightClass,
-                    "flex flex-col",
-                  ].join(" ")}
+              {/* Billing toggle */}
+              <div className="wf-billing-toggle">
+                <button
+                  type="button"
+                  onClick={() => setBilling("monthly")}
+                  className={
+                    "wf-billing-toggle-btn" +
+                    (billing === "monthly"
+                      ? " wf-billing-toggle-btn-active"
+                      : "")
+                  }
                 >
-                  {plan.highlighted && (
-                    <div className="wf-plan-pill">Most popular</div>
-                  )}
-
-                  <h2 className="wf-plan-title">{plan.name}</h2>
-                  <p className="wf-plan-tagline">{plan.tagline}</p>
-
-                  <div className="wf-plan-price-block">
-                    <div className="wf-plan-price-row">
-                      <span className="wf-plan-price">{price}</span>
-                      <span className="wf-plan-price-suffix">/month</span>
-                    </div>
-                    <div className="wf-plan-price-sub">{label}</div>
-                    <div className="wf-plan-price-best">
-                      Best for: {plan.bestFor}
-                    </div>
-                  </div>
-
-                  <ul className="wf-plan-features">
-                    {plan.features.map((f) => (
-                      <li key={f} className="wf-plan-feature-row">
-                        <span className="wf-plan-feature-dot" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    size="sm"
-                    className={
-                      "wf-plan-cta" +
-                      (plan.highlighted
-                        ? " wf-plan-cta-primary"
-                        : " wf-plan-cta-secondary")
-                    }
-                    asChild
-                  >
-                    <Link href="/signin">{plan.cta}</Link>
-                  </Button>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ValueGrid / Comparison – Feature comparison table */}
-      <section className="wf-section wf-pricing-compare">
-        <div className="wf-pricing-container">
-          <div className="wf-compare-shell">
-            <div className="wf-compare-header">
-              <div>
-                <h3 className="wf-compare-title">Compare plans</h3>
-                <p className="wf-compare-body">
-                  See what unlocks as you grow — from simple links to full-funnel
-                  routing.
-                </p>
-              </div>
-              <div className="wf-compare-tags">
-                <span>Free → Launch</span>
-                <span>Creator → Grow</span>
-                <span>Studio → Scale</span>
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBilling("yearly")}
+                  className={
+                    "wf-billing-toggle-btn wf-billing-toggle-btn-right" +
+                    (billing === "yearly"
+                      ? " wf-billing-toggle-btn-active"
+                      : "")
+                  }
+                >
+                  <span>Yearly</span>
+                  <span className="wf-billing-toggle-pill">
+                    save up to 20%
+                  </span>
+                </button>
               </div>
             </div>
+          </div>
+        </section>
 
-            <div className="wf-compare-table-wrap">
-              <table className="wf-compare-table">
-                <thead>
-                  <tr>
-                    <th className="wf-compare-th-feature">Feature</th>
-                    <th className="wf-compare-th">Free</th>
-                    <th className="wf-compare-th">Creator</th>
-                    <th className="wf-compare-th">Studio</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {featureSections.map((section) => (
-                    <Fragment key={section.title}>
-                      <tr className="wf-compare-section-row">
-                        <td
-                          colSpan={4}
-                          className="wf-compare-section-cell"
-                        >
-                          {section.title}
-                        </td>
-                      </tr>
-                      {section.rows.map((row) => (
-                        <tr
-                          key={section.title + row}
-                          className="wf-compare-row"
-                        >
-                          <td className="wf-compare-cell-feature">{row}</td>
-                          <td className="wf-compare-cell">
-                            {cell("free", row)}
-                          </td>
-                          <td className="wf-compare-cell">
-                            {cell("creator", row)}
-                          </td>
-                          <td className="wf-compare-cell">
-                            {cell("studio", row)}
+        {/* ValueGrid – Plan cards */}
+        <section className="wf-section wf-pricing-plans">
+          <div className="wf-pricing-container">
+            <div className="grid gap-5 md:grid-cols-3">
+              {plans.map((plan) => {
+                const price = formatPrice(plan, billing);
+                const label = subLabel(plan, billing);
+
+                const highlightClass = plan.highlighted
+                  ? "wf-plan-card-highlighted"
+                  : "wf-plan-card-standard";
+
+                return (
+                  <Card
+                    key={plan.id}
+                    className={[
+                      "wf-plan-card",
+                      highlightClass,
+                      "flex flex-col",
+                    ].join(" ")}
+                  >
+                    {plan.highlighted && (
+                      <div className="wf-plan-pill">Most popular</div>
+                    )}
+
+                    <h2 className="wf-plan-title">{plan.name}</h2>
+                    <p className="wf-plan-tagline">{plan.tagline}</p>
+
+                    <div className="wf-plan-price-block">
+                      <div className="wf-plan-price-row">
+                        <span className="wf-plan-price">{price}</span>
+                        <span className="wf-plan-price-suffix">/month</span>
+                      </div>
+                      <div className="wf-plan-price-sub">{label}</div>
+                      <div className="wf-plan-price-best">
+                        Best for: {plan.bestFor}
+                      </div>
+                    </div>
+
+                    <ul className="wf-plan-features">
+                      {plan.features.map((f) => (
+                        <li key={f} className="wf-plan-feature-row">
+                          <span className="wf-plan-feature-dot" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      size="sm"
+                      className={
+                        "wf-plan-cta" +
+                        (plan.highlighted
+                          ? " wf-plan-cta-primary"
+                          : " wf-plan-cta-secondary")
+                      }
+                      asChild
+                    >
+                      <Link href="/signin">{plan.cta}</Link>
+                    </Button>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ValueGrid / Comparison – Feature comparison table */}
+        <section className="wf-section wf-pricing-compare">
+          <div className="wf-pricing-container">
+            <div className="wf-compare-shell">
+              <div className="wf-compare-header">
+                <div>
+                  <h3 className="wf-compare-title">Compare plans</h3>
+                  <p className="wf-compare-body">
+                    See what unlocks as you grow — from simple links to
+                    full-funnel routing.
+                  </p>
+                </div>
+                <div className="wf-compare-tags">
+                  <span>Free → Launch</span>
+                  <span>Creator → Grow</span>
+                  <span>Studio → Scale</span>
+                </div>
+              </div>
+
+              <div className="wf-compare-table-wrap">
+                <table className="wf-compare-table">
+                  <thead>
+                    <tr>
+                      <th className="wf-compare-th-feature">Feature</th>
+                      <th className="wf-compare-th">Free</th>
+                      <th className="wf-compare-th">Creator</th>
+                      <th className="wf-compare-th">Studio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {featureSections.map((section) => (
+                      <Fragment key={section.title}>
+                        <tr className="wf-compare-section-row">
+                          <td
+                            colSpan={4}
+                            className="wf-compare-section-cell"
+                          >
+                            {section.title}
                           </td>
                         </tr>
-                      ))}
-                    </Fragment>
-                  ))}
-                </tbody>
-              </table>
+                        {section.rows.map((row) => (
+                          <tr
+                            key={section.title + row}
+                            className="wf-compare-row"
+                          >
+                            <td className="wf-compare-cell-feature">{row}</td>
+                            <td className="wf-compare-cell">
+                              {cell("free", row)}
+                            </td>
+                            <td className="wf-compare-cell">
+                              {cell("creator", row)}
+                            </td>
+                            <td className="wf-compare-cell">
+                              {cell("studio", row)}
+                            </td>
+                          </tr>
+                        ))}
+                      </Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Why Kompi – 3-card widget near bottom */}
-      <section className="wf-section wf-pricing-why">
-        <div className="wf-pricing-container">
-          <WhyKompi />
-        </div>
-      </section>
+        {/* Why Kompi – 3-card widget near bottom */}
+        <section className="wf-section wf-pricing-why">
+          <div className="wf-pricing-container">
+            <WhyKompi />
+          </div>
+        </section>
 
-      {/* CTA_Footer */}
-      <FooterCTA />
-    </main>
+        {/* CTA_Footer */}
+        <FooterCTA />
+      </main>
+
+      <GoProModal
+        open={showProModal}
+        onClose={() => setShowProModal(false)}
+      />
+    </>
   );
 }

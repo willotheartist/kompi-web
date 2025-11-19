@@ -13,32 +13,69 @@ const mockDomains = [
   { domain: "go.yourbrand.com", status: "Pending", isDefault: false },
 ];
 
+// Pattern: Settings/Domains
 export default function DashboardDomainSettingsPage() {
   return (
-    <div className="flex-1 space-y-6 px-4 py-6 lg:px-8 text-slate-100">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight">Domains</h1>
-        <p className="text-sm text-slate-400">
-          Connect branded domains and choose which domain new links should use by default.
+    <section
+      className="wf-settings-domains flex flex-1 flex-col gap-6"
+      style={{ color: "var(--color-text)" }}
+    >
+      <header className="flex flex-col gap-1">
+        <h1 className="text-xl font-semibold tracking-tight">
+          <span
+            style={{
+              fontFamily:
+                "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
+              fontStyle: "italic",
+            }}
+          >
+            Domains
+          </span>
+        </h1>
+        <p
+          className="text-sm max-w-xl"
+          style={{ color: "var(--color-subtle)" }}
+        >
+          Connect branded domains and choose which domain new links should use
+          by default.
         </p>
-      </div>
+      </header>
 
-      <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+      {/* Connected domains */}
+      <Card
+        className="rounded-2xl"
+        style={{
+          backgroundColor: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+        }}
+      >
         <CardHeader>
           <CardTitle className="text-base">Connected domains</CardTitle>
-          <CardDescription>
-            These domains can be used when creating short links. Only one domain can be default.
+          <CardDescription
+            style={{ color: "var(--color-subtle)" }}
+          >
+            These domains can be used when creating short links. Only one
+            domain can be default.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {mockDomains.length === 0 && (
-            <p className="text-xs text-slate-400">
+            <p
+              className="text-xs"
+              style={{ color: "var(--color-subtle)" }}
+            >
               No domains connected yet. Add your first domain below.
             </p>
           )}
 
           {mockDomains.length > 0 && (
-            <div className="divide-y rounded-md border border-white/10 bg-white/10">
+            <div
+              className="divide-y rounded-xl"
+              style={{
+                border: "1px solid var(--color-border)",
+                backgroundColor: "var(--color-bg)",
+              }}
+            >
               {mockDomains.map((d) => (
                 <div
                   key={d.domain}
@@ -46,18 +83,22 @@ export default function DashboardDomainSettingsPage() {
                 >
                   <div>
                     <div className="font-medium">{d.domain}</div>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-slate-400">
+                    <div className="mt-1 flex items-center gap-2 text-xs">
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 border text-[10px] uppercase tracking-wide ${
-                          d.status === "Verified"
-                            ? "border-emerald-500/40 text-emerald-700"
-                            : "border-amber-500/40 text-amber-700"
-                        } bg-white/60`}
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide"
+                        style={{
+                          border: "1px solid var(--color-border)",
+                          backgroundColor: "var(--color-accent-soft)",
+                          color: "var(--color-accent)",
+                        }}
                       >
                         {d.status}
                       </span>
                       {d.isDefault && (
-                        <span className="text-[10px] uppercase tracking-wide text-neutral-500">
+                        <span
+                          className="text-[10px] uppercase tracking-wide"
+                          style={{ color: "var(--color-subtle)" }}
+                        >
                           · Default
                         </span>
                       )}
@@ -80,10 +121,19 @@ export default function DashboardDomainSettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+      {/* Add domain */}
+      <Card
+        className="rounded-2xl"
+        style={{
+          backgroundColor: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+        }}
+      >
         <CardHeader>
           <CardTitle className="text-base">Add a new domain</CardTitle>
-          <CardDescription>
+          <CardDescription
+            style={{ color: "var(--color-subtle)" }}
+          >
             Connect a custom domain like{" "}
             <span className="font-mono text-[11px]">go.yourbrand.com</span>.
           </CardDescription>
@@ -98,8 +148,11 @@ export default function DashboardDomainSettingsPage() {
               placeholder="go.yourbrand.com"
               autoComplete="off"
             />
-            <p className="text-xs text-slate-400">
-              You&apos;ll need access to this domain&apos;s DNS to finish setup.
+            <p
+              className="text-xs"
+              style={{ color: "var(--color-subtle)" }}
+            >
+              You'll need access to this domain's DNS to finish setup.
             </p>
           </div>
 
@@ -107,16 +160,25 @@ export default function DashboardDomainSettingsPage() {
             <Button type="submit">Add domain</Button>
           </div>
 
-          <div className="rounded-md border border-dashed border-neutral-200 bg-white/10 p-3 text-xs text-slate-400">
-            <p className="mb-1 font-medium">DNS instructions</p>
+          <div
+            className="rounded-md border border-dashed p-3 text-xs"
+            style={{
+              borderColor: "var(--color-border)",
+              backgroundColor: "var(--color-bg)",
+              color: "var(--color-subtle)",
+            }}
+          >
+            <p className="mb-1 font-medium" style={{ color: "var(--color-text)" }}>
+              DNS instructions
+            </p>
             <p>
-              After adding your domain, you&apos;ll see the DNS records you need to set
-              (CNAME or A records). Once DNS updates, we&apos;ll automatically mark
-              your domain as verified.
+              After adding your domain, you'll see the DNS records you need to
+              set (CNAME or A records). Once DNS updates, we'll automatically
+              mark your domain as verified.
             </p>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </section>
   );
 }

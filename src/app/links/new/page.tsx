@@ -5,9 +5,15 @@ import { requireUser, getActiveWorkspace } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewLinkPage() {
+type PageProps = {
+  searchParams?: {
+    workspaceId?: string;
+  };
+};
+
+export default async function NewLinkPage({ searchParams }: PageProps) {
   const user = await requireUser();
-  const workspace = await getActiveWorkspace(user.id);
+  const workspace = await getActiveWorkspace(user.id, searchParams?.workspaceId);
 
   if (!workspace) {
     return (

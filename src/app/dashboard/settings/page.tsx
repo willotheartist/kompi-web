@@ -15,6 +15,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
+// Pattern: Settings/OverviewGrid
 const sections = [
   {
     href: "/dashboard/settings/profile",
@@ -31,7 +32,8 @@ const sections = [
   {
     href: "/dashboard/settings/branding",
     title: "Branding & SEO",
-    description: "Control how your public pages look and how they appear in search.",
+    description:
+      "Control how your public pages look and how they appear in search.",
     icon: Palette,
   },
   {
@@ -56,38 +58,75 @@ const sections = [
 
 export default function DashboardSettingsPage() {
   return (
-    <div className="flex-1 space-y-6 px-4 py-6 lg:px-8 text-slate-100">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight text-slate-50">
-          Settings
+    <section
+      className="wf-settings-page flex flex-1 flex-col gap-6"
+      style={{ color: "var(--color-text)" }}
+    >
+      {/* Pattern: Settings/Header */}
+      <header className="flex flex-col gap-1">
+        <h1 className="text-xl font-semibold tracking-tight">
+          <span
+            style={{
+              fontFamily:
+                "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
+              fontStyle: "italic",
+            }}
+          >
+            Settings
+          </span>
         </h1>
-        <p className="text-sm text-slate-400">
+        <p
+          className="text-sm max-w-xl"
+          style={{ color: "var(--color-subtle)" }}
+        >
           Configure your Kompi workspace, branding, and account.
         </p>
-      </div>
+      </header>
 
+      {/* Pattern: Settings/OverviewGrid */}
       <div className="grid gap-4 md:grid-cols-2">
         {sections.map(({ href, title, description, icon: Icon }) => (
           <Link key={href} href={href}>
-            <Card className="group h-full cursor-pointer border border-white/10 bg-white/5 backdrop-blur-sm transition-all hover:border-cyan-400/40 hover:bg-white/10 hover:shadow-xl">
+            <Card
+              className="group h-full cursor-pointer rounded-2xl transition-all"
+              style={{
+                backgroundColor: "var(--color-surface)",
+                border: "1px solid var(--color-border)",
+              }}
+            >
               <CardHeader className="flex flex-row items-start gap-3">
-                <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-cyan-300 group-hover:bg-cyan-400/10">
+                <div
+                  className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl"
+                  style={{
+                    backgroundColor: "var(--color-accent-soft)",
+                    color: "var(--color-accent)",
+                  }}
+                >
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <CardTitle className="text-sm font-semibold text-slate-50">
+                  <CardTitle className="text-sm font-semibold">
                     {title}
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
+                  <CardDescription
+                    className="text-xs"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
                     {description}
                   </CardDescription>
                 </div>
-                <span className="ml-auto text-[10px] font-medium uppercase tracking-wide text-slate-500 group-hover:text-cyan-300">
+                <span
+                  className="ml-auto text-[10px] font-medium uppercase tracking-wide"
+                  style={{ color: "var(--color-subtle)" }}
+                >
                   Open
                 </span>
               </CardHeader>
               <CardContent>
-                <p className="text-xs text-slate-500 group-hover:text-slate-300">
+                <p
+                  className="text-xs"
+                  style={{ color: "var(--color-subtle)" }}
+                >
                   Open {title.toLowerCase()} settings
                 </p>
               </CardContent>
@@ -95,6 +134,6 @@ export default function DashboardSettingsPage() {
           </Link>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

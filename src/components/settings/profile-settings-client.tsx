@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
 import {
   Card,
   CardHeader,
@@ -27,6 +28,8 @@ type ProfileResponse = {
 };
 
 export function ProfileSettingsClient() {
+  const { update: refreshSession } = useSession();
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +39,10 @@ export function ProfileSettingsClient() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [timeZone, setTimeZone] = useState<string | undefined>(undefined);
+  const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +59,10 @@ export function ProfileSettingsClient() {
 
         setName(data.name ?? "");
         setEmail(data.email ?? "");
+        // If you later persist image URLs, you can surface them here:
+        if (data.image) {
+          setAvatarPreview(data.image);
+        }
         // setPhone(data.phone ?? "");
       } catch (err) {
         if (!cancelled) {
@@ -94,6 +105,9 @@ export function ProfileSettingsClient() {
       }
 
       setSaved(true);
+
+      // 🔁 Refresh NextAuth session so Topbar shows the new name immediately
+      await refreshSession?.();
     } catch (err) {
       setError("Could not save changes. Please try again.");
     } finally {
@@ -101,46 +115,159 @@ export function ProfileSettingsClient() {
     }
   }
 
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarFileName(file.name);
+
+    // Revoke old preview URL if it existed
+    setAvatarPreview((prev) => {
+      if (prev && prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev);
+      }
+      return URL.createObjectURL(file);
+    });
+
+    // TODO: later – send file to an upload API and persist URL on User.image
+    console.log("Selected avatar file:", file.name);
+  }
+
   return (
     <form
       onSubmit={handleSave}
-      className="flex-1 space-y-6 px-4 py-6 lg:px-8 text-slate-100"
+      className="wf-settings-profile flex flex-1 flex-col gap-6"
+      style={{ color: "var(--color-text)" }}
     >
-      <div className="space-y-1">
+      {/* Header */}
+      <header className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold tracking-tight">Profile</h1>
-        <p className="text-sm text-slate-400">
-          Manage your personal account details. This is tied to your Kompi login, not a specific workspace.
+        <p
+          className="text-sm max-w-xl"
+          style={{ color: "var(--color-subtle)" }}
+        >
+          Manage your personal account details. This is tied to your Kompi
+          login, not a specific workspace.
         </p>
-      </div>
+      </header>
 
+      {/* Alerts */}
       {error && (
-        <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-100">
+        <div
+          className="rounded-xl px-3 py-2 text-xs"
+          style={{
+            backgroundColor: "var(--color-accent-soft)",
+            border: "1px solid var(--color-border)",
+            color: "var(--color-text)",
+          }}
+        >
           {error}
         </div>
       )}
 
       {saved && !error && (
-        <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100">
+        <div
+          className="rounded-xl px-3 py-2 text-xs"
+          style={{
+            backgroundColor: "var(--color-accent-soft)",
+            border: "1px solid var(--color-accent)",
+            color: "var(--color-text)",
+          }}
+        >
           Profile updated.
         </div>
       )}
 
-      {/* Avatar (still placeholder UI for now) */}
-      <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+      {/* Avatar */}
+      <Card
+        className="rounded-2xl"
+        style={{
+          backgroundColor: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+        }}
+      >
         <CardHeader>
-          <CardTitle className="text-base text-slate-50">Profile image</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardTitle className="text-base">Profile image</CardTitle>
+          <CardDescription
+            style={{ color: "var(--color-subtle)" }}
+          >
             This avatar is shown in the dashboard and navigation.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-900 text-lg font-medium text-neutral-50">
-            {name?.trim()?.[0]?.toUpperCase() || email?.trim()?.[0]?.toUpperCase() || "U"}
+          <div
+            className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-lg font-medium"
+            style={{
+              backgroundColor: "var(--color-bg)",
+              color: "var(--color-text)",
+            }}
+          >
+            {avatarPreview ? (
+              // Simple img for blob URL/remote URL preview
+              <img
+                src={avatarPreview}
+                alt={name || email || "Profile image"}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              (name?.trim()?.[0]?.toUpperCase() ||
+                email?.trim()?.[0]?.toUpperCase() ||
+                "U")
+            )}
           </div>
-          <div className="space-y-2 text-sm text-slate-200">
-            <Input type="file" accept="image/*" className="max-w-xs text-xs" disabled />
-            <p className="text-xs text-slate-400">
-              Avatar uploads will be wired in a later step. For now we use your account image.
+
+          <div className="space-y-2 text-sm">
+            {/* Hidden native file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+
+            {/* Custom upload button: accent pill + dark plus chip */}
+            <Button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium"
+              style={{
+                backgroundColor: "var(--color-accent)",
+                color: "var(--color-bg)",
+                borderRadius: "999px",
+                border: "1px solid var(--color-border)",
+              }}
+            >
+              <span
+                className="flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold"
+                style={{
+                  backgroundColor: "var(--color-bg)",
+                  // Set your dark green via token on body/theme so this picks it up
+                  color: "var(--color-text)",
+                }}
+              >
+                +
+              </span>
+              <span>
+                {avatarFileName ? "Change profile image" : "Upload profile image"}
+              </span>
+            </Button>
+
+            {avatarFileName && (
+              <p
+                className="text-[11px]"
+                style={{ color: "var(--color-subtle)" }}
+              >
+                Selected: {avatarFileName}
+              </p>
+            )}
+
+            <p
+              className="text-xs"
+              style={{ color: "var(--color-subtle)" }}
+            >
+              Avatar uploads will be wired to the backend in a later step. For now
+              this image only lives in your current browser session.
             </p>
             <Button variant="outline" size="sm" type="button" disabled>
               Remove photo
@@ -150,10 +277,18 @@ export function ProfileSettingsClient() {
       </Card>
 
       {/* Basic info */}
-      <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+      <Card
+        className="rounded-2xl"
+        style={{
+          backgroundColor: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+        }}
+      >
         <CardHeader>
-          <CardTitle className="text-base text-slate-50">Basic information</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardTitle className="text-base">Basic information</CardTitle>
+          <CardDescription
+            style={{ color: "var(--color-subtle)" }}
+          >
             Update how you appear in Kompi products and communication.
           </CardDescription>
         </CardHeader>
@@ -182,8 +317,12 @@ export function ProfileSettingsClient() {
                 value={email}
                 disabled
               />
-              <p className="text-xs text-slate-400">
-                Email is managed via your sign-in method. Changes will be supported in a later update.
+              <p
+                className="text-xs"
+                style={{ color: "var(--color-subtle)" }}
+              >
+                Email is managed via your sign-in method. Changes will be
+                supported in a later update.
               </p>
             </div>
           </div>
@@ -201,8 +340,12 @@ export function ProfileSettingsClient() {
                 onChange={(e) => setPhone(e.target.value)}
                 disabled={loading || saving}
               />
-              <p className="text-xs text-slate-400">
-                Used only for important account notifications. We never share this with third parties.
+              <p
+                className="text-xs"
+                style={{ color: "var(--color-subtle)" }}
+              >
+                Used only for important account notifications. We never share
+                this with third parties.
               </p>
             </div>
 
@@ -217,17 +360,28 @@ export function ProfileSettingsClient() {
                   <SelectValue placeholder="Select your time zone" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Europe/London">Europe / London</SelectItem>
-                  <SelectItem value="Europe/Berlin">Europe / Berlin</SelectItem>
-                  <SelectItem value="America/New_York">America / New York</SelectItem>
+                  <SelectItem value="Europe/London">
+                    Europe / London
+                  </SelectItem>
+                  <SelectItem value="Europe/Berlin">
+                    Europe / Berlin
+                  </SelectItem>
+                  <SelectItem value="America/New_York">
+                    America / New York
+                  </SelectItem>
                   <SelectItem value="America/Los_Angeles">
                     America / Los Angeles
                   </SelectItem>
-                  <SelectItem value="Asia/Singapore">Asia / Singapore</SelectItem>
+                  <SelectItem value="Asia/Singapore">
+                    Asia / Singapore
+                  </SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-slate-400">
-                We&apos;ll use this for analytics and reporting later.
+              <p
+                className="text-xs"
+                style={{ color: "var(--color-subtle)" }}
+              >
+                We'll use this for analytics and reporting later.
               </p>
             </div>
           </div>
