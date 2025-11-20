@@ -7,10 +7,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import KPromo from "@/components/KPromo";
+import SectionOne from "@/components/sections/one/page"
 import "./kompi-marketing.css";
 import KompiPerks from "@/components/KompiPerks";
 import KRow from "@/components/KRow";
 import KBenefits from "@/components/KBenefits";
+import Hero from "@/components/hero/page";
 
 export const dynamic = "force-static";
 
@@ -27,112 +29,7 @@ export default function HomePage() {
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         {/* HeroA – Calm Product Hero */}
-        <Section className="wf-section-hero">
-          <Container>
-            <motion.div
-              className="wf-hero-grid"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.32, ease: "easeOut" }}
-            >
-              {/* Hero copy */}
-              <div className="wf-hero-copy">
-                <p className="wf-eyebrow">
-                  Kompi Links · For studios, agencies &amp; modern creators
-                </p>
-
-                <Heading as="h1" className="wf-hero-heading">
-                  Run your links, bios &amp; campaigns
-                  <span className="wf-hero-heading-line">
-                    from one{" "}
-                    <span className="wf-serif-accent">opinionated</span>{" "}
-                    platform.
-                  </span>
-                </Heading>
-
-                <p className="wf-hero-body">
-                  Short links, smart bio pages, QR codes and live analytics —
-                  in a UI that doesn&apos;t feel like 2013. Built so you can
-                  sell, report and grow without duct-taping five tools.
-                </p>
-
-                <motion.div
-                  className="wf-hero-ctas"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: 0.08,
-                    duration: 0.24,
-                    ease: "easeOut",
-                  }}
-                >
-                  <Button asChild className="wf-btn-primary">
-                    <Link href="/signin">Start free in 30 seconds</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="wf-btn-secondary"
-                  >
-                    <Link href="/pricing">View pricing</Link>
-                  </Button>
-                </motion.div>
-
-                <motion.p
-                  className="wf-hero-meta"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: 0.14,
-                    duration: 0.22,
-                    ease: "easeOut",
-                  }}
-                >
-                  No credit card. Unlimited links on launch promo.
-                </motion.p>
-              </div>
-
-              {/* Hero visual: K-Cards + QR */}
-              <div className="wf-hero-visual">
-                <div className="wf-hero-device">
-                  <div className="wf-hero-device-header">
-                    <span className="wf-pill-soft">K-Cards · QR ready</span>
-                    <span className="wf-small">Live campaign snapshot</span>
-                  </div>
-
-                  <div className="wf-hero-device-body">
-                    <div className="wf-hero-link-card">
-                      <span className="wf-hero-link-label">
-                        kompi.app/willo
-                      </span>
-                      <span className="wf-hero-link-meta">
-                        Studio workspace · Smart link
-                      </span>
-                      <div className="wf-hero-link-rows">
-                        <FakeRow
-                          label="K-Card tap"
-                          dest="Event landing page"
-                        />
-                        <FakeRow label="QR scan" dest="Offer microsite" />
-                        <FakeRow label="Social bio" dest="Creator hub" />
-                      </div>
-                    </div>
-
-                    <div className="wf-hero-qr-card">
-                      <div className="wf-hero-qr-placeholder" />
-                      <div className="wf-hero-qr-copy">
-                        <p className="wf-hero-qr-label">Scan to demo</p>
-                        <p className="wf-hero-qr-meta">
-                          Try a live Kompi link in under a minute.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </Container>
-        </Section>
+        <Hero />
 
         {/* KPromo – Clickable world carousel */}
         <KPromo />
@@ -271,6 +168,8 @@ export default function HomePage() {
             </motion.div>
           </Container>
         </Section>
+        
+        <SectionOne />
 
         {/* KompiPerks – horizontal perks strip */}
         <KompiPerks />
