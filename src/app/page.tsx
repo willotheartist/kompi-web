@@ -10,6 +10,7 @@ import KPromo from "@/components/KPromo";
 import SectionOne from "@/components/sections/one/page"
 import "./kompi-marketing.css";
 import KompiPerks from "@/components/KompiPerks";
+import { DoMoreSection } from "@/components/do-more";
 import KRow from "@/components/KRow";
 import KBenefits from "@/components/KBenefits";
 import Hero from "@/components/hero/page";
@@ -255,6 +256,8 @@ export default function HomePage() {
                 </p>
               </div>
 
+          
+
               <div className="wf-analytics-grid">
                 <AnalyticsPill
                   label="Per-link insights"
@@ -276,6 +279,8 @@ export default function HomePage() {
             </motion.div>
           </Container>
         </Section>
+
+        <DoMoreSection />
 
         {/* Testimonials – Simple band */}
         <Section className="wf-section-tight">

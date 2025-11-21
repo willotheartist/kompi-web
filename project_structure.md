@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 19/11/2025, 11:14:44*
+*Generated on: 21/11/2025, 13:24:36*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 167 |
-| 📁 Total Folders | 75 |
+| 📄 Total Files | 181 |
+| 📁 Total Folders | 78 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,17 +26,17 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 77 files (46.1%)
-- 🔷 **.ts** (TypeScript files): 26 files (15.6%)
-- 📄 **.zip** (Other files): 12 files (7.2%)
-- 🎨 **.css** (Stylesheets): 11 files (6.6%)
-- 🖼️ **.png** (PNG images): 9 files (5.4%)
-- 🎨 **.svg** (SVG images): 7 files (4.2%)
-- 📄 **.sql** (Other files): 6 files (3.6%)
-- ⚙️ **.json** (JSON files): 3 files (1.8%)
-- 📖 **.md** (Markdown files): 2 files (1.2%)
-- 📄 **.mjs** (Other files): 2 files (1.2%)
-- 🖼️ **.ico** (Icon files): 2 files (1.2%)
+- ⚛️ **.tsx** (React TypeScript files): 88 files (48.6%)
+- 🔷 **.ts** (TypeScript files): 27 files (14.9%)
+- 📄 **.zip** (Other files): 12 files (6.6%)
+- 🖼️ **.png** (PNG images): 11 files (6.1%)
+- 🎨 **.css** (Stylesheets): 11 files (6.1%)
+- 🎨 **.svg** (SVG images): 7 files (3.9%)
+- 📄 **.sql** (Other files): 6 files (3.3%)
+- ⚙️ **.json** (JSON files): 3 files (1.7%)
+- 📖 **.md** (Markdown files): 2 files (1.1%)
+- 📄 **.mjs** (Other files): 2 files (1.1%)
+- 🖼️ **.ico** (Icon files): 2 files (1.1%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.6%)
 - 🐳 **.dockerfile** (Docker files): 1 files (0.6%)
 - ⚙️ **.yml** (YAML files): 1 files (0.6%)
@@ -50,23 +50,23 @@
 
 ### By Category
 
-- **React**: 77 files (46.1%)
-- **TypeScript**: 26 files (15.6%)
-- **Other**: 24 files (14.4%)
-- **Assets**: 18 files (10.8%)
-- **Styles**: 11 files (6.6%)
-- **Config**: 6 files (3.6%)
-- **DevOps**: 2 files (1.2%)
-- **Docs**: 2 files (1.2%)
+- **React**: 88 files (48.6%)
+- **TypeScript**: 27 files (14.9%)
+- **Other**: 24 files (13.3%)
+- **Assets**: 20 files (11.0%)
+- **Styles**: 11 files (6.1%)
+- **Config**: 6 files (3.3%)
+- **DevOps**: 2 files (1.1%)
+- **Docs**: 2 files (1.1%)
 - **JavaScript**: 1 files (0.6%)
 
 ### 📁 Largest Directories
 
-- **root**: 167 files
-- **src**: 113 files
+- **root**: 181 files
+- **src**: 125 files
+- **src/components**: 66 files
 - **src/app**: 54 files
-- **src/components**: 54 files
-- **public**: 17 files
+- **public**: 19 files
 
 ## 🌳 Directory Structure
 
@@ -115,6 +115,8 @@ kompi-web/
 │   ├── 🖼️ favicon.ico
 │   ├── 🎨 file.svg
 │   ├── 🎨 globe.svg
+│   ├── 🖼️ herobg.png
+│   ├── 🖼️ herowoman.png
 │   ├── 🎨 Kompi..svg
 │   ├── 🖼️ kompifive.png
 │   ├── 🖼️ kompifour.png
@@ -248,15 +250,27 @@ kompi-web/
 │   │   ├── 📂 dashboard/
 │   │   │   ├── ⚛️ create-modal.tsx
 │   │   │   ├── ⚛️ create-workspace-empty.tsx
+│   │   │   ├── ⚛️ dashboard-activity-card.tsx
+│   │   │   ├── ⚛️ dashboard-announcement-banner.tsx
+│   │   │   ├── ⚛️ dashboard-feature-grid.tsx
+│   │   │   ├── ⚛️ dashboard-hero-stats.tsx
+│   │   │   ├── ⚛️ dashboard-invite-teammates.tsx
 │   │   │   ├── ⚛️ dashboard-layout.tsx
+│   │   │   ├── ⚛️ dashboard-quick-create.tsx
+│   │   │   ├── ⚛️ dashboard-recent-links.tsx
 │   │   │   ├── 🎨 dashboard-shell.css
 │   │   │   ├── ⚛️ dashboard-shell.tsx
+│   │   │   ├── ⚛️ dashboard-tips-card.tsx
 │   │   │   ├── ⚛️ dashboard-topbar.tsx
+│   │   │   ├── 🔷 dashboard-types.ts
 │   │   │   └── ⚛️ glass-card.tsx
+│   │   ├── ⚛️ do-more.tsx
 │   │   ├── ⚛️ features-megamenu.tsx
 │   │   ├── 🎨 footer-cta.css
 │   │   ├── ⚛️ footer-cta.tsx
 │   │   ├── ⚛️ GoProBanner.tsx
+│   │   ├── 📂 hero/
+│   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 k-cards/
 │   │   │   ├── 🔷 kcard-theme-presets.ts
 │   │   │   ├── ⚛️ KCardPreview.tsx
@@ -288,6 +302,9 @@ kompi-web/
 │   │   ├── 🎨 navbar.css
 │   │   ├── ⚛️ navbar.tsx
 │   │   ├── ⚛️ providers.tsx
+│   │   ├── 📂 sections/
+│   │   │   └── 📂 one/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 settings/
 │   │   │   └── ⚛️ profile-settings-client.tsx
 │   │   ├── 🎨 ui/

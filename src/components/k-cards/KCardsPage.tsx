@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -121,9 +122,10 @@ export type KCardsInitialData = {
 
 type KCardsPageProps = {
   initialData?: KCardsInitialData | null;
+  baseUrl: string;
 };
 
-export default function KCardsPage({ initialData }: KCardsPageProps) {
+export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   // which section is currently "active" for the left nav
   const [activeSection, setActiveSection] = useState<DesignSection>("header");
 
@@ -201,6 +203,92 @@ export default function KCardsPage({ initialData }: KCardsPageProps) {
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialLoadRef = useRef(true);
+
+  // Sharing (public URL / slug)
+  const [shareSlug, setShareSlug] = useState<string>("");
+  const [shareIsPublic, setShareIsPublic] = useState<boolean>(true);
+  const [shareLoading, setShareLoading] = useState<boolean>(true);
+  const [shareSaving, setShareSaving] = useState<boolean>(false);
+  const [shareOpen, setShareOpen] = useState<boolean>(false);
+
+
+  const publicUrl =
+    shareSlug && shareIsPublic ? `${baseUrl}/k/${shareSlug}` : null;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/k-cards/share");
+        if (!res.ok) throw new Error("Failed to load share settings");
+        const data = await res.json();
+        if (cancelled) return;
+        setShareSlug(data.slug ?? "");
+        setShareIsPublic(data.isPublic ?? true);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setShareLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [baseUrl]);
+
+  async function saveShareSettings() {
+    if (!shareSlug.trim()) {
+      toast.error("Add a public slug for your K-Card");
+      return;
+    }
+
+    setShareSaving(true);
+    try {
+      const res = await fetch("/api/k-cards/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: shareSlug,
+          isPublic: shareIsPublic,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Failed to update share settings");
+        return;
+      }
+
+      setShareSlug(data.slug ?? shareSlug);
+      setShareIsPublic(data.isPublic ?? true);
+
+      if (data.slug) {
+        toast("K-Card link updated", {
+          description: `${baseUrl}/k/${data.slug}`,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong while saving");
+    } finally {
+      setShareSaving(false);
+    }
+  }
+
+  async function copyPublicUrl() {
+    if (!publicUrl) return;
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      toast.success("K-Card link copied to clipboard");
+    } catch {
+      toast.error("Could not copy link");
+    }
+  }
 
   const {
     wallpaper,
@@ -792,23 +880,173 @@ export default function KCardsPage({ initialData }: KCardsPageProps) {
           {/* RIGHT: Frozen preview (320 × 680, responsive) */}
           <aside className="hidden w-[360px] shrink-0 lg:block">
             <div className="sticky top-20 flex justify-end">
-              <KCardPreview
-                wallpaperStyle={wallpaperStyle}
-                pageBackground={pageBackground}
-                previewTitleFont={previewTitleFont}
-                previewBodyFont={previewBodyFont}
-                title={title}
-                subtitle={subtitle}
-                titleColor={titleColor}
-                pageTextColor={pageTextColor}
-                titleSize={titleSize}
-                profileLayout={profileLayout}
-                avatarPreview={avatarPreview}
-                socials={socials}
-                socialIconMap={SOCIAL_ICON_MAP}
-                visibleLinks={visibleLinks}
-                buttonBaseStyles={buttonBaseStyles}
-              />
+              <div className="flex flex-col items-center">
+                <KCardPreview
+                  wallpaperStyle={wallpaperStyle}
+                  pageBackground={pageBackground}
+                  previewTitleFont={previewTitleFont}
+                  previewBodyFont={previewBodyFont}
+                  title={title}
+                  subtitle={subtitle}
+                  titleColor={titleColor}
+                  pageTextColor={pageTextColor}
+                  titleSize={titleSize}
+                  profileLayout={profileLayout}
+                  avatarPreview={avatarPreview}
+                  socials={socials}
+                  socialIconMap={SOCIAL_ICON_MAP}
+                  visibleLinks={visibleLinks}
+                  buttonBaseStyles={buttonBaseStyles}
+                />
+
+                {/* Share K-Card controls under the preview */}
+                <div className="mt-3 flex w-full flex-col items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShareOpen((v) => !v)}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium shadow-sm"
+                    style={{
+                      backgroundColor: "var(--color-surface)",
+                      border: "1px solid var(--color-border)",
+                      color: "var(--color-text)",
+                    }}
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                    <span>Share K-Card</span>
+                  </button>
+
+                  {shareOpen && (
+                    <div
+                      className="mt-2 w-full max-w-[320px] rounded-2xl p-3 text-xs shadow-lg"
+                      style={{
+                        backgroundColor: "var(--color-surface)",
+                        border: "1px solid var(--color-border)",
+                      }}
+                    >
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <div>
+                          <div
+                            className="text-[11px] font-semibold"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            Share your K-Card
+                          </div>
+                          {publicUrl && (
+                            <div
+                              className="text-[10px]"
+                              style={{ color: "var(--color-subtle)" }}
+                            >
+                              Public and ready to share
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShareOpen(false)}
+                          className="text-[10px]"
+                          style={{ color: "var(--color-subtle)" }}
+                        >
+                          Close
+                        </button>
+                      </div>
+
+                      <div className="mb-2 space-y-1">
+                        <div
+                          className="text-[10px]"
+                          style={{ color: "var(--color-subtle)" }}
+                        >
+                          Public URL
+                        </div>
+                        <div
+                          className="flex items-center gap-1 rounded-full px-2 py-1.5"
+                          style={{
+                            backgroundColor: "var(--color-bg)",
+                            border: "1px solid var(--color-border)",
+                          }}
+                        >
+                          <span
+                            className="truncate text-[10px]"
+                            style={{ color: "var(--color-subtle)" }}
+                          >
+                            {baseUrl}/k/
+                          </span>
+                          <input
+                            className="flex-1 bg-transparent text-[11px] outline-none"
+                            style={{ color: "var(--color-text)" }}
+                            value={shareSlug}
+                            onChange={(e) => setShareSlug(e.target.value)}
+                            placeholder="yourname"
+                            disabled={shareLoading || shareSaving}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShareIsPublic((v) => !v)}
+                          className="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-medium"
+                          style={{
+                            border: "1px solid var(--color-border)",
+                            backgroundColor: shareIsPublic
+                              ? "var(--color-accent-soft)"
+                              : "var(--color-bg)",
+                            color: shareIsPublic
+                              ? "var(--color-text)"
+                              : "var(--color-subtle)",
+                          }}
+                        >
+                          <span
+                            className="mr-1 h-1.5 w-1.5 rounded-full"
+                            style={{
+                              backgroundColor: shareIsPublic
+                                ? "var(--color-accent)"
+                                : "var(--color-border)",
+                            }}
+                          />
+                          {shareIsPublic ? "Public" : "Hidden"}
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                          {publicUrl && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 rounded-full px-3 text-[10px]"
+                              onClick={copyPublicUrl}
+                              disabled={shareSaving}
+                            >
+                              Copy link
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-7 rounded-full px-3 text-[10px]"
+                            onClick={saveShareSettings}
+                            disabled={shareLoading || shareSaving}
+                          >
+                            {shareSaving ? "Saving…" : "Save"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {publicUrl && (
+                        <a
+                          href={publicUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block text-[10px] underline"
+                          style={{ color: "var(--color-subtle)" }}
+                        >
+                          Open public page
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </aside>
         </div>

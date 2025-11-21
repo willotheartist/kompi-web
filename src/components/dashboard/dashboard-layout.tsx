@@ -16,16 +16,44 @@ import {
   ChevronRight,
   QrCode,
   LayoutTemplate,
+  LayoutGrid,
+  Rocket,
+  Globe2,
   ChevronDown,
 } from "lucide-react";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/links", label: "Links", icon: Link2 },
-  { href: "/k-cards", label: "K-Cards", icon: LayoutTemplate },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/kr-codes", label: "Kompi Codes", icon: QrCode },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+const navGroups = [
+  {
+    section: "My Kompi",
+    items: [
+      { href: "/dashboard", label: "Overview", icon: Home },
+      { href: "/links", label: "Links", icon: Link2 },
+      { href: "/k-cards", label: "K-Cards", icon: LayoutGrid },
+      { href: "/kr-codes", label: "Kompi Codes™ (KR)", icon: QrCode },
+    ],
+  },
+  {
+    section: "Grow",
+    items: [
+      { href: "/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/growth", label: "Growth", icon: Rocket },
+    ],
+  },
+  {
+    section: "Workspace",
+    items: [
+      {
+        href: "/dashboard/settings/domains",
+        label: "Custom domains",
+        icon: Globe2,
+      },
+      {
+        href: "/dashboard/settings",
+        label: "Settings",
+        icon: Settings,
+      },
+    ],
+  },
 ];
 
 // Pattern: Shell/DashboardShell
@@ -66,7 +94,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ---------------- Sidebar (Shell/AppSidebar) ---------------- */
+/* ---------------- Sidebar (Linktree-style grouped nav) ---------------- */
 
 function Sidebar({
   collapsed,
@@ -79,7 +107,7 @@ function Sidebar({
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 72 : 256 }}
+      animate={{ width: collapsed ? 80 : 260 }}
       transition={{ duration: 0.22, ease: "easeInOut" }}
       className={cn(
         "wf-dashboard-sidebar",
@@ -91,6 +119,7 @@ function Sidebar({
       }}
     >
       <div className="flex flex-col gap-6 px-3 py-6">
+        {/* Brand */}
         <Link
           href="/dashboard"
           className={cn(
@@ -118,7 +147,9 @@ function Sidebar({
                   fontFamily: "Instrument Serif, system-ui, serif",
                   fontStyle: "italic",
                 }}
-              ></span>
+              >
+                Dashboard
+              </span>
             </div>
           )}
 
@@ -135,69 +166,74 @@ function Sidebar({
           <span className="sr-only">Kompi</span>
         </Link>
 
-        <nav className="wf-dashboard-nav flex flex-col gap-1">
-          {navItems.map(({ href, label, icon: Icon }) => {
-            const active =
-              href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname.startsWith(href);
+        {/* Grouped nav like Linktree */}
+        <nav className="wf-dashboard-nav mt-2 flex flex-col gap-4 text-sm">
+          {navGroups.map((group) => (
+            <div key={group.section} className="flex flex-col gap-1.5">
+              {!collapsed && (
+                <div
+                  className="px-3 text-[11px] font-semibold uppercase tracking-[0.16em]"
+                  style={{ color: "var(--color-subtle)" }}
+                >
+                  {group.section}
+                </div>
+              )}
 
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "wf-dashboard-nav-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
-                  collapsed && "justify-center"
-                )}
-                style={{
-                  backgroundColor: active
-                    ? "var(--color-accent-soft)"
-                    : "transparent",
-                  color: active
-                    ? "var(--color-text)"
-                    : "var(--color-subtle)",
-                }}
-              >
-                {!collapsed && (
-                  <span
-                    className="wf-dashboard-nav-accent h-6 w-1 rounded-full"
-                    style={{
-                      backgroundColor: "var(--color-accent)",
-                    }}
-                    aria-hidden="true"
-                  />
-                )}
-                <Icon
-                  className={cn(
-                    "h-5 w-5 shrink-0",
-                    !collapsed &&
-                      "group-hover:translate-x-0.5 transition-transform"
-                  )}
-                />
-                {!collapsed && (
-                  <span className="truncate">
-                    {active ? (
-                      <span
-                        style={{
-                          fontFamily:
-                            "Instrument Serif, system-ui, serif",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        {label}
-                      </span>
-                    ) : (
-                      label
-                    )}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+              <div className="flex flex-col gap-1">
+                {group.items.map(({ href, label, icon: Icon }) => {
+                  const active =
+                    href === "/dashboard"
+                      ? pathname === "/dashboard"
+                      : pathname.startsWith(href);
+
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={cn(
+                        "wf-dashboard-nav-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
+                        collapsed && "justify-center"
+                      )}
+                      style={{
+                        backgroundColor: active
+                          ? "var(--color-accent-soft)"
+                          : "transparent",
+                        color: "var(--color-text)",
+                      }}
+                    >
+                      {!collapsed && (
+                        <span
+                          className="wf-dashboard-nav-accent h-6 w-1 rounded-full"
+                          style={{
+                            backgroundColor: active
+                              ? "var(--color-accent)"
+                              : "transparent",
+                          }}
+                          aria-hidden="true"
+                        />
+                      )}
+
+                      <Icon
+                        className={cn(
+                          "h-5 w-5 shrink-0",
+                          !collapsed &&
+                            "group-hover:translate-x-0.5 transition-transform"
+                        )}
+                      />
+
+                      {!collapsed && (
+                        <span className="truncate">{label}</span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
       </div>
 
+      {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
         className={cn(
@@ -260,9 +296,7 @@ function Topbar() {
         >
           Workspace
         </span>
-        <span className="text-sm font-medium">
-          Kompi Studio
-        </span>
+        <span className="text-sm font-medium">Kompi Studio</span>
       </div>
 
       {/* Right: compact account control */}
@@ -278,9 +312,7 @@ function Topbar() {
           }}
           aria-label="Open account menu"
         >
-          <span className="truncate max-w-[160px]">
-            {display}
-          </span>
+          <span className="truncate max-w-[160px]">{display}</span>
 
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide"
@@ -436,7 +468,6 @@ function Topbar() {
     </div>
   );
 }
-
 
 function MenuItem({
   href,

@@ -14,10 +14,12 @@ export default async function KCardsRoutePage() {
   });
 
   const initialData = (kcard?.data ?? null) as KCardsInitialData | null;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   return (
     <DashboardLayout>
-      <KCardsPage initialData={initialData} />
+      <KCardsPage initialData={initialData} baseUrl={baseUrl} />
     </DashboardLayout>
   );
 }

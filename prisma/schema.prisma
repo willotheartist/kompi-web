@@ -146,6 +146,8 @@ model KRCode {
 model KCard {
   id        String   @id @default(cuid())
   userId    String
+  slug      String?  @unique
+  isPublic  Boolean  @default(true)
   data      Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

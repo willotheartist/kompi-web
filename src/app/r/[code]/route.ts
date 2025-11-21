@@ -49,6 +49,12 @@ export async function GET(
         utmCampaign: utmCampaign || null,
       },
     });
+
+    // also increment the simple counter used by dashboards
+    await prisma.link.update({
+      where: { id: link.id },
+      data: { clicks: { increment: 1 } },
+    });
   } catch {
     // ignore logging errors
   }

@@ -91,6 +91,7 @@ type StyleState = {
   size: number;
   margin: number;
   ecLevel: "L" | "M" | "Q" | "H";
+  logoUrl?: string | null;
 };
 
 const DEFAULT_STYLE: StyleState = {
@@ -99,6 +100,7 @@ const DEFAULT_STYLE: StyleState = {
   size: 192,
   margin: 2,
   ecLevel: "M",
+  logoUrl: null,
 };
 
 function destinationPlaceholder(type: ContentTypeId) {
@@ -131,6 +133,8 @@ export default function KRCodesPage() {
   const [hoverType, setHoverType] =
     useState<ContentTypeId | null>(null);
   const [showUtms, setShowUtms] = useState(false);
+
+  const [uploadingLogoFor, setUploadingLogoFor] = useState<string | null>(null);
 
   // which code’s download popover is open
   const [downloadMenuFor, setDownloadMenuFor] = useState<string | null>(
@@ -245,6 +249,7 @@ export default function KRCodesPage() {
         size: style.size,
         margin: style.margin,
         ecLevel: style.ecLevel,
+        logoUrl: style.logoUrl ?? null,
       },
     };
 
@@ -291,7 +296,7 @@ export default function KRCodesPage() {
 
     const styleFromCode = code.style;
     if (styleFromCode) {
-      const { fg, bg, size, margin, ecLevel } = styleFromCode;
+      const { fg, bg, size, margin, ecLevel, logoUrl } = styleFromCode;
       setStyle((prev) => ({
         fg: (fg as string) || prev.fg,
         bg: (bg as string) || prev.bg,
@@ -299,6 +304,10 @@ export default function KRCodesPage() {
         margin: (margin as number) || prev.margin,
         ecLevel:
           (ecLevel as StyleState["ecLevel"]) || prev.ecLevel,
+        logoUrl:
+          (logoUrl as string | null | undefined) ??
+          prev.logoUrl ??
+          null,
       }));
     }
 
@@ -524,13 +533,32 @@ export default function KRCodesPage() {
                   className="rounded-2xl p-4"
                   style={{ backgroundColor: style.bg }}
                 >
-                  <QRCode
-                    value={urlPreview || "https://kompi.app"}
-                    size={style.size}
-                    fgColor={style.fg}
-                    bgColor={style.bg}
-                    level={style.ecLevel}
-                  />
+                  <div className="relative inline-block">
+                    <QRCode
+                      value={urlPreview || "https://kompi.app"}
+                      size={style.size}
+                      fgColor={style.fg}
+                      bgColor={style.bg}
+                      level={style.logoUrl ? "H" : style.ecLevel}
+                    />
+                    {style.logoUrl && (
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <div
+                          className="flex items-center justify-center rounded-md bg-white/90"
+                          style={{
+                            width: style.size * 0.22,
+                            height: style.size * 0.22,
+                          }}
+                        >
+                          <img
+                            src={style.logoUrl}
+                            alt="Logo"
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <p className="max-w-xs text-center text-xs text-[color:var(--color-subtle)]">
                   This is a preview of your KR Code. The final printed code
@@ -712,13 +740,51 @@ export default function KRCodesPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div className="hidden rounded-xl bg-[var(--color-surface)] p-2 md:block">
-                          <QRCode
-                            value={code.destination}
-                            size={56}
-                            fgColor="#FFFFFF"
-                            bgColor="#020617"
-                            level="M"
-                          />
+                          <div className="relative inline-block">
+                            {(() => {
+                              const styleFromCode = (code.style ??
+                                {}) as KRCodeStyle;
+                              const hasLogo =
+                                !!(styleFromCode.logoUrl as string | null | undefined);
+                              const ecLevel =
+                                (hasLogo ? "H" : styleFromCode.ecLevel) ?? "M";
+                              return (
+                                <QRCode
+                                  value={code.destination}
+                                  size={56}
+                                  fgColor={styleFromCode.fg ?? "#FFFFFF"}
+                                  bgColor={styleFromCode.bg ?? "#020617"}
+                                  level={ecLevel as "L" | "M" | "Q" | "H"}
+                                />
+                              );
+                            })()}
+                            {(() => {
+                              const styleFromCode = (code.style ??
+                                {}) as KRCodeStyle;
+                              const logo = styleFromCode.logoUrl as
+                                | string
+                                | null
+                                | undefined;
+                              if (!logo) return null;
+                              return (
+                                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                                  <div
+                                    className="flex items-center justify-center rounded-sm bg-white/90"
+                                    style={{
+                                      width: 56 * 0.2,
+                                      height: 56 * 0.2,
+                                    }}
+                                  >
+                                    <img
+                                      src={logo}
+                                      alt="Logo"
+                                      className="max-h-full max-w-full object-contain"
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </div>
                         <div className="space-y-1">
                           <div className="text-sm font-medium text-[color:var(--color-text)]">
@@ -759,6 +825,74 @@ export default function KRCodesPage() {
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
 
+                          {/* Logo upload */}
+                          <div className="relative ml-1">
+                            <input
+                              id={`logo-upload-${code.id}`}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                setUploadingLogoFor(code.id);
+                                try {
+                                  const fd = new FormData();
+                                  fd.append("file", file);
+                                  const res = await fetch(
+                                    `/api/kr-codes/${code.id}/logo`,
+                                    {
+                                      method: "POST",
+                                      body: fd,
+                                      credentials: "include",
+                                    },
+                                  );
+                                  if (!res.ok) {
+                                    console.error(
+                                      "Logo upload failed",
+                                      await res.text(),
+                                    );
+                                  } else {
+                                    const json = await res.json();
+                                    setStyle((s) => ({
+                                      ...s,
+                                      logoUrl: json.logoUrl as string,
+                                    }));
+                                    setCodes((prev) =>
+                                      prev.map((c) =>
+                                        c.id === code.id
+                                          ? {
+                                              ...c,
+                                              style: {
+                                                ...(c.style ?? {}),
+                                                logoUrl: json.logoUrl,
+                                                ecLevel: "H",
+                                              },
+                                            }
+                                          : c,
+                                      ),
+                                    );
+                                  }
+                                } catch (err) {
+                                  console.error("Logo upload error", err);
+                                } finally {
+                                  setUploadingLogoFor((current) =>
+                                    current === code.id ? null : current,
+                                  );
+                                  e.target.value = "";
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`logo-upload-${code.id}`}
+                              className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[11px] font-medium text-[color:var(--color-text)] hover:bg-[var(--color-bg)] cursor-pointer"
+                            >
+                              {uploadingLogoFor === code.id
+                                ? "Uploading…"
+                                : "Upload logo"}
+                            </label>
+                          </div>
+
                           {/* Delete icon button (opens confirm) */}
                           <button
                             type="button"
@@ -772,6 +906,13 @@ export default function KRCodesPage() {
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
+
+                          <Link
+                            href={`/kr-codes/${code.id}`}
+                            className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[11px] font-medium text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
+                          >
+                            Analytics
+                          </Link>
 
                           {/* Download button + popover */}
                           <div className="relative ml-1">

@@ -41,8 +41,7 @@ export async function GET(_req: Request, ctx: RouteContext) {
   const fg = style.fg ?? "#000000";
   const bg = style.bg ?? "#FFFFFF";
 
-  const svg = await QRCode.toString(krc.destination, {
-    type: "svg",
+  const buffer = await QRCode.toBuffer(krc.destination, {
     errorCorrectionLevel: style.ecLevel ?? "M",
     margin: style.margin ?? 2,
     color: {
@@ -51,11 +50,11 @@ export async function GET(_req: Request, ctx: RouteContext) {
     },
   });
 
-  return new NextResponse(svg, {
+  return new NextResponse(buffer, {
     status: 200,
     headers: {
-      "Content-Type": "image/svg+xml",
-      "Content-Disposition": `attachment; filename="krcode-${id}.svg"`,
+      "Content-Type": "image/png",
+      "Content-Disposition": `attachment; filename="krcode-${id}.png"`,
     },
   });
 }
