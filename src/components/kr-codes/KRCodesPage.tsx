@@ -146,7 +146,7 @@ export default function KRCodesPage() {
   );
 
   const form = useForm<FormValues>({
-    // @ts-ignore - zodResolver schema type signature mismatch
+    // @ts-expect-error - zodResolver schema type signature mismatch
     resolver: zodResolver(FormSchema),
     defaultValues: {
       title: "",
@@ -269,7 +269,8 @@ export default function KRCodesPage() {
       }
 
       const created: KRCode = await res.json();
-      setCodes((prev) => [created, ...prev]);
+      const createdWithClicks: KRCode = { ...created, totalClicks: 0 };
+      setCodes((prev) => [createdWithClicks, ...prev]);
       form.reset();
       setStyle(DEFAULT_STYLE);
       setContentType("website");
