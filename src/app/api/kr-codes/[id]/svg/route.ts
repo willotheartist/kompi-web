@@ -1,61 +1,43 @@
 import { NextResponse } from "next/server";
-import * as QRCode from "qrcode";
-import { prisma } from "@/lib/prisma";
+import QRCode from "qrcode";
+import { getKrCodeLinkAndUrl } from "../qr-helpers";
+
+export const runtime = "nodejs";
 
 type RouteContext = {
-  params: Promise<{ id: string }>;
+  params: { id: string } | Promise<{ id: string }>;
 };
 
 async function resolveParams(params: RouteContext["params"]) {
   return params instanceof Promise ? await params : params;
 }
 
-export async function GET(_req: Request, ctx: RouteContext) {
-  const { id } = await resolveParams(ctx.params);
+export async function GET(req: Request, ctx: RouteContext) {
+  try {
+    const { id } = await resolveParams(ctx.params);
 
-  if (!id) {
-    return new NextResponse("Missing id", { status: 400 });
-  }
+    if (!id) {
+      return new NextResponse("Missing id", { status: 400 });
+    }
 
-  const krc = await prisma.kRCode.findUnique({
-    where: { id },
-  });
+    const { qrUrl } = await getKrCodeLinkAndUrl(id, req);
 
-  if (!krc) {
+    // Generate SVG for the tracked URL
+    const svg = await QRCode.toString(qrUrl, {
+      type: "svg",
+      margin: 2,
+      width: 1024,
+    });
+
+    return new NextResponse(svg, {
+      status: 200,
+      headers: {
+        "Content-Type": "image/svg+xml",
+        "Content-Disposition": `inline; filename="krcode-${id}.svg"`,
+      },
+    });
+  } catch (err) {
+    console.error("KR Code SVG error", err);
     return new NextResponse("Not found", { status: 404 });
   }
-
-  type QRStyle = {
-    fg?: string;
-    bg?: string;
-    margin?: number;
-    ecLevel?: "L" | "M" | "Q" | "H";
-  };
-
-  const rawStyle = krc.style as unknown;
-  const style: QRStyle =
-    rawStyle && typeof rawStyle === "object"
-      ? (rawStyle as QRStyle)
-      : {};
-
-  const fg = style.fg ?? "#000000";
-  const bg = style.bg ?? "#FFFFFF";
-
-  const svg = await QRCode.toString(krc.destination, {
-    type: "svg",
-    errorCorrectionLevel: style.ecLevel ?? "M",
-    margin: style.margin ?? 2,
-    color: {
-      dark: fg,
-      light: bg,
-    },
-  });
-
-  return new NextResponse(svg, {
-    status: 200,
-    headers: {
-      "Content-Type": "image/svg+xml",
-      "Content-Disposition": `attachment; filename="krcode-${id}.svg"`,
-    },
-  });
 }

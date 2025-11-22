@@ -34,19 +34,20 @@ export async function GET(
   const referer = req.headers.get("referer") || null;
   const userAgent = req.headers.get("user-agent") || "";
 
+  // If you later add UTM columns to ClickEvent, you can wire them back.
   const utmSource = url.searchParams.get("utm_source");
   const utmMedium = url.searchParams.get("utm_medium");
   const utmCampaign = url.searchParams.get("utm_campaign");
 
   try {
+    // ✅ Match your Prisma schema: no utmSource/utmMedium/utmCampaign fields here
     await prisma.clickEvent.create({
       data: {
         linkId: link.id,
         referer,
         userAgent,
-        utmSource: utmSource || null,
-        utmMedium: utmMedium || null,
-        utmCampaign: utmCampaign || null,
+        // If your ClickEvent model has an ip field, you can also add:
+        // ip: req.headers.get("x-forwarded-for") || null,
       },
     });
 
@@ -55,8 +56,9 @@ export async function GET(
       where: { id: link.id },
       data: { clicks: { increment: 1 } },
     });
-  } catch {
-    // ignore logging errors
+  } catch (err) {
+    // Don't silently swallow the bug again
+    console.error("Error while logging ClickEvent for /r/[code]:", err);
   }
 
   const target = normalizeTargetUrl(link.targetUrl);

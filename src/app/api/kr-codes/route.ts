@@ -78,24 +78,24 @@ export async function GET(req: Request) {
       .map((c) => c.shortCodeId)
       .filter((id): id is string => Boolean(id));
 
-    const links =
+    const events =
       linkIds.length === 0
         ? []
-        : await prisma.link.findMany({
-            where: { id: { in: linkIds } },
-            // your Link model has "clicks", not "totalClicks"
-            select: { id: true, clicks: true },
+        : await prisma.clickEvent.groupBy({
+            by: ["linkId"],
+            where: { linkId: { in: linkIds } },
+            _count: { _all: true },
           });
 
-    const clicksByLinkId = new Map<string, number>(
-      links.map((l) => [l.id, l.clicks ?? 0]),
+    const scansByLinkId = new Map<string, number>(
+      events.map((e) => [e.linkId, e._count._all]),
     );
 
     const enriched: Array<KRCodeRecord & { totalClicks: number }> =
       codes.map((c) => ({
         ...c,
         totalClicks: c.shortCodeId
-          ? clicksByLinkId.get(c.shortCodeId) ?? 0
+          ? scansByLinkId.get(c.shortCodeId) ?? 0
           : 0,
       }));
 
