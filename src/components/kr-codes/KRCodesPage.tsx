@@ -146,7 +146,7 @@ export default function KRCodesPage() {
   );
 
   const form = useForm<FormValues>({
-    // @ts-expect-error zodResolver schema type signature mismatch
+    // @ts-ignore - zodResolver schema type signature mismatch
     resolver: zodResolver(FormSchema),
     defaultValues: {
       title: "",
