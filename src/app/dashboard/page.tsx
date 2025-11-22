@@ -19,11 +19,11 @@ type LinkRecord = Awaited<
   ReturnType<typeof prisma.link.findMany>
 >[number];
 
-export default async function DashboardPage({ searchParams }: PageProps) {
-  const resolvedSearchParams = await searchParams;
+export default async function DashboardPage(props: PageProps) {
+  const searchParams = await props.searchParams;
 
   const user = await requireUser();
-  const workspace = await getActiveWorkspace(user.id, resolvedSearchParams?.workspaceId);
+  const workspace = await getActiveWorkspace(user.id, searchParams?.workspaceId);
 
   if (!workspace) {
     return (
