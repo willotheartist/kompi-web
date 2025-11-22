@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 21/11/2025, 13:24:36*
+*Generated on: 22/11/2025, 13:16:03*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 181 |
-| 📁 Total Folders | 78 |
+| 📄 Total Files | 187 |
+| 📁 Total Folders | 85 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,47 +26,47 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 88 files (48.6%)
-- 🔷 **.ts** (TypeScript files): 27 files (14.9%)
-- 📄 **.zip** (Other files): 12 files (6.6%)
-- 🖼️ **.png** (PNG images): 11 files (6.1%)
-- 🎨 **.css** (Stylesheets): 11 files (6.1%)
-- 🎨 **.svg** (SVG images): 7 files (3.9%)
-- 📄 **.sql** (Other files): 6 files (3.3%)
-- ⚙️ **.json** (JSON files): 3 files (1.7%)
+- ⚛️ **.tsx** (React TypeScript files): 90 files (48.1%)
+- 🔷 **.ts** (TypeScript files): 31 files (16.6%)
+- 📄 **.zip** (Other files): 12 files (6.4%)
+- 🖼️ **.png** (PNG images): 11 files (5.9%)
+- 🎨 **.css** (Stylesheets): 11 files (5.9%)
+- 🎨 **.svg** (SVG images): 7 files (3.7%)
+- 📄 **.sql** (Other files): 6 files (3.2%)
+- ⚙️ **.json** (JSON files): 3 files (1.6%)
 - 📖 **.md** (Markdown files): 2 files (1.1%)
 - 📄 **.mjs** (Other files): 2 files (1.1%)
 - 🖼️ **.ico** (Icon files): 2 files (1.1%)
-- 🚫 **.gitignore** (Git ignore): 1 files (0.6%)
-- 🐳 **.dockerfile** (Docker files): 1 files (0.6%)
-- ⚙️ **.yml** (YAML files): 1 files (0.6%)
-- ⚙️ **.yaml** (YAML files): 1 files (0.6%)
-- ⚙️ **.toml** (TOML files): 1 files (0.6%)
-- 📄 **.prisma** (Other files): 1 files (0.6%)
-- 📄 **.sh** (Other files): 1 files (0.6%)
-- 📄 **.gz** (Other files): 1 files (0.6%)
-- 📜 **.js** (JavaScript files): 1 files (0.6%)
-- 📄 **.tsbuildinfo** (Other files): 1 files (0.6%)
+- 🚫 **.gitignore** (Git ignore): 1 files (0.5%)
+- 🐳 **.dockerfile** (Docker files): 1 files (0.5%)
+- ⚙️ **.yml** (YAML files): 1 files (0.5%)
+- ⚙️ **.yaml** (YAML files): 1 files (0.5%)
+- ⚙️ **.toml** (TOML files): 1 files (0.5%)
+- 📄 **.prisma** (Other files): 1 files (0.5%)
+- 📄 **.sh** (Other files): 1 files (0.5%)
+- 📄 **.gz** (Other files): 1 files (0.5%)
+- 📜 **.js** (JavaScript files): 1 files (0.5%)
+- 📄 **.tsbuildinfo** (Other files): 1 files (0.5%)
 
 ### By Category
 
-- **React**: 88 files (48.6%)
-- **TypeScript**: 27 files (14.9%)
-- **Other**: 24 files (13.3%)
-- **Assets**: 20 files (11.0%)
-- **Styles**: 11 files (6.1%)
-- **Config**: 6 files (3.3%)
+- **React**: 90 files (48.1%)
+- **TypeScript**: 31 files (16.6%)
+- **Other**: 24 files (12.8%)
+- **Assets**: 20 files (10.7%)
+- **Styles**: 11 files (5.9%)
+- **Config**: 6 files (3.2%)
 - **DevOps**: 2 files (1.1%)
 - **Docs**: 2 files (1.1%)
-- **JavaScript**: 1 files (0.6%)
+- **JavaScript**: 1 files (0.5%)
 
 ### 📁 Largest Directories
 
-- **root**: 181 files
-- **src**: 125 files
+- **root**: 187 files
+- **src**: 131 files
 - **src/components**: 66 files
-- **src/app**: 54 files
-- **public**: 19 files
+- **src/app**: 60 files
+- **src/app/api**: 20 files
 
 ## 🌳 Directory Structure
 
@@ -153,9 +153,17 @@ kompi-web/
 │   │   │   ├── 📂 health/
 │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 k-cards/
-│   │   │   │   └── 🔷 route.ts
+│   │   │   │   ├── 🔷 route.ts
+│   │   │   │   └── 📂 share/
+│   │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 kr-codes/
 │   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   ├── 📂 analytics/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   ├── 📂 logo/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   ├── 📂 png/
+│   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   ├── 🔷 route.ts
 │   │   │   │   │   ├── 📂 style/
 │   │   │   │   │   │   └── 🔷 route.ts
@@ -210,10 +218,15 @@ kompi-web/
 │   │   ├── 🎨 globals.css
 │   │   ├── 📂 growth/
 │   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 k/
+│   │   │   └── 📂 [slug]/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 k-cards/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🎨 kompi-marketing.css
 │   │   ├── 📂 kr-codes/
+│   │   │   ├── 📂 [id]/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 page.jsrtener/
 │   │   │   │   └── 📜 page.js
 │   │   │   └── ⚛️ page.tsx
