@@ -20,8 +20,10 @@ type LinkRecord = Awaited<
 >[number];
 
 export default async function DashboardPage({ searchParams }: PageProps) {
+  const resolvedSearchParams = await searchParams;
+
   const user = await requireUser();
-  const workspace = await getActiveWorkspace(user.id, searchParams?.workspaceId);
+  const workspace = await getActiveWorkspace(user.id, resolvedSearchParams?.workspaceId);
 
   if (!workspace) {
     return (
