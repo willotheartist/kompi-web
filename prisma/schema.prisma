@@ -86,6 +86,7 @@ model Workspace {
 model Link {
   id          String       @id @default(cuid())
   code        String?      @unique
+  title       String?
   targetUrl   String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -133,6 +134,7 @@ model KRCode {
   destination String
   shortCodeId String?
   style       Json?
+  type        String? // NEW: persisted content type (website/file/app/social/other)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

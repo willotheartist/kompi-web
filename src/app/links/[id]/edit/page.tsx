@@ -27,12 +27,18 @@ export default async function Page({ params }: PageProps) {
 
   if (!link) notFound();
 
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const shortUrl = link.code ? `${base}/r/${link.code}` : null;
+
   return (
     <DashboardLayout>
       <EditLinkForm
         id={link.id}
         initialTargetUrl={link.targetUrl}
         initialCode={link.code ?? ""}
+        initialTitle={link.title ?? ""}
+        initialIsActive={link.isActive ?? true}
+        shortUrl={shortUrl}
       />
     </DashboardLayout>
   );

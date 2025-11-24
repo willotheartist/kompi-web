@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import { CreateLinkForm } from "@/components/links/create-link-form";
 import LinkActionsMenu from "@/components/links/link-actions-menu";
-import { onest } from "@/lib/fonts";
 import {
   MousePointer2,
   CalendarDays,
@@ -25,6 +24,7 @@ import {
   Eye,
   Check,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export type LinkListItem = {
   id: string;
@@ -34,6 +34,7 @@ export type LinkListItem = {
   clicks: number | null;
   createdLabel: string;
   isActive: boolean;
+  title?: string | null;
 };
 
 type LinksListClientProps = {
@@ -53,19 +54,34 @@ export function LinksListClient({
 }: LinksListClientProps) {
   const [query, setQuery] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">(
+    "all",
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return links;
 
-    return links.filter((link) => {
+    let out = links;
+
+    if (statusFilter === "active") {
+      out = out.filter((link) => link.isActive);
+    } else if (statusFilter === "inactive") {
+      out = out.filter((link) => !link.isActive);
+    }
+
+    if (!q) return out;
+
+    return out.filter((link) => {
+      const title = (link.title ?? "").toLowerCase();
       return (
         link.targetUrl.toLowerCase().includes(q) ||
         (link.code && link.code.toLowerCase().includes(q)) ||
-        (link.shortUrl && link.shortUrl.toLowerCase().includes(q))
+        (link.shortUrl && link.shortUrl.toLowerCase().includes(q)) ||
+        (title && title.includes(q))
       );
     });
-  }, [links, query]);
+  }, [links, query, statusFilter]);
 
   if (!links) {
     return (
@@ -78,6 +94,37 @@ export function LinksListClient({
   }
 
   const noLinksAtAll = links.length === 0;
+
+  const handleToggleActive = (linkId: string, nextActive: boolean) => {
+    // If parent provided a handler, delegate to it
+    if (onToggleActive) {
+      onToggleActive(linkId, nextActive);
+      return;
+    }
+
+    // Default behaviour: call API and reload
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/links/${linkId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isActive: nextActive }),
+        });
+
+        if (!res.ok) {
+          const msg = await res.text().catch(() => "");
+          toast.error(msg || "Could not update link");
+          return;
+        }
+
+        toast.success(nextActive ? "Link enabled" : "Link disabled");
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+        toast.error("Something went wrong updating this link");
+      }
+    });
+  };
 
   return (
     <div className={cn("wf-dashboard-main space-y-6")}>
@@ -93,16 +140,56 @@ export function LinksListClient({
         </div>
 
         <div className="wf-dashboard-filters mt-4 flex flex-col gap-3 md:mt-0 md:flex-row md:items-center md:justify-end">
+          {/* Status filter pill */}
+          <div className="inline-flex items-center gap-1 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setStatusFilter("all")}
+              className={cn(
+                "rounded-full px-3 py-1 transition",
+                statusFilter === "all"
+                  ? "bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
+                  : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-bg)]",
+              )}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter("active")}
+              className={cn(
+                "rounded-full px-3 py-1 transition",
+                statusFilter === "active"
+                  ? "bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
+                  : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-bg)]",
+              )}
+            >
+              Active
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter("inactive")}
+              className={cn(
+                "rounded-full px-3 py-1 transition",
+                statusFilter === "inactive"
+                  ? "bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
+                  : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-bg)]",
+              )}
+            >
+              Inactive
+            </button>
+          </div>
+
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by URL, code, or short link…"
+            placeholder="Search by title, URL, code, or short link…"
             className={cn(
-              "order-1 w-full max-w-sm rounded-full border bg-transparent px-3 py-2 text-sm",
+              "order-1 w-full max-w-sm rounded-full border bg-white px-3 py-2 text-sm",
               "border-[color:var(--color-border)] text-[color:var(--color-text)]",
               "placeholder:text-[color:var(--color-subtle)]",
               "focus-visible:ring-1 focus-visible:ring-[color:var(--color-accent)] focus-visible:border-[color:var(--color-accent)]",
-              "md:order-none"
+              "md:order-none",
             )}
             disabled={noLinksAtAll}
           />
@@ -119,7 +206,7 @@ export function LinksListClient({
       {/* Empty state */}
       {noLinksAtAll ? (
         <section className="wf-dashboard-content flex min-h-[48vh] items-center justify-center">
-          <Card className="wf-dashboard-empty-state mx-auto w-full max-w-lg px-6 py-8 text-center">
+          <Card className="wf-dashboard-empty-state mx-auto w-full max-w-lg rounded-3xl bg-white px-6 py-8 text-center">
             <h2 className="text-lg font-semibold text-[color:var(--color-text)]">
               Ready to create your first link?
             </h2>
@@ -148,10 +235,10 @@ export function LinksListClient({
         </section>
       ) : (
         // List / Dashboard/ListWithMeta
-        <section className="wf-dashboard-content space-y-3">
+        <section className="wf-dashboard-content space-y-4">
           {filtered.length === 0 ? (
-            <Card className="wf-dashboard-inline-notice p-4 text-sm text-[color:var(--color-subtle)]">
-              No links found. Try a different search.
+            <Card className="wf-dashboard-inline-notice rounded-2xl bg-white p-4 text-sm text-[color:var(--color-subtle)]">
+              No links found. Try a different search or filter.
             </Card>
           ) : (
             filtered.map((link) => {
@@ -173,10 +260,11 @@ export function LinksListClient({
                 host = null;
               }
 
-              const title =
-                host && link.code
+              const displayTitle =
+                link.title?.trim() ||
+                (host && link.code
                   ? `${host} – ${link.code}`
-                  : host || link.code || "untitled";
+                  : host || link.code || "untitled");
 
               // Use site favicon as the “logo bubble” where possible
               const faviconStyle =
@@ -192,18 +280,15 @@ export function LinksListClient({
                 <article
                   key={link.id}
                   className={cn(
-                    "wf-dashboard-table-card group"
+                    "wf-dashboard-table-card group rounded-3xl border border-[color:var(--color-border)] bg-white",
+                    "transition-colors hover:bg-[color:var(--color-bg)]",
                   )}
                 >
-                  <div className="flex items-stretch gap-4 px-4 py-3 md:px-5">
-                    {/* Left selector column */}
-                    <div className="flex flex-col items-center gap-3 pt-1">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-[color:var(--color-border)] text-[color:var(--color-accent)] focus-visible:ring-[color:var(--color-accent)]"
-                      />
+                  <div className="flex items-stretch gap-4 px-5 py-4 md:px-6">
+                    {/* Left favicon column */}
+                    <div className="flex items-center justify-center">
                       <div
-                        className="flex h-8 w-8 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
                         style={faviconStyle}
                       >
                         {/* Fallback arrow when we don't have a favicon */}
@@ -220,7 +305,7 @@ export function LinksListClient({
                       {/* Title row */}
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="truncate text-[15px] font-semibold text-[color:var(--color-text)]">
-                          {title}
+                          {displayTitle}
                         </h2>
 
                         <span
@@ -228,7 +313,7 @@ export function LinksListClient({
                             "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide border",
                             link.isActive
                               ? "border-[color:var(--color-accent)] bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
-                              : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-subtle)]"
+                              : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-subtle)]",
                           )}
                         >
                           {link.isActive ? "ACTIVE" : "INACTIVE"}
@@ -281,20 +366,20 @@ export function LinksListClient({
                         type="button"
                         role="switch"
                         aria-checked={link.isActive}
-                        onClick={() =>
-                          onToggleActive?.(link.id, !link.isActive)
-                        }
+                        onClick={() => handleToggleActive(link.id, !link.isActive)}
+                        disabled={isPending}
                         className={cn(
                           "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors",
                           link.isActive
                             ? "border-transparent bg-[color:var(--color-accent)]"
-                            : "border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
+                            : "border-[color:var(--color-border)] bg-[color:var(--color-bg)]",
+                          isPending && "cursor-not-allowed opacity-60",
                         )}
                       >
                         <span
                           className={cn(
-                            "inline-block h-4 w-4 rounded-full bg-[color:var(--color-surface)] shadow-sm transition-transform",
-                            link.isActive ? "translate-x-4" : "translate-x-1"
+                            "inline-block h-4 w-4 rounded-full bg-[color:var(--color-surface)] transition-transform",
+                            link.isActive ? "translate-x-4" : "translate-x-1",
                           )}
                         />
                       </button>
@@ -317,7 +402,7 @@ export function LinksListClient({
                         className={cn(
                           "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
                           "border-[color:var(--color-border)] bg-[color:var(--color-surface)]",
-                          "transition-colors hover:bg-[color:var(--color-bg)]"
+                          "transition-colors hover:bg-[color:var(--color-bg)]",
                         )}
                         aria-label={isCopied ? "Copied" : "Copy short link"}
                       >
@@ -334,7 +419,7 @@ export function LinksListClient({
                         className={cn(
                           "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
                           "border-[color:var(--color-accent)] bg-[color:var(--color-accent-soft)]",
-                          "transition-colors hover:bg-[color:var(--color-accent)]"
+                          "transition-colors hover:bg-[color:var(--color-accent)]",
                         )}
                         aria-label="View link analytics"
                       >
@@ -348,7 +433,7 @@ export function LinksListClient({
                         className={cn(
                           "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
                           "border-[color:var(--color-border)] bg-[color:var(--color-surface)]",
-                          "hover:bg-[color:var(--color-bg)]"
+                          "transition-colors hover:bg-[color:var(--color-bg)]",
                         )}
                       />
                     </div>

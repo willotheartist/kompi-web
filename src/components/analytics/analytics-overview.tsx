@@ -21,6 +21,7 @@ import {
 import type { AnalyticsOverviewData } from "@/lib/analytics-overview";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { instrumentSerif } from "@/lib/fonts";
 
 type Props = {
   data: AnalyticsOverviewData;
@@ -327,34 +328,48 @@ export function AnalyticsOverview({ data }: Props) {
         </Card>
       </div>
 
-      {/* Pattern: PromoBandA – unlock insights CTA */}
-      <Card className="border-none bg-[color:var(--color-accent-soft)]">
-        <CardContent className="flex flex-col gap-6 px-6 py-6 md:flex-row md:items-center md:justify-between">
+      {/* Pattern: PromoBandA – hero CTA */}
+      <Card className="border-none bg-transparent p-0">
+        <CardContent className="flex flex-col gap-6 overflow-hidden rounded-3xl bg-[#e3e3e3] px-6 py-8 md:flex-row md:items-center md:justify-between md:px-10 md:py-10">
           <div className="max-w-xl space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--color-accent)]">
-              Unlock powerful insights
+            <p className="text-3xl leading-[1.1] tracking-[-0.03em] text-[color:var(--color-text)] md:text-4xl">
+              <span>Connect your </span>
+              <span
+                className={`${instrumentSerif.className} italic`}
+              >
+                world.
+              </span>
+              <br />
+              <span>Grow your </span>
+              <span
+                className={`${instrumentSerif.className} italic`}
+              >
+                brand.
+              </span>
             </p>
-            <h2 className="text-lg font-semibold leading-snug text-[color:var(--color-text)]">
-              See what&apos;s working, optimise links, and understand your
-              audience in one place.
-            </h2>
-            <ul className="list-disc space-y-1 pl-4 text-sm text-[color:var(--color-text)]">
-              <li>Spot your top-performing links in seconds.</li>
-              <li>Understand your audience by country and device.</li>
-              <li>Share performance with collaborators or clients.</li>
-            </ul>
-            <Button className="mt-3 rounded-full px-4 text-sm">
-              Explore link analytics
+            <p className="text-sm text-[color:var(--color-subtle)]">
+              Turn every click into a clear signal. See which links are pulling
+              their weight and where your audience loves to tap.
+            </p>
+            <Button
+              className="mt-2 rounded-full px-6 py-2 text-sm font-semibold shadow-sm hover:shadow-md"
+              style={{
+                backgroundColor: "#D5FF3F",
+                color: "#111111",
+              }}
+            >
+              Explore your link insights
             </Button>
           </div>
 
-          <div className="mt-2 flex w-full max-w-xs items-center justify-center md:mt-0 md:justify-end">
-            <div className="relative h-40 w-64">
+          <div className="flex w-full max-w-xs justify-center md:max-w-sm md:justify-end">
+            <div className="relative flex h-40 w-40 items-center justify-center md:h-56 md:w-56">
               <Image
-                src="/kompione.png"
-                alt="Kompi analytics illustration"
+                src="/herowoman.png"
+                alt="Creator smiling with bright green glasses"
                 fill
-                className="rounded-2xl object-contain"
+                className="rounded-3xl object-contain"
+                priority
               />
             </div>
           </div>

@@ -50,6 +50,7 @@ export default async function Page({ searchParams }: PageProps) {
       clicks: link.clicks ?? 0,
       createdLabel,
       isActive: link.isActive ?? true,
+      title: link.title ?? null,
     };
   });
 

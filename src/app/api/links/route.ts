@@ -47,6 +47,8 @@ export async function POST(req: Request) {
       targetUrl?: string;
       code?: string;
       workspaceId?: string;
+      title?: string;
+      // options?: { withKompiCode?: boolean; qrColor?: string; addToBio?: boolean };
     };
 
     const rawUrl = (body.targetUrl ?? "").toString();
@@ -98,12 +100,16 @@ export async function POST(req: Request) {
       }
     }
 
+    const rawTitle = (body.title ?? "").toString().trim();
+    const title = rawTitle || undefined;
+
     const link = await prisma.link.create({
       data: {
         workspaceId: workspace.id,
         code,
         targetUrl,
         isActive: true,
+        title,
       },
     });
 

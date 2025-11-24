@@ -12,7 +12,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { FileText, Copy, QrCode, Trash2 } from "lucide-react";
+import { FileText, Copy, QrCode, Trash2, MoreHorizontal } from "lucide-react";
+import { toast } from "sonner";
 
 type Props = {
   id: string;
@@ -21,7 +22,7 @@ type Props = {
 };
 
 export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
-  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -32,8 +33,9 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
     if (typeof navigator === "undefined") return;
     try {
       await navigator.clipboard.writeText(shortUrl);
+      toast.success("Short link copied", { description: shortUrl });
     } catch {
-      // ignore
+      toast.error("Could not copy link");
     }
   }
 
@@ -42,10 +44,12 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
     try {
       const res = await fetch(`/api/links/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        alert("Failed to delete link");
+        const msg = await res.text().catch(() => "");
+        toast.error(msg || "Failed to delete link");
         return;
       }
 
+      toast.success("Link deleted");
       setDeleteOpen(false);
       window.location.reload();
     } finally {
@@ -60,38 +64,34 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
         <button
           type="button"
           className={cn(
-            "inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10",
-            "bg-slate-950/70 text-white shadow-[0_10px_30px_rgba(15,23,42,0.8)]",
-            "hover:border-sky-500/70 hover:bg-slate-900",
+            "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
+            "border-[color:var(--color-border)] bg-[color:var(--color-surface)]",
+            "hover:bg-[color:var(--color-bg)] transition-colors",
             className
           )}
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setMenuOpen((v) => !v)}
           aria-label="More actions"
         >
-          {/* 3 white dots */}
-          <span className="flex items-center gap-[2px]">
-            <span className="h-[3px] w-[3px] rounded-full bg-white" />
-            <span className="h-[3px] w-[3px] rounded-full bg-white" />
-            <span className="h-[3px] w-[3px] rounded-full bg-white" />
-          </span>
+          <MoreHorizontal className="h-4 w-4 text-[color:var(--color-subtle)]" />
         </button>
 
         {/* Dropdown */}
-        {open && (
+        {menuOpen && (
           <div
             className={cn(
-              "absolute right-0 z-40 mt-2 w-60 rounded-2xl border border-white/10",
-              "bg-slate-950/95 text-slate-100 shadow-[0_18px_48px_rgba(15,23,42,0.95)]"
+              "absolute right-0 z-40 mt-2 w-60 rounded-2xl border",
+              "border-[color:var(--color-border)] bg-[color:var(--color-surface)]",
+              "shadow-md"
             )}
           >
-            <ul className="py-1 text-sm">
+            <ul className="py-1 text-sm text-[color:var(--color-text)]">
               <li>
                 <Link
                   href={`/links/${id}`}
-                  className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800/80"
-                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-[color:var(--color-bg)]"
+                  onClick={() => setMenuOpen(false)}
                 >
-                  <FileText className="h-4 w-4" />
+                  <FileText className="h-4 w-4 text-[color:var(--color-subtle)]" />
                   <span>View link details</span>
                 </Link>
               </li>
@@ -99,13 +99,13 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
               <li>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-slate-800/80"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-[color:var(--color-bg)]"
                   onClick={async () => {
                     await handleCopy();
-                    setOpen(false);
+                    setMenuOpen(false);
                   }}
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className="h-4 w-4 text-[color:var(--color-subtle)]" />
                   <span>Copy short URL</span>
                 </button>
               </li>
@@ -113,24 +113,24 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
               <li>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-slate-800/80"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-[color:var(--color-bg)]"
                   onClick={() => {
                     setQrOpen(true);
-                    setOpen(false);
+                    setMenuOpen(false);
                   }}
                 >
-                  <QrCode className="h-4 w-4" />
+                  <QrCode className="h-4 w-4 text-[color:var(--color-subtle)]" />
                   <span>Show QR code</span>
                 </button>
               </li>
 
-              <li className="mt-1 border-t border-white/10 pt-1">
+              <li className="mt-1 border-t border-[color:var(--color-border)] pt-1">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-red-400 hover:bg-red-950/40 hover:text-red-300"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-red-500 hover:bg-red-50"
                   onClick={() => {
                     setDeleteOpen(true);
-                    setOpen(false);
+                    setMenuOpen(false);
                   }}
                   disabled={deleting}
                 >
@@ -145,15 +145,17 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
 
       {/* QR modal */}
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-3xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
           <DialogHeader>
-            <DialogTitle>Download QR code</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-[color:var(--color-text)]">
+              Download QR code
+            </DialogTitle>
+            <DialogDescription className="text-sm text-[color:var(--color-subtle)]">
               Perfect for cards, posters, menus, and packaging.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4 flex flex-col items-center gap-3">
-            <div className="rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm">
+            <div className="rounded-2xl border border-[color:var(--color-border)] bg-white p-3 shadow-sm">
               <Image
                 src={qrUrl}
                 alt="QR code"
@@ -162,12 +164,12 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
                 className="h-48 w-48"
               />
             </div>
-            <div className="flex flex-col items-center gap-1 text-xs text-neutral-500">
+            <div className="flex flex-col items-center gap-1 text-xs text-[color:var(--color-subtle)]">
               <span className="break-all">{shortUrl}</span>
               <a
                 href={qrUrl}
                 download={`${id}.png`}
-                className="mt-1 inline-flex items-center rounded-full border border-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-900"
+                className="mt-1 inline-flex items-center rounded-full border border-[color:var(--color-border)] px-3 py-1.5 text-xs font-medium text-[color:var(--color-text)]"
               >
                 Download PNG
               </a>
@@ -178,26 +180,28 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
 
       {/* Delete confirmation modal */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="max-w-sm border border-white/10 bg-slate-950/95">
+        <DialogContent className="max-w-sm rounded-3xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
           <DialogHeader>
-            <DialogTitle className="text-slate-50">
+            <DialogTitle className="text-base font-semibold text-[color:var(--color-text)]">
               Delete this link?
             </DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogDescription className="text-sm text-[color:var(--color-subtle)]">
               This will permanently remove the link and its analytics. This
               action cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-4 rounded-xl border border-white/5 bg-slate-900/80 px-3 py-2 text-xs text-slate-400">
-            <span className="font-mono text-slate-100">{shortUrl}</span>
+          <div className="mt-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 text-xs text-[color:var(--color-subtle)]">
+            <span className="font-mono break-all text-[color:var(--color-text)]">
+              {shortUrl}
+            </span>
           </div>
 
           <div className="mt-6 flex justify-end gap-2">
             <Button
               type="button"
               variant="outline"
-              className="border-slate-600/70 bg-slate-900 text-slate-200 hover:bg-slate-800"
+              className="h-8 rounded-full border-[color:var(--color-border)] bg-transparent px-3 text-sm text-[color:var(--color-text)] hover:bg-[color:var(--color-bg)]"
               onClick={() => setDeleteOpen(false)}
               disabled={deleting}
             >
@@ -205,12 +209,11 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
             </Button>
             <Button
               type="button"
-              variant="default"
-              className="bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_12px_30px_rgba(37,99,235,0.65)] hover:brightness-110"
+              className="h-8 rounded-full bg-red-500 px-4 text-sm font-semibold text-white hover:bg-red-600"
               onClick={handleDelete}
               disabled={deleting}
             >
-              {deleting ? "Deleting…" : "Delete link"}
+              {deleting ? "Deleting…" : "Delete"}
             </Button>
           </div>
         </DialogContent>

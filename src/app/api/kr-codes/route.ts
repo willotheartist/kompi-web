@@ -10,7 +10,7 @@ const BodySchema = z.object({
   destination: z.string().min(1),
   title: z.string().max(120).optional(),
   createShortLink: z.boolean().optional().default(true),
-  // we still accept a "type" field in the body, but we don't persist it yet
+  // content type of the QR (website, file, app, social, other, etc.)
   type: z.string().optional(),
   utm: z
     .object({
@@ -27,7 +27,7 @@ const BodySchema = z.object({
       bg: z.string().optional(),
       size: z.number().int().min(120).max(1024).optional(),
       margin: z.number().int().min(0).max(16).optional(),
-      logoUrl: z.string().url().nullable().optional(),
+      logoUrl: z.string().nullable().optional(),
       cornerRadius: z.number().int().min(0).max(40).optional(),
       ecLevel: z.enum(["L", "M", "Q", "H"]).optional(),
     })
@@ -182,7 +182,7 @@ export async function POST(req: Request) {
         title: body.title ?? null,
         destination: qrDestination,
         shortCodeId: shortLinkId,
-        // type NOT persisted yet because your Prisma model doesn't have this column
+        type: body.type ?? null,
         style: {
           ...DEFAULT_STYLE,
           ...(body.style ?? {}),

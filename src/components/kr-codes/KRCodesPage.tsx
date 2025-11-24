@@ -17,11 +17,44 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Pencil, Trash2 } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Globe2,
+  FileText,
+  UserCircle2,
+  Type as TypeIcon,
+  Smartphone,
+  MessageCircle,
+  Mail,
+  Phone,
+  AppWindow,
+  Wifi,
+  Calendar,
+  MapPin,
+  Layers,
+} from "lucide-react";
 
 const FormSchema = z.object({
   title: z.string().max(120).optional(),
-  destination: z.string().min(1, "Destination is required"),
+
+  // Generic destination (what we actually send to the backend).
+  destination: z.string().optional(),
+
+  // “Smart” fields for non-URL types:
+  smsNumber: z.string().optional(),
+  smsMessage: z.string().optional(),
+
+  emailAddress: z.string().optional(),
+  emailSubject: z.string().optional(),
+  emailBody: z.string().optional(),
+
+  phoneNumber: z.string().optional(),
+
+  plainText: z.string().optional(),
+
+  // (In future we could add contact / vCard fields, etc.)
+
   utm_source: z.string().optional(),
   utm_medium: z.string().optional(),
   utm_campaign: z.string().optional(),
@@ -37,6 +70,9 @@ type KRCodeStyle = {
   size?: number;
   margin?: number;
   ecLevel?: "L" | "M" | "Q" | "H";
+  logoUrl?: string | null;
+  frameVariant?: "none" | "label-bottom" | "label-top";
+  frameLabel?: string;
   [key: string]: unknown;
 };
 
@@ -46,7 +82,7 @@ type KRCode = {
   destination: string;
   style: KRCodeStyle | null;
   createdAt: string;
-  type?: string | null;
+  type?: ContentTypeId | string | null;
   totalClicks?: number | null;
 };
 
@@ -57,33 +93,106 @@ type ListResponse = {
 
 const CONTENT_TYPES = [
   {
-    id: "website",
+    id: "url",
     label: "URL",
-    description: "Opens a website or landing page.",
+    description: "Send people to any website, campaign or landing page.",
+    icon: Globe2,
+    utmSupported: true,
   },
   {
     id: "file",
     label: "File / PDF",
-    description: "Opens a PDF, image, or hosted document.",
-  },
-  {
-    id: "app",
-    label: "App / Store",
-    description: "Links people to an app store page or download.",
+    description: "Link to a hosted PDF, menu, brochure, or media file.",
+    icon: FileText,
+    utmSupported: true,
   },
   {
     id: "social",
     label: "Social / Bio",
-    description: "Leads to a social profile or Kompi bio page.",
+    description: "Drive people to a social profile or your Kompi bio page.",
+    icon: UserCircle2,
+    utmSupported: true,
   },
   {
-    id: "other",
-    label: "Other link",
-    description: "Any other URL you want to track.",
+    id: "app",
+    label: "App / Store",
+    description: "Send users to an app store or download URL.",
+    icon: AppWindow,
+    utmSupported: true,
+  },
+  {
+    id: "sms",
+    label: "SMS",
+    description: "Open the SMS app with a prefilled message.",
+    icon: MessageCircle,
+    utmSupported: false,
+  },
+  {
+    id: "email",
+    label: "Email",
+    description: "Open the default email client with subject and body.",
+    icon: Mail,
+    utmSupported: false,
+  },
+  {
+    id: "phone",
+    label: "Phone",
+    description: "Start a phone call when the code is scanned.",
+    icon: Phone,
+    utmSupported: false,
+  },
+  {
+    id: "text",
+    label: "Plain text",
+    description: "Show plain text (instructions, coupon codes, secrets).",
+    icon: TypeIcon,
+    utmSupported: false,
+  },
+  {
+    id: "wifi",
+    label: "Wi-Fi",
+    description: "Let people join a Wi-Fi network without typing passwords.",
+    icon: Wifi,
+    utmSupported: false,
+    disabled: true, // nice teaser, but not active yet
+  },
+  {
+    id: "event",
+    label: "Event",
+    description: "Add an event (calendar) straight to someone’s device.",
+    icon: Calendar,
+    utmSupported: false,
+    disabled: true,
+  },
+  {
+    id: "location",
+    label: "Location",
+    description: "Open a location or coordinates in Maps.",
+    icon: MapPin,
+    utmSupported: false,
+    disabled: true,
+  },
+  {
+    id: "multi",
+    label: "Multi-URL",
+    description: "Different URLs for iOS, Android, desktop (coming soon).",
+    icon: Layers,
+    utmSupported: false,
+    disabled: true,
   },
 ] as const;
 
 type ContentTypeId = (typeof CONTENT_TYPES)[number]["id"];
+
+function labelForContentType(id: string | null | undefined) {
+  if (!id) return null;
+  const found = CONTENT_TYPES.find((t) => t.id === id);
+  if (found) return found.label;
+  // Backward compatibility for older codes that used "website", etc.
+  if (id === "website") return "URL";
+  if (id === "file") return "File";
+  return id;
+}
 
 type StyleState = {
   fg: string;
@@ -92,6 +201,8 @@ type StyleState = {
   margin: number;
   ecLevel: "L" | "M" | "Q" | "H";
   logoUrl?: string | null;
+  frameVariant: "none" | "label-bottom" | "label-top";
+  frameLabel: string;
 };
 
 const DEFAULT_STYLE: StyleState = {
@@ -101,21 +212,91 @@ const DEFAULT_STYLE: StyleState = {
   margin: 2,
   ecLevel: "M",
   logoUrl: null,
+  frameVariant: "none",
+  frameLabel: "SCAN ME",
 };
+
+const COLOR_PRESETS: Array<{
+  id: string;
+  label: string;
+  fg: string;
+  bg: string;
+}> = [
+  {
+    id: "classic-dark",
+    label: "Kompi Night",
+    fg: "#FFFFFF",
+    bg: "#020617",
+  },
+  {
+    id: "classic-light",
+    label: "Clean Light",
+    fg: "#020617",
+    bg: "#FFFFFF",
+  },
+  {
+    id: "accent-blue",
+    label: "Kompi Blue",
+    fg: "#EBF3FF",
+    bg: "#2643E6",
+  },
+  {
+    id: "accent-amber",
+    label: "Sunset",
+    fg: "#111827",
+    bg: "#FBBF24",
+  },
+  {
+    id: "accent-rose",
+    label: "Rose Glow",
+    fg: "#FDF2F8",
+    bg: "#BE185D",
+  },
+];
 
 function destinationPlaceholder(type: ContentTypeId) {
   switch (type) {
-    case "website":
+    case "url":
       return "https://example.com/landing";
     case "file":
       return "https://example.com/menu.pdf";
+    case "social":
+      return "https://instagram.com/your-handle";
     case "app":
       return "https://apps.apple.com/app/...";
-    case "social":
-      return "https://instagram.com/yourhandle";
-    case "other":
     default:
       return "https://...";
+  }
+}
+
+// Build a human-readable label for error correction
+function errorCorrectionLabel(level: StyleState["ecLevel"]) {
+  switch (level) {
+    case "L":
+      return "Light";
+    case "M":
+      return "Recommended";
+    case "Q":
+      return "High";
+    case "H":
+      return "Max (logo-ready)";
+    default:
+      return level;
+  }
+}
+
+function errorCorrectionDescription(level: StyleState["ecLevel"]) {
+  switch (level) {
+    case "L":
+      return "Best for simple, high-contrast codes without logos.";
+    case "M":
+      return "Balanced size & readability. Great default choice.";
+    case "Q":
+      return "More redundancy so damaged codes still scan.";
+    case "H":
+      return "Maximum protection when you place logos or busy colors.";
+    default:
+      return "";
   }
 }
 
@@ -126,24 +307,22 @@ export default function KRCodesPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [style, setStyle] = useState<StyleState>(DEFAULT_STYLE);
   const [contentType, setContentType] =
-    useState<ContentTypeId>("website");
+    useState<ContentTypeId>("url");
   const [hoverType, setHoverType] =
     useState<ContentTypeId | null>(null);
   const [showUtms, setShowUtms] = useState(false);
 
-  const [uploadingLogoFor, setUploadingLogoFor] = useState<string | null>(null);
+  const [uploadingLogoFor, setUploadingLogoFor] =
+    useState<string | null>(null);
 
-  // which code’s download popover is open
-  const [downloadMenuFor, setDownloadMenuFor] = useState<string | null>(
-    null
-  );
-  // which code is currently asking for delete confirmation
-  const [deleteIntentFor, setDeleteIntentFor] = useState<string | null>(
-    null
-  );
+  const [downloadMenuFor, setDownloadMenuFor] =
+    useState<string | null>(null);
+  const [deleteIntentFor, setDeleteIntentFor] =
+    useState<string | null>(null);
 
   const form = useForm<FormValues>({
     // @ts-expect-error - zodResolver schema type signature mismatch
@@ -151,6 +330,13 @@ export default function KRCodesPage() {
     defaultValues: {
       title: "",
       destination: "",
+      smsNumber: "",
+      smsMessage: "",
+      emailAddress: "",
+      emailSubject: "",
+      emailBody: "",
+      phoneNumber: "",
+      plainText: "",
       utm_source: "",
       utm_medium: "",
       utm_campaign: "",
@@ -160,6 +346,14 @@ export default function KRCodesPage() {
   });
 
   const watchDestination = form.watch("destination");
+  const smsNumber = form.watch("smsNumber");
+  const smsMessage = form.watch("smsMessage");
+  const emailAddress = form.watch("emailAddress");
+  const emailSubject = form.watch("emailSubject");
+  const emailBody = form.watch("emailBody");
+  const phoneNumber = form.watch("phoneNumber");
+  const plainText = form.watch("plainText");
+
   const utm_source = form.watch("utm_source");
   const utm_medium = form.watch("utm_medium");
   const utm_campaign = form.watch("utm_campaign");
@@ -167,28 +361,84 @@ export default function KRCodesPage() {
   const utm_content = form.watch("utm_content");
 
   const activeType =
-    CONTENT_TYPES.find((t) => t.id === (hoverType ?? contentType)) ??
-    CONTENT_TYPES[0];
+    CONTENT_TYPES.find(
+      (t) => t.id === (hoverType ?? contentType),
+    ) ?? CONTENT_TYPES[0];
+
+  const utmSupported = !!CONTENT_TYPES.find(
+    (t) => t.id === contentType && t.utmSupported,
+  );
 
   const urlPreview = useMemo(() => {
-    const destination = watchDestination;
-    if (!destination) return "";
-
-    try {
-      const u = new URL(destination);
-      if (utm_source) u.searchParams.set("utm_source", utm_source);
-      if (utm_medium) u.searchParams.set("utm_medium", utm_medium);
-      if (utm_campaign)
-        u.searchParams.set("utm_campaign", utm_campaign);
-      if (utm_term) u.searchParams.set("utm_term", utm_term);
-      if (utm_content)
-        u.searchParams.set("utm_content", utm_content);
-      return u.toString();
-    } catch {
-      return destination;
+    // For “URL-like” types: build URL with UTMs.
+    if (
+      contentType === "url" ||
+      contentType === "file" ||
+      contentType === "social" ||
+      contentType === "app"
+    ) {
+      const destination = watchDestination;
+      if (!destination) return "";
+      try {
+        const u = new URL(destination);
+        if (utm_source) u.searchParams.set("utm_source", utm_source);
+        if (utm_medium) u.searchParams.set("utm_medium", utm_medium);
+        if (utm_campaign)
+          u.searchParams.set("utm_campaign", utm_campaign);
+        if (utm_term) u.searchParams.set("utm_term", utm_term);
+        if (utm_content)
+          u.searchParams.set("utm_content", utm_content);
+        return u.toString();
+      } catch {
+        // Not a full URL – just return raw value.
+        return destination;
+      }
     }
+
+    // SMS
+    if (contentType === "sms") {
+      if (!smsNumber) return "";
+      const base = `sms:${smsNumber}`;
+      if (!smsMessage) return base;
+      const encoded = encodeURIComponent(smsMessage);
+      return `${base}?&body=${encoded}`;
+    }
+
+    // Email
+    if (contentType === "email") {
+      if (!emailAddress) return "";
+      const params = new URLSearchParams();
+      if (emailSubject) params.set("subject", emailSubject);
+      if (emailBody) params.set("body", emailBody);
+      const query = params.toString();
+      return query
+        ? `mailto:${emailAddress}?${query}`
+        : `mailto:${emailAddress}`;
+    }
+
+    // Phone
+    if (contentType === "phone") {
+      if (!phoneNumber) return "";
+      return `tel:${phoneNumber}`;
+    }
+
+    // Plain text
+    if (contentType === "text") {
+      return plainText || "";
+    }
+
+    // Fallback
+    return watchDestination || "";
   }, [
+    contentType,
     watchDestination,
+    smsNumber,
+    smsMessage,
+    emailAddress,
+    emailSubject,
+    emailBody,
+    phoneNumber,
+    plainText,
     utm_source,
     utm_medium,
     utm_campaign,
@@ -227,22 +477,100 @@ export default function KRCodesPage() {
     };
   }, []);
 
+  function buildDestinationForSubmit(values: FormValues): string | null {
+    // URL-like
+    if (
+      contentType === "url" ||
+      contentType === "file" ||
+      contentType === "social" ||
+      contentType === "app"
+    ) {
+      const raw = values.destination?.trim();
+      if (!raw) return null;
+      try {
+        const u = new URL(raw);
+        if (values.utm_source)
+          u.searchParams.set("utm_source", values.utm_source);
+        if (values.utm_medium)
+          u.searchParams.set("utm_medium", values.utm_medium);
+        if (values.utm_campaign)
+          u.searchParams.set("utm_campaign", values.utm_campaign);
+        if (values.utm_term)
+          u.searchParams.set("utm_term", values.utm_term);
+        if (values.utm_content)
+          u.searchParams.set("utm_content", values.utm_content);
+        return u.toString();
+      } catch {
+        // Allow non-URL values too – just raw string
+        return raw;
+      }
+    }
+
+    if (contentType === "sms") {
+      if (!values.smsNumber) return null;
+      const base = `sms:${values.smsNumber}`;
+      if (!values.smsMessage) return base;
+      const encoded = encodeURIComponent(values.smsMessage);
+      return `${base}?&body=${encoded}`;
+    }
+
+    if (contentType === "email") {
+      if (!values.emailAddress) return null;
+      const params = new URLSearchParams();
+      if (values.emailSubject)
+        params.set("subject", values.emailSubject);
+      if (values.emailBody) params.set("body", values.emailBody);
+      const query = params.toString();
+      return query
+        ? `mailto:${values.emailAddress}?${query}`
+        : `mailto:${values.emailAddress}`;
+    }
+
+    if (contentType === "phone") {
+      if (!values.phoneNumber) return null;
+      return `tel:${values.phoneNumber}`;
+    }
+
+    if (contentType === "text") {
+      if (!values.plainText) return null;
+      return values.plainText;
+    }
+
+    // fallback
+    const fallback = values.destination?.trim();
+    return fallback || null;
+  }
+
   async function onSubmit(values: FormValues) {
     setCreating(true);
     setError(null);
+    setFormError(null);
+
+    const destinationForCode =
+      buildDestinationForSubmit(values);
+
+    if (!destinationForCode) {
+      setCreating(false);
+      setFormError(
+        "Please fill in the required fields for this code type.",
+      );
+      return;
+    }
 
     const payload = {
       title: values.title || undefined,
-      destination: urlPreview || values.destination,
+      destination: destinationForCode,
       createShortLink: true,
       type: contentType,
-      utm: {
-        source: values.utm_source || undefined,
-        medium: values.utm_medium || undefined,
-        campaign: values.utm_campaign || undefined,
-        term: values.utm_term || undefined,
-        content: values.utm_content || undefined,
-      },
+      utm: utmSupported
+        ? {
+            source: values.utm_source || undefined,
+            medium: values.utm_medium || undefined,
+            campaign: values.utm_campaign || undefined,
+            term: values.utm_term || undefined,
+            content: values.utm_content || undefined,
+          }
+        : undefined,
       style: {
         fg: style.fg,
         bg: style.bg,
@@ -250,6 +578,8 @@ export default function KRCodesPage() {
         margin: style.margin,
         ecLevel: style.ecLevel,
         logoUrl: style.logoUrl ?? null,
+        frameVariant: style.frameVariant,
+        frameLabel: style.frameLabel,
       },
     };
 
@@ -269,11 +599,14 @@ export default function KRCodesPage() {
       }
 
       const created: KRCode = await res.json();
-      const createdWithClicks: KRCode = { ...created, totalClicks: 0 };
+      const createdWithClicks: KRCode = {
+        ...created,
+        totalClicks: 0,
+      };
       setCodes((prev) => [createdWithClicks, ...prev]);
       form.reset();
       setStyle(DEFAULT_STYLE);
-      setContentType("website");
+      setContentType("url");
       setShowUtms(false);
     } catch (err) {
       console.error(err);
@@ -283,11 +616,18 @@ export default function KRCodesPage() {
     }
   }
 
-  // Prefill the create form from an existing KR Code (lightweight "edit" flow).
+  // Prefill the create form from an existing KR Code (lightweight "edit" flow").
   function handleEdit(code: KRCode) {
     form.reset({
       title: code.title ?? "",
       destination: code.destination,
+      smsNumber: "",
+      smsMessage: "",
+      emailAddress: "",
+      emailSubject: "",
+      emailBody: "",
+      phoneNumber: "",
+      plainText: "",
       utm_source: "",
       utm_medium: "",
       utm_campaign: "",
@@ -297,7 +637,16 @@ export default function KRCodesPage() {
 
     const styleFromCode = code.style;
     if (styleFromCode) {
-      const { fg, bg, size, margin, ecLevel, logoUrl } = styleFromCode;
+      const {
+        fg,
+        bg,
+        size,
+        margin,
+        ecLevel,
+        logoUrl,
+        frameVariant,
+        frameLabel,
+      } = styleFromCode as KRCodeStyle;
       setStyle((prev) => ({
         fg: (fg as string) || prev.fg,
         bg: (bg as string) || prev.bg,
@@ -309,6 +658,12 @@ export default function KRCodesPage() {
           (logoUrl as string | null | undefined) ??
           prev.logoUrl ??
           null,
+        frameVariant:
+          (frameVariant as StyleState["frameVariant"]) ??
+          prev.frameVariant,
+        frameLabel:
+          (frameLabel as string | undefined) ??
+          prev.frameLabel,
       }));
     }
 
@@ -328,73 +683,122 @@ export default function KRCodesPage() {
       if (!res.ok) {
         throw new Error(`Failed with status ${res.status}`);
       }
-      setCodes((prev) => prev.filter((c) => c.id !== code.id));
+      setCodes((prev) =>
+        prev.filter((c) => c.id !== code.id),
+      );
     } catch (err) {
       console.error(err);
       setError("Failed to delete KR Code");
     } finally {
       setDeleteIntentFor((current) =>
-        current === code.id ? null : current
+        current === code.id ? null : current,
       );
     }
   }
 
+  const totalScans =
+    codes.reduce(
+      (sum, c) => sum + (c.totalClicks ?? 0),
+      0,
+    ) ?? 0;
+
   return (
     <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
-      <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8 md:gap-8 md:pb-12">
-        {/* Dashboard/PageHeader */}
-        <header className="wf-dashboard-header flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-3xl">
-            KR Codes
-            <span className="ml-1 font-serif italic text-[color:var(--color-subtle)]">
-              ™
-            </span>
-          </h1>
-          <p className="max-w-xl text-sm text-[color:var(--color-subtle)] md:text-base">
-            Create new codes and track scans across all your campaigns
-            from a single workspace view.
-          </p>
+      <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-6 md:gap-8 md:pb-12">
+        {/* Above the fold: page header */}
+        <header className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div className="space-y-1">
+            <h1 className="text-base font-semibold tracking-tight text-[color:var(--color-text)] md:text-lg">
+              Kompi Codes (QR)
+            </h1>
+            <p className="max-w-xl text-xs text-[color:var(--color-subtle)] md:text-sm">
+              Create branded QR codes that route through Kompi for
+              full analytics. Choose the action, style it to match
+              your brand, and download in print-ready formats.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-xs">
+            <div className="flex flex-col">
+              <span className="text-[color:var(--color-subtle)]">
+                Codes
+              </span>
+              <span className="text-base font-semibold text-[color:var(--color-text)]">
+                {codes.length}
+              </span>
+            </div>
+            <div className="h-8 w-px bg-[var(--color-border)]" />
+            <div className="flex flex-col">
+              <span className="text-[color:var(--color-subtle)]">
+                Total scans
+              </span>
+              <span className="text-base font-semibold text-[color:var(--color-text)]">
+                {totalScans}
+              </span>
+            </div>
+          </div>
         </header>
 
         {/* Row 1: create + preview */}
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.1fr)]">
-          {/* LEFT: create */}
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1.05fr)] items-start">
+          {/* LEFT: create + design */}
           <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
             <CardHeader className="border-b border-[var(--color-border)] pb-4">
-              <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
-                Create KR Code
+              <CardTitle className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
+                <span>Create &amp; customize</span>
+                <span className="text-[11px] font-normal text-[color:var(--color-subtle)]">
+                  1. Choose type • 2. Configure • 3. Design
+                </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 pt-4">
+            <CardContent className="space-y-5 pt-4">
               {/* Hover banner */}
-              <div className="rounded-xl bg-[var(--color-bg)] px-4 py-2 text-xs text-[color:var(--color-text)]">
+              <div className="rounded-xl bg-[var(--color-bg)] px-4 py-2 text-[11px] text-[color:var(--color-subtle)]">
                 {activeType.description}
               </div>
 
               {/* Type pills */}
               <div className="flex flex-wrap gap-2">
                 {CONTENT_TYPES.map((t) => {
-                  const active = t.id === contentType;
+                  const isActive = t.id === contentType;
+                  const Icon = t.icon;
+                  const disabled =
+                    "disabled" in t && t.disabled;
                   return (
                     <button
                       key={t.id}
                       type="button"
-                      onClick={() => setContentType(t.id)}
-                      onMouseEnter={() => setHoverType(t.id)}
-                      onMouseLeave={() => setHoverType(null)}
+                      disabled={disabled}
+                      onClick={() =>
+                        !disabled && setContentType(t.id)
+                      }
+                      onMouseEnter={() =>
+                        !disabled && setHoverType(t.id)
+                      }
+                      onMouseLeave={() =>
+                        !disabled && setHoverType(null)
+                      }
                       className={[
-                        "rounded-full px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] border transition",
-                        active
-                          ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-bg)] shadow-sm"
-                          : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]",
+                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] transition",
+                        disabled
+                          ? "cursor-not-allowed border-dashed border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)]/60"
+                          : isActive
+                          ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-black shadow-sm"
+                          : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
                       ].join(" ")}
                     >
-                      {t.label}
+                      <Icon className="h-3.5 w-3.5" />
+                      <span>{t.label}</span>
+                      {disabled && (
+                        <span className="ml-0.5 rounded-full bg-[var(--color-bg)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em]">
+                          Soon
+                        </span>
+                      )}
                     </button>
                   );
                 })}
               </div>
 
+              {/* Create form */}
               <form
                 className="space-y-4"
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -410,90 +814,214 @@ export default function KRCodesPage() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[color:var(--color-text)]">
-                    Destination URL
-                  </label>
-                  <Input
-                    className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                    placeholder={destinationPlaceholder(contentType)}
-                    {...form.register("destination")}
-                  />
-                  {form.formState.errors.destination && (
-                    <p className="text-xs text-red-400">
-                      {form.formState.errors.destination.message}
-                    </p>
-                  )}
-                </div>
+                {/* Dynamic content fields */}
+                {(() => {
+                  if (
+                    contentType === "url" ||
+                    contentType === "file" ||
+                    contentType === "social" ||
+                    contentType === "app"
+                  ) {
+                    return (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Destination URL
+                        </label>
+                        <Input
+                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          placeholder={destinationPlaceholder(
+                            contentType,
+                          )}
+                          {...form.register("destination")}
+                        />
+                      </div>
+                    );
+                  }
 
-                {/* UTM toggle */}
-                <button
-                  type="button"
-                  onClick={() => setShowUtms((s) => !s)}
-                  className="text-[11px] font-medium text-[color:var(--color-accent)] hover:underline"
-                >
-                  {showUtms
-                    ? "Hide UTM tracking"
-                    : "Add UTM tracking (optional)"}
-                </button>
+                  if (contentType === "sms") {
+                    return (
+                      <div className="grid gap-3 md:grid-cols-[minmax(0,0.6fr)_minmax(0,1.4fr)]">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Phone number
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="+44 7700 900000"
+                            {...form.register("smsNumber")}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Message
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="Hey, I found you from this poster…"
+                            {...form.register("smsMessage")}
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
 
-                {showUtms && (
-                  <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          UTM Source
-                        </label>
-                        <Input
-                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                          placeholder="poster"
-                          {...form.register("utm_source")}
-                        />
+                  if (contentType === "email") {
+                    return (
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Email address
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="hello@brand.com"
+                            {...form.register("emailAddress")}
+                          />
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[color:var(--color-text)]">
+                              Subject
+                            </label>
+                            <Input
+                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                              placeholder="Kompi campaign enquiry"
+                              {...form.register("emailSubject")}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[color:var(--color-text)]">
+                              Body (optional)
+                            </label>
+                            <Input
+                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                              placeholder="Hi there, I scanned your QR code and…"
+                              {...form.register("emailBody")}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          UTM Medium
-                        </label>
-                        <Input
-                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                          placeholder="qr"
-                          {...form.register("utm_medium")}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          UTM Campaign
-                        </label>
-                        <Input
-                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                          placeholder="spring_launch"
-                          {...form.register("utm_campaign")}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          UTM Term
-                        </label>
-                        <Input
-                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                          placeholder="headline_a"
-                          {...form.register("utm_term")}
-                        />
-                      </div>
-                    </div>
+                    );
+                  }
 
+                  if (contentType === "phone") {
+                    return (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Phone number
+                        </label>
+                        <Input
+                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          placeholder="+44 7700 900000"
+                          {...form.register("phoneNumber")}
+                        />
+                      </div>
+                    );
+                  }
+
+                  if (contentType === "text") {
+                    return (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Plain text
+                        </label>
+                        <Textarea
+                          rows={3}
+                          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          placeholder="Show a coupon code, instructions, or any short text…"
+                          {...form.register("plainText")}
+                        />
+                      </div>
+                    );
+                  }
+
+                  // Fallback if we add more types later.
+                  return (
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-[color:var(--color-text)]">
-                        UTM Content (optional)
+                        Destination / payload
                       </label>
-                      <Textarea
-                        rows={2}
-                        className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                        placeholder="Any extra labels for this code…"
-                        {...form.register("utm_content")}
+                      <Input
+                        className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                        placeholder="This is what your QR encodes…"
+                        {...form.register("destination")}
                       />
                     </div>
-                  </div>
+                  );
+                })()}
+
+                {/* UTM toggle – only for URL-like types */}
+                {utmSupported && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowUtms((s) => !s)}
+                      className="text-[11px] font-medium text-[color:var(--color-accent)] hover:underline"
+                    >
+                      {showUtms
+                        ? "Hide UTM tracking"
+                        : "Add UTM tracking (optional)"}
+                    </button>
+
+                    {showUtms && (
+                      <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[color:var(--color-text)]">
+                              UTM Source
+                            </label>
+                            <Input
+                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                              placeholder="poster"
+                              {...form.register("utm_source")}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[color:var(--color-text)]">
+                              UTM Medium
+                            </label>
+                            <Input
+                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                              placeholder="qr"
+                              {...form.register("utm_medium")}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[color:var(--color-text)]">
+                              UTM Campaign
+                            </label>
+                            <Input
+                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                              placeholder="spring_launch"
+                              {...form.register("utm_campaign")}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[color:var(--color-text)]">
+                              UTM Term
+                            </label>
+                            <Input
+                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                              placeholder="headline_a"
+                              {...form.register("utm_term")}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            UTM Content (optional)
+                          </label>
+                          <Textarea
+                            rows={2}
+                            className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="Any extra labels for this code…"
+                            {...form.register("utm_content")}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="flex flex-col gap-4 border-t border-[var(--color-border)] pt-3 md:flex-row md:items-center md:justify-between">
@@ -507,71 +1035,64 @@ export default function KRCodesPage() {
                   <Button
                     type="submit"
                     disabled={creating}
-                    className="md:min-w-[160px] rounded-full bg-[var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] hover:opacity-90 disabled:opacity-70"
+                    className="md:min-w-[180px] rounded-full bg-[var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] hover:opacity-90 disabled:opacity-70"
                   >
                     {creating ? "Creating…" : "Create KR Code"}
                   </Button>
                 </div>
 
-                {error && (
-                  <p className="pt-1 text-xs text-red-400">{error}</p>
+                {(formError || error) && (
+                  <p className="pt-1 text-xs text-red-400">
+                    {formError || error}
+                  </p>
                 )}
               </form>
-            </CardContent>
-          </Card>
 
-          {/* RIGHT: preview + design */}
-          <Card className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
-            <CardHeader className="border-b border-[var(--color-border)] pb-4">
-              <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
-                Live Preview &amp; Design
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-6 pt-4">
-              {/* Preview */}
-              <div className="flex flex-col items-center justify-center gap-4">
-                <div
-                  className="rounded-2xl p-4"
-                  style={{ backgroundColor: style.bg }}
-                >
-                  <div className="relative inline-block">
-                    <QRCode
-                      value={urlPreview || "https://kompi.app"}
-                      size={style.size}
-                      fgColor={style.fg}
-                      bgColor={style.bg}
-                      level={style.logoUrl ? "H" : style.ecLevel}
-                    />
-                    {style.logoUrl && (
-                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                        <div
-                          className="flex items-center justify-center rounded-md bg-white/90"
-                          style={{
-                            width: style.size * 0.22,
-                            height: style.size * 0.22,
-                          }}
-                        >
-                          <img
-                            src={style.logoUrl}
-                            alt="Logo"
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <p className="max-w-xs text-center text-xs text-[color:var(--color-subtle)]">
-                  This is a preview of your KR Code. The final printed code
-                  will use your workspace’s domain and redirect through Kompi
-                  for full analytics.
-                </p>
-              </div>
-
+              {/* Divider between form and design controls */}
               <div className="h-px w-full bg-[var(--color-border)]" />
 
               {/* Design controls */}
               <div className="space-y-4">
+                {/* Presets */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-xs font-medium text-[color:var(--color-text)]">
+                      Color presets
+                    </label>
+                    <span className="text-[10px] text-[color:var(--color-subtle)]">
+                      Click to start from a theme, then tweak below.
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {COLOR_PRESETS.map((preset) => (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() =>
+                          setStyle((s) => ({
+                            ...s,
+                            fg: preset.fg,
+                            bg: preset.bg,
+                          }))
+                        }
+                        className="flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-[11px] text-[color:var(--color-text)] hover:border-[var(--color-accent)]"
+                      >
+                        <span
+                          className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-border)]"
+                          style={{ background: preset.bg }}
+                        >
+                          <span
+                            className="h-2 w-2 rounded-[5px]"
+                            style={{ background: preset.fg }}
+                          />
+                        </span>
+                        <span>{preset.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Foreground / background pickers */}
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-[color:var(--color-text)]">
@@ -583,14 +1104,20 @@ export default function KRCodesPage() {
                         className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
                         value={style.fg}
                         onChange={(e) =>
-                          setStyle((s) => ({ ...s, fg: e.target.value }))
+                          setStyle((s) => ({
+                            ...s,
+                            fg: e.target.value,
+                          }))
                         }
                       />
                       <Input
                         className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
                         value={style.fg}
                         onChange={(e) =>
-                          setStyle((s) => ({ ...s, fg: e.target.value }))
+                          setStyle((s) => ({
+                            ...s,
+                            fg: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -606,14 +1133,20 @@ export default function KRCodesPage() {
                         className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
                         value={style.bg}
                         onChange={(e) =>
-                          setStyle((s) => ({ ...s, bg: e.target.value }))
+                          setStyle((s) => ({
+                            ...s,
+                            bg: e.target.value,
+                          }))
                         }
                       />
                       <Input
                         className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
                         value={style.bg}
                         onChange={(e) =>
-                          setStyle((s) => ({ ...s, bg: e.target.value }))
+                          setStyle((s) => ({
+                            ...s,
+                            bg: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -660,38 +1193,271 @@ export default function KRCodesPage() {
                   </div>
                 </div>
 
+                {/* Error correction – human-friendly */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[color:var(--color-text)]">
                     Error correction
                   </label>
-                  <div className="flex gap-2 text-xs">
-                    {(["L", "M", "Q", "H"] as const).map((level) => (
+                  <div className="grid gap-2 text-[11px] md:grid-cols-4">
+                    {(
+                      [
+                        { level: "L", name: "Light" },
+                        { level: "M", name: "Recommended" },
+                        { level: "Q", name: "High" },
+                        { level: "H", name: "Max" },
+                      ] as const
+                    ).map((opt) => (
                       <button
-                        key={level}
+                        key={opt.level}
                         type="button"
-                        className={`rounded-full border px-3 py-1 text-[11px] ${
-                          style.ecLevel === level
-                            ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-bg)]"
-                            : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
-                        }`}
+                        className={[
+                          "flex flex-col rounded-2xl border px-2.5 py-2 text-left transition",
+                          style.ecLevel === opt.level
+                            ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)]"
+                            : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
+                        ].join(" ")}
                         onClick={() =>
-                          setStyle((s) => ({ ...s, ecLevel: level }))
+                          setStyle((s) => ({
+                            ...s,
+                            ecLevel:
+                              opt.level as StyleState["ecLevel"],
+                          }))
                         }
                       >
-                        {level}
+                        <span className="text-[11px] font-semibold">
+                          {errorCorrectionLabel(
+                            opt.level as StyleState["ecLevel"],
+                          )}
+                        </span>
+                        <span className="mt-0.5 text-[10px] leading-snug">
+                          {errorCorrectionDescription(
+                            opt.level as StyleState["ecLevel"],
+                          )}
+                        </span>
                       </button>
                     ))}
                   </div>
                 </div>
 
+                {/* Frame controls – upgraded designer */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-xs font-medium text-[color:var(--color-text)]">
+                      Frame style
+                    </label>
+                    <span className="text-[10px] text-[color:var(--color-subtle)]">
+                      Make your code feel like a sticker on posters, tables, or packaging.
+                    </span>
+                  </div>
+
+                  {/* Frame variants as big tiles */}
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {[
+                      {
+                        id: "none",
+                        label: "Minimal",
+                        description: "Just the code, no frame.",
+                      },
+                      {
+                        id: "label-bottom",
+                        label: "Sticker",
+                        description: "Rounded sticker with label under the code.",
+                      },
+                      {
+                        id: "label-top",
+                        label: "Banner",
+                        description: "Headline above the code – great for posters.",
+                      },
+                    ].map((f) => {
+                      const isActive =
+                        style.frameVariant ===
+                        (f.id as StyleState["frameVariant"]);
+
+                      return (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() =>
+                            setStyle((s) => ({
+                              ...s,
+                              frameVariant:
+                                f.id as StyleState["frameVariant"],
+                            }))
+                          }
+                          className={[
+                            "flex flex-col gap-1 rounded-2xl border px-3 py-2 text-left text-[11px] transition",
+                            isActive
+                              ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)] shadow-sm"
+                              : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
+                          ].join(" ")}
+                        >
+                          {/* Tiny frame preview */}
+                          <div className="flex items-center justify-center">
+                            <div className="flex flex-col items-center gap-1 rounded-xl bg-[var(--color-bg)] px-3 py-2">
+                              {f.id === "label-top" && (
+                                <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
+                              )}
+
+                              <div className="h-7 w-7 rounded-[7px] border border-[var(--color-border)] bg-[var(--color-surface)]" />
+
+                              {f.id === "label-bottom" && (
+                                <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="mt-1">
+                            <div className="font-semibold">{f.label}</div>
+                            <div className="text-[10px] leading-snug">
+                              {f.description}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Label controls only when frame is active */}
+                  {style.frameVariant !== "none" && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2 mt-2">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Frame label
+                        </label>
+                        <span className="text-[10px] text-[color:var(--color-subtle)]">
+                          Short, action-oriented copy works best.
+                        </span>
+                      </div>
+
+                      <Input
+                        className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                        value={style.frameLabel}
+                        onChange={(e) =>
+                          setStyle((s) => ({
+                            ...s,
+                            frameLabel: e.target.value,
+                          }))
+                        }
+                        placeholder="SCAN ME"
+                      />
+
+                      {/* Quick presets */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {["SCAN ME", "OPEN MENU", "OPEN SITE", "FOLLOW US"].map(
+                          (label) => (
+                            <button
+                              key={label}
+                              type="button"
+                              onClick={() =>
+                                setStyle((s) => ({
+                                  ...s,
+                                  frameLabel: label,
+                                }))
+                              }
+                              className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1 text-[10px] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]"
+                            >
+                              {label}
+                            </button>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <p className="text-[11px] text-[color:var(--color-subtle)]">
-                  Frames, logo upload, and advanced shapes will plug into
-                  this same design system later – without changing how you
-                  create codes.
+                  Frames, logo upload, and advanced shapes will plug
+                  into this same design system later – without changing
+                  how you create codes.
                 </p>
               </div>
             </CardContent>
           </Card>
+
+          {/* RIGHT: preview only (sticky) */}
+          <div className="sticky top-24">
+          <Card className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+            <CardHeader className="border-b border-[var(--color-border)] pb-4">
+              <CardTitle className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
+                <span>Live Preview</span>
+                <span className="text-[11px] font-normal text-[color:var(--color-subtle)]">
+                  Updates as you type
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6 pt-4">
+              <div className="flex flex-col items-center justify-center gap-4">
+                {/* Frame + QR */}
+                <div
+                  className={[
+                    "inline-flex flex-col items-center justify-center rounded-3xl",
+                    style.frameVariant === "none"
+                      ? "border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                      : "",
+                    style.frameVariant === "label-bottom"
+                      ? "border border-[var(--color-accent)] bg-[var(--color-surface)] px-5 py-4 shadow-sm"
+                      : "",
+                    style.frameVariant === "label-top"
+                      ? "border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-5 py-4"
+                      : "",
+                  ].join(" ")}
+                >
+                  {style.frameVariant === "label-top" && (
+                    <div className="mb-2 inline-flex items-center rounded-full bg-[var(--color-accent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-black shadow-sm">
+                      {style.frameLabel || "SCAN ME"}
+                    </div>
+                  )}
+
+                  <div
+                    className="rounded-2xl p-3"
+                    style={{ backgroundColor: style.bg }}
+                  >
+                    <div className="relative inline-block">
+                      <QRCode
+                        value={urlPreview || "https://kompi.app"}
+                        size={style.size}
+                        fgColor={style.fg}
+                        bgColor={style.bg}
+                        level={
+                          style.logoUrl ? "H" : style.ecLevel
+                        }
+                      />
+                      {style.logoUrl && (
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <div
+                            className="flex items-center justify-center rounded-md bg-white/90"
+                            style={{
+                              width: style.size * 0.22,
+                              height: style.size * 0.22,
+                            }}
+                          >
+                            <img
+                              src={style.logoUrl}
+                              alt="Logo"
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {style.frameVariant === "label-bottom" && (
+                    <div className="mt-2 inline-flex items-center rounded-full bg-[var(--color-accent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-black shadow-sm">
+                      {style.frameLabel || "SCAN ME"}
+                    </div>
+                  )}
+                </div>
+
+                <p className="max-w-xs text-center text-xs text-[color:var(--color-subtle)]">
+                  This is a preview of your KR Code. The final printed
+                  code will use your workspace’s domain and redirect
+                  through Kompi for full analytics.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          </div>
         </div>
 
         {/* Row 2: full-width "Your KR Codes" */}
@@ -726,14 +1492,16 @@ export default function KRCodesPage() {
               </div>
             ) : codes.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] p-6 text-center text-sm text-[color:var(--color-subtle)]">
-                No KR Codes yet. Create your first one above to start
-                tracking scans.
+                No KR Codes yet. Create your first one above to
+                start tracking scans.
               </div>
             ) : (
               <div className="space-y-3">
                 {codes.map((code) => {
-                  const isMenuOpen = downloadMenuFor === code.id;
-                  const isDeleteOpen = deleteIntentFor === code.id;
+                  const isMenuOpen =
+                    downloadMenuFor === code.id;
+                  const isDeleteOpen =
+                    deleteIntentFor === code.id;
                   return (
                     <div
                       key={code.id}
@@ -743,29 +1511,50 @@ export default function KRCodesPage() {
                         <div className="hidden rounded-xl bg-[var(--color-surface)] p-2 md:block">
                           <div className="relative inline-block">
                             {(() => {
-                              const styleFromCode = (code.style ??
-                                {}) as KRCodeStyle;
+                              const styleFromCode =
+                                (code.style ??
+                                  {}) as KRCodeStyle;
                               const hasLogo =
-                                !!(styleFromCode.logoUrl as string | null | undefined);
+                                !!(styleFromCode.logoUrl as
+                                  | string
+                                  | null
+                                  | undefined);
                               const ecLevel =
-                                (hasLogo ? "H" : styleFromCode.ecLevel) ?? "M";
+                                (hasLogo
+                                  ? "H"
+                                  : styleFromCode.ecLevel) ??
+                                "M";
                               return (
                                 <QRCode
                                   value={code.destination}
                                   size={56}
-                                  fgColor={styleFromCode.fg ?? "#FFFFFF"}
-                                  bgColor={styleFromCode.bg ?? "#020617"}
-                                  level={ecLevel as "L" | "M" | "Q" | "H"}
+                                  fgColor={
+                                    styleFromCode.fg ??
+                                    "#FFFFFF"
+                                  }
+                                  bgColor={
+                                    styleFromCode.bg ??
+                                    "#020617"
+                                  }
+                                  level={
+                                    ecLevel as
+                                      | "L"
+                                      | "M"
+                                      | "Q"
+                                      | "H"
+                                  }
                                 />
                               );
                             })()}
                             {(() => {
-                              const styleFromCode = (code.style ??
-                                {}) as KRCodeStyle;
-                              const logo = styleFromCode.logoUrl as
-                                | string
-                                | null
-                                | undefined;
+                              const styleFromCode =
+                                (code.style ??
+                                  {}) as KRCodeStyle;
+                              const logo =
+                                styleFromCode.logoUrl as
+                                  | string
+                                  | null
+                                  | undefined;
                               if (!logo) return null;
                               return (
                                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -789,13 +1578,16 @@ export default function KRCodesPage() {
                         </div>
                         <div className="space-y-1">
                           <div className="text-sm font-medium text-[color:var(--color-text)]">
-                            {code.title || "Untitled KR Code"}
+                            {code.title ||
+                              "Untitled KR Code"}
                           </div>
                           <div className="break-all text-[11px] text-[color:var(--color-subtle)]">
                             {code.destination}
                           </div>
                           <div className="text-[11px] text-[color:var(--color-subtle)]">
-                            {code.type ? `Type: ${code.type} • ` : ""}
+                            {code.type
+                              ? `Type: ${labelForContentType(code.type)} • `
+                              : ""}
                             Created{" "}
                             {new Date(
                               code.createdAt,
@@ -834,51 +1626,69 @@ export default function KRCodesPage() {
                               accept="image/*"
                               className="hidden"
                               onChange={async (e) => {
-                                const file = e.target.files?.[0];
+                                const file =
+                                  e.target.files?.[0];
                                 if (!file) return;
-                                setUploadingLogoFor(code.id);
+                                setUploadingLogoFor(
+                                  code.id,
+                                );
                                 try {
                                   const fd = new FormData();
                                   fd.append("file", file);
-                                  const res = await fetch(
-                                    `/api/kr-codes/${code.id}/logo`,
-                                    {
-                                      method: "POST",
-                                      body: fd,
-                                      credentials: "include",
-                                    },
-                                  );
+                                  const res =
+                                    await fetch(
+                                      `/api/kr-codes/${code.id}/logo`,
+                                      {
+                                        method: "POST",
+                                        body: fd,
+                                        credentials:
+                                          "include",
+                                      },
+                                    );
                                   if (!res.ok) {
                                     console.error(
                                       "Logo upload failed",
                                       await res.text(),
                                     );
                                   } else {
-                                    const json = await res.json();
+                                    const json =
+                                      await res.json();
                                     setStyle((s) => ({
                                       ...s,
-                                      logoUrl: json.logoUrl as string,
+                                      logoUrl:
+                                        json.logoUrl as string,
                                     }));
                                     setCodes((prev) =>
                                       prev.map((c) =>
                                         c.id === code.id
                                           ? {
                                               ...c,
-                                              style: {
-                                                ...(c.style ?? {}),
-                                                logoUrl: json.logoUrl,
-                                                ecLevel: "H",
-                                              },
+                                              style:
+                                                {
+                                                  ...(c.style ??
+                                                    {}),
+                                                  logoUrl:
+                                                    json.logoUrl,
+                                                  ecLevel:
+                                                    "H",
+                                                },
                                             }
                                           : c,
                                       ),
                                     );
                                   }
                                 } catch (err) {
-                                  console.error("Logo upload error", err);
+                                  console.error(
+                                    "Logo upload error",
+                                    err,
+                                  );
                                 } finally {
-                                  setUploadingLogoFor((current) =>
-                                    current === code.id ? null : current,
+                                  setUploadingLogoFor(
+                                    (current) =>
+                                      current ===
+                                      code.id
+                                        ? null
+                                        : current,
                                   );
                                   e.target.value = "";
                                 }
@@ -898,8 +1708,11 @@ export default function KRCodesPage() {
                           <button
                             type="button"
                             onClick={() =>
-                              setDeleteIntentFor((current) =>
-                                current === code.id ? null : code.id
+                              setDeleteIntentFor(
+                                (current) =>
+                                  current === code.id
+                                    ? null
+                                    : code.id,
                               )
                             }
                             aria-label="Delete KR Code"
@@ -923,8 +1736,12 @@ export default function KRCodesPage() {
                               size="sm"
                               className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
                               onClick={() =>
-                                setDownloadMenuFor((current) =>
-                                  current === code.id ? null : code.id
+                                setDownloadMenuFor(
+                                  (current) =>
+                                    current ===
+                                    code.id
+                                      ? null
+                                      : code.id,
                                 )
                               }
                             >
@@ -935,14 +1752,20 @@ export default function KRCodesPage() {
                               <div
                                 className="absolute right-0 z-20 mt-2 w-40 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-1 shadow-md"
                                 onMouseLeave={() =>
-                                  setDownloadMenuFor(null)
+                                  setDownloadMenuFor(
+                                    null,
+                                  )
                                 }
                               >
                                 <Link
                                   href={`/api/kr-codes/${code.id}/svg`}
                                   target="_blank"
                                   className="block rounded-xl px-3 py-2 text-[11px] text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
-                                  onClick={() => setDownloadMenuFor(null)}
+                                  onClick={() =>
+                                    setDownloadMenuFor(
+                                      null,
+                                    )
+                                  }
                                 >
                                   Download SVG
                                 </Link>
@@ -950,7 +1773,11 @@ export default function KRCodesPage() {
                                   href={`/api/kr-codes/${code.id}/png`}
                                   target="_blank"
                                   className="block rounded-xl px-3 py-2 text-[11px] text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
-                                  onClick={() => setDownloadMenuFor(null)}
+                                  onClick={() =>
+                                    setDownloadMenuFor(
+                                      null,
+                                    )
+                                  }
                                 >
                                   Download PNG
                                 </Link>
@@ -967,7 +1794,8 @@ export default function KRCodesPage() {
                                   style={{
                                     fontFamily:
                                       "Instrument Serif, system-ui, serif",
-                                    fontStyle: "italic",
+                                    fontStyle:
+                                      "italic",
                                   }}
                                 >
                                   code
@@ -975,20 +1803,28 @@ export default function KRCodesPage() {
                                 ?
                               </p>
                               <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
-                                This action can’t be undone and will stop
-                                tracking scans from this KR Code.
+                                This action can’t be
+                                undone and will stop
+                                tracking scans from
+                                this KR Code.
                               </p>
                               <div className="mt-3 flex items-center gap-2">
                                 <button
                                   type="button"
-                                  onClick={() => handleDelete(code)}
+                                  onClick={() =>
+                                    handleDelete(code)
+                                  }
                                   className="inline-flex flex-1 items-center justify-center rounded-full bg-[var(--color-text)] px-3 py-1.5 text-xs font-semibold text-[var(--color-bg)] hover:opacity-90"
                                 >
                                   Delete
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => setDeleteIntentFor(null)}
+                                  onClick={() =>
+                                    setDeleteIntentFor(
+                                      null,
+                                    )
+                                  }
                                   className="inline-flex flex-1 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-xs font-medium text-[color:var(--color-text)] hover:bg-[var(--color-surface)]"
                                 >
                                   Cancel

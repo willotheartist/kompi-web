@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/dashboard/glass-card";
@@ -38,6 +38,8 @@ export type LinkAnalyticsViewModel = {
   daily: { label: string; count: number }[];
   topReferrers: { label: string; count: number }[];
   devices: { label: string; count: number; pct: number }[];
+  title?: string | null;
+  isActive: boolean;
 };
 
 type LinkAnalyticsClientProps = {
@@ -59,13 +61,24 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
     daily,
     topReferrers,
     devices,
+    title,
+    isActive,
   } = vm;
 
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isDeleting, startDeleteTransition] = useTransition();
 
-  const displayShort = shortUrl ?? "Kompi link";
+  const displayHeading =
+    (title && title.trim().length > 0 && title) ||
+    shortUrl ||
+    "Kompi link";
+
+  const totalLastWindow = useMemo(
+    () => daily.reduce((sum, d) => sum + d.count, 0),
+    [daily]
+  );
+  const avgPerDay = days > 0 ? totalLastWindow / days : 0;
 
   async function handleShare() {
     const url = shortUrl ?? targetUrl;
@@ -73,7 +86,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
       if (navigator.share) {
         await navigator.share({
           url,
-          title: displayShort,
+          title: displayHeading,
         });
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(url);
@@ -115,8 +128,8 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
 
   return (
     <main className="wf-dashboard-main w-full">
-      <section className="wf-dashboard-content mx-auto flex w-full max-w-5xl flex-col gap-6 pb-10 pt-6 md:gap-8 md:pb-12 md:pt-8">
-        {/* Dashboard/PageHeader - breadcrumb row */}
+      <section className="wf-dashboard-content mx-auto flex w-full max-w-5xl flex-col gap-6 pb-12 pt-6 md:gap-8 md:pt-8">
+        {/* Breadcrumb / back */}
         <div className="wf-dashboard-header flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 text-xs">
             <Link
@@ -130,7 +143,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
               /
               <Link
                 href="/links"
-                className="text-[color:var(--color-text)] hover:underline underline-offset-4"
+                className="text-[color:var(--color-text)] underline-offset-4 hover:underline"
               >
                 Links
               </Link>
@@ -138,17 +151,29 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
           </div>
         </div>
 
-        {/* Summary header card */}
-        <GlassCard className="border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 shadow-sm md:px-6 md:py-5">
-          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            {/* Left: title + URLs + meta */}
+        {/* Primary heading card */}
+        <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-sm md:px-6 md:py-6">
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+            {/* Left side: title + URLs + meta */}
             <div className="min-w-0 flex-1 space-y-2">
-              <h1 className="flex items-center gap-2 text-2xl font-semibold text-[color:var(--color-text)] md:text-3xl">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[color:var(--color-accent-soft)]">
                   <Link2 className="h-5 w-5 text-[color:var(--color-text)]" />
                 </span>
-                <span className="truncate">{displayShort}</span>
-              </h1>
+                <h1 className="truncate text-2xl font-semibold text-[color:var(--color-text)] md:text-3xl">
+                  {displayHeading}
+                </h1>
+                <span
+                  className={
+                    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium tracking-wide " +
+                    (isActive
+                      ? "border-[color:var(--color-accent)] bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
+                      : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-subtle)]")
+                  }
+                >
+                  {isActive ? "ACTIVE" : "INACTIVE"}
+                </span>
+              </div>
 
               {shortUrl && (
                 <p className="break-all text-sm text-[color:var(--color-accent)]">
@@ -160,7 +185,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                 {targetUrl}
               </p>
 
-              <div className="flex flex-wrap gap-3 text-[11px] text-[color:var(--color-subtle)] md:text-xs">
+              <div className="mt-1 flex flex-wrap gap-3 text-[11px] text-[color:var(--color-subtle)] md:text-xs">
                 <span className="inline-flex items-center gap-1">
                   <MousePointer2 className="h-3 w-3 opacity-70" />
                   Created: {createdLabel}
@@ -171,13 +196,13 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
             </div>
 
             {/* Actions */}
-            <div className="flex w-full items-center justify-end gap-3 md:w-auto">
+            <div className="flex w-full items-center justify-end gap-2 md:w-auto">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 aria-label="Edit link"
-                className="h-8 w-8 rounded-full bg-transparent text-[color:var(--color-text)] hover:bg-[var(--color-accent-soft)]"
+                className="h-8 w-8 rounded-full bg-transparent text-[color:var(--color-text)] hover:bg-[color:var(--color-accent-soft)]"
                 onClick={handleEdit}
               >
                 <Pencil className="h-4 w-4" />
@@ -188,7 +213,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                 variant="ghost"
                 size="icon"
                 aria-label="Share link"
-                className="h-8 w-8 rounded-full bg-transparent text-[color:var(--color-text)] hover:bg-[var(--color-accent-soft)]"
+                className="h-8 w-8 rounded-full bg-transparent text-[color:var(--color-text)] hover:bg-[color:var(--color-accent-soft)]"
                 onClick={handleShare}
               >
                 <Share2 className="h-4 w-4" />
@@ -200,13 +225,13 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                   variant="ghost"
                   size="icon"
                   aria-label="Delete link"
-                  className="h-8 w-8 rounded-full bg-transparent text-[color:var(--color-text)] hover:bg-[var(--color-accent-soft)]"
+                  className="h-8 w-8 rounded-full bg-transparent text-[color:var(--color-text)] hover:bg-[color:var(--color-accent-soft)]"
                   onClick={handleConfirmDelete}
                 >
-                  <Trash2 className="h-4 w-4 text-[color:var(--color-text)]" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
 
-                <DialogContent className="max-w-sm rounded-3xl border border-[var(--color-border)] bg-[color:var(--color-surface)] p-6">
+                <DialogContent className="max-w-sm rounded-3xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6">
                   <DialogHeader>
                     <DialogTitle className="text-base font-semibold text-[color:var(--color-text)]">
                       Delete this link?
@@ -221,7 +246,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                     <Button
                       type="button"
                       variant="ghost"
-                      className="h-8 rounded-full px-3 text-sm text-[color:var(--color-text)] hover:bg-[var(--color-accent-soft)]"
+                      className="h-8 rounded-full px-3 text-sm text-[color:var(--color-text)] hover:bg-[color:var(--color-accent-soft)]"
                       onClick={handleCancelDelete}
                       disabled={isDeleting}
                     >
@@ -242,91 +267,112 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
           </div>
         </GlassCard>
 
-        {/* StatsRow */}
-        <div className="wf-dashboard-stats-row grid gap-4 md:grid-cols-4">
-          <GlassCard className="flex flex-col justify-between border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
-            <p className="flex items-center gap-1 text-xs text-[color:var(--color-subtle)]">
-              Total clicks
-              <BarChart3 className="h-3 w-3 opacity-70" />
+        {/* Insights header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
+              Insights
             </p>
-            <p className="mt-1 text-2xl font-semibold text-[color:var(--color-text)]">
-              {totalClicks}
-            </p>
-            <p className="mt-1 text-[10px] text-[color:var(--color-subtle)]">
-              All-time engagements on this Kompi link.
-            </p>
-          </GlassCard>
-
-          <GlassCard className="flex flex-col justify-between border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
-            <p className="text-xs text-[color:var(--color-subtle)]">
-              Last 7 days
-            </p>
-            <p className="mt-1 text-2xl font-semibold text-[color:var(--color-text)]">
-              {last7}
-            </p>
-            <p className="mt-1 text-[10px] text-[color:var(--color-subtle)]">
-              {growth7 > 0
-                ? `+${growth7}% vs previous 7 days`
-                : growth7 < 0
-                ? `${growth7}% vs previous 7 days`
-                : "No change vs previous 7 days"}
-            </p>
-          </GlassCard>
-
-          <GlassCard className="flex flex-col justify-between border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
-            <p className="text-xs text-[color:var(--color-subtle)]">
-              Last 30 days
-            </p>
-            <p className="mt-1 text-2xl font-semibold text-[color:var(--color-text)]">
-              {last30}
-            </p>
-            <p className="mt-1 text-[10px] text-[color:var(--color-subtle)]">
-              Rolling 30-day performance snapshot.
-            </p>
-          </GlassCard>
-
-          <GlassCard className="flex flex-col justify-between border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
-            <p className="text-xs text-[color:var(--color-subtle)]">
-              KR / QR ready
-            </p>
-            <p className="mt-1 flex items-center gap-2 text-lg font-semibold text-[color:var(--color-text)]">
-              <QrCode className="h-4 w-4 text-[color:var(--color-text)]" />
-              Use with Kompi Codes™
-            </p>
-            <p className="mt-1 text-[10px] text-[color:var(--color-subtle)]">
-              Generate branded Kompi Codes™ from this link in one click.
-            </p>
-          </GlassCard>
+            <h2 className="text-base font-semibold text-[color:var(--color-text)]">
+              Lifetime & recent performance
+            </h2>
+          </div>
+          <div className="inline-flex items-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-1 text-[11px] text-[color:var(--color-subtle)]">
+            Last {days} days
+          </div>
         </div>
 
-        {/* Engagement over time - Data block */}
-        <GlassCard className="border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 md:px-6 md:py-6">
-          <div className="mb-3 flex items-center justify-between">
+        {/* Lifetime totals row */}
+        <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-4 shadow-sm md:px-5 md:py-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold text-[color:var(--color-text)]">
+              Lifetime totals
+            </h3>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex flex-col justify-between rounded-3xl bg-[color:var(--color-bg)] px-4 py-3">
+              <div className="flex items-center gap-2 text-xs text-[color:var(--color-subtle)]">
+                <BarChart3 className="h-4 w-4 opacity-80" />
+                <span>Total clicks</span>
+              </div>
+              <p className="mt-2 text-2xl font-semibold text-[color:var(--color-text)]">
+                {totalClicks.toLocaleString()}
+              </p>
+              <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+                All-time engagements on this link.
+              </p>
+            </div>
+
+            <div className="flex flex-col justify-between rounded-3xl bg-[color:var(--color-bg)] px-4 py-3">
+              <p className="text-xs text-[color:var(--color-subtle)]">
+                Last 7 days
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-[color:var(--color-text)]">
+                {last7.toLocaleString()}
+              </p>
+              <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+                {growth7 > 0
+                  ? `+${growth7}% vs previous 7 days`
+                  : growth7 < 0
+                  ? `${growth7}% vs previous 7 days`
+                  : "No change vs previous 7 days"}
+              </p>
+            </div>
+
+            <div className="flex flex-col justify-between rounded-3xl bg-[color:var(--color-bg)] px-4 py-3">
+              <p className="text-xs text-[color:var(--color-subtle)]">
+                Last 30 days
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-[color:var(--color-text)]">
+                {last30.toLocaleString()}
+              </p>
+              <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+                Rolling 30-day performance snapshot.
+              </p>
+            </div>
+
+            <div className="flex flex-col justify-between rounded-3xl bg-[color:var(--color-bg)] px-4 py-3">
+              <p className="text-xs text-[color:var(--color-subtle)]">
+                Avg per day ({days}d)
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-[color:var(--color-text)]">
+                {avgPerDay.toFixed(1)}
+              </p>
+              <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+                Average daily clicks over the last {days} days.
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* Engagement over time */}
+        <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 md:px-6 md:py-6">
+          <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
                 Engagements over time
               </p>
-              <h2 className="text-base font-semibold text-[color:var(--color-text)]">
+              <h3 className="text-base font-semibold text-[color:var(--color-text)]">
                 Clicks across the last {days} days
-              </h2>
+              </h3>
             </div>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-5">
             {daily.length === 0 ? (
               <p className="text-sm text-[color:var(--color-subtle)]">
                 No clicks yet. Share your link to start seeing activity.
               </p>
             ) : (
-              <div className="flex h-40 items-end gap-2 md:h-48">
+              <div className="flex h-44 items-end gap-1.5 md:h-52 md:gap-2">
                 {daily.map((d) => (
                   <div
                     key={d.label}
                     className="flex flex-1 flex-col items-center gap-1"
                   >
-                    <div className="h-full w-full overflow-hidden rounded-full bg-[var(--color-bg)]">
+                    <div className="h-full w-full overflow-hidden rounded-full bg-[color:var(--color-bg)]">
                       <div
-                        className="w-full rounded-full bg-[var(--color-accent)]"
+                        className="w-full rounded-full bg-[color:var(--color-accent)]"
                         style={{
                           height: `${
                             totalClicks ? (d.count / totalClicks) * 100 : 0
@@ -344,9 +390,10 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
           </div>
         </GlassCard>
 
-        {/* Bottom: referrers + devices */}
+        {/* Lower grid: referrers + devices */}
         <div className="grid gap-4 md:grid-cols-2">
-          <GlassCard className="border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 md:px-6 md:py-6">
+          {/* Top referrers */}
+          <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 md:px-6 md:py-6">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
@@ -367,7 +414,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                 {topReferrers.map((r) => (
                   <li
                     key={r.label}
-                    className="flex items-center justify-between gap-3 rounded-2xl bg-[var(--color-bg)] px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded-2xl bg-[color:var(--color-bg)] px-3 py-2"
                   >
                     <span className="truncate">
                       {r.label === "Direct" ? "Direct / Unknown" : r.label}
@@ -381,7 +428,8 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
             )}
           </GlassCard>
 
-          <GlassCard className="border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 md:px-6 md:py-6">
+          {/* Devices */}
+          <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 md:px-6 md:py-6">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
@@ -403,15 +451,15 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                 {devices.map((d) => (
                   <div
                     key={d.label}
-                    className="flex items-center justify-between gap-3"
+                    className="flex items-center justify-between gap-3 rounded-2xl bg-[color:var(--color-bg)] px-3 py-2"
                   >
-                    <div className="flex flex-1 items-center gap-2">
+                    <div className="flex flex-1 items-center gap-3">
                       <span className="w-20 text-[color:var(--color-text)]">
                         {d.label}
                       </span>
-                      <div className="h-1.5 w-28 overflow-hidden rounded-full bg-[var(--color-bg)]">
+                      <div className="h-1.5 w-28 overflow-hidden rounded-full bg-[color:var(--color-surface)]">
                         <div
-                          className="h-full rounded-full bg-[var(--color-accent)]"
+                          className="h-full rounded-full bg-[color:var(--color-accent)]"
                           style={{ width: `${d.pct}%` }}
                         />
                       </div>
@@ -425,6 +473,25 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
             )}
           </GlassCard>
         </div>
+
+        {/* KR / QR ready helper card */}
+        <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-4 md:px-6 md:py-5">
+          <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
+                KR / QR ready
+              </p>
+              <h3 className="mt-1 flex items-center gap-2 text-base font-semibold text-[color:var(--color-text)]">
+                <QrCode className="h-4 w-4" />
+                Use with Kompi Codes™
+              </h3>
+              <p className="mt-1 text-sm text-[color:var(--color-subtle)]">
+                Generate branded Kompi Codes™ from this link in one click and
+                use them on cards, posters, menus, and packaging.
+              </p>
+            </div>
+          </div>
+        </GlassCard>
       </section>
     </main>
   );

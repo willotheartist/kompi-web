@@ -154,6 +154,8 @@ export default async function Page({ params }: PageProps) {
     daily,
     topReferrers,
     devices,
+    title: link.title ?? null,
+    isActive: link.isActive ?? true,
   };
 
   return (

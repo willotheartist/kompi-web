@@ -1,0 +1,25 @@
+diff --git a/src/components/kr-codes/KRCodesPage.tsx b/src/components/kr-codes/KRCodesPage.tsx
+index 0000000..1111111 100644
+--- a/src/components/kr-codes/KRCodesPage.tsx
++++ b/src/components/kr-codes/KRCodesPage.tsx
+@@ -323,7 +323,7 @@ export default function KRCodesPage() {
+       <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-6 md:gap-8 md:pb-12">
+         {/* Row 1: create + preview */}
+-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.1fr)]">
++        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.1fr)] xl:items-start">
+           {/* LEFT: create + design */}
+           <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+@@ -626,8 +626,11 @@ export default function KRCodesPage() {
+           </Card>
+
+-          {/* RIGHT: preview only */}
+-          <Card className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
++          {/* RIGHT: preview only (sticky on xl+) */}
++          <div className="xl:sticky xl:top-24">
++          <Card className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+@@ -702,7 +705,8 @@ export default function KRCodesPage() {
+               </div>
+             </CardContent>
+           </Card>
++          </div>
+         </div>

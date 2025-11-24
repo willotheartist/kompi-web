@@ -20,13 +20,27 @@ export async function GET(req: Request, ctx: RouteContext) {
       return new NextResponse("Missing id", { status: 400 });
     }
 
-    const { qrUrl } = await getKrCodeLinkAndUrl(id, req);
+    const { qrUrl, style } = await getKrCodeLinkAndUrl(id, req);
 
-    // Generate SVG for the tracked URL
+    const fg = style.fg ?? "#000000";
+    // qrcode lib expects a solid background color; treat "transparent" as white
+    const bg =
+      !style.bg || style.bg.toLowerCase() === "transparent"
+        ? "#FFFFFF"
+        : style.bg;
+    const margin = style.margin ?? 2;
+
+    // For print we keep the export fairly large; you can tune this later
+    const width = Math.max(512, (style.size ?? 240) * 2);
+
     const svg = await QRCode.toString(qrUrl, {
       type: "svg",
-      margin: 2,
-      width: 1024,
+      margin,
+      width,
+      color: {
+        dark: fg,
+        light: bg,
+      },
     });
 
     return new NextResponse(svg, {
