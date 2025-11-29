@@ -7,12 +7,13 @@ import { CreateModal } from "@/components/dashboard/create-modal";
 import { DashboardAnnouncementBanner } from "@/components/dashboard/dashboard-announcement-banner";
 import { DashboardHeroStats } from "@/components/dashboard/dashboard-hero-stats";
 import { DashboardQuickCreate } from "@/components/dashboard/dashboard-quick-create";
-import { DashboardActivityCard } from "@/components/dashboard/dashboard-activity-card";
 import { DashboardFeatureGrid } from "@/components/dashboard/dashboard-feature-grid";
 import { DashboardTipsCard } from "@/components/dashboard/dashboard-tips-card";
 import { DashboardRecentLinks } from "@/components/dashboard/dashboard-recent-links";
 import { DashboardInviteTeammates } from "@/components/dashboard/dashboard-invite-teammates";
 import type { LinkSummary } from "@/components/dashboard/dashboard-types";
+import { PlanLimitModal } from "@/components/billing/plan-limit-modal";
+import { DashboardActivityStrip } from "@/components/dashboard/dashboard-activity-strip";
 
 type DashboardMode = "overview" | "performance";
 type QuickMode = "link" | "kr";
@@ -28,6 +29,7 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
   const [quickUrl, setQuickUrl] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [limitOpen, setLimitOpen] = useState(false);
 
   const hasLinks = links.length > 0;
 
@@ -74,6 +76,15 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
 
       if (!res.ok) {
         const msg = await res.text();
+        const lower = msg.toLowerCase();
+
+        // Free plan limit: show upgrade modal, no thrown error
+        if (lower.includes("free plan limit")) {
+          setLimitOpen(true);
+          return;
+        }
+
+        // Other errors still bubble to the catch() block
         throw new Error(msg || "Failed to create link");
       }
 
@@ -101,11 +112,16 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
       console.error("Quick create error:", err);
       const message =
         err instanceof Error ? err.message : "Unknown error";
-      toast.error(
-        message.toLowerCase().includes("unauthorized")
-          ? "Please sign in again to create links."
-          : "Could not create link. Check your URL and try again."
-      );
+
+      const lower = message.toLowerCase();
+
+      if (lower.includes("unauthorized")) {
+        toast.error("Please sign in again to create links.");
+      } else if (lower.includes("free plan limit")) {
+        setLimitOpen(true);
+      } else {
+        toast.error("Could not create link. Check your URL and try again.");
+      }
     } finally {
       setIsCreating(false);
     }
@@ -137,7 +153,14 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
             onSubmit={handleQuickCreate}
             onOpenAdvanced={() => setCreateOpen(true)}
           />
-          <DashboardActivityCard />
+
+          {/* NEW: Workspace snapshot strip (replaces DashboardActivityCard) */}
+          <DashboardActivityStrip
+            clicks={totalClicks}
+            scans={0}          // TODO: wire real scan count
+            linksCreated={activeLinks}
+            codesCreated={0}   // TODO: wire real Kompi Code count
+          />
         </section>
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1.6fr),minmax(0,1.2fr)]">
@@ -152,6 +175,12 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
       </div>
 
       <CreateModal open={createOpen} onOpenChange={setCreateOpen} />
+      <PlanLimitModal
+        open={limitOpen}
+        onOpenChange={setLimitOpen}
+        limit={20}
+        featureLabel="links"
+      />
     </>
   );
 }

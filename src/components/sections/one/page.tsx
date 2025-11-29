@@ -2,6 +2,7 @@
 
 import type { ReactNode, CSSProperties } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 /**
@@ -10,6 +11,8 @@ import { motion } from "framer-motion";
  * Background: handled via CSS (e.g. .wf-section-one { background: var(--color-bg-strong); })
  * You can map that token to #14140f in your theme/CSS.
  */
+
+const cardEasing: [number, number, number, number] = [0.22, 0.61, 0.36, 1];
 
 export default function SectionOne() {
   return (
@@ -21,7 +24,7 @@ export default function SectionOne() {
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.7, ease: [0.22, 0.61, 0.36, 1] }}
+          transition={{ duration: 0.7, ease: cardEasing }}
         >
           <Heading as="h2" align="center" className="wf-section-one-heading">
             It&apos;s not magic.
@@ -42,7 +45,7 @@ export default function SectionOne() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{
             duration: 0.8,
-            ease: [0.22, 0.61, 0.36, 1],
+            ease: cardEasing,
             staggerChildren: 0.12,
           }}
         >
@@ -96,7 +99,7 @@ function FeatureCard({
     <motion.article
       className="wf-section-one-card"
       whileHover={{ y: -6 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      transition={{ duration: 0.2, ease: cardEasing }}
     >
       <div className="wf-section-one-card-inner">
         <p className="wf-eyebrow wf-section-one-card-eyebrow">{eyebrow}</p>
@@ -106,32 +109,19 @@ function FeatureCard({
           <p className="wf-section-one-card-copy">{body}</p>
         </div>
 
-        {/* Placeholder SVG illustration – swap with real artwork later */}
+        {/* Illustration image – placeholder for now */}
         <div className="wf-section-one-card-illustration" aria-hidden="true">
-          <svg
-            viewBox="0 0 120 72"
-            className="wf-section-one-card-svg"
-            role="presentation"
-          >
-            <rect
-              x="4"
-              y="8"
-              width="80"
-              height="40"
-              rx="10"
-              className="wf-section-one-card-svg-block"
-            />
-            <circle
-              cx="92"
-              cy="20"
-              r="10"
-              className="wf-section-one-card-svg-accent"
-            />
-            <path
-              d="M12 56 H108"
-              className="wf-section-one-card-svg-line"
-            />
-          </svg>
+          <div className="relative w-full overflow-hidden rounded-[18px]">
+            <div className="relative aspect-[5/3] w-full">
+              <Image
+                src="/kompi-analytics.png" // placeholder from /public, swap per card later
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 260px, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="wf-section-one-card-link">

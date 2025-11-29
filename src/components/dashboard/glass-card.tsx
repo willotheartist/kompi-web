@@ -2,14 +2,16 @@
 "use client";
 
 import { motion } from "framer-motion";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface GlassCardProps {
   className?: string;
-  children: React.ReactNode;
+  children: ReactNode;
+  style?: CSSProperties;
 }
 
-export function GlassCard({ className, children }: GlassCardProps) {
+export function GlassCard({ className, children, style }: GlassCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -19,6 +21,8 @@ export function GlassCard({ className, children }: GlassCardProps) {
       style={{
         backgroundColor: "var(--color-surface)",
         border: "1px solid var(--color-border)",
+        // allow overrides from callers
+        ...style,
       }}
     >
       {children}

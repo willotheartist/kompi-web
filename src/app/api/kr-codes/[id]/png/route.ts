@@ -8,6 +8,16 @@ type RouteContext = {
   params: { id: string } | Promise<{ id: string }>;
 };
 
+type KrCodeHelperResult = {
+  qrUrl: string;
+  style?: {
+    fg?: string;
+    bg?: string;
+    size?: number;
+    margin?: number;
+  } | null;
+};
+
 async function resolveParams(params: RouteContext["params"]) {
   return params instanceof Promise ? await params : params;
 }
@@ -21,7 +31,7 @@ export async function GET(req: Request, ctx: RouteContext) {
     }
 
     // Whatever qr-helpers returns, we grab qrUrl and (optionally) style
-    const result = await getKrCodeLinkAndUrl(id, req) as any;
+    const result = (await getKrCodeLinkAndUrl(id, req)) as KrCodeHelperResult;
     const qrUrl: string = result.qrUrl;
 
     // style might be missing (old helper) – so we default safely

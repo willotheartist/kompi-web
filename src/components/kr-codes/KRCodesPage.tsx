@@ -33,6 +33,8 @@ import {
   Calendar,
   MapPin,
   Layers,
+  QrCode,
+  Target,
 } from "lucide-react";
 
 const FormSchema = z.object({
@@ -154,7 +156,7 @@ const CONTENT_TYPES = [
     description: "Let people join a Wi-Fi network without typing passwords.",
     icon: Wifi,
     utmSupported: false,
-    disabled: true, // nice teaser, but not active yet
+    disabled: true, // teaser
   },
   {
     id: "event",
@@ -308,6 +310,7 @@ export default function KRCodesPage() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [qrLimitError, setQrLimitError] = useState<string | null>(null);
 
   const [style, setStyle] = useState<StyleState>(DEFAULT_STYLE);
   const [contentType, setContentType] =
@@ -315,6 +318,7 @@ export default function KRCodesPage() {
   const [hoverType, setHoverType] =
     useState<ContentTypeId | null>(null);
   const [showUtms, setShowUtms] = useState(false);
+  const [designerOpen, setDesignerOpen] = useState(true);
 
   const [uploadingLogoFor, setUploadingLogoFor] =
     useState<string | null>(null);
@@ -324,7 +328,11 @@ export default function KRCodesPage() {
   const [deleteIntentFor, setDeleteIntentFor] =
     useState<string | null>(null);
 
+  const [createdPreview, setCreatedPreview] =
+    useState<KRCode | null>(null);
+
   const form = useForm<FormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(FormSchema as any),
     defaultValues: {
       title: "",
@@ -544,6 +552,7 @@ export default function KRCodesPage() {
     setCreating(true);
     setError(null);
     setFormError(null);
+    setQrLimitError(null);
 
     const destinationForCode =
       buildDestinationForSubmit(values);
@@ -556,12 +565,16 @@ export default function KRCodesPage() {
       return;
     }
 
+    const utmSupportedForPayload = !!CONTENT_TYPES.find(
+      (t) => t.id === contentType && t.utmSupported,
+    );
+
     const payload = {
       title: values.title || undefined,
       destination: destinationForCode,
       createShortLink: true,
       type: contentType,
-      utm: utmSupported
+      utm: utmSupportedForPayload
         ? {
             source: values.utm_source || undefined,
             medium: values.utm_medium || undefined,
@@ -590,6 +603,16 @@ export default function KRCodesPage() {
         credentials: "include",
       });
 
+      if (res.status === 402) {
+        const textMessage = await res.text();
+        setQrLimitError(
+          textMessage ||
+            "Free plan limit reached: you’ve created the maximum number of Kompi Codes for this workspace.",
+        );
+        setCreating(false);
+        return;
+      }
+
       if (!res.ok) {
         const text = await res.text();
         throw new Error(
@@ -603,6 +626,7 @@ export default function KRCodesPage() {
         totalClicks: 0,
       };
       setCodes((prev) => [createdWithClicks, ...prev]);
+      setCreatedPreview(createdWithClicks);
       form.reset();
       setStyle(DEFAULT_STYLE);
       setContentType("url");
@@ -704,48 +728,90 @@ export default function KRCodesPage() {
   return (
     <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
       <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-6 md:gap-8 md:pb-12">
-        {/* Above the fold: page header */}
-        <header className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div className="space-y-1">
-            <h1 className="text-base font-semibold tracking-tight text-[color:var(--color-text)] md:text-lg">
-              Kompi Codes (QR)
+        {/* Page header – more luxe */}
+        <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-3">
+            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-4xl">
+              Create a new{" "}
+              <span className="font-serif italic">Kompi Code</span>
             </h1>
-            <p className="max-w-xl text-xs text-[color:var(--color-subtle)] md:text-sm">
-              Create branded QR codes that route through Kompi for
-              full analytics. Choose the action, style it to match
-              your brand, and download in print-ready formats.
+            <p className="max-w-xl text-base text-[color:var(--color-subtle)]">
+              One QR code for menus, posters, stickers and more. Pick an
+              action, style it to your brand, and download in print-ready
+              formats.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-xs">
-            <div className="flex flex-col">
-              <span className="text-[color:var(--color-subtle)]">
-                Codes
-              </span>
-              <span className="text-base font-semibold text-[color:var(--color-text)]">
-                {codes.length}
-              </span>
+          <div className="inline-flex min-w-[240px] flex-col gap-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 text-right shadow-sm">
+            <span className="inline-flex h-1.5 w-1.5 self-end rounded-full bg-[var(--color-accent)]" />
+            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[color:var(--color-subtle)]">
+              Workspace activity
+            </p>
+            <div className="mt-1 flex items-baseline justify-end gap-4 text-[color:var(--color-text)]">
+              <div className="text-left">
+                <p className="text-[11px] text-[color:var(--color-subtle)]">
+                  Codes
+                </p>
+                <p className="text-lg font-semibold leading-tight">
+                  {codes.length}
+                </p>
+              </div>
+              <span className="h-7 w-px bg-[var(--color-border)]" />
+              <div className="text-left">
+                <p className="text-[11px] text-[color:var(--color-subtle)]">
+                  Total scans
+                </p>
+                <p className="text-lg font-semibold leading-tight">
+                  {totalScans}
+                </p>
+              </div>
             </div>
-            <div className="h-8 w-px bg-[var(--color-border)]" />
-            <div className="flex flex-col">
-              <span className="text-[color:var(--color-subtle)]">
-                Total scans
-              </span>
-              <span className="text-base font-semibold text-[color:var(--color-text)]">
-                {totalScans}
-              </span>
-            </div>
+            <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+              All scans route through Kompi for full analytics.
+            </p>
           </div>
         </header>
 
+        {qrLimitError && (
+          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-xs md:flex-row md:items-center md:justify-between md:text-sm">
+            <div>
+              <p className="font-medium text-[color:var(--color-text)]">
+                {qrLimitError}
+              </p>
+              <p className="mt-1 text-[color:var(--color-subtle)]">
+                Upgrade to the Creator plan to unlock more Kompi Codes in
+                this workspace.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                asChild
+                className="rounded-full px-4 py-1.5 text-xs font-semibold"
+              >
+                <Link href="/dashboard/settings/billing">
+                  Upgrade to Creator
+                </Link>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full px-4 py-1.5 text-xs"
+                onClick={() => setQrLimitError(null)}
+              >
+                Not now
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Row 1: create + preview */}
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1.05fr)] items-start">
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1.05fr)]">
           {/* LEFT: create + design */}
           <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
             <CardHeader className="border-b border-[var(--color-border)] pb-4">
               <CardTitle className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
-                <span>Create &amp; customize</span>
+                <span>Code details</span>
                 <span className="text-[11px] font-normal text-[color:var(--color-subtle)]">
-                  1. Choose type • 2. Configure • 3. Design
+                  1. Choose type • 2. Set destination • 3. Design
                 </span>
               </CardTitle>
             </CardHeader>
@@ -755,8 +821,8 @@ export default function KRCodesPage() {
                 {activeType.description}
               </div>
 
-              {/* Type pills */}
-              <div className="flex flex-wrap gap-2">
+              {/* Type selector – more "tile" like */}
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {CONTENT_TYPES.map((t) => {
                   const isActive = t.id === contentType;
                   const Icon = t.icon;
@@ -777,16 +843,25 @@ export default function KRCodesPage() {
                         !disabled && setHoverType(null)
                       }
                       className={[
-                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] transition",
+                        "flex items-center gap-2 rounded-2xl border px-3 py-2 text-left text-[11px] transition",
                         disabled
                           ? "cursor-not-allowed border-dashed border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)]/60"
                           : isActive
-                          ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-black shadow-sm"
+                          ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[color:var(--color-text)] shadow-sm"
                           : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
                       ].join(" ")}
                     >
-                      <Icon className="h-3.5 w-3.5" />
-                      <span>{t.label}</span>
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-[var(--color-surface)]">
+                        <Icon className="h-3.5 w-3.5" />
+                      </span>
+                      <div className="flex-1 space-y-0.5">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.12em]">
+                          {t.label}
+                        </div>
+                        <div className="line-clamp-2 text-[10px] text-[color:var(--color-subtle)]">
+                          {t.description}
+                        </div>
+                      </div>
                       {disabled && (
                         <span className="ml-0.5 rounded-full bg-[var(--color-bg)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em]">
                           Soon
@@ -802,9 +877,13 @@ export default function KRCodesPage() {
                 className="space-y-4"
                 onSubmit={form.handleSubmit(onSubmit)}
               >
+                {/* Title */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[color:var(--color-text)]">
-                    Title (optional)
+                    Title{" "}
+                    <span className="font-normal text-[color:var(--color-subtle)]">
+                      (optional)
+                    </span>
                   </label>
                   <Input
                     className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
@@ -949,80 +1028,102 @@ export default function KRCodesPage() {
                   );
                 })()}
 
-                {/* UTM toggle – only for URL-like types */}
+                {/* Advanced tracking – UTM card */}
                 {utmSupported && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setShowUtms((s) => !s)}
-                      className="text-[11px] font-medium text-[color:var(--color-accent)] hover:underline"
-                    >
-                      {showUtms
-                        ? "Hide UTM tracking"
-                        : "Add UTM tracking (optional)"}
-                    </button>
-
-                    {showUtms && (
-                      <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-[color:var(--color-text)]">
-                              UTM Source
-                            </label>
-                            <Input
-                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                              placeholder="poster"
-                              {...form.register("utm_source")}
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-[color:var(--color-text)]">
-                              UTM Medium
-                            </label>
-                            <Input
-                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                              placeholder="qr"
-                              {...form.register("utm_medium")}
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-[color:var(--color-text)]">
-                              UTM Campaign
-                            </label>
-                            <Input
-                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                              placeholder="spring_launch"
-                              {...form.register("utm_campaign")}
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-[color:var(--color-text)]">
-                              UTM Term
-                            </label>
-                            <Input
-                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                              placeholder="headline_a"
-                              {...form.register("utm_term")}
-                            />
-                          </div>
+                  <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4">
+                    <div className="mb-3 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
+                          <Target className="h-4 w-4 text-[color:var(--color-text)]" />
+                        </span>
+                        <div className="space-y-0.5">
+                          <p className="text-sm font-medium text-[color:var(--color-text)]">
+                            Advanced tracking (UTM)
+                          </p>
+                          <p className="text-xs text-[color:var(--color-subtle)]">
+                            Append campaign parameters so you know which
+                            posters, menus or campaigns drive scans.
+                          </p>
                         </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowUtms((prev) => !prev)}
+                        className={
+                          "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-medium transition " +
+                          (showUtms
+                            ? "bg-[var(--color-accent-soft)] text-[color:var(--color-text)]"
+                            : "border border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-text)]")
+                        }
+                      >
+                        {showUtms ? "UTM enabled" : "Enable UTM"}
+                      </button>
+                    </div>
 
+                    {showUtms ? (
+                      <div className="grid gap-3 md:grid-cols-2">
                         <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-[color:var(--color-text)]">
-                            UTM Content (optional)
+                          <label className="text-xs text-[color:var(--color-text)]">
+                            UTM source
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="poster, newsletter"
+                            {...form.register("utm_source")}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-[color:var(--color-text)]">
+                            UTM medium
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="qr, print"
+                            {...form.register("utm_medium")}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-[color:var(--color-text)]">
+                            UTM campaign
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="spring_launch"
+                            {...form.register("utm_campaign")}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-[color:var(--color-text)]">
+                            UTM term (optional)
+                          </label>
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            placeholder="headline_a"
+                            {...form.register("utm_term")}
+                          />
+                        </div>
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-xs text-[color:var(--color-text)]">
+                            UTM content (optional)
                           </label>
                           <Textarea
                             rows={2}
                             className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                            placeholder="Any extra labels for this code…"
+                            placeholder="banner_variant_a"
                             {...form.register("utm_content")}
                           />
                         </div>
                       </div>
+                    ) : (
+                      <p className="text-[11px] text-[color:var(--color-subtle)]">
+                        Turn this on to track exactly which offline touchpoints
+                        are working.
+                      </p>
                     )}
-                  </>
+                  </div>
                 )}
 
+                {/* Form footer */}
                 <div className="flex flex-col gap-4 border-t border-[var(--color-border)] pt-3 md:flex-row md:items-center md:justify-between">
                   <div className="text-xs text-[color:var(--color-subtle)]">
                     <div>Destination preview:</div>
@@ -1034,9 +1135,9 @@ export default function KRCodesPage() {
                   <Button
                     type="submit"
                     disabled={creating}
-                    className="md:min-w-[180px] rounded-full bg-[var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] hover:opacity-90 disabled:opacity-70"
+                    className="md:min-w-[180px] rounded-full bg-[var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] shadow-sm hover:shadow-md disabled:opacity-70"
                   >
-                    {creating ? "Creating…" : "Create KR Code"}
+                    {creating ? "Creating…" : "Create Kompi Code"}
                   </Button>
                 </div>
 
@@ -1050,412 +1151,457 @@ export default function KRCodesPage() {
               {/* Divider between form and design controls */}
               <div className="h-px w-full bg-[var(--color-border)]" />
 
-              {/* Design controls */}
-              <div className="space-y-4">
-                {/* Presets */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs font-medium text-[color:var(--color-text)]">
-                      Color presets
-                    </label>
-                    <span className="text-[10px] text-[color:var(--color-subtle)]">
-                      Click to start from a theme, then tweak below.
+              {/* Design & frame – collapsible */}
+              <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDesignerOpen((prev) => !prev)
+                  }
+                  className="flex w-full items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3 text-left">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
+                      <QrCode className="h-4 w-4 text-[color:var(--color-text)]" />
                     </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {COLOR_PRESETS.map((preset) => (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() =>
-                          setStyle((s) => ({
-                            ...s,
-                            fg: preset.fg,
-                            bg: preset.bg,
-                          }))
-                        }
-                        className="flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-[11px] text-[color:var(--color-text)] hover:border-[var(--color-accent)]"
-                      >
-                        <span
-                          className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-border)]"
-                          style={{ background: preset.bg }}
-                        >
-                          <span
-                            className="h-2 w-2 rounded-[5px]"
-                            style={{ background: preset.fg }}
-                          />
-                        </span>
-                        <span>{preset.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Foreground / background pickers */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-[color:var(--color-text)]">
-                      Foreground (dots)
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
-                        value={style.fg}
-                        onChange={(e) =>
-                          setStyle((s) => ({
-                            ...s,
-                            fg: e.target.value,
-                          }))
-                        }
-                      />
-                      <Input
-                        className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
-                        value={style.fg}
-                        onChange={(e) =>
-                          setStyle((s) => ({
-                            ...s,
-                            fg: e.target.value,
-                          }))
-                        }
-                      />
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium text-[color:var(--color-text)]">
+                        Design &amp; frame
+                      </p>
+                      <p className="text-xs text-[color:var(--color-subtle)]">
+                        Color presets, error correction and frames – keep
+                        everything on-brand.
+                      </p>
                     </div>
                   </div>
+                  <span
+                    className={
+                      "inline-flex h-6 w-11 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-0.5 transition-all " +
+                      (designerOpen
+                        ? "justify-end"
+                        : "justify-start")
+                    }
+                  >
+                    <span className="h-4 w-4 rounded-full bg-[var(--color-accent)]" />
+                  </span>
+                </button>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-[color:var(--color-text)]">
-                      Background
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
-                        value={style.bg}
-                        onChange={(e) =>
-                          setStyle((s) => ({
-                            ...s,
-                            bg: e.target.value,
-                          }))
-                        }
-                      />
-                      <Input
-                        className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
-                        value={style.bg}
-                        onChange={(e) =>
-                          setStyle((s) => ({
-                            ...s,
-                            bg: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-[color:var(--color-text)]">
-                      Size ({style.size}px)
-                    </label>
-                    <input
-                      type="range"
-                      min={128}
-                      max={320}
-                      value={style.size}
-                      onChange={(e) =>
-                        setStyle((s) => ({
-                          ...s,
-                          size: Number(e.target.value),
-                        }))
-                      }
-                      className="w-full accent-[var(--color-accent)]"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-[color:var(--color-text)]">
-                      Margin ({style.margin})
-                    </label>
-                    <input
-                      type="range"
-                      min={0}
-                      max={8}
-                      value={style.margin}
-                      onChange={(e) =>
-                        setStyle((s) => ({
-                          ...s,
-                          margin: Number(e.target.value),
-                        }))
-                      }
-                      className="w-full accent-[var(--color-accent)]"
-                    />
-                  </div>
-                </div>
-
-                {/* Error correction – human-friendly */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[color:var(--color-text)]">
-                    Error correction
-                  </label>
-                  <div className="grid gap-2 text-[11px] md:grid-cols-4">
-                    {(
-                      [
-                        { level: "L", name: "Light" },
-                        { level: "M", name: "Recommended" },
-                        { level: "Q", name: "High" },
-                        { level: "H", name: "Max" },
-                      ] as const
-                    ).map((opt) => (
-                      <button
-                        key={opt.level}
-                        type="button"
-                        className={[
-                          "flex flex-col rounded-2xl border px-2.5 py-2 text-left transition",
-                          style.ecLevel === opt.level
-                            ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)]"
-                            : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
-                        ].join(" ")}
-                        onClick={() =>
-                          setStyle((s) => ({
-                            ...s,
-                            ecLevel:
-                              opt.level as StyleState["ecLevel"],
-                          }))
-                        }
-                      >
-                        <span className="text-[11px] font-semibold">
-                          {errorCorrectionLabel(
-                            opt.level as StyleState["ecLevel"],
-                          )}
-                        </span>
-                        <span className="mt-0.5 text-[10px] leading-snug">
-                          {errorCorrectionDescription(
-                            opt.level as StyleState["ecLevel"],
-                          )}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Frame controls – upgraded designer */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs font-medium text-[color:var(--color-text)]">
-                      Frame style
-                    </label>
-                    <span className="text-[10px] text-[color:var(--color-subtle)]">
-                      Make your code feel like a sticker on posters, tables, or packaging.
-                    </span>
-                  </div>
-
-                  {/* Frame variants as big tiles */}
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    {[
-                      {
-                        id: "none",
-                        label: "Minimal",
-                        description: "Just the code, no frame.",
-                      },
-                      {
-                        id: "label-bottom",
-                        label: "Sticker",
-                        description: "Rounded sticker with label under the code.",
-                      },
-                      {
-                        id: "label-top",
-                        label: "Banner",
-                        description: "Headline above the code – great for posters.",
-                      },
-                    ].map((f) => {
-                      const isActive =
-                        style.frameVariant ===
-                        (f.id as StyleState["frameVariant"]);
-
-                      return (
-                        <button
-                          key={f.id}
-                          type="button"
-                          onClick={() =>
-                            setStyle((s) => ({
-                              ...s,
-                              frameVariant:
-                                f.id as StyleState["frameVariant"],
-                            }))
-                          }
-                          className={[
-                            "flex flex-col gap-1 rounded-2xl border px-3 py-2 text-left text-[11px] transition",
-                            isActive
-                              ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)] shadow-sm"
-                              : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
-                          ].join(" ")}
-                        >
-                          {/* Tiny frame preview */}
-                          <div className="flex items-center justify-center">
-                            <div className="flex flex-col items-center gap-1 rounded-xl bg-[var(--color-bg)] px-3 py-2">
-                              {f.id === "label-top" && (
-                                <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
-                              )}
-
-                              <div className="h-7 w-7 rounded-[7px] border border-[var(--color-border)] bg-[var(--color-surface)]" />
-
-                              {f.id === "label-bottom" && (
-                                <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="mt-1">
-                            <div className="font-semibold">{f.label}</div>
-                            <div className="text-[10px] leading-snug">
-                              {f.description}
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Label controls only when frame is active */}
-                  {style.frameVariant !== "none" && (
+                {designerOpen && (
+                  <div className="mt-4 space-y-4">
+                    {/* Presets */}
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2 mt-2">
+                      <div className="flex items-center justify-between gap-2">
                         <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          Frame label
+                          Color presets
                         </label>
                         <span className="text-[10px] text-[color:var(--color-subtle)]">
-                          Short, action-oriented copy works best.
+                          Start from a theme, then tweak.
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {COLOR_PRESETS.map((preset) => (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() =>
+                              setStyle((s) => ({
+                                ...s,
+                                fg: preset.fg,
+                                bg: preset.bg,
+                              }))
+                            }
+                            className="flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-[11px] text-[color:var(--color-text)] hover:border-[var(--color-accent)]"
+                          >
+                            <span
+                              className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-border)]"
+                              style={{ background: preset.bg }}
+                            >
+                              <span
+                                className="h-2 w-2 rounded-[5px]"
+                                style={{ background: preset.fg }}
+                              />
+                            </span>
+                            <span>{preset.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Foreground / background pickers */}
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Foreground (dots)
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+                            value={style.fg}
+                            onChange={(e) =>
+                              setStyle((s) => ({
+                                ...s,
+                                fg: e.target.value,
+                              }))
+                            }
+                          />
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
+                            value={style.fg}
+                            onChange={(e) =>
+                              setStyle((s) => ({
+                                ...s,
+                                fg: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Background
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+                            value={style.bg}
+                            onChange={(e) =>
+                              setStyle((s) => ({
+                                ...s,
+                                bg: e.target.value,
+                              }))
+                            }
+                          />
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
+                            value={style.bg}
+                            onChange={(e) =>
+                              setStyle((s) => ({
+                                ...s,
+                                bg: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Size & margin */}
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Size ({style.size}px)
+                        </label>
+                        <input
+                          type="range"
+                          min={128}
+                          max={320}
+                          value={style.size}
+                          onChange={(e) =>
+                            setStyle((s) => ({
+                              ...s,
+                              size: Number(e.target.value),
+                            }))
+                          }
+                          className="w-full accent-[var(--color-accent)]"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Margin ({style.margin})
+                        </label>
+                        <input
+                          type="range"
+                          min={0}
+                          max={8}
+                          value={style.margin}
+                          onChange={(e) =>
+                            setStyle((s) => ({
+                              ...s,
+                              margin: Number(e.target.value),
+                            }))
+                          }
+                          className="w-full accent-[var(--color-accent)]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Error correction */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-[color:var(--color-text)]">
+                        Error correction
+                      </label>
+                      <div className="grid gap-2 text-[11px] md:grid-cols-4">
+                        {(
+                          [
+                            { level: "L", name: "Light" },
+                            { level: "M", name: "Recommended" },
+                            { level: "Q", name: "High" },
+                            { level: "H", name: "Max" },
+                          ] as const
+                        ).map((opt) => (
+                          <button
+                            key={opt.level}
+                            type="button"
+                            className={[
+                              "flex flex-col rounded-2xl border px-2.5 py-2 text-left transition",
+                              style.ecLevel === opt.level
+                                ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)]"
+                                : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
+                            ].join(" ")}
+                            onClick={() =>
+                              setStyle((s) => ({
+                                ...s,
+                                ecLevel:
+                                  opt.level as StyleState["ecLevel"],
+                              }))
+                            }
+                          >
+                            <span className="text-[11px] font-semibold">
+                              {errorCorrectionLabel(
+                                opt.level as StyleState["ecLevel"],
+                              )}
+                            </span>
+                            <span className="mt-0.5 text-[10px] leading-snug">
+                              {errorCorrectionDescription(
+                                opt.level as StyleState["ecLevel"],
+                              )}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Frame controls */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Frame style
+                        </label>
+                        <span className="text-[10px] text-[color:var(--color-subtle)]">
+                          Make your code feel like a sticker on posters or
+                          tables.
                         </span>
                       </div>
 
-                      <Input
-                        className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                        value={style.frameLabel}
-                        onChange={(e) =>
-                          setStyle((s) => ({
-                            ...s,
-                            frameLabel: e.target.value,
-                          }))
-                        }
-                        placeholder="SCAN ME"
-                      />
+                      {/* Frame variants as big tiles */}
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        {[
+                          {
+                            id: "none",
+                            label: "Minimal",
+                            description: "Just the code, no frame.",
+                          },
+                          {
+                            id: "label-bottom",
+                            label: "Sticker",
+                            description:
+                              "Rounded sticker with label under the code.",
+                          },
+                          {
+                            id: "label-top",
+                            label: "Banner",
+                            description:
+                              "Headline above the code – great for posters.",
+                          },
+                        ].map((f) => {
+                          const isActive =
+                            style.frameVariant ===
+                            (f.id as StyleState["frameVariant"]);
 
-                      {/* Quick presets */}
-                      <div className="flex flex-wrap gap-1.5">
-                        {["SCAN ME", "OPEN MENU", "OPEN SITE", "FOLLOW US"].map(
-                          (label) => (
+                          return (
                             <button
-                              key={label}
+                              key={f.id}
                               type="button"
                               onClick={() =>
                                 setStyle((s) => ({
                                   ...s,
-                                  frameLabel: label,
+                                  frameVariant:
+                                    f.id as StyleState["frameVariant"],
                                 }))
                               }
-                              className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1 text-[10px] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]"
+                              className={[
+                                "flex flex-col gap-1 rounded-2xl border px-3 py-2 text-left text-[11px] transition",
+                                isActive
+                                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)] shadow-sm"
+                                  : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
+                              ].join(" ")}
                             >
-                              {label}
-                            </button>
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                              {/* Tiny frame preview */}
+                              <div className="flex items-center justify-center">
+                                <div className="flex flex-col items-center gap-1 rounded-xl bg-[var(--color-bg)] px-3 py-2">
+                                  {f.id === "label-top" && (
+                                    <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
+                                  )}
 
-                <p className="text-[11px] text-[color:var(--color-subtle)]">
-                  Frames, logo upload, and advanced shapes will plug
-                  into this same design system later – without changing
-                  how you create codes.
-                </p>
+                                  <div className="h-7 w-7 rounded-[7px] border border-[var(--color-border)] bg-[var(--color-surface)]" />
+
+                                  {f.id === "label-bottom" && (
+                                    <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="mt-1">
+                                <div className="font-semibold">
+                                  {f.label}
+                                </div>
+                                <div className="text-[10px] leading-snug">
+                                  {f.description}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Label controls only when frame is active */}
+                      {style.frameVariant !== "none" && (
+                        <div className="space-y-2">
+                          <div className="mt-2 flex items-center justify-between gap-2">
+                            <label className="text-xs font-medium text-[color:var(--color-text)]">
+                              Frame label
+                            </label>
+                            <span className="text-[10px] text-[color:var(--color-subtle)]">
+                              Short, action-oriented copy works best.
+                            </span>
+                          </div>
+
+                          <Input
+                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            value={style.frameLabel}
+                            onChange={(e) =>
+                              setStyle((s) => ({
+                                ...s,
+                                frameLabel: e.target.value,
+                              }))
+                            }
+                            placeholder="SCAN ME"
+                          />
+
+                          {/* Quick presets */}
+                          <div className="flex flex-wrap gap-1.5">
+                            {[
+                              "SCAN ME",
+                              "OPEN MENU",
+                              "OPEN SITE",
+                              "FOLLOW US",
+                            ].map((label) => (
+                              <button
+                                key={label}
+                                type="button"
+                                onClick={() =>
+                                  setStyle((s) => ({
+                                    ...s,
+                                    frameLabel: label,
+                                  }))
+                                }
+                                className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1 text-[10px] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]"
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-[11px] text-[color:var(--color-subtle)]">
+                      Logo upload and advanced shapes will plug into this same
+                      designer later – no new workflow to learn.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
 
           {/* RIGHT: preview only (sticky) */}
           <div className="sticky top-24">
-          <Card className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
-            <CardHeader className="border-b border-[var(--color-border)] pb-4">
-              <CardTitle className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
-                <span>Live Preview</span>
-                <span className="text-[11px] font-normal text-[color:var(--color-subtle)]">
-                  Updates as you type
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-6 pt-4">
-              <div className="flex flex-col items-center justify-center gap-4">
-                {/* Frame + QR */}
-                <div
-                  className={[
-                    "inline-flex flex-col items-center justify-center rounded-3xl",
-                    style.frameVariant === "none"
-                      ? "border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-                      : "",
-                    style.frameVariant === "label-bottom"
-                      ? "border border-[var(--color-accent)] bg-[var(--color-surface)] px-5 py-4 shadow-sm"
-                      : "",
-                    style.frameVariant === "label-top"
-                      ? "border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-5 py-4"
-                      : "",
-                  ].join(" ")}
-                >
-                  {style.frameVariant === "label-top" && (
-                    <div className="mb-2 inline-flex items-center rounded-full bg-[var(--color-accent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-black shadow-sm">
-                      {style.frameLabel || "SCAN ME"}
-                    </div>
-                  )}
-
+            <Card className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+              <CardHeader className="border-b border-[var(--color-border)] pb-4">
+                <CardTitle className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
+                  <span>Live Preview</span>
+                  <span className="text-[11px] font-normal text-[color:var(--color-subtle)]">
+                    Updates as you type
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-6 pt-4">
+                <div className="flex flex-col items-center justify-center gap-4">
+                  {/* Frame + QR */}
                   <div
-                    className="rounded-2xl p-3"
-                    style={{ backgroundColor: style.bg }}
+                    className={[
+                      "inline-flex flex-col items-center justify-center rounded-3xl",
+                      style.frameVariant === "none"
+                        ? "border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                        : "",
+                      style.frameVariant === "label-bottom"
+                        ? "border border-[var(--color-accent)] bg-[var(--color-surface)] px-5 py-4 shadow-sm"
+                        : "",
+                      style.frameVariant === "label-top"
+                        ? "border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-5 py-4"
+                        : "",
+                    ].join(" ")}
                   >
-                    <div className="relative inline-block">
-                      <QRCode
-                        value={urlPreview || "https://kompi.app"}
-                        size={style.size}
-                        fgColor={style.fg}
-                        bgColor={style.bg}
-                        level={
-                          style.logoUrl ? "H" : style.ecLevel
-                        }
-                      />
-                      {style.logoUrl && (
-                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                          <div
-                            className="flex items-center justify-center rounded-md bg-white/90"
-                            style={{
-                              width: style.size * 0.22,
-                              height: style.size * 0.22,
-                            }}
-                          >
-                            <img
-                              src={style.logoUrl}
-                              alt="Logo"
-                              className="max-h-full max-w-full object-contain"
-                            />
+                    {style.frameVariant === "label-top" && (
+                      <div className="mb-2 inline-flex items-center rounded-full bg-[var(--color-accent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-black shadow-sm">
+                        {style.frameLabel || "SCAN ME"}
+                      </div>
+                    )}
+
+                    <div
+                      className="rounded-2xl p-3"
+                      style={{ backgroundColor: style.bg }}
+                    >
+                      <div className="relative inline-block">
+                        <QRCode
+                          value={urlPreview || "https://kompi.app"}
+                          size={style.size}
+                          fgColor={style.fg}
+                          bgColor={style.bg}
+                          level={
+                            style.logoUrl ? "H" : style.ecLevel
+                          }
+                        />
+                        {style.logoUrl && (
+                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                            <div
+                              className="flex items-center justify-center rounded-md bg-white/90"
+                              style={{
+                                width: style.size * 0.22,
+                                height: style.size * 0.22,
+                              }}
+                            >
+                              <img
+                                src={style.logoUrl}
+                                alt="Logo"
+                                className="max-h-full max-w-full object-contain"
+                              />
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
+
+                    {style.frameVariant === "label-bottom" && (
+                      <div className="mt-2 inline-flex items-center rounded-full bg-[var(--color-accent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-black shadow-sm">
+                        {style.frameLabel || "SCAN ME"}
+                      </div>
+                    )}
                   </div>
 
-                  {style.frameVariant === "label-bottom" && (
-                    <div className="mt-2 inline-flex items-center rounded-full bg-[var(--color-accent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-black shadow-sm">
-                      {style.frameLabel || "SCAN ME"}
-                    </div>
-                  )}
+                  <p className="max-w-xs text-center text-xs text-[color:var(--color-subtle)]">
+                    This is a preview of your Kompi Code. The final printed
+                    code will use your workspace’s domain and redirect
+                    through Kompi for full analytics.
+                  </p>
                 </div>
-
-                <p className="max-w-xs text-center text-xs text-[color:var(--color-subtle)]">
-                  This is a preview of your KR Code. The final printed
-                  code will use your workspace’s domain and redirect
-                  through Kompi for full analytics.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
@@ -1464,7 +1610,7 @@ export default function KRCodesPage() {
           <CardHeader className="flex flex-row items-center justify-between gap-2 border-b border-[var(--color-border)] pb-4">
             <div>
               <CardTitle className="text-sm font-semibold text-[color:var(--color-text)]">
-                Your KR Codes
+                Your Kompi Codes
               </CardTitle>
               <p className="mt-1 text-xs text-[color:var(--color-subtle)]">
                 {workspace
@@ -1491,7 +1637,7 @@ export default function KRCodesPage() {
               </div>
             ) : codes.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] p-6 text-center text-sm text-[color:var(--color-subtle)]">
-                No KR Codes yet. Create your first one above to
+                No Kompi Codes yet. Create your first one above to
                 start tracking scans.
               </div>
             ) : (
@@ -1578,7 +1724,7 @@ export default function KRCodesPage() {
                         <div className="space-y-1">
                           <div className="text-sm font-medium text-[color:var(--color-text)]">
                             {code.title ||
-                              "Untitled KR Code"}
+                              "Untitled Kompi Code"}
                           </div>
                           <div className="break-all text-[11px] text-[color:var(--color-subtle)]">
                             {code.destination}
@@ -1611,7 +1757,7 @@ export default function KRCodesPage() {
                           <button
                             type="button"
                             onClick={() => handleEdit(code)}
-                            aria-label="Edit KR Code"
+                            aria-label="Edit Kompi Code"
                             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
                           >
                             <Pencil className="h-3.5 w-3.5" />
@@ -1662,15 +1808,14 @@ export default function KRCodesPage() {
                                         c.id === code.id
                                           ? {
                                               ...c,
-                                              style:
-                                                {
-                                                  ...(c.style ??
-                                                    {}),
-                                                  logoUrl:
-                                                    json.logoUrl,
-                                                  ecLevel:
-                                                    "H",
-                                                },
+                                              style: {
+                                                ...(c.style ??
+                                                  {}),
+                                                logoUrl:
+                                                  json.logoUrl,
+                                                ecLevel:
+                                                  "H",
+                                              },
                                             }
                                           : c,
                                       ),
@@ -1714,7 +1859,7 @@ export default function KRCodesPage() {
                                     : code.id,
                               )
                             }
-                            aria-label="Delete KR Code"
+                            aria-label="Delete Kompi Code"
                             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-red-500 hover:bg-[var(--color-bg)]"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -1805,7 +1950,7 @@ export default function KRCodesPage() {
                                 This action can’t be
                                 undone and will stop
                                 tracking scans from
-                                this KR Code.
+                                this Kompi Code.
                               </p>
                               <div className="mt-3 flex items-center gap-2">
                                 <button
@@ -1841,6 +1986,127 @@ export default function KRCodesPage() {
           </CardContent>
         </Card>
       </section>
+
+      {createdPreview && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold text-[color:var(--color-text)]">
+                  Kompi Code created
+                </h2>
+                <p className="mt-1 text-xs text-[color:var(--color-subtle)]">
+                  Your new code is ready to share, download, or print.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCreatedPreview(null)}
+                className="text-xs text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-col items-center gap-3">
+              <div className="inline-flex flex-col items-center justify-center rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg)] px-5 py-4">
+                <div className="rounded-2xl bg-[var(--color-surface)] p-3">
+                  <QRCode
+                    value={createdPreview.destination}
+                    size={192}
+                    fgColor="#020617"
+                    bgColor="#FFFFFF"
+                    level="M"
+                  />
+                </div>
+                <p className="mt-3 max-w-xs text-center text-xs text-[color:var(--color-subtle)]">
+                  Scan this preview, or use the buttons below to share and
+                  download.
+                </p>
+              </div>
+
+              <div className="mt-3 w-full space-y-2">
+                <div className="truncate text-center text-[11px] text-[color:var(--color-subtle)]">
+                  {createdPreview.title || "New Kompi Code"} •{" "}
+                  {createdPreview.destination}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    type="button"
+                    className="rounded-full px-4 py-1.5 text-xs"
+                    onClick={async () => {
+                      try {
+                        if (navigator.share) {
+                          await navigator.share({
+                            title:
+                              createdPreview.title ||
+                              "New Kompi Code",
+                            url: createdPreview.destination,
+                          });
+                        } else if (
+                          navigator.clipboard &&
+                          navigator.clipboard.writeText
+                        ) {
+                          await navigator.clipboard.writeText(
+                            createdPreview.destination,
+                          );
+                          alert("Link copied to clipboard");
+                        }
+                      } catch (err) {
+                        console.error("Share failed", err);
+                      }
+                    }}
+                  >
+                    Share
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full px-4 py-1.5 text-xs"
+                    onClick={() => {
+                      const a =
+                        document.createElement("a");
+                      a.href = `/api/kr-codes/${createdPreview.id}/png`;
+                      a.target = "_blank";
+                      a.rel = "noopener noreferrer";
+                      a.click();
+                    }}
+                  >
+                    Download PNG
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full px-4 py-1.5 text-xs"
+                    onClick={() => {
+                      const a =
+                        document.createElement("a");
+                      a.href = `/api/kr-codes/${createdPreview.id}/svg`;
+                      a.target = "_blank";
+                      a.rel = "noopener noreferrer";
+                      a.click();
+                    }}
+                  >
+                    Download SVG
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="rounded-full px-4 py-1.5 text-xs"
+                    onClick={() => setCreatedPreview(null)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

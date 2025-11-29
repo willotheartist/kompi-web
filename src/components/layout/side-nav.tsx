@@ -17,14 +17,28 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { label: "Dashboard", href: "/", icon: LayoutDashboard },
+type NavItem = {
+  label: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+};
+
+const myKompiItems: NavItem[] = [
+  { label: "Overview", href: "/", icon: LayoutDashboard },
   { label: "Links", href: "/links", icon: Link2 },
   { label: "K-Cards", href: "/k-cards", icon: LayoutGrid },
+  { label: "QR Menus", href: "/qr-menus", icon: LayoutGrid },
   { label: "Kompi Codes™ (KR)", href: "/kr-codes", icon: QrCode },
   { label: "Bio Pages", href: "/bio-pages", icon: LayoutTemplate },
+];
+
+const growItems: NavItem[] = [
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
-  { label: "Campaigns", href: "/campaigns", icon: Rocket },
+  // keep existing /campaigns route but present as "Growth"
+  { label: "Growth", href: "/campaigns", icon: Rocket },
+];
+
+const workspaceItems: NavItem[] = [
   { label: "Custom domains", href: "/domains", icon: Globe2 },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
@@ -75,69 +89,109 @@ export function SideNav() {
         Create new
       </Link>
 
-      {/* Nav */}
-      <nav className="flex flex-col gap-1.5 text-sm font-medium">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+      {/* Nav sections */}
+      <nav className="flex flex-col gap-5 text-sm font-medium">
+        <NavSection title="My Kompi">
+          {myKompiItems.map((item) => (
+            <NavItemRow key={item.href} item={item} pathname={pathname} />
+          ))}
+        </NavSection>
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2",
-                "rounded-full",
-                "transition-colors",
-                "text-[var(--color-subtle)] hover:text-[var(--color-text)] hover:bg-[var(--color-accent-soft)]",
-                active &&
-                  "bg-[var(--color-accent-soft)] text-[var(--color-text)] shadow-[var(--shadow-sm)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "h-6 w-6 inline-flex items-center justify-center rounded-full border text-[11px]",
-                  active
-                    ? "bg-[var(--color-text)] text-[var(--color-bg)] border-transparent"
-                    : "bg-[var(--color-bg)] text-[var(--color-subtle)] border-[var(--color-border)]"
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-              </span>
+        <NavSection title="Grow">
+          {growItems.map((item) => (
+            <NavItemRow key={item.href} item={item} pathname={pathname} />
+          ))}
+        </NavSection>
 
-              {/* This is where Instrument Serif Italic should kick in */}
-              <span
-                className={cn(
-                  "truncate",
-                  active
-                    ? "font-accent italic font-medium" // Instrument Serif Italic
-                    : "font-sans font-medium"          // Inter Tight
-                )}
-              >
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+        <NavSection title="Workspace">
+          {workspaceItems.map((item) => (
+            <NavItemRow key={item.href} item={item} pathname={pathname} />
+          ))}
+        </NavSection>
       </nav>
 
       {/* User */}
-      <div className="mt-auto rounded-[var(--radius-md)] bg-[var(--color-bg)] border border-[var(--color-border)] px-3 py-3 flex items-center gap-3">
-        <div className="h-8 w-8 rounded-[999px] bg-[var(--color-surface)] text-[var(--color-text)] flex items-center justify-center text-xs font-semibold">
+      <div className="mt-auto flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-[999px] bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-text)]">
           U
         </div>
         <div className="flex flex-col">
           <span className="text-[11px] text-[var(--color-subtle)]">
             Logged in
           </span>
-          <span className="text-xs text-[var(--color-text)] font-medium truncate">
+          <span className="truncate text-xs font-medium text-[var(--color-text)]">
             you@example.com
           </span>
         </div>
       </div>
     </aside>
+  );
+}
+
+type NavSectionProps = {
+  title: string;
+  children: React.ReactNode;
+};
+
+function NavSection({ title, children }: NavSectionProps) {
+  return (
+    <div className="space-y-2">
+      {/* Section header – same family as new page headers */}
+      <h2 className="px-2 text-xs font-semibold text-[var(--color-subtle)]">
+        {title}
+      </h2>
+      <ul className="space-y-1.5">{children}</ul>
+    </div>
+  );
+}
+
+type NavItemRowProps = {
+  item: NavItem;
+  pathname: string | null;
+};
+
+function NavItemRow({ item, pathname }: NavItemRowProps) {
+  const Icon = item.icon;
+  const active =
+    item.href === "/"
+      ? pathname === "/"
+      : pathname?.startsWith(item.href);
+
+  return (
+    <li>
+      <Link
+        href={item.href}
+        className={cn(
+          "flex items-center gap-3 px-3 py-2",
+          "rounded-full",
+          "transition-colors",
+          "text-[var(--color-subtle)] hover:text-[var(--color-text)] hover:bg-[var(--color-accent-soft)]",
+          active &&
+            "bg-[var(--color-accent-soft)] text-[var(--color-text)] shadow-[var(--shadow-sm)]"
+        )}
+      >
+        <span
+          className={cn(
+            "h-6 w-6 inline-flex items-center justify-center rounded-full border text-[11px]",
+            active
+              ? "bg-[var(--color-text)] text-[var(--color-bg)] border-transparent"
+              : "bg-[var(--color-bg)] text-[var(--color-subtle)] border-[var(--color-border)]"
+          )}
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+
+        <span
+          className={cn(
+            "truncate",
+            active
+              ? "font-accent italic font-medium" // Instrument Serif Italic
+              : "font-sans font-medium"          // Inter Tight
+          )}
+        >
+          {item.label}
+        </span>
+      </Link>
+    </li>
   );
 }

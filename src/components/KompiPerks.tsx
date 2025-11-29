@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 type PerkCard = {
   id: string;
@@ -11,7 +12,6 @@ type PerkCard = {
   body: string;
   imageSrc: string;
   imageAlt: string;
-  tone?: "accent" | "accent-soft" | "neutral";
 };
 
 const PERKS: PerkCard[] = [
@@ -20,345 +20,225 @@ const PERKS: PerkCard[] = [
     label: "Campaign-ready",
     title: "Live links that stay in sync",
     accent: "everywhere.",
-    body: "Update destinations once and keep QR codes, bios and short links pointing to the right place — without chasing old posts.",
+    body: "Update destinations once and keep every QR code, bio and short link in sync.",
     imageSrc: "/kompione.png",
     imageAlt: "Kompi promo artwork",
-    tone: "neutral",
   },
   {
     id: "qr-magic",
     label: "K-Cards & QR",
     title: "Physical touchpoints that",
     accent: "actually convert.",
-    body: "Pair K-Cards and QR posters with smart links, so every tap and scan rolls into the same clean analytics.",
+    body: "Pair K-Cards and QR posters with smart links so every tap and scan is tracked.",
     imageSrc: "/kompitwo.png",
     imageAlt: "Kompi promo artwork",
-    tone: "accent-soft",
   },
   {
     id: "creator-mode",
     label: "Creator mode",
     title: "Bio pages that feel",
     accent: "designed.",
-    body: "Ship on-brand link-in-bio pages with layouts made for real brands, not generic templates from 2013.",
+    body: "Ship modern, on-brand link-in-bio pages that look like your brand, not a template.",
     imageSrc: "/kompithree.png",
     imageAlt: "Kompi promo artwork",
-    tone: "neutral",
   },
   {
     id: "client-reports",
     label: "Client-ready",
     title: "Reports you can drop",
     accent: "into decks.",
-    body: "Show clients where clicks come from, per campaign and per workspace, in a UI that doesn’t need explaining.",
+    body: "Show clients where clicks come from, per campaign and per workspace.",
     imageSrc: "/kompifour.png",
     imageAlt: "Kompi promo artwork",
-    tone: "accent-soft",
   },
   {
     id: "team-workspaces",
     label: "Teams & studios",
     title: "Workspaces built",
     accent: "for rollouts.",
-    body: "Give each client or brand their own space with shared links, bio pages and analytics your whole team can trust.",
+    body: "Give each client or brand its own space with shared links and analytics.",
     imageSrc: "/kompifive.png",
     imageAlt: "Kompi promo artwork",
-    tone: "neutral",
   },
 ];
 
-const toneBg = (tone?: PerkCard["tone"]) => {
-  if (tone === "accent") return "var(--color-accent)";
-  if (tone === "accent-soft") return "var(--color-accent-soft)";
-  return "var(--color-surface)";
-};
+// bold, tennis-style backgrounds
+const cardPalettes = [
+  { base: "#D8FF43", text: "#111111" }, // Kompi lime
+  { base: "#F3EFE8", text: "#111111" }, // soft cream
+  { base: "#FF4FD8", text: "#111111" }, // pop magenta
+  { base: "#4FD9FF", text: "#111111" }, // cyan
+];
+
+// luxe easing
+const easing: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export default function KompiPerks() {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollByPage = (dir: "left" | "right") => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const amount = container.clientWidth * 0.9;
+    container.scrollBy({
+      left: dir === "left" ? -amount : amount,
+      behavior: "smooth",
+    });
+  };
+
   return (
-    <section className="kperks" aria-label="Kompi features and perks">
-      {/* Heading / intro */}
-      <div className="kperks-inner">
+    <section
+      className="w-full bg-[var(--color-bg)] py-20"
+      aria-label="Kompi features and perks"
+    >
+      {/* Header */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
-          className="kperks-head"
-          initial={{ opacity: 0, y: 18 }}
+          className="flex flex-col items-center text-center gap-4"
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.32, ease: "easeOut" }}
+          transition={{ duration: 0.9, ease: easing }}
         >
-          <div className="kperks-head-main">
-            <p className="kperks-eyebrow">Kompi perks</p>
-            <h2 className="kperks-heading">
-              Make every{" "}
-              <span className="kperks-serif">touchpoint</span> feel intentional.
-            </h2>
-          </div>
-          <p className="kperks-intro">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--color-subtle)]">
+            Kompi perks
+          </p>
+
+          <h2
+            className="font-semibold text-[color:var(--color-text)]
+                       text-[32px] leading-[1.05]
+                       sm:text-[44px]
+                       md:text-[54px]
+                       lg:text-[60px]"
+            style={{ letterSpacing: "-0.04em" }}
+          >
+            Make every{" "}
+            <span className="wf-serif-accent italic text-[color:var(--color-accent)]">
+              touchpoint
+            </span>{" "}
+            feel intentional.
+          </h2>
+
+          <p className="max-w-2xl text-[15px] leading-[1.7] text-[color:var(--color-subtle)]">
             From first tap to final report, Kompi keeps links, QR codes and bio
             pages under one roof — so your campaigns feel designed, not duct
             taped.
           </p>
+
+          {/* arrows */}
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => scrollByPage("left")}
+              aria-label="Scroll perks left"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-neutral-900 ring-1 ring-black/5 transition hover:bg-neutral-900 hover:text-white"
+            >
+              <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
+                <path
+                  d="M12.5 15L7.5 10L12.5 5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByPage("right")}
+              aria-label="Scroll perks right"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-neutral-900 text-white ring-1 ring-black/5 transition hover:bg-neutral-800"
+            >
+              <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
+                <path
+                  d="M7.5 5L12.5 10L7.5 15"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
         </motion.div>
       </div>
 
-      {/* DEBUG spacer: if you don't see this gap, KompiPerks.tsx is not the component being rendered */}
-      <div
-        style={{
-          height: "160px",
-          width: "100%",
-          // uncomment if you want to see it visually:
-          // backgroundColor: "rgba(255,0,0,0.05)",
-        }}
-      />
+      {/* Card rail – tennis-style cards */}
+      <div className="mt-14 overflow-hidden">
+        <motion.div
+          ref={scrollRef}
+          className="kompi-perks-scroll mx-auto flex max-w-7xl gap-6 overflow-x-auto px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 no-scrollbar"
+          style={{ scrollSnapType: "x mandatory" }}
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.9, ease: easing }}
+        >
+          {PERKS.map((perk, index) => {
+            const palette = cardPalettes[index % cardPalettes.length];
 
-      {/* Full-width horizontal strip */}
-      <motion.div
-        className="kperks-band"
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.36, ease: "easeOut" }}
-      >
-        <div className="kperks-scroller">
-          <div className="kperks-track">
-            {[...PERKS, ...PERKS].map((perk, index) => (
-              <article
-                key={perk.id + "-" + index}
-                className="kperks-card"
-                style={{ background: toneBg(perk.tone) }}
+            return (
+              <motion.article
+                key={perk.id}
+                className="relative w-[360px] shrink-0 snap-start overflow-hidden rounded-[40px]"
+                style={{ background: palette.base }}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{
+                  duration: 0.9,
+                  ease: easing,
+                  delay: index * 0.18, // slow stagger
+                }}
               >
-                <div className="kperks-image-wrap">
-                  <img
-                    src={perk.imageSrc}
-                    alt={perk.imageAlt}
-                    className="kperks-image"
-                  />
+                <div className="flex min-h-[520px] flex-col">
+                  {/* TOP: label + title + short copy */}
+                  <div className="flex-1 px-8 pt-8 pb-6">
+                    <p
+                      className="text-[10px] font-semibold uppercase tracking-[0.22em]"
+                      style={{ color: `${palette.text}CC` }}
+                    >
+                      {perk.label}
+                    </p>
+
+                    <h3
+                      className="mt-4 text-[26px] font-semibold leading-[1.2]"
+                      style={{ color: palette.text }}
+                    >
+                      {perk.title}{" "}
+                      {perk.accent && (
+                        <span className="wf-serif-accent italic">
+                          {perk.accent}
+                        </span>
+                      )}
+                    </h3>
+
+                    <p
+                      className="mt-4 max-w-xs text-[14px] leading-[1.6]"
+                      style={{ color: `${palette.text}CC` }}
+                    >
+                      {perk.body}
+                    </p>
+                  </div>
+
+                  {/* BOTTOM: big rounded image, full width */}
+                  <div className="relative h-[260px] w-full overflow-hidden rounded-t-[40px] bg-black">
+                    <Image
+                      src={perk.imageSrc}
+                      alt={perk.imageAlt}
+                      fill
+                      className="h-full w-full object-cover"
+                      sizes="360px"
+                    />
+                  </div>
                 </div>
-                <div className="kperks-card-body">
-                  <p className="kperks-label">{perk.label}</p>
-                  <h3 className="kperks-card-title">
-                    {perk.title}{" "}
-                    {perk.accent && (
-                      <span className="kperks-card-accent">{perk.accent}</span>
-                    )}
-                  </h3>
-                  <p className="kperks-card-copy">{perk.body}</p>
-                  <button className="kperks-cta" type="button">
-                    Learn more
-                    <span className="kperks-cta-icon">↗</span>
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
-      <style jsx>{`
-        .kperks {
-          width: 100%;
-          padding: 88px 0 104px;
-          background: var(--color-bg);
-          font-family: "Inter Tight", system-ui, -apple-system, sans-serif;
-          color: var(--color-text);
-        }
-
-        .kperks-inner {
-          max-width: 1240px;
-          margin: 0 auto;
-          padding: 0 20px;
-        }
-
-        .kperks-head {
-          display: grid;
-          grid-template-columns: minmax(0, 2.3fr) minmax(0, 2fr);
-          column-gap: 32px;
-          row-gap: 12px;
-          align-items: flex-start;
-          max-width: 100%;
-        }
-
-        .kperks-head-main {
-          max-width: 640px;
-        }
-
-        .kperks-eyebrow {
-          margin: 0 0 10px;
-          font-size: 13px;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: var(--color-subtle);
-        }
-
-        .kperks-heading {
-          margin: 0 0 12px;
-          font-size: clamp(2.1rem, 2.3vw + 1.1rem, 2.7rem);
-          line-height: 1.08;
-          font-weight: 700;
-        }
-
-        .kperks-serif {
-          font-family: "Instrument Serif", "Times New Roman", serif;
-          font-style: italic;
-          color: var(--color-accent);
-          font-weight: 400;
-        }
-
-        .kperks-intro {
-          margin: 12px 0 0;
-          font-size: 15px;
-          line-height: 1.7;
-          color: var(--color-subtle);
-          max-width: 460px;
-        }
-
-        .kperks-band {
-          width: 100vw;
-          margin-left: calc(50% - 50vw);
-          margin-right: calc(50% - 50vw);
-        }
-
-        .kperks-scroller {
-          overflow-x: auto;
-          padding: 18px 0 10px;
-          scrollbar-width: none;
-        }
-
-        .kperks-scroller::-webkit-scrollbar {
-          display: none;
-        }
-
-        .kperks-track {
-          display: flex;
-          gap: 32px;
-          padding: 0 48px 20px;
-          width: max-content;
-          scroll-snap-type: x mandatory;
-        }
-
-        .kperks-card {
-          scroll-snap-align: start;
-          width: 360px;
-          border-radius: 32px;
-          border: 1px solid var(--color-border);
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          background: var(--color-surface);
-        }
-
-        .kperks-image-wrap {
-          width: 100%;
-          height: 210px;
-          overflow: hidden;
-        }
-
-        .kperks-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-
-        .kperks-card-body {
-          padding: 22px 22px 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .kperks-label {
-          margin: 0 0 2px;
-          font-size: 12px;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: var(--color-subtle);
-        }
-
-        .kperks-card-title {
-          margin: 0;
-          font-size: 18px;
-          line-height: 1.35;
-          font-weight: 650;
-        }
-
-        .kperks-card-accent {
-          font-family: "Instrument Serif", "Times New Roman", serif;
-          font-style: italic;
-          font-weight: 400;
-          color: var(--color-accent-soft);
-        }
-
-        .kperks-card-copy {
-          margin: 4px 0 0;
-          font-size: 14px;
-          line-height: 1.7;
-          color: var(--color-subtle);
-        }
-
-        .kperks-cta {
-          margin-top: 14px;
-          align-self: flex-start;
-          border-radius: 12px;
-          border: 1px solid var(--color-border);
-          padding: 8px 16px;
-          font-size: 13px;
-          font-weight: 500;
-          background: var(--color-surface);
-          color: var(--color-text);
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          cursor: pointer;
-          transition: background-color 0.16s ease-out,
-            border-color 0.16s ease-out, transform 0.16s ease-out;
-        }
-
-        .kperks-cta-icon {
-          font-size: 12px;
-        }
-
-        .kperks-cta:hover {
-          transform: translateY(-1px);
-          background: var(--color-accent-soft);
-          border-color: var(--color-accent);
-        }
-
-        @media (max-width: 900px) {
-          .kperks {
-            padding: 72px 0 88px;
-          }
-
-          .kperks-inner {
-            padding: 0 20px;
-          }
-
-          .kperks-head {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 12px;
-          }
-
-          .kperks-intro {
-            max-width: 100%;
-          }
-
-          .kperks-heading {
-            font-size: 26px;
-          }
-
-          .kperks-track {
-            padding: 0 24px 18px;
-            gap: 24px;
-          }
-
-          .kperks-card {
-            width: 280px;
-          }
-
-          .kperks-image-wrap {
-            height: 190px;
-          }
-        }
-      `}</style>
+              </motion.article>
+            );
+          })}
+        </motion.div>
+      </div>
     </section>
   );
 }

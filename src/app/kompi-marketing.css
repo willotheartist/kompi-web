@@ -86,7 +86,7 @@
 }
 
 .wf-serif-accent {
-  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-family: var(--font-accent), Georgia, "Times New Roman", serif;
   font-style: italic;
   font-weight: 400;
 }
@@ -988,4 +988,18 @@
   .doMore-card {
     flex-basis: 240px;
   }
+}
+
+/* =========================
+   Global helper – hide scrollbars
+   ========================= */
+
+.no-scrollbar {
+  /* Firefox */
+  scrollbar-width: none;
+}
+
+/* Chrome, Safari, Edge */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

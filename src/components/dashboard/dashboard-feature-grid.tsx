@@ -3,217 +3,148 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/dashboard/glass-card";
-import { QrCode, Sparkles, ArrowRight } from "lucide-react";
 
-// Simple icon stub to avoid extra imports
-function LayoutTemplateIcon() {
+type ToolConfig = {
+  imageSrc: string;
+  imageAlt: string;
+  headingLines: [string, string, string, string]; // last line is accent
+  body: string; // let the browser wrap this nicely
+  href: string;
+};
+
+type ToolCardProps = ToolConfig & {
+  onClick: () => void;
+};
+
+// Single tool card – cream background, image left, controlled heading, natural body wrap.
+function ToolCard({
+  imageSrc,
+  imageAlt,
+  headingLines,
+  body,
+  onClick,
+}: ToolCardProps) {
+  const [h1, h2, h3, hAccent] = headingLines;
+
   return (
-    <span className="inline-flex h-4 w-4 items-center justify-center">
-      <span
-        className="inline-block h-4 w-3 rounded-sm"
-        style={{
-          border: "1px solid var(--color-text)",
-        }}
-      />
-    </span>
+    <div
+      className="flex flex-col items-center gap-4 rounded-[30px] px-4 py-4 sm:flex-row sm:items-center sm:gap-6 sm:px-5 sm:py-5"
+      style={{
+        backgroundColor: "#FFF1E3", // warm cream
+      }}
+    >
+      {/* Left: PNG visual */}
+      <div className="relative w-full max-w-[190px] sm:max-w-[210px]">
+        <div className="relative aspect-[4/5] w-full">
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            className="object-contain"
+          />
+        </div>
+      </div>
+
+      {/* Right: copy + CTA – nudged left for better alignment */}
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-4 text-left sm:-ml-4">
+        <div className="space-y-3 max-w-[230px] sm:max-w-[260px]">
+          {/* Heading – 3 lines + 1 accent line */}
+          <h3
+            className="text-[1.5rem] font-semibold leading-[1.02]"
+            style={{ letterSpacing: "-0.04em" }}
+          >
+            <span className="block">{h1}</span>
+            <span className="block">{h2}</span>
+            <span className="block">{h3}</span>
+            <span
+              className="block"
+              style={{
+                fontFamily:
+                  "var(--font-accent, var(--font-primary, system-ui, -apple-system, BlinkMacSystemFont, sans-serif))",
+                fontWeight: 400,
+                fontStyle: "italic",
+                fontSize: "1.15em",
+                letterSpacing: "-0.03em",
+              }}
+            >
+              {hAccent}
+            </span>
+          </h3>
+
+          {/* Body – single string, natural wrap */}
+          <p
+            className="text-[0.85rem] leading-[1.5]"
+            style={{ color: "var(--color-subtle)" }}
+          >
+            {body}
+          </p>
+        </div>
+
+        {/* CTA – always "Get Started" */}
+        <button
+          type="button"
+          onClick={onClick}
+          className="mt-1 inline-flex w-fit items-center justify-center rounded-full px-6 py-2.5 text-sm font-semibold"
+          style={{
+            backgroundColor: "#D4FF3E",
+            color: "#000000",
+            letterSpacing: "-0.02em",
+          }}
+        >
+          Get Started
+        </button>
+      </div>
+    </div>
   );
 }
 
-// Pattern: FeatureGrid_DashboardCarousel
+// Pattern: FeatureGrid_Dashboard – three promo cards in one panel
 export function DashboardFeatureGrid() {
   const router = useRouter();
 
+  const tools: ToolConfig[] = [
+    {
+      imageSrc: "/kcard-dashboard-card.png",
+      imageAlt: "K-Card example",
+      headingLines: ["Your", "digital", "card,", "optimized."],
+      body:
+        "Customize your K-Card, track performance, and make every interaction count.",
+      href: "/k-cards",
+    },
+    {
+      imageSrc: "/kr-dashboard-card.png",
+      imageAlt: "Kompi Codes example",
+      headingLines: ["Your", "QR", "menus,", "upgraded."],
+      body:
+        "Design Kompi Codes for menus, posters and packaging, then see what gets scanned.",
+      href: "/qr-menus",
+    },
+    {
+      imageSrc: "/links-dashboard-card.png",
+      imageAlt: "Kompi links example",
+      headingLines: ["Your", "links,", "all in", "one."],
+      body:
+        "Create clean Kompi links and bio pages that stay in sync across every channel.",
+      href: "/links/new",
+    },
+  ];
+
   return (
-    <GlassCard className="space-y-4 md:space-y-6 bg-[var(--color-bg)]">
-      {/* Header */}
-      <div className="space-y-1">
-        <h2 className="text-lg md:text-xl font-semibold">
-          Tools to grow your audience
+    <GlassCard className="space-y-4 bg-[var(--color-bg)]">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-base font-semibold sm:text-lg">
+          Tools to Grow Your Audience
         </h2>
-        <p
-          className="text-xs md:text-sm max-w-xl"
-          style={{ color: "var(--color-subtle)" }}
-        >
-          Turn Kompi links into full experiences – from scannable codes to
-          branded pages and smart cards.
-        </p>
       </div>
 
-      {/* Cards strip */}
-      <div className="grid auto-cols-[minmax(220px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-1 md:auto-cols-auto md:grid-flow-row md:grid-cols-3 md:overflow-visible">
-        {/* Card 1 */}
-        <button
-          type="button"
-          onClick={() => router.push("/kr-codes")}
-          className="flex h-full min-h-[260px] flex-col rounded-[24px] text-left shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-          style={{
-            backgroundColor: "var(--color-surface)",
-            border: "1px solid var(--color-border)",
-          }}
-        >
-          {/* Top media block with image */}
-          <div
-            className="relative w-full overflow-hidden rounded-t-[24px]"
-            style={{ backgroundColor: "var(--color-accent-soft)" }}
-          >
-            <div className="relative h-32 sm:h-36 md:h-40">
-              <Image
-                src="/feature-kr-codes.png"
-                alt="Kompi Codes (KR) preview"
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-
-          {/* Bottom content */}
-          <div className="flex flex-1 flex-col gap-3 rounded-b-[24px] px-4 pb-4 pt-3">
-            <div className="space-y-1.5">
-              <p className="flex items-center gap-1.5 text-sm font-semibold">
-                <span
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full"
-                  style={{ backgroundColor: "var(--color-accent-soft)" }}
-                >
-                  <QrCode className="h-3.5 w-3.5" />
-                </span>
-                <span>Kompi Codes™ (KR)</span>
-              </p>
-              <p
-                className="text-xs leading-relaxed"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                Turn any Kompi link into a scannable code for print, packaging,
-                and screens.
-              </p>
-            </div>
-            <span
-              className="mt-auto inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold"
-              style={{
-                border: "1px solid var(--color-border)",
-                color: "var(--color-text)",
-              }}
-            >
-              Open KR tools
-              <ArrowRight className="ml-1.5 h-3 w-3" />
-            </span>
-          </div>
-        </button>
-
-        {/* Card 2 */}
-        <button
-          type="button"
-          onClick={() => router.push("/p")}
-          className="flex h-full min-h-[260px] flex-col rounded-[24px] text-left shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-          style={{
-            backgroundColor: "var(--color-surface)",
-            border: "1px solid var(--color-border)",
-          }}
-        >
-          {/* Top media block with image */}
-          <div
-            className="relative w-full overflow-hidden rounded-t-[24px]"
-            style={{ backgroundColor: "var(--color-accent-soft)" }}
-          >
-            <div className="relative h-32 sm:h-36 md:h-40">
-              <Image
-                src="/feature-bio-page.png"
-                alt="Link-in-bio page preview"
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-
-          {/* Bottom content */}
-          <div className="flex flex-1 flex-col gap-3 rounded-b-[24px] px-4 pb-4 pt-3">
-            <div className="space-y-1.5">
-              <p className="flex items-center gap-1.5 text-sm font-semibold">
-                <span
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full"
-                  style={{ backgroundColor: "var(--color-accent-soft)" }}
-                >
-                  <LayoutTemplateIcon />
-                </span>
-                <span>Link-in-bio page</span>
-              </p>
-              <p
-                className="text-xs leading-relaxed"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                Collect all your Kompi links into one branded landing page that
-                works everywhere you share.
-              </p>
-            </div>
-            <span
-              className="mt-auto inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold"
-              style={{
-                border: "1px solid var(--color-border)",
-                color: "var(--color-text)",
-              }}
-            >
-              Build a bio page
-              <ArrowRight className="ml-1.5 h-3 w-3" />
-            </span>
-          </div>
-        </button>
-
-        {/* Card 3 */}
-        <button
-          type="button"
-          onClick={() => router.push("/k-cards")}
-          className="flex h-full min-h-[260px] flex-col rounded-[24px] text-left shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-          style={{
-            backgroundColor: "var(--color-surface)",
-            border: "1px solid var(--color-border)",
-          }}
-        >
-          {/* Top media block with image */}
-          <div
-            className="relative w-full overflow-hidden rounded-t-[24px]"
-            style={{ backgroundColor: "var(--color-accent-soft)" }}
-          >
-            <div className="relative h-32 sm:h-36 md:h-40">
-              <Image
-                src="/feature-k-cards.png"
-                alt="K-Cards preview"
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-
-          {/* Bottom content */}
-          <div className="flex flex-1 flex-col gap-3 rounded-b-[24px] px-4 pb-4 pt-3">
-            <div className="space-y-1.5">
-              <p className="flex items-center gap-1.5 text-sm font-semibold">
-                <span
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full"
-                  style={{ backgroundColor: "var(--color-accent-soft)" }}
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                </span>
-                <span>K-Cards</span>
-              </p>
-              <p
-                className="text-xs leading-relaxed"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                Smart business cards powered by Kompi links and KR Codes, ready
-                to scan and share in one tap.
-              </p>
-            </div>
-            <span
-              className="mt-auto inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold"
-              style={{
-                border: "1px solid var(--color-border)",
-                color: "var(--color-text)",
-              }}
-            >
-              Explore K-Cards
-              <ArrowRight className="ml-1.5 h-3 w-3" />
-            </span>
-          </div>
-        </button>
+      <div className="grid gap-4 lg:grid-cols-3">
+        {tools.map((tool) => (
+          <ToolCard
+            key={tool.href}
+            {...tool}
+            onClick={() => router.push(tool.href)}
+          />
+        ))}
       </div>
     </GlassCard>
   );

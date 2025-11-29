@@ -5,10 +5,11 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FooterCTA } from "@/components/footer-cta";
-import { WhyKompi } from "@/components/why-kompi";
+import  WhyKompi  from "@/components/why-kompi";
 import { GoProBanner } from "@/components/GoProBanner";
 import GoProModal from "@/components/modals/GoProModal";
 import "./pricing.css";
+
 
 type BillingPeriod = "monthly" | "yearly";
 

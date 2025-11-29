@@ -3,7 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import {
+  usePathname,
+  useSearchParams,
+  useRouter,
+} from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -15,12 +19,12 @@ import {
   ChevronLeft,
   ChevronRight,
   QrCode,
-  LayoutTemplate,
   LayoutGrid,
   Rocket,
   Globe2,
   ChevronDown,
 } from "lucide-react";
+import { CreateWorkspaceModal } from "@/components/workspaces/create-workspace-modal";
 
 const navGroups = [
   {
@@ -29,6 +33,7 @@ const navGroups = [
       { href: "/dashboard", label: "Overview", icon: Home },
       { href: "/links", label: "Links", icon: Link2 },
       { href: "/k-cards", label: "K-Cards", icon: LayoutGrid },
+      { href: "/dashboard/qr-menus", label: "QR Menus", icon: LayoutGrid },
       { href: "/kr-codes", label: "Kompi Codes™ (KR)", icon: QrCode },
     ],
   },
@@ -94,7 +99,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ---------------- Sidebar (Linktree-style grouped nav) ---------------- */
+/* ---------------- Sidebar ---------------- */
 
 function Sidebar({
   collapsed,
@@ -118,7 +123,7 @@ function Sidebar({
         borderRight: "1px solid var(--color-border)",
       }}
     >
-      <div className="flex flex-col gap-6 px-3 py-6">
+      <div className="flex flex-col gap-5 px-3 py-6">
         {/* Brand */}
         <Link
           href="/dashboard"
@@ -129,27 +134,15 @@ function Sidebar({
           aria-label="Kompi Dashboard Home"
         >
           {!collapsed && (
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/Kompi..svg"
-                  alt="Kompi"
-                  width={112}
-                  height={24}
-                  priority
-                  className="h-6 w-28"
-                />
-              </div>
-              <span
-                className="text-[11px] uppercase tracking-[0.16em]"
-                style={{
-                  color: "var(--color-subtle)",
-                  fontFamily: "Instrument Serif, system-ui, serif",
-                  fontStyle: "italic",
-                }}
-              >
-                Dashboard
-              </span>
+            <div className="flex items-center gap-2">
+              <Image
+                src="/Kompi..svg"
+                alt="Kompi"
+                width={112}
+                height={24}
+                priority
+                className="h-6 w-28"
+              />
             </div>
           )}
 
@@ -166,17 +159,14 @@ function Sidebar({
           <span className="sr-only">Kompi</span>
         </Link>
 
-        {/* Grouped nav like Linktree */}
+        {/* Grouped nav */}
         <nav className="wf-dashboard-nav mt-2 flex flex-col gap-4 text-sm">
           {navGroups.map((group) => (
             <div key={group.section} className="flex flex-col gap-1.5">
               {!collapsed && (
-                <div
-                  className="px-3 text-[11px] font-semibold uppercase tracking-[0.16em]"
-                  style={{ color: "var(--color-subtle)" }}
-                >
+                <h2 className="px-3 text-xs font-semibold text-[color:var(--color-subtle)]">
                   {group.section}
-                </div>
+                </h2>
               )}
 
               <div className="flex flex-col gap-1">
@@ -233,49 +223,47 @@ function Sidebar({
         </nav>
       </div>
 
-      {/* Collapse toggle */}
+      {/* Collapse toggle – simple circular icon button, no text */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className={cn(
-          "wf-dashboard-sidebar-toggle flex w-full items-center justify-center py-3 text-xs font-medium uppercase tracking-wide"
-        )}
+        className="wf-dashboard-sidebar-toggle flex w-full items-center justify-center border-t"
         style={{
-          borderTop: "1px solid var(--color-border)",
-          color: "var(--color-subtle)",
+          borderColor: "var(--color-border)",
+          backgroundColor: "var(--color-surface)",
         }}
       >
-        <AnimatePresence initial={false} mode="wait">
-          {collapsed ? (
-            <motion.div
-              key="expand"
-              initial={{ opacity: 0, rotate: -90 }}
-              animate={{ opacity: 1, rotate: 0 }}
-              exit={{ opacity: 0, rotate: 90 }}
-              transition={{ duration: 0.18 }}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="collapse"
-              initial={{ opacity: 0, rotate: 90 }}
-              animate={{ opacity: 1, rotate: 0 }}
-              exit={{ opacity: 0, rotate: -90 }}
-              transition={{ duration: 0.18 }}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="py-3">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-full"
+            style={{
+              backgroundColor: "#123932", // deep teal
+            }}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" style={{ color: "#F5FF7A" }} />
+            ) : (
+              <ChevronLeft className="h-4 w-4" style={{ color: "#F5FF7A" }} />
+            )}
+          </div>
+        </div>
       </button>
     </motion.aside>
   );
 }
 
-/* ---------------- Topbar w/ Linktree-style account pill ---------------- */
+/* ---------------- Topbar (avatar + workspace in dropdown) ---------------- */
+
+type Workspace = {
+  id: string;
+  name: string;
+};
 
 function Topbar() {
   const { data } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const email = data?.user?.email ?? "";
   const name = data?.user?.name ?? "";
   const display = name || email || "User";
@@ -286,20 +274,83 @@ function Topbar() {
   const [open, setOpen] = useState(false);
   const menuRef = useOutsideClose<HTMLDivElement>(open, () => setOpen(false));
 
+  // --- Workspace state (for dropdown) ---
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [wsLoading, setWsLoading] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+
+  const activeWorkspaceIdFromUrl = searchParams?.get("workspaceId") ?? null;
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setWsLoading(true);
+        const res = await fetch("/api/workspaces", { cache: "no-store" });
+        if (!res.ok) return;
+        const json = await res.json();
+        setWorkspaces(json.workspaces ?? []);
+      } catch {
+        // silent fail
+      } finally {
+        setWsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  // After closing creation modal, refetch to get the new one
+  useEffect(() => {
+    if (!createOpen) {
+      const t = setTimeout(async () => {
+        try {
+          const res = await fetch("/api/workspaces", { cache: "no-store" });
+          if (!res.ok) return;
+          const json = await res.json();
+          setWorkspaces(json.workspaces ?? []);
+        } catch {
+          // ignore
+        }
+      }, 250);
+      return () => clearTimeout(t);
+    }
+  }, [createOpen]);
+
+  const activeWorkspace: Workspace | null = (() => {
+    if (!workspaces.length) return null;
+    if (activeWorkspaceIdFromUrl) {
+      const byId = workspaces.find((w) => w.id === activeWorkspaceIdFromUrl);
+      if (byId) return byId;
+    }
+    return workspaces[0] ?? null;
+  })();
+
+  const buildUrlWithWorkspace = (id: string) => {
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    params.set("workspaceId", id);
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  };
+
+  const handleWorkspaceSwitch = (id: string) => {
+    const next = buildUrlWithWorkspace(id);
+    router.push(next);
+    setOpen(false);
+  };
+
   return (
     <div className="flex h-16 items-center justify-between gap-4">
-      {/* Left: workspace label */}
+      {/* Left: simple dashboard label */}
       <div className="flex min-w-0 flex-col">
         <span
           className="text-[11px] uppercase tracking-[0.16em]"
           style={{ color: "var(--color-subtle)" }}
         >
-          Workspace
+          Dashboard
         </span>
-        <span className="text-sm font-medium">Kompi Studio</span>
+        <span className="text-sm font-medium">Overview</span>
       </div>
 
-      {/* Right: compact account control */}
+      {/* Right: compact account + workspace control */}
       <div className="relative" ref={menuRef}>
         <button
           type="button"
@@ -312,7 +363,7 @@ function Topbar() {
           }}
           aria-label="Open account menu"
         >
-          <span className="truncate max-w-[160px]">{display}</span>
+          <span className="max-w-[160px] truncate">{display}</span>
 
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide"
@@ -351,7 +402,7 @@ function Topbar() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
               transition={{ duration: 0.16 }}
-              className="wf-dashboard-account-menu absolute right-0 z-50 mt-2 w-72 rounded-2xl p-1.5"
+              className="wf-dashboard-account-menu absolute right-0 z-50 mt-2 w-80 rounded-2xl p-1.5"
               style={{
                 backgroundColor: "var(--color-surface)",
                 border: "1px solid var(--color-border)",
@@ -369,7 +420,7 @@ function Topbar() {
                 >
                   {initial}
                 </div>
-                <div className="flex flex-col min-w-0">
+                <div className="flex min-w-0 flex-col">
                   <span
                     className="text-xs"
                     style={{ color: "var(--color-subtle)" }}
@@ -387,17 +438,76 @@ function Topbar() {
                 style={{ backgroundColor: "var(--color-border)" }}
               />
 
-              {/* Workspace actions */}
-              <MenuItem
-                href="/dashboard"
-                label="Switch workspace"
-                onClick={() => setOpen(false)}
-              />
-              <MenuItem
-                href="/dashboard?createWorkspace=1"
-                label="Create new workspace"
-                onClick={() => setOpen(false)}
-              />
+              {/* Workspace section INSIDE avatar dropdown */}
+              <div className="px-3 py-2">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span
+                    className="text-[11px] uppercase tracking-[0.16em]"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
+                    Workspace
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreateOpen(true);
+                    }}
+                    className="text-[11px] font-medium underline-offset-2 hover:underline"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    + New
+                  </button>
+                </div>
+
+                <div className="max-h-40 space-y-1 overflow-auto">
+                  {wsLoading && (
+                    <div
+                      className="text-xs"
+                      style={{ color: "var(--color-subtle)" }}
+                    >
+                      Loading workspaces…
+                    </div>
+                  )}
+
+                  {!wsLoading && workspaces.length === 0 && (
+                    <div
+                      className="text-xs"
+                      style={{ color: "var(--color-subtle)" }}
+                    >
+                      No workspaces yet.
+                    </div>
+                  )}
+
+                  {!wsLoading &&
+                    workspaces.map((ws) => {
+                      const isActive = ws.id === activeWorkspace?.id;
+                      return (
+                        <button
+                          key={ws.id}
+                          type="button"
+                          onClick={() => handleWorkspaceSwitch(ws.id)}
+                          className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-sm transition"
+                          style={{
+                            backgroundColor: isActive
+                              ? "var(--color-accent-soft)"
+                              : "transparent",
+                            color: "var(--color-text)",
+                          }}
+                        >
+                          <span className="truncate">{ws.name}</span>
+                          {isActive && (
+                            <span
+                              className="text-[11px] uppercase tracking-wide"
+                              style={{ color: "var(--color-subtle)" }}
+                            >
+                              Active
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
 
               <div
                 className="my-1 h-px"
@@ -464,6 +574,9 @@ function Topbar() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Create workspace modal reused here */}
+        <CreateWorkspaceModal open={createOpen} onOpenChange={setCreateOpen} />
       </div>
     </div>
   );

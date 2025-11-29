@@ -1,0 +1,139 @@
+// src/app/api/qr-menus/[id]/create-krcode/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+
+type SessionUserWithId = {
+  id?: string | null;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
+
+type RouteContext = {
+  params:
+    | { id?: string }
+    | Promise<{ id?: string }>
+    | undefined;
+};
+
+async function resolveId(raw: RouteContext["params"]): Promise<string | null> {
+  if (!raw) return null;
+
+  // Handle potential Promise from Next.js for params
+  if (raw instanceof Promise) {
+    const resolved = (await raw) ?? {};
+    const id = (resolved as { id?: unknown }).id;
+    return typeof id === "string" ? id : null;
+  }
+
+  if (typeof raw === "object" && raw !== null && "id" in raw) {
+    const id = (raw as { id?: unknown }).id;
+    return typeof id === "string" ? id : null;
+  }
+
+  return null;
+}
+
+// You can change this to GET if your original route used GET;
+// the TypeScript fix is the same either way.
+export async function POST(
+  req: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
+  try {
+    const session = await auth();
+    const user = session?.user as SessionUserWithId | undefined;
+    const userId = user?.id ?? undefined;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const id = await resolveId(context.params);
+    if (!id) {
+      return NextResponse.json(
+        { error: "Menu id is required" },
+        { status: 400 }
+      );
+    }
+
+    const menu = await prisma.menu.findFirst({
+      where: {
+        id,
+        userId,
+      },
+    });
+
+    if (!menu || !menu.slug) {
+      return NextResponse.json(
+        { error: "Menu not found or not public" },
+        { status: 404 }
+      );
+    }
+
+    // Compute a robust origin:
+    // 1. Prefer request Origin header
+    // 2. Then NEXT_PUBLIC_APP_URL env or URL-derived origin
+    // 3. Finally fallback to hardcoded kompi.app
+    const headerOrigin = req.headers.get("origin");
+
+    const url = new URL(req.url);
+    const urlOrigin = `${url.protocol}//${url.host}`;
+
+    const envOrUrlOrigin = process.env.NEXT_PUBLIC_APP_URL ?? urlOrigin;
+    const origin = headerOrigin ?? envOrUrlOrigin ?? "https://kompi.app";
+
+    const destination = `${origin}/m/${menu.slug}`;
+
+    const workspace = await prisma.workspace.findFirst({
+      where: { ownerId: userId },
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (!workspace) {
+      return NextResponse.json(
+        { error: "No workspace found for user" },
+        { status: 400 }
+      );
+    }
+
+    let krCode = await prisma.kRCode.findFirst({
+      where: {
+        userId,
+        workspaceId: workspace.id,
+        destination,
+      },
+    });
+
+    if (!krCode) {
+      krCode = await prisma.kRCode.create({
+        data: {
+          userId,
+          workspaceId: workspace.id,
+          title: menu.title || "QR Menu",
+          destination,
+          type: "menu",
+        },
+      });
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        krCode,
+      },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error("API_QR_MENUS_CREATE_KRCODE_ERROR", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

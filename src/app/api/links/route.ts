@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
 
-const FREE_LINK_LIMIT = 50;
+const FREE_LINK_LIMIT = 20;
+const CREATOR_LINK_LIMIT = 100;
 
 function generateCode(len = 6) {
   const chars =
@@ -68,11 +69,21 @@ export async function POST(req: Request) {
         },
       }));
 
+    const limit =
+      workspace.plan === "CREATOR" ? CREATOR_LINK_LIMIT : FREE_LINK_LIMIT;
+
     const count = await prisma.link.count({
       where: { workspaceId: workspace.id },
     });
-    if (count >= FREE_LINK_LIMIT) {
-      return new NextResponse("Link limit reached", { status: 402 });
+
+    if (count >= limit) {
+      const isCreator = workspace.plan === "CREATOR";
+      const prefix = isCreator ? "Creator plan limit" : "Free plan limit";
+
+      return new NextResponse(
+        `${prefix} reached: you can create up to ${limit} links in this workspace.`,
+        { status: 402 },
+      );
     }
 
     let code = (body.code ?? "").toString().trim();

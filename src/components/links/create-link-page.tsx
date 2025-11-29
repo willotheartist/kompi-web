@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition, FormEvent } from "react";
+import { useState, useTransition, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Link2, QrCode, Target, SlidersHorizontal } from "lucide-react";
+import { Link2, QrCode, SlidersHorizontal } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { PlanLimitModal } from "@/components/billing/plan-limit-modal";
 
 type UtmState = {
   source: string;
@@ -37,6 +38,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
   const [qrColor, setQrColor] = useState("var(--color-text)");
   const [addToBio, setAddToBio] = useState(false);
   const [utmEnabled, setUtmEnabled] = useState(false);
+  const [limitOpen, setLimitOpen] = useState(false);
   const [utm, setUtm] = useState<UtmState>({
     source: "",
     medium: "",
@@ -46,6 +48,11 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
   });
   const [isPending, startTransition] = useTransition();
 
+  // NEW: dynamic plan usage
+  const [linkCount, setLinkCount] = useState<number | null>(null);
+  const [linkLimit, setLinkLimit] = useState<number | null>(null);
+  const [planLabel, setPlanLabel] = useState<string>("Free plan limit");
+
   const qrColors = [
     "var(--color-text)",
     "var(--color-accent)",
@@ -54,6 +61,38 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
     "var(--color-bg)",
     "var(--color-surface)",
   ];
+
+  useEffect(() => {
+    let aborted = false;
+
+    async function fetchUsage() {
+      try {
+        const res = await fetch(`/api/links?workspaceId=${workspaceId}`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+        if (aborted) return;
+
+        const count = Array.isArray(data.links) ? data.links.length : 0;
+        const plan: string = data.workspace?.plan ?? "FREE";
+
+        const limit = plan === "CREATOR" ? 100 : 20;
+        const label =
+          plan === "CREATOR" ? "Creator plan limit" : "Free plan limit";
+
+        setLinkCount(count);
+        setLinkLimit(limit);
+        setPlanLabel(label);
+      } catch {
+        // silent fail – keep defaults
+      }
+    }
+
+    fetchUsage();
+    return () => {
+      aborted = true;
+    };
+  }, [workspaceId]);
 
   function updateUtm<K extends keyof UtmState>(key: K, value: string) {
     setUtm((prev) => ({ ...prev, [key]: value }));
@@ -105,14 +144,19 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
           options: {
             withKompiCode,
             qrColor,
-            addToBio,
+            addToBio, // will become "add to K-Card" behavior
           },
         }),
       });
 
       if (!res.ok) {
         const msg = await res.text();
-        toast.error(msg || "Could not create link");
+        const lower = msg.toLowerCase();
+        if (lower.includes("free plan limit") || lower.includes("creator plan limit")) {
+          setLimitOpen(true);
+        } else {
+          toast.error(msg || "Could not create link");
+        }
         return;
       }
 
@@ -134,409 +178,431 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
       ? `https://${domain}/your-code`
       : "";
 
-  return (
-    <main className="min-h-full w-full bg-[var(--color-bg)]">
-      <form
-        onSubmit={handleSubmit}
-        className="mx-auto flex w-full max-w-5xl flex-col gap-8 pb-16 pt-10"
-      >
-        {/* Dashboard/PageHeader */}
-        <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-3">
-            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-4xl">
-              Create a new{" "}
-              <span className="font-serif italic">link</span>
-            </h1>
-            <p className="max-w-xl text-base text-[color:var(--color-subtle)]">
-              Shorten a URL, optionally generate a Kompi Code, and add UTM
-              tracking so every visit is measured.
-            </p>
-          </div>
-          {/* StatsRow – single stat */}
-          <div
-            className="inline-flex min-w-[220px] flex-col gap-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 text-right shadow-sm"
-            aria-label="Links remaining this month"
-          >
-            <span className="inline-flex h-1.5 w-1.5 self-end rounded-full bg-[var(--color-accent)]" />
-            <p className="text-xs font-medium uppercase tracking-[0.12em] text-[color:var(--color-subtle)]">
-              Links remaining
-            </p>
-            <p className="text-2xl font-semibold leading-tight text-[color:var(--color-text)]">
-              1,000
-            </p>
-            <p className="text-xs text-[color:var(--color-subtle)]">
-              Resets next billing cycle
-            </p>
-          </div>
-        </header>
+  const effectiveLimit = linkLimit ?? 20;
+  const usageText =
+    linkCount != null && linkLimit != null
+      ? `You’re using ${linkCount} of ${linkLimit} links in this workspace.`
+      : "Checking your link usage…";
 
-        {/* Link details – primary card */}
-        <Card
-          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-6 shadow-sm md:px-7 md:py-7"
+  return (
+    <>
+      <main
+        className="min-h-full w-full bg-[var(--color-bg)]"
+        style={{
+          fontFamily:
+            "Inter Tight, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        }}
+      >
+        <form
+          onSubmit={handleSubmit}
+          className="mx-auto flex w-full max-w-5xl flex-col gap-8 pb-16 pt-10"
         >
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          {/* Dashboard/PageHeader */}
+          <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-3">
+              <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-4xl leading-[1.03]">
+                Create a new{" "}
+                <span
+                  className="italic"
+                  style={{
+                    fontFamily:
+                      "Instrument Serif, 'Times New Roman', serif",
+                  }}
+                >
+                  link
+                </span>
+              </h1>
+              <p className="max-w-xl text-base text-[color:var(--color-subtle)]">
+                Shorten a URL, optionally generate a Kompi Code, and add UTM
+                tracking so every visit is measured.
+              </p>
+            </div>
+            {/* StatsRow – single stat */}
+            <div
+              className="inline-flex min-w-[220px] flex-col gap-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 text-right shadow-sm"
+              aria-label="Plan link limit"
+            >
+              <span className="inline-flex h-1.5 w-1.5 self-end rounded-full bg-[var(--color-accent)]" />
+              <p className="text-xs font-medium uppercase tracking-[0.12em] text-[color:var(--color-subtle)]">
+                {planLabel}
+              </p>
+              <p className="text-2xl font-semibold leading-tight text-[color:var(--color-text)]">
+                {effectiveLimit} links
+              </p>
+              <p className="text-xs text-[color:var(--color-subtle)]">
+                {usageText}
+              </p>
+            </div>
+          </header>
+
+          {/* Link details – primary card */}
+          <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-6 shadow-sm md:px-7 md:py-7">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
+                  <Link2 className="h-5 w-5 text-[color:var(--color-text)]" />
+                </span>
+                <div className="space-y-1">
+                  <h2 className="text-base font-semibold text-[color:var(--color-text)]">
+                    Link details
+                  </h2>
+                  <p className="text-sm text-[color:var(--color-subtle)]">
+                    Set the destination URL, short link, and optional title.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {/* Destination URL */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="destination-url"
+                  className="text-sm font-medium text-[color:var(--color-text)]"
+                >
+                  Destination URL
+                </label>
+                <Input
+                  id="destination-url"
+                  placeholder="https://example.com/my-long-url"
+                  value={targetUrl}
+                  onChange={(e) => setTargetUrl(e.target.value)}
+                  className="h-11 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                />
+              </div>
+
+              {/* Short link */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[color:var(--color-text)]">
+                  Short link
+                </label>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <div className="sm:w-48">
+                    <Select value={domain} onValueChange={setDomain}>
+                      <SelectTrigger className="h-11 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0">
+                        <SelectValue placeholder="Choose domain" />
+                      </SelectTrigger>
+                      <SelectContent className="border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)]">
+                        {/* TODO: populate from workspace domains */}
+                        <SelectItem value="kmp.li">kmp.li</SelectItem>
+                        <SelectItem value="kompi.app">kompi.app</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <span className="hidden text-lg text-[color:var(--color-subtle)] sm:inline">
+                    /
+                  </span>
+                  <Input
+                    placeholder="custom-code (optional)"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    className="h-11 flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                  />
+                </div>
+                {shortUrlPreview && (
+                  <p className="text-sm text-[color:var(--color-subtle)]">
+                    This will be your short link:{" "}
+                    <span className="font-medium text-[color:var(--color-text)] underline decoration-[var(--color-accent)] decoration-2 underline-offset-4">
+                      {shortUrlPreview}
+                    </span>
+                  </p>
+                )}
+              </div>
+
+              {/* Title */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="link-title"
+                  className="text-sm font-medium text-[color:var(--color-text)]"
+                >
+                  Title{" "}
+                  <span className="font-normal text-[color:var(--color-subtle)]">
+                    (optional)
+                  </span>
+                </label>
+                <Input
+                  id="link-title"
+                  placeholder="Give this link a friendly name"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="h-11 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Sharing options */}
+          <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-6 shadow-sm md:px-7 md:py-7">
+            <div className="mb-5 flex items-center gap-3">
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
-                <Link2 className="h-5 w-5 text-[color:var(--color-text)]" />
+                <QrCode className="h-5 w-5 text-[color:var(--color-text)]" />
               </span>
               <div className="space-y-1">
                 <h2 className="text-base font-semibold text-[color:var(--color-text)]">
-                  Link details
+                  Sharing options
                 </h2>
                 <p className="text-sm text-[color:var(--color-subtle)]">
-                  Set the destination URL, short link, and optional title.
+                  Generate a Kompi Code or attach this link to a K-Card.
                 </p>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-5">
-            {/* Destination URL */}
-            <div className="space-y-2">
-              <label
-                htmlFor="destination-url"
-                className="text-sm font-medium text-[color:var(--color-text)]"
-              >
-                Destination URL
-              </label>
-              <Input
-                id="destination-url"
-                placeholder="https://example.com/my-long-url"
-                value={targetUrl}
-                onChange={(e) => setTargetUrl(e.target.value)}
-                className="h-11 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-              />
-            </div>
-
-            {/* Short link */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[color:var(--color-text)]">
-                Short link
-              </label>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="sm:w-48">
-                  <Select value={domain} onValueChange={setDomain}>
-                    <SelectTrigger className="h-11 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)]">
-                      <SelectValue placeholder="Choose domain" />
-                    </SelectTrigger>
-                    <SelectContent className="border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)]">
-                      {/* TODO: populate from workspace domains */}
-                      <SelectItem value="kmp.li">kmp.li</SelectItem>
-                      <SelectItem value="kompi.app">kompi.app</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <span className="hidden text-lg text-[color:var(--color-subtle)] sm:inline">
-                  /
-                </span>
-                <Input
-                  placeholder="custom-code (optional)"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  className="h-11 flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                />
-              </div>
-              {shortUrlPreview && (
-                <p className="text-sm text-[color:var(--color-subtle)]">
-                  This will be your short link:{" "}
-                  <span className="font-medium text-[color:var(--color-text)] underline decoration-[var(--color-accent)] decoration-2 underline-offset-4">
-                    {shortUrlPreview}
+            <div className="space-y-4">
+              {/* Kompi Code toggle + inner settings */}
+              <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4">
+                <button
+                  type="button"
+                  onClick={() => setWithKompiCode((prev) => !prev)}
+                  className="flex w-full items-center justify-between gap-4"
+                >
+                  <div className="space-y-1 text-left">
+                    <p className="text-sm font-medium text-[color:var(--color-text)]">
+                      Generate a Kompi Code
+                    </p>
+                    <p className="text-sm text-[color:var(--color-subtle)]">
+                      Create a scannable Kompi Code for this link to use on
+                      print, packaging and signage.
+                    </p>
+                  </div>
+                  <span
+                    className={
+                      "inline-flex h-6 w-11 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-0.5 transition-all " +
+                      (withKompiCode ? "justify-end" : "justify-start")
+                    }
+                  >
+                    <span className="h-4 w-4 rounded-full bg-[var(--color-accent)]" />
                   </span>
-                </p>
-              )}
-            </div>
+                </button>
 
-            {/* Title */}
-            <div className="space-y-2">
-              <label
-                htmlFor="link-title"
-                className="text-sm font-medium text-[color:var(--color-text)]"
-              >
-                Title{" "}
-                <span className="font-normal text-[color:var(--color-subtle)]">
-                  (optional)
-                </span>
-              </label>
-              <Input
-                id="link-title"
-                placeholder="Give this link a friendly name"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="h-11 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-              />
-            </div>
-          </div>
-        </Card>
+                {withKompiCode && (
+                  <div className="mt-4 grid gap-4 border-t border-[var(--color-border)] pt-4 md:grid-cols-[2fr,1fr]">
+                    {/* Color + (future) logo */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-[color:var(--color-text)]">
+                          Code color
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {qrColors.map((color) => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => setQrColor(color)}
+                              className={
+                                "flex h-9 w-9 items-center justify-center rounded-full border-2 transition " +
+                                (qrColor === color
+                                  ? "border-[var(--color-text)]"
+                                  : "border-transparent")
+                              }
+                            >
+                              <span
+                                className="h-7 w-7 rounded-full"
+                                style={{ backgroundColor: color }}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-        {/* Sharing options */}
-        <Card
-          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-6 shadow-sm md:px-7 md:py-7"
-        >
-          <div className="mb-5 flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
-              <QrCode className="h-5 w-5 text-[color:var(--color-text)]" />
-            </span>
-            <div className="space-y-1">
-              <h2 className="text-base font-semibold text-[color:var(--color-text)]">
-                Sharing options
-              </h2>
-              <p className="text-sm text-[color:var(--color-subtle)]">
-                Generate a Kompi Code or add this link to a Kompi bio page.
-              </p>
-            </div>
-          </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-[color:var(--color-text)]">
+                          Logo
+                        </p>
+                        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-subtle)]">
+                            +
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-sm text-[color:var(--color-text)]">
+                              Logo upload coming soon
+                            </p>
+                            <p className="text-xs text-[color:var(--color-subtle)]">
+                              PNG · 1:1 aspect ratio · up to 5MB.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-          <div className="space-y-4">
-            {/* Kompi Code toggle + inner settings */}
-            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4">
+                    {/* Preview box */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-[color:var(--color-text)]">
+                        Preview
+                      </p>
+                      <div className="flex h-40 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+                        <div
+                          className="flex h-32 w-32 items-center justify-center rounded-xl border-4 bg-[var(--color-bg)]"
+                          style={{ borderColor: qrColor }}
+                        >
+                          <QrCode
+                            className="h-16 w-16"
+                            style={{ color: qrColor }}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-[color:var(--color-subtle)]">
+                        More customizations will be available after creating the
+                        link.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* K-Card toggle */}
               <button
                 type="button"
-                onClick={() => setWithKompiCode((prev) => !prev)}
-                className="flex w-full items-center justify-between gap-4"
+                onClick={() => setAddToBio((prev) => !prev)}
+                className={
+                  "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition " +
+                  (addToBio
+                    ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
+                    : "border-[var(--color-border)] bg-[var(--color-bg)] hover:bg-[var(--color-surface)]")
+                }
               >
-                <div className="space-y-1 text-left">
+                <div className="space-y-1">
                   <p className="text-sm font-medium text-[color:var(--color-text)]">
-                    Generate a Kompi Code
+                    Add to a K-Card
                   </p>
                   <p className="text-sm text-[color:var(--color-subtle)]">
-                    Create a scannable Kompi Code for this link to use on
-                    print, packaging and signage.
+                    Attach this link to your K-Card so it’s ready to share with
+                    one tap.
                   </p>
                 </div>
                 <span
                   className={
                     "inline-flex h-6 w-11 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-0.5 transition-all " +
-                    (withKompiCode ? "justify-end" : "justify-start")
+                    (addToBio ? "justify-end" : "justify-start")
                   }
                 >
                   <span className="h-4 w-4 rounded-full bg-[var(--color-accent)]" />
                 </span>
               </button>
-
-              {withKompiCode && (
-                <div className="mt-4 grid gap-4 border-t border-[var(--color-border)] pt-4 md:grid-cols-[2fr,1fr]">
-                  {/* Color + (future) logo */}
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-[color:var(--color-text)]">
-                        Code color
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {qrColors.map((color) => (
-                          <button
-                            key={color}
-                            type="button"
-                            onClick={() => setQrColor(color)}
-                            className={
-                              "flex h-9 w-9 items-center justify-center rounded-full border-2 transition " +
-                              (qrColor === color
-                                ? "border-[var(--color-text)]"
-                                : "border-transparent")
-                            }
-                          >
-                            <span
-                              className="h-7 w-7 rounded-full"
-                              style={{ backgroundColor: color }}
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-[color:var(--color-text)]">
-                        Logo
-                      </p>
-                      <div className="flex items-center gap-3 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-subtle)]">
-                          +
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-sm text-[color:var(--color-text)]">
-                            Logo upload coming soon
-                          </p>
-                          <p className="text-xs text-[color:var(--color-subtle)]">
-                            PNG · 1:1 aspect ratio · up to 5MB.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Preview box */}
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-[color:var(--color-text)]">
-                      Preview
-                    </p>
-                    <div className="flex h-40 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-                      <div
-                        className="flex h-32 w-32 items-center justify-center rounded-xl border-4 bg-[var(--color-bg)]"
-                        style={{ borderColor: qrColor }}
-                      >
-                        <QrCode
-                          className="h-16 w-16"
-                          style={{ color: qrColor }}
-                        />
-                      </div>
-                    </div>
-                    <p className="text-xs text-[color:var(--color-subtle)]">
-                      More customizations will be available after creating the
-                      link.
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
+          </Card>
 
-            {/* Bio page toggle */}
-            <button
-              type="button"
-              onClick={() => setAddToBio((prev) => !prev)}
-              className={
-                "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition " +
-                (addToBio
-                  ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
-                  : "border-[var(--color-border)] bg-[var(--color-bg)] hover:bg-[var(--color-surface)]")
-              }
-            >
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-[color:var(--color-text)]">
-                  Add to a Kompi bio page
-                </p>
-                <p className="text-sm text-[color:var(--color-subtle)]">
-                  Attach this link to one of your Kompi bio pages so it appears
-                  instantly.
-                </p>
+          {/* Advanced settings / UTM */}
+          <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-6 shadow-sm md:px-7 md:py-7">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
+                  <SlidersHorizontal className="h-5 w-5 text-[color:var(--color-text)]" />
+                </span>
+                <div className="space-y-1">
+                  <h2 className="text-base font-semibold text-[color:var(--color-text)]">
+                    Advanced settings
+                  </h2>
+                  <p className="text-sm text-[color:var(--color-subtle)]">
+                    Track campaign performance with UTM parameters.
+                  </p>
+                </div>
               </div>
-              <span
+              <button
+                type="button"
+                onClick={() => setUtmEnabled((prev) => !prev)}
                 className={
-                  "inline-flex h-6 w-11 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-0.5 transition-all " +
-                  (addToBio ? "justify-end" : "justify-start")
+                  "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium transition " +
+                  (utmEnabled
+                    ? "bg-[var(--color-accent-soft)] text-[color:var(--color-text)]"
+                    : "border border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-text)]")
                 }
               >
-                <span className="h-4 w-4 rounded-full bg-[var(--color-accent)]" />
-              </span>
-            </button>
-          </div>
-        </Card>
-
-        {/* Advanced settings / UTM */}
-        <Card
-          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-6 shadow-sm md:px-7 md:py-7"
-        >
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
-                <SlidersHorizontal className="h-5 w-5 text-[color:var(--color-text)]" />
-              </span>
-              <div className="space-y-1">
-                <h2 className="text-base font-semibold text-[color:var(--color-text)]">
-                  Advanced settings
-                </h2>
-                <p className="text-sm text-[color:var(--color-subtle)]">
-                  Track campaign performance with UTM parameters.
-                </p>
-              </div>
+                {utmEnabled ? "UTM enabled" : "Enable UTM"}
+              </button>
             </div>
-            <button
+
+            {utmEnabled ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm text-[color:var(--color-text)]">
+                    UTM source
+                  </label>
+                  <Input
+                    placeholder="facebook, newsletter"
+                    value={utm.source}
+                    onChange={(e) => updateUtm("source", e.target.value)}
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-[color:var(--color-text)]">
+                    UTM medium
+                  </label>
+                  <Input
+                    placeholder="cpc, email"
+                    value={utm.medium}
+                    onChange={(e) => updateUtm("medium", e.target.value)}
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-[color:var(--color-text)]">
+                    UTM campaign
+                  </label>
+                  <Input
+                    placeholder="spring_sale"
+                    value={utm.campaign}
+                    onChange={(e) => updateUtm("campaign", e.target.value)}
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-[color:var(--color-text)]">
+                    UTM term (optional)
+                  </label>
+                  <Input
+                    placeholder="keyword"
+                    value={utm.term}
+                    onChange={(e) => updateUtm("term", e.target.value)}
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm text-[color:var(--color-text)]">
+                    UTM content (optional)
+                  </label>
+                  <Input
+                    placeholder="banner_variant_a"
+                    value={utm.content}
+                    onChange={(e) => updateUtm("content", e.target.value)}
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-[color:var(--color-subtle)]">
+                Turn on UTM parameters to append tracking tags to your
+                destination URL automatically.
+              </p>
+            )}
+          </Card>
+
+          {/* Footer actions */}
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
               type="button"
-              onClick={() => setUtmEnabled((prev) => !prev)}
-              className={
-                "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium transition " +
-                (utmEnabled
-                  ? "bg-[var(--color-accent-soft)] text-[color:var(--color-text)]"
-                  : "border border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-text)]")
-              }
+              variant="outline"
+              className="h-10 rounded-full border border-[var(--color-border)] bg-transparent px-4 text-sm font-medium text-[color:var(--color-text)] hover:bg-[var(--color-surface)]"
+              onClick={() => router.push("/links")}
             >
-              {utmEnabled ? "UTM enabled" : "Enable UTM"}
-            </button>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="h-10 rounded-full bg-[var(--color-accent)] px-6 text-sm font-semibold text-[color:var(--color-text)] shadow-sm hover:shadow-md disabled:opacity-70"
+            >
+              {isPending ? "Creating…" : "Create your link"}
+            </Button>
           </div>
-
-          {utmEnabled ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm text-[color:var(--color-text)]">
-                  UTM source
-                </label>
-                <Input
-                  placeholder="facebook, newsletter"
-                  value={utm.source}
-                  onChange={(e) => updateUtm("source", e.target.value)}
-                  className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm text-[color:var(--color-text)]">
-                  UTM medium
-                </label>
-                <Input
-                  placeholder="cpc, email"
-                  value={utm.medium}
-                  onChange={(e) => updateUtm("medium", e.target.value)}
-                  className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm text-[color:var(--color-text)]">
-                  UTM campaign
-                </label>
-                <Input
-                  placeholder="spring_sale"
-                  value={utm.campaign}
-                  onChange={(e) => updateUtm("campaign", e.target.value)}
-                  className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm text-[color:var(--color-text)]">
-                  UTM term (optional)
-                </label>
-                <Input
-                  placeholder="keyword"
-                  value={utm.term}
-                  onChange={(e) => updateUtm("term", e.target.value)}
-                  className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm text-[color:var(--color-text)]">
-                  UTM content (optional)
-                </label>
-                <Input
-                  placeholder="banner_variant_a"
-                  value={utm.content}
-                  onChange={(e) => updateUtm("content", e.target.value)}
-                  className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                />
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-[color:var(--color-subtle)]">
-              Turn on UTM parameters to append tracking tags to your
-              destination URL automatically.
-            </p>
-          )}
-        </Card>
-
-        {/* Footer actions */}
-        <div className="flex justify-end gap-3 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-10 rounded-full border border-[var(--color-border)] bg-transparent px-4 text-sm font-medium text-[color:var(--color-text)] hover:bg-[var(--color-surface)]"
-            onClick={() => router.push("/links")}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="h-10 rounded-full bg-[var(--color-accent)] px-6 text-sm font-semibold text-[color:var(--color-text)] shadow-sm hover:shadow-md disabled:opacity-70"
-          >
-            {isPending ? "Creating…" : "Create your link"}
-          </Button>
-        </div>
-      </form>
-    </main>
+        </form>
+      </main>
+      <PlanLimitModal
+        open={limitOpen}
+        onOpenChange={setLimitOpen}
+        limit={effectiveLimit}
+        featureLabel="links"
+      />
+    </>
   );
 }

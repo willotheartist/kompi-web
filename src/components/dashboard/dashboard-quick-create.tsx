@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/dashboard/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link2, QrCode } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type QuickMode = "link" | "kr";
 
@@ -18,6 +19,18 @@ type DashboardQuickCreateProps = {
   onOpenAdvanced: () => void;
 };
 
+const COLORS = {
+  // main palette
+  darkBg: "#0c4138", // link mode card bg
+  lightBg: "#eaf77a", // KR mode card bg
+  navy: "#0c4138", // toggle background / dark button
+  neon: "#eaf77a", // selected toggle / light button
+  lightText: "#eaf77a",
+  darkText: "#0c4138",
+  underlineDark: "#194f43",
+  underlineLight: "#c7e55d",
+};
+
 // Pattern: QuickCreateBar
 export function DashboardQuickCreate({
   quickMode,
@@ -28,107 +41,127 @@ export function DashboardQuickCreate({
   onSubmit,
   onOpenAdvanced,
 }: DashboardQuickCreateProps) {
+  const isKr = quickMode === "kr";
+
+  const cardStyle = !isKr
+    ? {
+        backgroundColor: COLORS.darkBg,
+        color: COLORS.lightText,
+        borderColor: COLORS.darkBg,
+        boxShadow: "none",
+      }
+    : {
+        backgroundColor: COLORS.lightBg,
+        color: COLORS.darkText,
+        borderColor: COLORS.lightBg,
+        boxShadow: "none",
+      };
+
+  const textColor = !isKr ? COLORS.lightText : COLORS.darkText;
+  const underlineColor = !isKr ? COLORS.underlineLight : COLORS.underlineDark;
+
   return (
-    <GlassCard className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
+    <GlassCard
+      className="rounded-[20px] border px-5 py-5 md:px-7 md:py-6"
+      style={cardStyle}
+    >
+      {/* Top row */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
           <p
-            className="text-[11px] font-semibold tracking-[0.16em] uppercase"
-            style={{ color: "var(--color-subtle)" }}
+            className="text-sm font-semibold leading-tight"
+            style={{ color: textColor }}
           >
-            Quick create
+            Quick Create
           </p>
-          <h2 className="text-lg font-semibold">
-            Spin up a{" "}
-            <span
-              style={{
-                fontFamily:
-                  "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
-                fontStyle: "italic",
-              }}
-            >
-              {quickMode === "link"
-                ? "Kompi link"
-                : "Kompi Code™ (KR)"}
-            </span>{" "}
-            in seconds
-          </h2>
           <p
-            className="text-sm"
-            style={{ color: "var(--color-subtle)" }}
+            className="text-lg font-semibold leading-tight md:text-xl"
+            style={{ color: textColor }}
           >
-            Paste any URL and we&apos;ll handle the short link,
-            tracking and KR-ready mode for you.
+            Drop a link, Kompi does the rest.
           </p>
         </div>
+
+        {/* Toggle pill */}
         <div
-          className="flex items-center gap-1 rounded-full p-1"
+          className="hidden shrink-0 items-center rounded-full p-1 text-[11px] font-medium md:flex"
           style={{
-            backgroundColor: "var(--color-bg)",
-            border: "1px solid var(--color-border)",
+            backgroundColor: COLORS.navy,
+            borderRadius: 9999,
           }}
         >
+          {/* Short link side */}
           <button
+            type="button"
             onClick={() => onQuickModeChange("link")}
-            className="px-3 py-1.5 rounded-full text-xs flex items-center"
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-transform"
             style={
               quickMode === "link"
                 ? {
-                    backgroundColor: "var(--color-accent-soft)",
-                    color: "var(--color-text)",
+                    backgroundColor: COLORS.neon,
+                    color: COLORS.navy,
                   }
-                : { color: "var(--color-subtle)" }
+                : {
+                    color: COLORS.lightText,
+                  }
             }
           >
-            <Link2 className="h-3.5 w-3.5 mr-1" />
-            Short link
+            <Link2 className="h-3.5 w-3.5" />
+            <span>Short link</span>
           </button>
+
+          {/* KR code side */}
           <button
+            type="button"
             onClick={() => onQuickModeChange("kr")}
-            className="px-3 py-1.5 rounded-full text-xs flex items-center"
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-transform"
             style={
               quickMode === "kr"
                 ? {
-                    backgroundColor: "var(--color-accent-soft)",
-                    color: "var(--color-text)",
+                    backgroundColor: COLORS.neon,
+                    color: COLORS.navy,
                   }
-                : { color: "var(--color-subtle)" }
+                : {
+                    color: COLORS.lightText,
+                  }
             }
           >
-            <QrCode className="h-3.5 w-3.5 mr-1" />
-            KR code
+            <QrCode className="h-3.5 w-3.5" />
+            <span>KR code</span>
           </button>
         </div>
       </div>
 
+      {/* Input + CTA */}
       <form
-        className="flex flex-col md:flex-row gap-3 items-stretch"
+        className="mt-6 flex flex-col items-stretch gap-3 md:flex-row md:items-center"
         onSubmit={onSubmit}
       >
-        <Input
-          value={quickUrl}
-          onChange={(e) => onQuickUrlChange(e.target.value)}
-          disabled={isCreating}
-          className="text-sm"
-          style={{
-            backgroundColor: "var(--color-bg)",
-            borderColor: "var(--color-border)",
-            color: "var(--color-text)",
-          }}
-          placeholder={
-            quickMode === "link"
-              ? "Paste any long URL to shorten with Kompi..."
-              : "Paste a destination URL to generate a Kompi KR code..."
-          }
-        />
+        <div className="flex-1">
+          <Input
+            value={quickUrl}
+            onChange={(e) => onQuickUrlChange(e.target.value)}
+            disabled={isCreating}
+            placeholder="Paste any long URL"
+            className={cn(
+              "h-10 w-full border-0 border-b bg-transparent px-0 text-sm md:text-base",
+              "rounded-none shadow-none border-x-0 border-t-0",
+              "focus-visible:ring-0 focus-visible:border-b-2 focus-visible:outline-none"
+            )}
+            style={{
+              borderBottomColor: underlineColor,
+              color: textColor,
+            }}
+          />
+        </div>
+
         <Button
           type="submit"
           disabled={isCreating}
-          className="whitespace-nowrap rounded-full px-6 text-sm"
+          className="mt-3 inline-flex items-center justify-center rounded-full px-6 text-sm font-semibold md:mt-0"
           style={{
-            backgroundColor: "var(--color-text)",
-            color: "var(--color-bg)",
-            borderRadius: "999px",
+            backgroundColor: !isKr ? COLORS.lightBg : COLORS.navy,
+            color: !isKr ? COLORS.navy : COLORS.lightText,
             opacity: isCreating ? 0.7 : 1,
           }}
         >
@@ -136,26 +169,19 @@ export function DashboardQuickCreate({
             ? "Working..."
             : quickMode === "link"
             ? "Create Kompi link"
-            : "Generate KR code"}
+            : "Create KR code"}
         </Button>
       </form>
 
-      <div
-        className="flex flex-wrap gap-4 text-xs items-center"
-        style={{ color: "var(--color-subtle)" }}
-      >
-        <span>Auto-UTMs from workspace rules</span>
-        <span>•</span>
-        <span>Instant analytics &amp; history</span>
-        <span>•</span>
-        <span>KR-ready for print &amp; screens</span>
+      {/* Minimal advanced link, aligned right */}
+      <div className="mt-2 flex justify-end">
         <button
           type="button"
           onClick={onOpenAdvanced}
-          className="ml-auto text-xs font-medium underline-offset-2 hover:underline"
-          style={{ color: "var(--color-subtle)" }}
+          className="text-[11px] font-medium underline-offset-2 hover:underline"
+          style={{ color: textColor }}
         >
-          Advanced create
+          Advanced
         </button>
       </div>
     </GlassCard>

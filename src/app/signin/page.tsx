@@ -108,7 +108,7 @@ function SignInInner() {
       {/* Right: kompiphoto fills 50% of the screen */}
       <div className="relative hidden md:block">
         <Image
-          src="/kompiphoto.png"
+          src="/kompisignin.png"
           alt="Kompi visual"
           fill
           priority

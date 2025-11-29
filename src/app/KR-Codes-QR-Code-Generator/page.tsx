@@ -1,81 +1,13 @@
 import Link from "next/link";
 import { FooterCTA } from "@/components/footer-cta";
+import InfoScreenTwo from "@/components/infoscreens/two";
 import "./kr-codes.css";
 
 export default function KRCodesQRGeneratorPage() {
   return (
     <main className="wf-page">
-      {/* HeroA – Full-height product hero */}
-      <section className="wf-section heroA">
-        <div className="wf-container hero-layout">
-          <div className="hero-copy">
-            <p className="eyebrow">Kompi · KR Codes · K-Cards</p>
-            <h1 className="hero-title">
-              Turn every Kompi link into a
-              <span className="wf-serif-accent"> living </span>
-              QR code.
-            </h1>
-            <p className="hero-subtitle">
-              Generate on-brand KR Codes that stay in sync with your Kompi links
-              and K-Cards — so you never reprint just to update a URL.
-            </p>
-            <div className="hero-ctas">
-              <Link href="/signin" className="wf-button-primary">
-                Start free with Kompi
-              </Link>
-              <Link href="/dashboard/kr-codes" className="wf-button-secondary">
-                View KR Codes dashboard
-              </Link>
-            </div>
-            <p className="hero-meta">
-              No code. No design files. Just clean QR + smart links in one calm
-              Kompi workspace.
-            </p>
-          </div>
-
-          <div className="hero-panel">
-            <div className="hero-panel-card">
-              <div className="hero-panel-header">
-                <span className="hero-panel-label">Live KR Code preview</span>
-                <span className="hero-panel-pill">Syncs with links</span>
-              </div>
-              <div className="hero-panel-body">
-                <div className="hero-panel-qr-shell">
-                  <div className="hero-panel-qr-grid">
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                </div>
-                <div className="hero-panel-details">
-                  <p className="hero-panel-title">“Winter menu” KR Code</p>
-                  <p className="hero-panel-text">
-                    Change the destination link in Kompi and this KR Code keeps
-                    working — everywhere it&apos;s printed or saved.
-                  </p>
-                  <ul className="hero-panel-list">
-                    <li>Attach to any Kompi link</li>
-                    <li>Drop onto K-Cards in seconds</li>
-                    <li>Track scans in Kompi Analytics</li>
-                  </ul>
-                  <div className="hero-panel-footer">
-                    <span className="dot-accent" />
-                    <span className="hero-panel-footer-text">
-                      Works across links, QR, and K-Cards in one dashboard.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero – reuse InfoScreenTwo */}
+      <InfoScreenTwo />
 
       {/* LogosBar – Trusted by */}
       <section className="wf-section logosBar">

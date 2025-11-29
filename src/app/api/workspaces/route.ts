@@ -27,6 +27,21 @@ async function generateUniqueSlug(base: string) {
   return `${base}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+// GET /api/workspaces
+// Returns the current user's workspaces for selection UIs.
+export async function GET(_req: Request) {
+  const user = await requireUser();
+
+  const workspaces = await prisma.workspace.findMany({
+    where: { ownerId: user.id },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return NextResponse.json({ workspaces });
+}
+
+// POST /api/workspaces
+// Creates a new workspace for the current user.
 export async function POST(req: Request) {
   const user = await requireUser();
   const body = await req.json().catch(() => ({}));

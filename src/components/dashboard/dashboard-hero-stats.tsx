@@ -1,8 +1,13 @@
 "use client";
 
-import Image from "next/image";
-import { GlassCard } from "@/components/dashboard/glass-card";
-import { Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Eye,
+  Link2,
+  MousePointer2,
+  QrCode,
+  FilePlus2,
+} from "lucide-react";
 
 type DashboardMode = "overview" | "performance";
 
@@ -17,174 +22,75 @@ type DashboardHeroStatsProps = {
   };
 };
 
-// Pattern: HeroA_Dashboard
-export function DashboardHeroStats({
-  hasLinks,
-  dashboardMode,
-  onModeChange,
-  stats,
-}: DashboardHeroStatsProps) {
+const formatNumber = (value: number) => {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}m`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
+  return value.toLocaleString();
+};
+
+export function DashboardHeroStats({ stats }: DashboardHeroStatsProps) {
   const { totalClicks, activeLinks, avgClicks } = stats;
 
+  // Derived temporary stats until you wire real data
+  const linksCreated = activeLinks;
+  const qrCodesCreated = 0;
+  const qrScans = totalClicks;
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Defer state update to the next animation frame to satisfy
+    // react-hooks/set-state-in-effect (no synchronous setState in the effect body)
+    const frame = requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  const cards = [
+    { label: "Clicks", metric: formatNumber(totalClicks), Icon: Eye },
+    { label: "Links", metric: formatNumber(activeLinks), Icon: Link2 },
+    { label: "Avg / link", metric: formatNumber(avgClicks), Icon: MousePointer2 },
+    { label: "Links made", metric: formatNumber(linksCreated), Icon: FilePlus2 },
+    { label: "QRs made", metric: formatNumber(qrCodesCreated), Icon: QrCode },
+    { label: "QR scans", metric: formatNumber(qrScans), Icon: QrCode },
+  ];
+
   return (
-    <section className="relative">
-      <GlassCard
-        className="relative overflow-hidden flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8"
-        // keep card styling purely via tokens
-      >
-        {/* Left: copy + controls + KPIs */}
-        <div className="relative z-10 flex flex-1 flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <span
-              className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.16em] uppercase"
-              style={{
-                backgroundColor: "var(--color-accent-soft)",
-                color: "var(--color-text)",
-                border: "1px solid var(--color-border)",
-              }}
-            >
-              <Sparkles className="mr-1 h-3.5 w-3.5" />
-              Dashboard
-            </span>
-          </div>
+    <section className="space-y-4 sm:space-y-5">
+      <h1 className="text-xl font-semibold sm:text-2xl">Lifetime totals</h1>
 
-          <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold leading-tight">
-              Your{" "}
+      {/* One row, clean, evenly spaced */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+        {cards.map(({ label, metric, Icon }, index) => (
+          <div
+            key={label}
+            className={`flex items-center gap-3 rounded-[24px] px-4 py-3 sm:px-5 sm:py-4 transition-all duration-300
+              ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
+            style={{
+              backgroundColor: "var(--muted)",
+              transitionDelay: `${index * 60}ms`,
+            }}
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70">
+              <Icon className="h-4 w-4" style={{ color: "var(--color-subtle)" }} />
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-lg font-semibold sm:text-xl">{metric}</span>
               <span
-                style={{
-                  fontFamily:
-                    "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
-                  fontStyle: "italic",
-                }}
-              >
-                Kompi
-              </span>{" "}
-              workspace at a glance
-            </h1>
-            <p
-              className="text-sm sm:text-base max-w-xl"
-              style={{ color: "var(--color-subtle)" }}
-            >
-              {hasLinks
-                ? "Track how every Kompi link and Kompi Code™ is performing, then create your next move in seconds."
-                : "Create your first Kompi link or Kompi Code™ and see your clicks, scans and campaigns come to life."}
-            </p>
-          </div>
-
-          {/* Mode toggle */}
-          <div
-            className="inline-flex items-center rounded-full p-1 gap-1 mt-1"
-            style={{
-              backgroundColor: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <button
-              onClick={() => onModeChange("overview")}
-              className="px-3 py-1.5 rounded-full text-xs font-medium"
-              style={
-                dashboardMode === "overview"
-                  ? {
-                      backgroundColor: "var(--color-accent-soft)",
-                      color: "var(--color-text)",
-                    }
-                  : { color: "var(--color-subtle)" }
-              }
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => onModeChange("performance")}
-              className="px-3 py-1.5 rounded-full text-xs font-medium"
-              style={
-                dashboardMode === "performance"
-                  ? {
-                      backgroundColor: "var(--color-accent-soft)",
-                      color: "var(--color-text)",
-                    }
-                  : { color: "var(--color-subtle)" }
-              }
-            >
-              Performance focus
-            </button>
-          </div>
-
-          {/* KPIs row */}
-          <div className="mt-4 grid grid-cols-3 gap-4 max-w-md">
-            <div>
-              <p
-                className="mb-1 text-xs"
+                className="text-xs sm:text-sm"
                 style={{ color: "var(--color-subtle)" }}
               >
-                Total clicks
-              </p>
-              <p className="text-xl font-semibold">
-                {totalClicks.toLocaleString()}
-              </p>
-              <p
-                className="text-[11px]"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                Across all Kompi links
-              </p>
-            </div>
-            <div>
-              <p
-                className="mb-1 text-xs"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                Active links
-              </p>
-              <p className="text-xl font-semibold">
-                {activeLinks.toLocaleString()}
-              </p>
-              <p
-                className="text-[11px]"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                In this workspace
-              </p>
-            </div>
-            <div>
-              <p
-                className="mb-1 text-xs"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                Avg clicks / link
-              </p>
-              <p className="text-xl font-semibold">
-                {avgClicks.toLocaleString()}
-              </p>
-              <p
-                className="text-[11px]"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                Simple average
-              </p>
+                {label}
+              </span>
             </div>
           </div>
-        </div>
-
-        {/* Right: hero image block */}
-        <div className="relative flex-1 min-h-[180px] sm:min-h-[220px] md:min-h-[260px]">
-          <div
-            className="absolute inset-0 rounded-2xl"
-            style={{
-              backgroundColor: "var(--color-bg)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <Image
-              src="/herobg.png"
-              alt="Kompi dashboard hero"
-              fill
-              priority
-              className="rounded-2xl object-cover"
-            />
-          </div>
-        </div>
-      </GlassCard>
+        ))}
+      </div>
     </section>
   );
 }

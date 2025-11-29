@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+const FREE_LINK_LIMIT = 20;
+
 export type LinkListItem = {
   id: string;
   code: string | null;
@@ -94,6 +96,10 @@ export function LinksListClient({
   }
 
   const noLinksAtAll = links.length === 0;
+  const usedLinks = links.length;
+  const remainingLinks = Math.max(FREE_LINK_LIMIT - usedLinks, 0);
+  const isAtLimit = usedLinks >= FREE_LINK_LIMIT;
+
 
   const handleToggleActive = (linkId: string, nextActive: boolean) => {
     // If parent provided a handler, delegate to it
@@ -136,6 +142,10 @@ export function LinksListClient({
           </h1>
           <p className="text-sm text-[color:var(--color-subtle)]">
             Manage short links, track engagements, and jump into analytics.
+          </p>
+          <p className="text-xs text-[color:var(--color-subtle)]">
+            {usedLinks} / {FREE_LINK_LIMIT} links used on the Free plan
+            {isAtLimit ? " – delete a link to create more." : ""}
           </p>
         </div>
 

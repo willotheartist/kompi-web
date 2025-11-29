@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -23,6 +25,7 @@ model User {
   workspaces Workspace[]
   krCodes    KRCode[]
   sessions   Session[] // <- back relation for Session.user
+  menus      Menu[]
 
   @@index([email])
 }
@@ -67,6 +70,12 @@ model VerificationToken {
 /// ---------------------------
 /// App models
 /// ----------------------------
+
+enum Plan {
+  FREE
+  CREATOR
+}
+
 model Workspace {
   id        String    @id @default(cuid())
   name      String
@@ -78,6 +87,7 @@ model Workspace {
   links     Link[]
   owner     User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   krCodes   KRCode[]
+  plan      Plan      @default(FREE)
 
   @@index([ownerId])
   @@index([slug])
@@ -156,4 +166,27 @@ model KCard {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model Menu {
+  id     String @id @default(cuid())
+  userId String // Kompi user id (from your existing User model)
+
+  title       String
+  slug        String  @unique
+  description String?
+
+  // Branding
+  logoUrl       String?
+  accentHex     String? // primary brand / highlight colour
+  backgroundHex String? // page background colour
+
+  // Menu structure
+  sections Json
+
+  scanCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }

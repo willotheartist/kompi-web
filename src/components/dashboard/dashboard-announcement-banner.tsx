@@ -3,9 +3,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { Zap } from "lucide-react";
 
-// Pattern: Banner_AnnouncementPro
 export function DashboardAnnouncementBanner() {
   const router = useRouter();
 
@@ -14,82 +12,75 @@ export function DashboardAnnouncementBanner() {
       className="relative overflow-hidden"
       style={{
         borderRadius: "var(--wf-radius-lg)",
+        backgroundColor: "#1e2330",
       }}
     >
-      {/* Hero background image */}
-      <div className="relative w-full min-h-[220px] sm:min-h-[260px] md:min-h-[320px] lg:min-h-[360px]">
-        <Image
-          src="/herobg.png"
-          alt="Kompi V2 hero background"
-          fill
-          priority
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-
-        {/* Content overlay */}
-        <div className="relative z-10 flex h-full items-center px-6 py-8 sm:px-10 sm:py-10 md:px-16 md:py-14">
-          <div
-            className="flex flex-col gap-5 sm:gap-6 md:gap-7 max-w-xl"
-            style={{
-              color: "var(--color-bg)",
-              fontFamily:
-                "var(--font-inter-tight), system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-            }}
+      <div className="relative flex flex-col items-start gap-8 px-6 py-8 sm:px-10 sm:py-10 lg:flex-row lg:items-center lg:justify-between lg:px-12">
+        {/* Left: text content */}
+        <div className="flex max-w-xl flex-col gap-4">
+          <span
+            className="text-[11px] font-semibold uppercase tracking-[0.18em]"
+            style={{ color: "#8b9bff" }}
           >
-            {/* New product pill – fixed width + pink token */}
+            Kompi Pro · Analytics
+          </span>
+
+          <h2 className="text-3xl leading-tight tracking-tight sm:text-4xl">
+            <span className="block font-semibold text-slate-50">
+              See every click
+            </span>
             <span
-              className="inline-flex items-center justify-center rounded-full border px-6 py-2 text-[11px] font-semibold tracking-[0.16em] uppercase"
+              className="block text-3xl sm:text-[2.4rem] leading-tight"
               style={{
-                backgroundColor: "var(--color-accent-pink)", // use subtle token so theme can make this pink
-                color: "var(--color-text)",
-                borderColor: "var(--color-subtle)",
-                maxWidth: "280px",
+                fontFamily:
+                  "var(--font-instrument-serif), var(--font-inter-tight), system-ui, serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                letterSpacing: "-0.03em",
+                color: "#ffffff",
               }}
             >
-              New product
+              clearly.
             </span>
+          </h2>
 
-            {/* Heading + body */}
-            <div className="space-y-3 sm:space-y-4">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold leading-tight">
-                Kompi.{" "}
-                <span
-                  style={{
-                    fontFamily:
-                      "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
-                    fontStyle: "italic",
-                  }}
-                >
-                  V2
-                </span>
-              </h2>
+          <p className="max-w-md text-sm leading-relaxed text-slate-300 sm:text-base">
+            Upgrade to Kompi Pro for full-history analytics, faster redirects
+            and KR insights on every link — right inside your dashboard.
+          </p>
 
-              {/* Force 3-line layout like the design */}
-              <p className="text-sm sm:text-base md:text-lg max-w-xl">
-                <span className="block">
-                  Unlock your full potential with Kompi&apos;s new tools.
-                </span>
-                <span className="block">
-                  Make your world clickable and
-                </span>
-                <span className="block">track your impact.</span>
-              </p>
-            </div>
+          {/* (removed the extra tagline line, as requested) */}
 
-            {/* CTA button */}
+          <div className="mt-2 flex flex-wrap items-center gap-3">
             <Button
               type="button"
               onClick={() => router.push("/pricing")}
-              className="inline-flex w-max items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold"
-              style={{
-                backgroundColor: "var(--color-accent)",
-                color: "var(--color-text)",
-                borderRadius: "999px",
-              }}
+              className="rounded-full px-5 py-2.5 text-sm font-semibold"
             >
-              <Zap className="h-4 w-4" />
-              Go Pro
+              Upgrade to Kompi Pro
             </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/analytics")}
+              className="rounded-full border-slate-500 bg-transparent text-sm font-medium text-slate-100 hover:bg-slate-100/5"
+            >
+              View sample analytics
+            </Button>
+          </div>
+        </div>
+
+        {/* Right: hero image, contained, no crop */}
+        <div className="relative mt-4 w-full max-w-sm self-stretch lg:mt-0 lg:self-center">
+          <div className="relative h-64 w-full md:h-72">
+            <Image
+              src="/kompi-analytics.png"
+              alt="Kompi analytics preview"
+              fill
+              priority
+              className="object-contain"
+            />
           </div>
         </div>
       </div>

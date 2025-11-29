@@ -7,20 +7,74 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { requireUser, getActiveWorkspace } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+
+const FREE_LINK_LIMIT = 20;
+const CREATOR_LINK_LIMIT = 100;
+const CREATOR_QR_LIMIT = 100;
+const CREATOR_KCARD_LIMIT = 1;
+
+// Always treat this page as dynamic (user + workspace dependent)
+export const dynamic = "force-dynamic";
+
+// Server action to upgrade the active workspace to Creator
+async function upgradeToCreator() {
+  "use server";
+
+  const user = await requireUser();
+  const workspace = await getActiveWorkspace(user.id, null);
+  if (!workspace) return;
+
+  // Already on Creator – nothing to do
+  if ((workspace as { plan?: string | null }).plan === "CREATOR") {
+    return;
+  }
+
+  await prisma.workspace.update({
+    where: { id: workspace.id },
+    data: { plan: "CREATOR" },
+  });
+
+  // Revalidate key views that depend on plan / limits
+  revalidatePath("/dashboard/settings/billing");
+  revalidatePath("/links");
+  revalidatePath("/dashboard");
+}
 
 // Pattern: Settings/DetailSection
-export default function DashboardBillingSettingsPage() {
-  const currentPlan = {
-    name: "Free",
-    price: "£0 / month",
-    description: "Perfect while you're testing Kompi.",
-    features: [
-      "Unlimited short links",
-      "1 workspace",
-      "Basic analytics",
-      "Standard support",
-    ],
-  };
+export default async function DashboardBillingSettingsPage() {
+  const user = await requireUser();
+  const workspace = await getActiveWorkspace(user.id, null);
+
+  // Older workspaces might not have a plan yet – treat as FREE
+  const plan = (workspace as { plan?: string | null } | null)?.plan ?? "FREE";
+  const isCreator = plan === "CREATOR";
+
+  const currentPlan = isCreator
+    ? {
+        name: "Creator",
+        price: "£9.99 / month",
+        description: "More headroom for links, KR codes and K-cards.",
+        features: [
+          `Up to ${CREATOR_LINK_LIMIT} short links`,
+          `Up to ${CREATOR_QR_LIMIT} KR / QR codes`,
+          `${CREATOR_KCARD_LIMIT} Kompi K-card`,
+          "Better limits for growing creators",
+        ],
+      }
+    : {
+        name: "Free",
+        price: "£0 / month",
+        description: "Perfect while you're testing Kompi.",
+        features: [
+          `Up to ${FREE_LINK_LIMIT} short links`,
+          "1 workspace",
+          "Basic analytics",
+          "Standard support",
+        ],
+      };
 
   return (
     <section
@@ -57,10 +111,8 @@ export default function DashboardBillingSettingsPage() {
       >
         <CardHeader>
           <CardTitle className="text-base">Current plan</CardTitle>
-          <CardDescription
-            style={{ color: "var(--color-subtle)" }}
-          >
-            Plan details are static for now. Stripe / Lemon Squeezy will plug
+          <CardDescription style={{ color: "var(--color-subtle)" }}>
+            Plan details are basic for now. Stripe / Lemon Squeezy will plug
             in here.
           </CardDescription>
         </CardHeader>
@@ -91,9 +143,14 @@ export default function DashboardBillingSettingsPage() {
             <Button variant="outline" asChild>
               <Link href="/pricing">View pricing</Link>
             </Button>
-            <Button asChild>
-              <Link href="/pricing">Upgrade plan</Link>
-            </Button>
+
+            {isCreator ? (
+              <Button disabled>On Creator plan</Button>
+            ) : (
+              <form action={upgradeToCreator}>
+                <Button type="submit">Upgrade to Creator</Button>
+              </form>
+            )}
           </div>
 
           <p

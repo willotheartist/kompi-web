@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
@@ -6,6 +5,9 @@ import type { Prisma } from "@prisma/client";
 
 // Store arbitrary K-Card editor state as JSON
 type KCardPayload = Prisma.InputJsonObject;
+
+const KCARD_FREE_LIMIT = 0;
+const KCARD_CREATOR_LIMIT = 1;
 
 export async function GET(_req: NextRequest) {
   try {
@@ -49,11 +51,44 @@ export async function PUT(req: NextRequest) {
     let kcard;
 
     if (existing) {
+      // Editing an existing K-Card is always allowed (no limit check).
       kcard = await prisma.kCard.update({
         where: { id: existing.id },
         data: { data: payload },
       });
     } else {
+      // Creating the first K-Card – enforce plan and limits.
+
+      const workspaces = await prisma.workspace.findMany({
+        where: { ownerId: user.id },
+      });
+
+      const hasCreator = workspaces.some((ws) => ws.plan === "CREATOR");
+      const limit = hasCreator ? KCARD_CREATOR_LIMIT : KCARD_FREE_LIMIT;
+
+      if (limit <= 0) {
+        return NextResponse.json(
+          {
+            error:
+              "K-Card editor is part of the Creator plan. Upgrade to create your first K-Card.",
+          },
+          { status: 402 }
+        );
+      }
+
+      const count = await prisma.kCard.count({
+        where: { userId: user.id },
+      });
+
+      if (count >= limit) {
+        return NextResponse.json(
+          {
+            error: `Creator plan limit reached: you can create up to ${limit} Kompi K-Card${limit === 1 ? "" : "s"}.`,
+          },
+          { status: 402 }
+        );
+      }
+
       kcard = await prisma.kCard.create({
         data: {
           userId: user.id,

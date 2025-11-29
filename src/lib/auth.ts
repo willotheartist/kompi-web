@@ -6,8 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 
-// Temporary debug log – shows which client ID NextAuth is actually using
-console.log("NextAuth GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+
 
 export const authOptions: NextAuthOptions = {
   providers: [

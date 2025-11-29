@@ -6,6 +6,13 @@ import { requireUser, getActiveWorkspace } from "@/lib/auth";
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+const FREE_QR_LIMIT = 20;
+
+
+
+
+const CREATOR_QR_LIMIT = 100;
+
 const BodySchema = z.object({
   destination: z.string().min(1),
   title: z.string().max(120).optional(),
@@ -145,6 +152,25 @@ export async function POST(req: Request) {
           ownerId: user.id,
         },
       }));
+
+    // --- plan-based KR / QR limits ---
+    const qrLimit =
+      workspace.plan === "CREATOR" ? CREATOR_QR_LIMIT : FREE_QR_LIMIT;
+
+    const qrCount = await prisma.kRCode.count({
+      where: { workspaceId: workspace.id },
+    });
+
+    if (qrCount >= qrLimit) {
+      const isCreator = workspace.plan === "CREATOR";
+      const prefix = isCreator ? "Creator plan limit" : "Free plan limit";
+
+      return new NextResponse(
+        `${prefix} reached: you can create up to ${qrLimit} KR / QR codes in this workspace.`,
+        { status: 402 },
+      );
+    }
+    // ----------------------------------
 
     let shortLinkId: string | null = null;
     let qrDestination = finalUrl;

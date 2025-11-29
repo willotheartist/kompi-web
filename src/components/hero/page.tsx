@@ -6,15 +6,18 @@ import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
+const luxeEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
 const heroContainer: Variants = {
   hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.8,
-      ease: [0.22, 0.61, 0.36, 1], // smoother, more premium curve
-      staggerChildren: 0.16,
+      duration: 1.2,
+      ease: luxeEase, // slower, more luxe curve
+      staggerChildren: 0.22,
+      delayChildren: 0.2,
     },
   },
 };
@@ -25,8 +28,8 @@ const heroItem: Variants = {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.7,
-      ease: [0.22, 0.61, 0.36, 1],
+      duration: 1.0,
+      ease: luxeEase,
     },
   },
 };
@@ -36,7 +39,7 @@ const heroItem: Variants = {
  */
 export default function Hero() {
   return (
-    <Section className="wf-section-hero">
+    <Section className="wf-section-hero h-screen flex items-center">
       <Container>
         <motion.div
           className="wf-hero-grid"
@@ -45,35 +48,43 @@ export default function Hero() {
           animate="visible"
         >
           {/* Hero copy */}
-          <motion.div className="wf-hero-copy" variants={heroItem}>
-            <p className="wf-eyebrow">
-              Kompi Links · For studios, agencies &amp; modern creators
+          <motion.div
+            className="wf-hero-copy max-w-md md:max-w-lg"
+            variants={heroItem}
+          >
+            <p className="wf-eyebrow tracking-[0.22em] text-xs">
+              KOMPI WORLD
             </p>
 
-            <Heading as="h1" className="wf-hero-heading">
-              Run your links, bios &amp; campaigns
+            <Heading
+              as="h1"
+              className="wf-hero-heading font-normal"
+            >
+              Do more with your
+              <br />
               <span className="wf-hero-heading-line">
-                from one{" "}
-                <span className="wf-serif-accent">opinionated</span>{" "}
-                platform.
+                <span className="wf-serif-accent">
+                  digital world
+                </span>
+                .
               </span>
             </Heading>
 
             <p className="wf-hero-body">
-              Short links, smart bio pages, QR codes and live analytics —
-              in a UI that doesn&apos;t feel like 2013. Built so you can
-              sell, report and grow without duct-taping five tools.
+              Kompi brings your links, bios, QR codes and campaigns into
+              one intentional place. Share what matters, see what works,
+              and stay in control from a calm, modern dashboard.
             </p>
 
-            {/* CTAs – slightly slower + from bottom */}
+            {/* CTAs – slower, luxe stagger */}
             <motion.div
               className="wf-hero-ctas"
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 26 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                delay: 0.3,
-                duration: 0.6,
-                ease: [0.22, 0.61, 0.36, 1],
+                delay: 0.45,
+                duration: 0.9,
+                ease: luxeEase,
               }}
             >
               <Button asChild className="wf-btn-primary">
@@ -84,21 +95,21 @@ export default function Hero() {
                 variant="outline"
                 className="wf-btn-secondary"
               >
-                <Link href="/pricing">View pricing</Link>
+                <Link href="/pricing">See plans &amp; pricing</Link>
               </Button>
             </motion.div>
 
             <motion.p
               className="wf-hero-meta"
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                delay: 0.5,
-                duration: 0.55,
-                ease: [0.22, 0.61, 0.36, 1],
+                delay: 0.7,
+                duration: 0.85,
+                ease: luxeEase,
               }}
             >
-              No credit card. Unlimited links on launch promo.
+              No credit card needed. Launch promo: unlimited links.
             </motion.p>
           </motion.div>
 

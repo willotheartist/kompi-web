@@ -372,3 +372,23 @@ body {
     padding-inline: 20px;
   }
 }
+
+/* Hide scrollbars for our horizontal rails */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE / old Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+/* Chrome / Safari / Edge */
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Global serif accent – uses Next/font var(--font-accent) */
+.wf-serif-accent {
+  font-family: var(--font-accent), Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+}
