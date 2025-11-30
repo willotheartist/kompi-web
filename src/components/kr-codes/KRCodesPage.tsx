@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  type ChangeEvent,
+} from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import QRCode from "react-qr-code";
+import QRCodeStyling from "qr-code-styling";
 import Link from "next/link";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,10 +48,8 @@ import {
 const FormSchema = z.object({
   title: z.string().max(120).optional(),
 
-  // Generic destination (what we actually send to the backend).
   destination: z.string().optional(),
 
-  // “Smart” fields for non-URL types:
   smsNumber: z.string().optional(),
   smsMessage: z.string().optional(),
 
@@ -55,7 +61,14 @@ const FormSchema = z.object({
 
   plainText: z.string().optional(),
 
-  // (In future we could add contact / vCard fields, etc.)
+  // Wi-Fi
+  wifiSsid: z.string().optional(),
+  wifiPassword: z.string().optional(),
+  wifiSecurity: z.enum(["WPA", "WEP", "nopass"]).optional(),
+  wifiHidden: z.boolean().optional(),
+
+  // Location
+  locationQuery: z.string().optional(),
 
   utm_source: z.string().optional(),
   utm_medium: z.string().optional(),
@@ -73,8 +86,13 @@ type KRCodeStyle = {
   margin?: number;
   ecLevel?: "L" | "M" | "Q" | "H";
   logoUrl?: string | null;
+  logoEnabled?: boolean;
+  logoBgTransparent?: boolean;
   frameVariant?: "none" | "label-bottom" | "label-top";
   frameLabel?: string;
+  dotsType?: "square" | "dots" | "rounded";
+  cornersSquareType?: "square" | "extra-rounded";
+  cornersDotType?: "square" | "dot";
   [key: string]: unknown;
 };
 
@@ -97,71 +115,70 @@ const CONTENT_TYPES = [
   {
     id: "url",
     label: "URL",
-    description: "Send people to any website, campaign or landing page.",
+    description: "Send people to any website or landing page.",
     icon: Globe2,
     utmSupported: true,
   },
   {
     id: "file",
     label: "File / PDF",
-    description: "Link to a hosted PDF, menu, brochure, or media file.",
+    description: "Menus, brochures or media files.",
     icon: FileText,
     utmSupported: true,
   },
   {
     id: "social",
     label: "Social / Bio",
-    description: "Drive people to a social profile or your Kompi bio page.",
+    description: "Instagram, TikTok or a Kompi bio.",
     icon: UserCircle2,
     utmSupported: true,
   },
   {
     id: "app",
     label: "App / Store",
-    description: "Send users to an app store or download URL.",
+    description: "App Store or Play Store links.",
     icon: AppWindow,
     utmSupported: true,
   },
   {
     id: "sms",
     label: "SMS",
-    description: "Open the SMS app with a prefilled message.",
+    description: "Open SMS with a prefilled message.",
     icon: MessageCircle,
     utmSupported: false,
   },
   {
     id: "email",
     label: "Email",
-    description: "Open the default email client with subject and body.",
+    description: "Open email with subject & body.",
     icon: Mail,
     utmSupported: false,
   },
   {
     id: "phone",
     label: "Phone",
-    description: "Start a phone call when the code is scanned.",
+    description: "Start a phone call.",
     icon: Phone,
     utmSupported: false,
   },
   {
     id: "text",
     label: "Plain text",
-    description: "Show plain text (instructions, coupon codes, secrets).",
+    description: "Show any short text or code.",
     icon: TypeIcon,
     utmSupported: false,
   },
   {
     id: "wifi",
     label: "Wi-Fi",
-    description: "Let people join a Wi-Fi network without typing passwords.",
+    description: "Join a network without typing.",
     icon: Wifi,
     utmSupported: false,
-    disabled: true, // teaser
   },
   {
     id: "event",
     label: "Event",
-    description: "Add an event (calendar) straight to someone’s device.",
+    description: "Calendar event (coming soon).",
     icon: Calendar,
     utmSupported: false,
     disabled: true,
@@ -169,15 +186,14 @@ const CONTENT_TYPES = [
   {
     id: "location",
     label: "Location",
-    description: "Open a location or coordinates in Maps.",
+    description: "Open an address in Maps.",
     icon: MapPin,
     utmSupported: false,
-    disabled: true,
   },
   {
     id: "multi",
     label: "Multi-URL",
-    description: "Different URLs for iOS, Android, desktop (coming soon).",
+    description: "Different URLs per device (soon).",
     icon: Layers,
     utmSupported: false,
     disabled: true,
@@ -190,7 +206,6 @@ function labelForContentType(id: string | null | undefined) {
   if (!id) return null;
   const found = CONTENT_TYPES.find((t) => t.id === id);
   if (found) return found.label;
-  // Backward compatibility for older codes that used "website", etc.
   if (id === "website") return "URL";
   if (id === "file") return "File";
   return id;
@@ -203,8 +218,13 @@ type StyleState = {
   margin: number;
   ecLevel: "L" | "M" | "Q" | "H";
   logoUrl?: string | null;
+  logoEnabled: boolean;
+  logoBgTransparent: boolean;
   frameVariant: "none" | "label-bottom" | "label-top";
   frameLabel: string;
+  dotsType: "square" | "dots" | "rounded";
+  cornersSquareType: "square" | "extra-rounded";
+  cornersDotType: "square" | "dot";
 };
 
 const DEFAULT_STYLE: StyleState = {
@@ -214,8 +234,13 @@ const DEFAULT_STYLE: StyleState = {
   margin: 2,
   ecLevel: "M",
   logoUrl: null,
+  logoEnabled: false,
+  logoBgTransparent: true,
   frameVariant: "none",
   frameLabel: "SCAN ME",
+  dotsType: "rounded",
+  cornersSquareType: "extra-rounded",
+  cornersDotType: "dot",
 };
 
 const COLOR_PRESETS: Array<{
@@ -266,12 +291,15 @@ function destinationPlaceholder(type: ContentTypeId) {
       return "https://instagram.com/your-handle";
     case "app":
       return "https://apps.apple.com/app/...";
+    case "wifi":
+      return "Network name (SSID)";
+    case "location":
+      return "Address or coordinates";
     default:
       return "https://...";
   }
 }
 
-// Build a human-readable label for error correction
 function errorCorrectionLabel(level: StyleState["ecLevel"]) {
   switch (level) {
     case "L":
@@ -292,14 +320,158 @@ function errorCorrectionDescription(level: StyleState["ecLevel"]) {
     case "L":
       return "Best for simple, high-contrast codes without logos.";
     case "M":
-      return "Balanced size & readability. Great default choice.";
+      return "Balanced size & readability.";
     case "Q":
-      return "More redundancy so damaged codes still scan.";
+      return "More redundancy, good for print.";
     case "H":
-      return "Maximum protection when you place logos or busy colors.";
+      return "Max protection with logos & colors.";
     default:
       return "";
   }
+}
+
+type StyledQRCodeProps = {
+  value: string;
+  size: number;
+  style: StyleState;
+};
+
+function StyledQRCode({ value, size, style }: StyledQRCodeProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const qrRef = useRef<QRCodeStyling | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const instance = new QRCodeStyling({
+      width: size,
+      height: size,
+      data: value || "https://kompi.app",
+      margin: style.margin,
+      image:
+        style.logoEnabled && style.logoUrl ? style.logoUrl : undefined,
+      imageOptions: {
+        hideBackgroundDots: style.logoBgTransparent,
+        imageSize: 0.35,
+        crossOrigin: "anonymous",
+      },
+      qrOptions: {
+        errorCorrectionLevel:
+          style.logoEnabled && style.logoUrl ? "H" : style.ecLevel,
+      },
+      dotsOptions: {
+        color: style.fg,
+        type: style.dotsType,
+      },
+      cornersSquareOptions: {
+        type: style.cornersSquareType,
+        color: style.fg,
+      },
+      cornersDotOptions: {
+        type: style.cornersDotType,
+        color: style.fg,
+      },
+      backgroundOptions: {
+        color: style.bg,
+      },
+    });
+
+    qrRef.current = instance;
+    instance.append(containerRef.current);
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = "";
+      }
+      qrRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!qrRef.current) return;
+
+    qrRef.current.update({
+      width: size,
+      height: size,
+      data: value || "https://kompi.app",
+      margin: style.margin,
+      image:
+        style.logoEnabled && style.logoUrl ? style.logoUrl : undefined,
+      imageOptions: {
+        hideBackgroundDots: style.logoBgTransparent,
+        imageSize: 0.35,
+        crossOrigin: "anonymous",
+      },
+      qrOptions: {
+        errorCorrectionLevel:
+          style.logoEnabled && style.logoUrl ? "H" : style.ecLevel,
+      },
+      dotsOptions: {
+        color: style.fg,
+        type: style.dotsType,
+      },
+      cornersSquareOptions: {
+        type: style.cornersSquareType,
+        color: style.fg,
+      },
+      cornersDotOptions: {
+        type: style.cornersDotType,
+        color: style.fg,
+      },
+      backgroundOptions: {
+        color: style.bg,
+      },
+    });
+  }, [
+    value,
+    size,
+    style.fg,
+    style.bg,
+    style.margin,
+    style.ecLevel,
+    style.logoUrl,
+    style.logoEnabled,
+    style.logoBgTransparent,
+    style.dotsType,
+    style.cornersSquareType,
+    style.cornersDotType,
+  ]);
+
+  return <div ref={containerRef} />;
+}
+
+function getStyleForCode(code: KRCode): StyleState {
+  const base = DEFAULT_STYLE;
+  const s = (code.style ?? {}) as KRCodeStyle;
+
+  return {
+    ...base,
+    fg: (s.fg as string) || base.fg,
+    bg: (s.bg as string) || base.bg,
+    size: base.size,
+    margin: (s.margin as number) ?? base.margin,
+    ecLevel: (s.ecLevel as StyleState["ecLevel"]) ?? base.ecLevel,
+    logoUrl:
+      (s.logoUrl as string | null | undefined) ?? base.logoUrl ?? null,
+    logoEnabled:
+      (s.logoEnabled as boolean | undefined) ??
+      (s.logoUrl ? true : base.logoEnabled),
+    logoBgTransparent:
+      (s.logoBgTransparent as boolean | undefined) ??
+      base.logoBgTransparent,
+    frameVariant:
+      (s.frameVariant as StyleState["frameVariant"]) ??
+      base.frameVariant,
+    frameLabel: (s.frameLabel as string) ?? base.frameLabel,
+    dotsType:
+      (s.dotsType as StyleState["dotsType"]) ?? base.dotsType,
+    cornersSquareType:
+      (s.cornersSquareType as StyleState["cornersSquareType"]) ??
+      base.cornersSquareType,
+    cornersDotType:
+      (s.cornersDotType as StyleState["cornersDotType"]) ??
+      base.cornersDotType,
+  };
 }
 
 export default function KRCodesPage() {
@@ -318,10 +490,8 @@ export default function KRCodesPage() {
   const [hoverType, setHoverType] =
     useState<ContentTypeId | null>(null);
   const [showUtms, setShowUtms] = useState(false);
+  const [showMoreTypes, setShowMoreTypes] = useState(false);
   const [designerOpen, setDesignerOpen] = useState(true);
-
-  const [uploadingLogoFor, setUploadingLogoFor] =
-    useState<string | null>(null);
 
   const [downloadMenuFor, setDownloadMenuFor] =
     useState<string | null>(null);
@@ -331,7 +501,11 @@ export default function KRCodesPage() {
   const [createdPreview, setCreatedPreview] =
     useState<KRCode | null>(null);
 
+  const searchParams = useSearchParams();
+  const krcodeIdFromQuery = searchParams.get("krcodeId");
+
   const form = useForm<FormValues>({
+    // still using any resolver, keep simple
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(FormSchema as any),
     defaultValues: {
@@ -344,6 +518,11 @@ export default function KRCodesPage() {
       emailBody: "",
       phoneNumber: "",
       plainText: "",
+      wifiSsid: "",
+      wifiPassword: "",
+      wifiSecurity: "WPA",
+      wifiHidden: false,
+      locationQuery: "",
       utm_source: "",
       utm_medium: "",
       utm_campaign: "",
@@ -361,6 +540,12 @@ export default function KRCodesPage() {
   const phoneNumber = form.watch("phoneNumber");
   const plainText = form.watch("plainText");
 
+  const wifiSsid = form.watch("wifiSsid");
+  const wifiPassword = form.watch("wifiPassword");
+  const wifiSecurity = form.watch("wifiSecurity");
+  const wifiHidden = form.watch("wifiHidden");
+  const locationQuery = form.watch("locationQuery");
+
   const utm_source = form.watch("utm_source");
   const utm_medium = form.watch("utm_medium");
   const utm_campaign = form.watch("utm_campaign");
@@ -377,7 +562,6 @@ export default function KRCodesPage() {
   );
 
   const urlPreview = useMemo(() => {
-    // For “URL-like” types: build URL with UTMs.
     if (
       contentType === "url" ||
       contentType === "file" ||
@@ -397,12 +581,10 @@ export default function KRCodesPage() {
           u.searchParams.set("utm_content", utm_content);
         return u.toString();
       } catch {
-        // Not a full URL – just return raw value.
         return destination;
       }
     }
 
-    // SMS
     if (contentType === "sms") {
       if (!smsNumber) return "";
       const base = `sms:${smsNumber}`;
@@ -411,7 +593,6 @@ export default function KRCodesPage() {
       return `${base}?&body=${encoded}`;
     }
 
-    // Email
     if (contentType === "email") {
       if (!emailAddress) return "";
       const params = new URLSearchParams();
@@ -423,18 +604,31 @@ export default function KRCodesPage() {
         : `mailto:${emailAddress}`;
     }
 
-    // Phone
     if (contentType === "phone") {
       if (!phoneNumber) return "";
       return `tel:${phoneNumber}`;
     }
 
-    // Plain text
     if (contentType === "text") {
       return plainText || "";
     }
 
-    // Fallback
+    if (contentType === "wifi") {
+      if (!wifiSsid) return "";
+      const t = wifiSecurity || "WPA";
+      const hidden = wifiHidden ? "H:true;" : "";
+      const passwordPart =
+        t === "nopass" ? "" : `P:${wifiPassword ?? ""};`;
+      return `WIFI:T:${t};S:${wifiSsid};${passwordPart}${hidden};`;
+    }
+
+    if (contentType === "location") {
+      if (!locationQuery) return "";
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        locationQuery,
+      )}`;
+    }
+
     return watchDestination || "";
   }, [
     contentType,
@@ -446,6 +640,11 @@ export default function KRCodesPage() {
     emailBody,
     phoneNumber,
     plainText,
+    wifiSsid,
+    wifiPassword,
+    wifiSecurity,
+    wifiHidden,
+    locationQuery,
     utm_source,
     utm_medium,
     utm_campaign,
@@ -484,8 +683,14 @@ export default function KRCodesPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!krcodeIdFromQuery || codes.length === 0) return;
+    const target = codes.find((c) => c.id === krcodeIdFromQuery);
+    if (!target) return;
+    handleEdit(target);
+  }, [krcodeIdFromQuery, codes]);
+
   function buildDestinationForSubmit(values: FormValues): string | null {
-    // URL-like
     if (
       contentType === "url" ||
       contentType === "file" ||
@@ -508,7 +713,6 @@ export default function KRCodesPage() {
           u.searchParams.set("utm_content", values.utm_content);
         return u.toString();
       } catch {
-        // Allow non-URL values too – just raw string
         return raw;
       }
     }
@@ -543,7 +747,22 @@ export default function KRCodesPage() {
       return values.plainText;
     }
 
-    // fallback
+    if (contentType === "wifi") {
+      if (!values.wifiSsid) return null;
+      const t = values.wifiSecurity || "WPA";
+      const hidden = values.wifiHidden ? "H:true;" : "";
+      const passwordPart =
+        t === "nopass" ? "" : `P:${values.wifiPassword ?? ""};`;
+      return `WIFI:T:${t};S:${values.wifiSsid};${passwordPart}${hidden};`;
+    }
+
+    if (contentType === "location") {
+      if (!values.locationQuery) return null;
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        values.locationQuery,
+      )}`;
+    }
+
     const fallback = values.destination?.trim();
     return fallback || null;
   }
@@ -589,9 +808,14 @@ export default function KRCodesPage() {
         size: style.size,
         margin: style.margin,
         ecLevel: style.ecLevel,
-        logoUrl: style.logoUrl ?? null,
+        logoUrl: style.logoEnabled ? style.logoUrl ?? null : null,
+        logoEnabled: style.logoEnabled,
+        logoBgTransparent: style.logoBgTransparent,
         frameVariant: style.frameVariant,
         frameLabel: style.frameLabel,
+        dotsType: style.dotsType,
+        cornersSquareType: style.cornersSquareType,
+        cornersDotType: style.cornersDotType,
       },
     };
 
@@ -639,7 +863,6 @@ export default function KRCodesPage() {
     }
   }
 
-  // Prefill the create form from an existing KR Code (lightweight "edit" flow").
   function handleEdit(code: KRCode) {
     form.reset({
       title: code.title ?? "",
@@ -651,6 +874,11 @@ export default function KRCodesPage() {
       emailBody: "",
       phoneNumber: "",
       plainText: "",
+      wifiSsid: "",
+      wifiPassword: "",
+      wifiSecurity: "WPA",
+      wifiHidden: false,
+      locationQuery: "",
       utm_source: "",
       utm_medium: "",
       utm_campaign: "",
@@ -667,8 +895,13 @@ export default function KRCodesPage() {
         margin,
         ecLevel,
         logoUrl,
+        logoEnabled,
+        logoBgTransparent,
         frameVariant,
         frameLabel,
+        dotsType,
+        cornersSquareType,
+        cornersDotType,
       } = styleFromCode as KRCodeStyle;
       setStyle((prev) => ({
         fg: (fg as string) || prev.fg,
@@ -681,12 +914,27 @@ export default function KRCodesPage() {
           (logoUrl as string | null | undefined) ??
           prev.logoUrl ??
           null,
+        logoEnabled:
+          (logoEnabled as boolean | undefined) ??
+          (!!logoUrl || prev.logoEnabled),
+        logoBgTransparent:
+          (logoBgTransparent as boolean | undefined) ??
+          prev.logoBgTransparent,
         frameVariant:
           (frameVariant as StyleState["frameVariant"]) ??
           prev.frameVariant,
         frameLabel:
           (frameLabel as string | undefined) ??
           prev.frameLabel,
+        dotsType:
+          (dotsType as StyleState["dotsType"]) ??
+          prev.dotsType,
+        cornersSquareType:
+          (cornersSquareType as StyleState["cornersSquareType"]) ??
+          prev.cornersSquareType,
+        cornersDotType:
+          (cornersDotType as StyleState["cornersDotType"]) ??
+          prev.cornersDotType,
       }));
     }
 
@@ -695,7 +943,6 @@ export default function KRCodesPage() {
     }
   }
 
-  // Delete KR Code and remove from list (called only after branded confirm).
   async function handleDelete(code: KRCode) {
     setError(null);
     try {
@@ -725,51 +972,103 @@ export default function KRCodesPage() {
       0,
     ) ?? 0;
 
+  const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setStyle((s) => ({
+        ...s,
+        logoUrl: result,
+        logoEnabled: true,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
       <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-6 md:gap-8 md:pb-12">
-        {/* Page header – more luxe */}
-        <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-3">
-            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-4xl">
-              Create a new{" "}
-              <span className="font-serif italic">Kompi Code</span>
-            </h1>
-            <p className="max-w-xl text-base text-[color:var(--color-subtle)]">
-              One QR code for menus, posters, stickers and more. Pick an
-              action, style it to your brand, and download in print-ready
-              formats.
-            </p>
-          </div>
-          <div className="inline-flex min-w-[240px] flex-col gap-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 text-right shadow-sm">
-            <span className="inline-flex h-1.5 w-1.5 self-end rounded-full bg-[var(--color-accent)]" />
-            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[color:var(--color-subtle)]">
-              Workspace activity
-            </p>
-            <div className="mt-1 flex items-baseline justify-end gap-4 text-[color:var(--color-text)]">
-              <div className="text-left">
-                <p className="text-[11px] text-[color:var(--color-subtle)]">
-                  Codes
-                </p>
-                <p className="text-lg font-semibold leading-tight">
-                  {codes.length}
-                </p>
-              </div>
-              <span className="h-7 w-px bg-[var(--color-border)]" />
-              <div className="text-left">
-                <p className="text-[11px] text-[color:var(--color-subtle)]">
-                  Total scans
-                </p>
-                <p className="text-lg font-semibold leading-tight">
-                  {totalScans}
-                </p>
-              </div>
+                <header className="flex flex-col gap-5 rounded-3xl bg-[#020617] px-4 py-4 md:flex-row md:items-stretch md:justify-between md:px-7 md:py-6">
+          {/* LEFT: static hero image + copy */}
+          <div className="flex flex-1 flex-col gap-4 md:flex-row md:items-center">
+            <div className="md:w-[360px]">
+              <Image
+                src="/kompi-platform.png"
+                alt="Kompi Codes hero"
+                width={720}
+                height={240}
+                className="h-auto w-full rounded-2xl"
+                priority
+              />
             </div>
-            <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
-              All scans route through Kompi for full analytics.
-            </p>
+
+            <div className="space-y-2 md:pl-6">
+              <p
+                className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A5B0FF]"
+                style={{
+                  fontFamily: "var(--font-instrument-serif), system-ui, serif",
+                }}
+              >
+                KR / QR CODES
+              </p>
+              <h1 className="text-2xl leading-tight text-white md:text-3xl">
+                <span className="mr-1.5 font-medium">Create a new</span>
+                <span
+                  className="italic"
+                  style={{
+                    fontFamily: "var(--font-instrument-serif), system-ui, serif",
+                    fontWeight: 500,
+                  }}
+                >
+                  Kompi Code
+                </span>
+              </h1>
+              <p className="max-w-md text-xs text-[#9CA3AF] md:text-sm">
+                Drop a destination, pick the look, and ship QR stickers that feel like part of your brand.
+              </p>
+            </div>
+          </div>
+
+          {/* RIGHT: workspace activity pill */}
+          <div className="mt-4 w-full max-w-xs md:mt-0 md:ml-6">
+            <div className="flex h-full flex-col justify-between rounded-[32px] bg-[#A5B0FF] px-6 py-5 text-[#020617]">
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.18em]"
+                style={{
+                  fontFamily: "var(--font-instrument-serif), system-ui, serif",
+                }}
+              >
+                WORKSPACE ACTIVITY
+              </p>
+
+              <div className="mt-3 flex items-end justify-between gap-6">
+                <div>
+                  <p className="text-[11px] opacity-80">Codes</p>
+                  <p className="text-2xl font-semibold leading-tight">
+                    {codes.length}
+                  </p>
+                </div>
+
+                <div className="flex items-end gap-6">
+                  <div className="h-10 w-px bg-[#7D8BFF]" />
+                  <div className="text-right">
+                    <p className="text-[11px] opacity-80">Total scans</p>
+                    <p className="text-2xl font-semibold leading-tight">
+                      {totalScans}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="mt-3 text-[11px] leading-snug opacity-80">
+                All scans route through Kompi for clean, workspace-level analytics.
+              </p>
+            </div>
           </div>
         </header>
+
 
         {qrLimitError && (
           <div className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-xs md:flex-row md:items-center md:justify-between md:text-sm">
@@ -805,74 +1104,126 @@ export default function KRCodesPage() {
 
         {/* Row 1: create + preview */}
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1.05fr)]">
-          {/* LEFT: create + design */}
+          {/* LEFT */}
           <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
             <CardHeader className="border-b border-[var(--color-border)] pb-4">
               <CardTitle className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
-                <span>Code details</span>
+                <span>Code setup</span>
                 <span className="text-[11px] font-normal text-[color:var(--color-subtle)]">
-                  1. Choose type • 2. Set destination • 3. Design
+                  1. Type • 2. Destination • 3. Design
                 </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5 pt-4">
-              {/* Hover banner */}
+              {/* Type summary bar */}
               <div className="rounded-xl bg-[var(--color-bg)] px-4 py-2 text-[11px] text-[color:var(--color-subtle)]">
-                {activeType.description}
+                {activeType.label} • {activeType.description}
               </div>
+              {/* Type selector */}
+              {(() => {
+                const enabledTypes = CONTENT_TYPES.filter(
+                  (t) => !("disabled" in t && t.disabled),
+                );
+                const primaryTypes = enabledTypes.slice(0, 6);
+                const extraTypes = enabledTypes.slice(6);
 
-              {/* Type selector – more "tile" like */}
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {CONTENT_TYPES.map((t) => {
-                  const isActive = t.id === contentType;
-                  const Icon = t.icon;
-                  const disabled =
-                    "disabled" in t && t.disabled;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() =>
-                        !disabled && setContentType(t.id)
-                      }
-                      onMouseEnter={() =>
-                        !disabled && setHoverType(t.id)
-                      }
-                      onMouseLeave={() =>
-                        !disabled && setHoverType(null)
-                      }
-                      className={[
-                        "flex items-center gap-2 rounded-2xl border px-3 py-2 text-left text-[11px] transition",
-                        disabled
-                          ? "cursor-not-allowed border-dashed border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)]/60"
-                          : isActive
-                          ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[color:var(--color-text)] shadow-sm"
-                          : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
-                      ].join(" ")}
-                    >
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-[var(--color-surface)]">
-                        <Icon className="h-3.5 w-3.5" />
-                      </span>
-                      <div className="flex-1 space-y-0.5">
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.12em]">
-                          {t.label}
-                        </div>
-                        <div className="line-clamp-2 text-[10px] text-[color:var(--color-subtle)]">
-                          {t.description}
-                        </div>
-                      </div>
-                      {disabled && (
-                        <span className="ml-0.5 rounded-full bg-[var(--color-bg)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em]">
-                          Soon
+                return (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Primary types */}
+                    {primaryTypes.map((t) => {
+                      const Icon = t.icon;
+                      const isActive = t.id === contentType;
+
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setContentType(t.id)}
+                          onMouseEnter={() => setHoverType(t.id)}
+                          onMouseLeave={() => setHoverType(null)}
+                          className={
+                            "group inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-left text-xs transition " +
+                            (isActive
+                              ? "border-[#A5B0FF] bg-[#A5B0FF]/90 text-black shadow-sm"
+                              : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-text)] hover:border-[#A5B0FF] hover:bg-[#A5B0FF]/20")
+                          }
+                        >
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span
+                            className="whitespace-nowrap"
+                            style={{
+                              fontFamily:
+                                '"Instrument Serif", system-ui, serif',
+                            }}
+                          >
+                            {t.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+
+                    {/* Extra types – revealed when clicking More */}
+                    {showMoreTypes &&
+                      extraTypes.map((t) => {
+                        const Icon = t.icon;
+                        const isActive = t.id === contentType;
+
+                        return (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => setContentType(t.id)}
+                            onMouseEnter={() => setHoverType(t.id)}
+                            onMouseLeave={() => setHoverType(null)}
+                            className={
+                              "group inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-left text-xs transition " +
+                              (isActive
+                                ? "border-[#A5B0FF] bg-[#A5B0FF]/90 text-black shadow-sm"
+                                : "border-[var(--color-border)] bg-[var(--color-bg)] text-[color:var(--color-text)] hover:border-[#A5B0FF] hover:bg-[#A5B0FF]/20")
+                            }
+                          >
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
+                              <Icon className="h-4 w-4" />
+                            </span>
+                            <span
+                              className="whitespace-nowrap"
+                              style={{
+                                fontFamily:
+                                  '"Instrument Serif", system-ui, serif',
+                              }}
+                            >
+                              {t.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+
+                    {/* More button */}
+                    {extraTypes.length > 0 && !showMoreTypes && (
+                      <button
+                        type="button"
+                        onClick={() => setShowMoreTypes(true)}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-xs text-[color:var(--color-text)] hover:border-[#A5B0FF] hover:bg-[#A5B0FF]/10"
+                      >
+                        <span
+                          className="whitespace-nowrap"
+                          style={{
+                            fontFamily:
+                              '"Instrument Serif", system-ui, serif',
+                          }}
+                        >
+                          More
                         </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Create form */}
+
               <form
                 className="space-y-4"
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -886,13 +1237,13 @@ export default function KRCodesPage() {
                     </span>
                   </label>
                   <Input
-                    className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                    className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                     placeholder="Spring campaign flyer"
                     {...form.register("title")}
                   />
                 </div>
 
-                {/* Dynamic content fields */}
+                {/* Dynamic fields */}
                 {(() => {
                   if (
                     contentType === "url" ||
@@ -903,10 +1254,10 @@ export default function KRCodesPage() {
                     return (
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          Destination URL
+                          Destination
                         </label>
                         <Input
-                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                           placeholder={destinationPlaceholder(
                             contentType,
                           )}
@@ -924,7 +1275,7 @@ export default function KRCodesPage() {
                             Phone number
                           </label>
                           <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                             placeholder="+44 7700 900000"
                             {...form.register("smsNumber")}
                           />
@@ -934,7 +1285,7 @@ export default function KRCodesPage() {
                             Message
                           </label>
                           <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                             placeholder="Hey, I found you from this poster…"
                             {...form.register("smsMessage")}
                           />
@@ -951,7 +1302,7 @@ export default function KRCodesPage() {
                             Email address
                           </label>
                           <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                             placeholder="hello@brand.com"
                             {...form.register("emailAddress")}
                           />
@@ -962,7 +1313,7 @@ export default function KRCodesPage() {
                               Subject
                             </label>
                             <Input
-                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                              className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                               placeholder="Kompi campaign enquiry"
                               {...form.register("emailSubject")}
                             />
@@ -972,7 +1323,7 @@ export default function KRCodesPage() {
                               Body (optional)
                             </label>
                             <Input
-                              className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                              className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                               placeholder="Hi there, I scanned your QR code and…"
                               {...form.register("emailBody")}
                             />
@@ -989,7 +1340,7 @@ export default function KRCodesPage() {
                           Phone number
                         </label>
                         <Input
-                          className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                           placeholder="+44 7700 900000"
                           {...form.register("phoneNumber")}
                         />
@@ -1005,7 +1356,7 @@ export default function KRCodesPage() {
                         </label>
                         <Textarea
                           rows={3}
-                          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                          className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                           placeholder="Show a coupon code, instructions, or any short text…"
                           {...form.register("plainText")}
                         />
@@ -1013,14 +1364,81 @@ export default function KRCodesPage() {
                     );
                   }
 
-                  // Fallback if we add more types later.
+                  if (contentType === "wifi") {
+                    return (
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Network name (SSID)
+                          </label>
+                          <Input
+                            className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
+                            placeholder="MyCafe-Wifi"
+                            {...form.register("wifiSsid")}
+                          />
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[color:var(--color-text)]">
+                              Password
+                            </label>
+                            <Input
+                              className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
+                              placeholder="Optional"
+                              {...form.register("wifiPassword")}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[color:var(--color-text)]">
+                              Security
+                            </label>
+                            <select
+                              className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[color:var(--color-text)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
+                              {...form.register("wifiSecurity")}
+                            >
+                              <option value="WPA">WPA/WPA2</option>
+                              <option value="WEP">WEP</option>
+                              <option value="nopass">
+                                Open network
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+                        <label className="flex items-center gap-2 text-[11px] text-[color:var(--color-subtle)]">
+                          <input
+                            type="checkbox"
+                            className="h-3 w-3 rounded border border-[var(--color-border)]"
+                            {...form.register("wifiHidden")}
+                          />
+                          Hidden network
+                        </label>
+                      </div>
+                    );
+                  }
+
+                  if (contentType === "location") {
+                    return (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Address or coordinates
+                        </label>
+                        <Input
+                          className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
+                          placeholder="221B Baker Street, London"
+                          {...form.register("locationQuery")}
+                        />
+                      </div>
+                    );
+                  }
+
+                  // fallback
                   return (
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-[color:var(--color-text)]">
                         Destination / payload
                       </label>
                       <Input
-                        className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                        className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                         placeholder="This is what your QR encodes…"
                         {...form.register("destination")}
                       />
@@ -1028,7 +1446,7 @@ export default function KRCodesPage() {
                   );
                 })()}
 
-                {/* Advanced tracking – UTM card */}
+                {/* UTM card */}
                 {utmSupported && (
                   <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4">
                     <div className="mb-3 flex items-center justify-between gap-4">
@@ -1038,11 +1456,10 @@ export default function KRCodesPage() {
                         </span>
                         <div className="space-y-0.5">
                           <p className="text-sm font-medium text-[color:var(--color-text)]">
-                            Advanced tracking (UTM)
+                            UTM tracking
                           </p>
                           <p className="text-xs text-[color:var(--color-subtle)]">
-                            Append campaign parameters so you know which
-                            posters, menus or campaigns drive scans.
+                            Optional campaign parameters for analytics.
                           </p>
                         </div>
                       </div>
@@ -1056,7 +1473,7 @@ export default function KRCodesPage() {
                             : "border border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-text)]")
                         }
                       >
-                        {showUtms ? "UTM enabled" : "Enable UTM"}
+                        {showUtms ? "UTM enabled" : "Add UTM"}
                       </button>
                     </div>
 
@@ -1064,51 +1481,51 @@ export default function KRCodesPage() {
                       <div className="grid gap-3 md:grid-cols-2">
                         <div className="space-y-1.5">
                           <label className="text-xs text-[color:var(--color-text)]">
-                            UTM source
+                            Source
                           </label>
                           <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                             placeholder="poster, newsletter"
                             {...form.register("utm_source")}
                           />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-xs text-[color:var(--color-text)]">
-                            UTM medium
+                            Medium
                           </label>
                           <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                             placeholder="qr, print"
                             {...form.register("utm_medium")}
                           />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-xs text-[color:var(--color-text)]">
-                            UTM campaign
+                            Campaign
                           </label>
                           <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                             placeholder="spring_launch"
                             {...form.register("utm_campaign")}
                           />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-xs text-[color:var(--color-text)]">
-                            UTM term (optional)
+                            Term (optional)
                           </label>
                           <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                             placeholder="headline_a"
                             {...form.register("utm_term")}
                           />
                         </div>
                         <div className="space-y-1.5 md:col-span-2">
                           <label className="text-xs text-[color:var(--color-text)]">
-                            UTM content (optional)
+                            Content (optional)
                           </label>
                           <Textarea
                             rows={2}
-                            className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
+                            className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
                             placeholder="banner_variant_a"
                             {...form.register("utm_content")}
                           />
@@ -1116,30 +1533,15 @@ export default function KRCodesPage() {
                       </div>
                     ) : (
                       <p className="text-[11px] text-[color:var(--color-subtle)]">
-                        Turn this on to track exactly which offline touchpoints
-                        are working.
+                        Add source & campaign tags when you want to track
+                        offline placements.
                       </p>
                     )}
                   </div>
                 )}
 
-                {/* Form footer */}
-                <div className="flex flex-col gap-4 border-t border-[var(--color-border)] pt-3 md:flex-row md:items-center md:justify-between">
-                  <div className="text-xs text-[color:var(--color-subtle)]">
-                    <div>Destination preview:</div>
-                    <div className="mt-1 break-all text-[11px] text-[color:var(--color-text)]">
-                      {urlPreview || "—"}
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={creating}
-                    className="md:min-w-[180px] rounded-full bg-[var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] shadow-sm hover:shadow-md disabled:opacity-70"
-                  >
-                    {creating ? "Creating…" : "Create Kompi Code"}
-                  </Button>
-                </div>
+                {/* Footer */}
+                {(formError || error) && (<p className="pt-1 text-xs text-red-400">{formError || error}</p>)}
 
                 {(formError || error) && (
                   <p className="pt-1 text-xs text-red-400">
@@ -1148,10 +1550,10 @@ export default function KRCodesPage() {
                 )}
               </form>
 
-              {/* Divider between form and design controls */}
+              {/* Divider */}
               <div className="h-px w-full bg-[var(--color-border)]" />
 
-              {/* Design & frame – collapsible */}
+              {/* Design panel */}
               <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4">
                 <button
                   type="button"
@@ -1166,11 +1568,10 @@ export default function KRCodesPage() {
                     </span>
                     <div className="space-y-0.5">
                       <p className="text-sm font-medium text-[color:var(--color-text)]">
-                        Design &amp; frame
+                        Design
                       </p>
                       <p className="text-xs text-[color:var(--color-subtle)]">
-                        Color presets, error correction and frames – keep
-                        everything on-brand.
+                        Colors, shapes & logo – keep codes on-brand.
                       </p>
                     </div>
                   </div>
@@ -1187,344 +1588,632 @@ export default function KRCodesPage() {
                 </button>
 
                 {designerOpen && (
-                  <div className="mt-4 space-y-4">
-                    {/* Presets */}
-                    <div className="space-y-2">
+                  <div className="mt-4 space-y-6">
+                    {/* COLORS SECTION */}
+                    <section className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
                       <div className="flex items-center justify-between gap-2">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          Color presets
-                        </label>
-                        <span className="text-[10px] text-[color:var(--color-subtle)]">
-                          Start from a theme, then tweak.
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {COLOR_PRESETS.map((preset) => (
-                          <button
-                            key={preset.id}
-                            type="button"
-                            onClick={() =>
-                              setStyle((s) => ({
-                                ...s,
-                                fg: preset.fg,
-                                bg: preset.bg,
-                              }))
-                            }
-                            className="flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-[11px] text-[color:var(--color-text)] hover:border-[var(--color-accent)]"
-                          >
-                            <span
-                              className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-border)]"
-                              style={{ background: preset.bg }}
-                            >
-                              <span
-                                className="h-2 w-2 rounded-[5px]"
-                                style={{ background: preset.fg }}
-                              />
-                            </span>
-                            <span>{preset.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Foreground / background pickers */}
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          Foreground (dots)
-                        </label>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="color"
-                            className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
-                            value={style.fg}
-                            onChange={(e) =>
-                              setStyle((s) => ({
-                                ...s,
-                                fg: e.target.value,
-                              }))
-                            }
-                          />
-                          <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
-                            value={style.fg}
-                            onChange={(e) =>
-                              setStyle((s) => ({
-                                ...s,
-                                fg: e.target.value,
-                              }))
-                            }
-                          />
+                        <div>
+                          <p className="text-xs font-semibold text-[color:var(--color-text)]">
+                            Colors
+                          </p>
+                          <p className="text-[11px] text-[color:var(--color-subtle)]">
+                            Brand colors, size & error correction.
+                          </p>
                         </div>
                       </div>
 
+                      {/* Presets */}
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          Background
-                        </label>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="color"
-                            className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
-                            value={style.bg}
-                            onChange={(e) =>
-                              setStyle((s) => ({
-                                ...s,
-                                bg: e.target.value,
-                              }))
-                            }
-                          />
-                          <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)]"
-                            value={style.bg}
-                            onChange={(e) =>
-                              setStyle((s) => ({
-                                ...s,
-                                bg: e.target.value,
-                              }))
-                            }
-                          />
+                        <div className="flex items-center justify-between gap-2">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Color presets
+                          </label>
+                          <span className="text-[10px] text-[color:var(--color-subtle)]">
+                            Tap to start, then tweak.
+                          </span>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Size & margin */}
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          Size ({style.size}px)
-                        </label>
-                        <input
-                          type="range"
-                          min={128}
-                          max={320}
-                          value={style.size}
-                          onChange={(e) =>
-                            setStyle((s) => ({
-                              ...s,
-                              size: Number(e.target.value),
-                            }))
-                          }
-                          className="w-full accent-[var(--color-accent)]"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          Margin ({style.margin})
-                        </label>
-                        <input
-                          type="range"
-                          min={0}
-                          max={8}
-                          value={style.margin}
-                          onChange={(e) =>
-                            setStyle((s) => ({
-                              ...s,
-                              margin: Number(e.target.value),
-                            }))
-                          }
-                          className="w-full accent-[var(--color-accent)]"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Error correction */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-[color:var(--color-text)]">
-                        Error correction
-                      </label>
-                      <div className="grid gap-2 text-[11px] md:grid-cols-4">
-                        {(
-                          [
-                            { level: "L", name: "Light" },
-                            { level: "M", name: "Recommended" },
-                            { level: "Q", name: "High" },
-                            { level: "H", name: "Max" },
-                          ] as const
-                        ).map((opt) => (
-                          <button
-                            key={opt.level}
-                            type="button"
-                            className={[
-                              "flex flex-col rounded-2xl border px-2.5 py-2 text-left transition",
-                              style.ecLevel === opt.level
-                                ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)]"
-                                : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
-                            ].join(" ")}
-                            onClick={() =>
-                              setStyle((s) => ({
-                                ...s,
-                                ecLevel:
-                                  opt.level as StyleState["ecLevel"],
-                              }))
-                            }
-                          >
-                            <span className="text-[11px] font-semibold">
-                              {errorCorrectionLabel(
-                                opt.level as StyleState["ecLevel"],
-                              )}
-                            </span>
-                            <span className="mt-0.5 text-[10px] leading-snug">
-                              {errorCorrectionDescription(
-                                opt.level as StyleState["ecLevel"],
-                              )}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Frame controls */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <label className="text-xs font-medium text-[color:var(--color-text)]">
-                          Frame style
-                        </label>
-                        <span className="text-[10px] text-[color:var(--color-subtle)]">
-                          Make your code feel like a sticker on posters or
-                          tables.
-                        </span>
-                      </div>
-
-                      {/* Frame variants as big tiles */}
-                      <div className="grid gap-2 sm:grid-cols-3">
-                        {[
-                          {
-                            id: "none",
-                            label: "Minimal",
-                            description: "Just the code, no frame.",
-                          },
-                          {
-                            id: "label-bottom",
-                            label: "Sticker",
-                            description:
-                              "Rounded sticker with label under the code.",
-                          },
-                          {
-                            id: "label-top",
-                            label: "Banner",
-                            description:
-                              "Headline above the code – great for posters.",
-                          },
-                        ].map((f) => {
-                          const isActive =
-                            style.frameVariant ===
-                            (f.id as StyleState["frameVariant"]);
-
-                          return (
+                        <div className="flex flex-wrap gap-2">
+                          {COLOR_PRESETS.map((preset) => (
                             <button
-                              key={f.id}
+                              key={preset.id}
                               type="button"
                               onClick={() =>
                                 setStyle((s) => ({
                                   ...s,
-                                  frameVariant:
-                                    f.id as StyleState["frameVariant"],
+                                  fg: preset.fg,
+                                  bg: preset.bg,
                                 }))
                               }
-                              className={[
-                                "flex flex-col gap-1 rounded-2xl border px-3 py-2 text-left text-[11px] transition",
-                                isActive
-                                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)] shadow-sm"
-                                  : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
-                              ].join(" ")}
+                              className="flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-[11px] text-[color:var(--color-text)] hover:border-[var(--color-accent)]"
                             >
-                              {/* Tiny frame preview */}
-                              <div className="flex items-center justify-center">
-                                <div className="flex flex-col items-center gap-1 rounded-xl bg-[var(--color-bg)] px-3 py-2">
-                                  {f.id === "label-top" && (
-                                    <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
-                                  )}
-
-                                  <div className="h-7 w-7 rounded-[7px] border border-[var(--color-border)] bg-[var(--color-surface)]" />
-
-                                  {f.id === "label-bottom" && (
-                                    <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="mt-1">
-                                <div className="font-semibold">
-                                  {f.label}
-                                </div>
-                                <div className="text-[10px] leading-snug">
-                                  {f.description}
-                                </div>
-                              </div>
+                              <span
+                                className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-border)]"
+                                style={{ background: preset.bg }}
+                              >
+                                <span
+                                  className="h-2 w-2 rounded-[5px]"
+                                  style={{ background: preset.fg }}
+                                />
+                              </span>
+                              <span>{preset.label}</span>
                             </button>
-                          );
-                        })}
+                          ))}
+                        </div>
                       </div>
 
-                      {/* Label controls only when frame is active */}
-                      {style.frameVariant !== "none" && (
+                      {/* Foreground / background */}
+                      <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <div className="mt-2 flex items-center justify-between gap-2">
-                            <label className="text-xs font-medium text-[color:var(--color-text)]">
-                              Frame label
-                            </label>
-                            <span className="text-[10px] text-[color:var(--color-subtle)]">
-                              Short, action-oriented copy works best.
-                            </span>
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Foreground
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+                              value={style.fg}
+                              onChange={(e) =>
+                                setStyle((s) => ({
+                                  ...s,
+                                  fg: e.target.value,
+                                }))
+                              }
+                            />
+                            <Input
+                              className="h-9 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[color:var(--color-text)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
+                              value={style.fg}
+                              onChange={(e) =>
+                                setStyle((s) => ({
+                                  ...s,
+                                  fg: e.target.value,
+                                }))
+                              }
+                            />
                           </div>
+                        </div>
 
-                          <Input
-                            className="h-9 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-                            value={style.frameLabel}
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Background
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              className="h-8 w-10 cursor-pointer rounded border border-[var(--color-border)] bg-transparent"
+                              value={style.bg}
+                              onChange={(e) =>
+                                setStyle((s) => ({
+                                  ...s,
+                                  bg: e.target.value,
+                                }))
+                              }
+                            />
+                            <Input
+                              className="h-9 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[color:var(--color-text)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
+                              value={style.bg}
+                              onChange={(e) =>
+                                setStyle((s) => ({
+                                  ...s,
+                                  bg: e.target.value,
+                                }))
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Size & margin */}
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Size ({style.size}px)
+                          </label>
+                          <input
+                            type="range"
+                            min={128}
+                            max={320}
+                            value={style.size}
                             onChange={(e) =>
                               setStyle((s) => ({
                                 ...s,
-                                frameLabel: e.target.value,
+                                size: Number(e.target.value),
                               }))
                             }
-                            placeholder="SCAN ME"
+                            className="w-full accent-[var(--color-accent)]"
                           />
+                        </div>
 
-                          {/* Quick presets */}
-                          <div className="flex flex-wrap gap-1.5">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Margin ({style.margin})
+                          </label>
+                          <input
+                            type="range"
+                            min={0}
+                            max={8}
+                            value={style.margin}
+                            onChange={(e) =>
+                              setStyle((s) => ({
+                                ...s,
+                                margin: Number(e.target.value),
+                              }))
+                            }
+                            className="w-full accent-[var(--color-accent)]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Error correction */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-[color:var(--color-text)]">
+                          Error correction
+                        </label>
+                        <div className="grid gap-2 text-[11px] md:grid-cols-4">
+                          {(
+                            [
+                              { level: "L", name: "Light" },
+                              { level: "M", name: "Recommended" },
+                              { level: "Q", name: "High" },
+                              { level: "H", name: "Max" },
+                            ] as const
+                          ).map((opt) => (
+                            <button
+                              key={opt.level}
+                              type="button"
+                              className={[
+                                "flex flex-col rounded-2xl border px-2.5 py-2 text-left transition",
+                                style.ecLevel === opt.level
+                                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)]"
+                                  : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
+                              ].join(" ")}
+                              onClick={() =>
+                                setStyle((s) => ({
+                                  ...s,
+                                  ecLevel:
+                                    opt.level as StyleState["ecLevel"],
+                                }))
+                              }
+                            >
+                              <span className="text-[11px] font-semibold">
+                                {errorCorrectionLabel(
+                                  opt.level as StyleState["ecLevel"],
+                                )}
+                              </span>
+                              <span className="mt-0.5 text-[10px] leading-snug">
+                                {errorCorrectionDescription(
+                                  opt.level as StyleState["ecLevel"],
+                                )}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* SHAPES SECTION */}
+                    <section className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-semibold text-[color:var(--color-text)]">
+                            Shapes
+                          </p>
+                          <p className="text-[11px] text-[color:var(--color-subtle)]">
+                            Body dots, eye frames & frames.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-3">
+                        {/* Dot style */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Dot style
+                          </label>
+                          <div className="flex flex-wrap gap-2">
                             {[
-                              "SCAN ME",
-                              "OPEN MENU",
-                              "OPEN SITE",
-                              "FOLLOW US",
-                            ].map((label) => (
+                              { id: "square", label: "Square" },
+                              { id: "dots", label: "Dots" },
+                              { id: "rounded", label: "Rounded" },
+                            ].map((opt) => {
+                              const isActive = style.dotsType === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() =>
+                                    setStyle((s) => ({
+                                      ...s,
+                                      dotsType: opt.id as StyleState["dotsType"],
+                                    }))
+                                  }
+                                  className={[
+                                    "rounded-2xl border px-2.5 py-2 text-[10px] transition",
+                                    isActive
+                                      ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)] shadow-sm"
+                                      : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
+                                  ].join(" ")}
+                                >
+                                  <div className="flex flex-col items-center gap-1.5">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]">
+                                      <div className="grid grid-cols-3 gap-[2px]">
+                                        {Array.from({ length: 9 }).map((_, i) => (
+                                          <div
+                                            key={i}
+                                            className={[
+                                              "h-1.5 w-1.5 bg-[color:var(--color-text)]",
+                                              opt.id == "square"
+                                                ? "rounded-[2px]"
+                                                : opt.id == "dots"
+                                                ? "rounded-full"
+                                                : "rounded-[999px]",
+                                            ].join(" ")}
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <span>{opt.label}</span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Corner squares */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Corner squares
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { id: "square", label: "Classic" },
+                              { id: "extra-rounded", label: "Rounded" },
+                            ].map((opt) => {
+                              const isActive = style.cornersSquareType === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() =>
+                                    setStyle((s) => ({
+                                      ...s,
+                                      cornersSquareType: opt.id as StyleState["cornersSquareType"],
+                                    }))
+                                  }
+                                  className={[
+                                    "rounded-2xl border px-2.5 py-2 text-[10px] transition",
+                                    isActive
+                                      ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)] shadow-sm"
+                                      : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
+                                  ].join(" ")}
+                                >
+                                  <div className="flex flex-col items-center gap-1.5">
+                                    <div className="relative h-10 w-10 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]">
+                                      <div
+                                        className={[
+                                          "absolute inset-1 border border-[color:var(--color-text)]",
+                                          opt.id == "square" ? "rounded-[3px]" : "rounded-[12px]",
+                                        ].join(" ")}
+                                      />
+                                    </div>
+                                    <span>{opt.label}</span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Corner dots */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Corner dots
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { id: "square", label: "Square" },
+                              { id: "dot", label: "Dot" },
+                            ].map((opt) => {
+                              const isActive = style.cornersDotType === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() =>
+                                    setStyle((s) => ({
+                                      ...s,
+                                      cornersDotType: opt.id as StyleState["cornersDotType"],
+                                    }))
+                                  }
+                                  className={[
+                                    "rounded-2xl border px-2.5 py-2 text-[10px] transition",
+                                    isActive
+                                      ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)] shadow-sm"
+                                      : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
+                                  ].join(" ")}
+                                >
+                                  <div className="flex flex-col items-center gap-1.5">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]">
+                                      <div className="flex gap-1.5">
+                                        {Array.from({ length: 3 }).map((_, i) => (
+                                          <div
+                                            key={i}
+                                            className={[
+                                              "h-2.5 w-2.5 bg-[color:var(--color-text)]",
+                                              opt.id == "square" ? "rounded-[3px]" : "rounded-full",
+                                            ].join(" ")}
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <span>{opt.label}</span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Frame style */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <label className="text-xs font-medium text-[color:var(--color-text)]">
+                            Frame style
+                          </label>
+                          <span className="text-[10px] text-[color:var(--color-subtle)]">
+                            Make it feel like a sticker.
+                          </span>
+                        </div>
+
+                        <div className="grid gap-2 sm:grid-cols-3">
+                          {[
+                            {
+                              id: "none",
+                              label: "Minimal",
+                              description: "Just the code.",
+                            },
+                            {
+                              id: "label-bottom",
+                              label: "Sticker",
+                              description: "Label below the code.",
+                            },
+                            {
+                              id: "label-top",
+                              label: "Banner",
+                              description: "Label above the code.",
+                            },
+                          ].map((f) => {
+                            const isActive = style.frameVariant === (f.id as StyleState["frameVariant"]);
+
+                            return (
                               <button
-                                key={label}
+                                key={f.id}
                                 type="button"
                                 onClick={() =>
                                   setStyle((s) => ({
                                     ...s,
-                                    frameLabel: label,
+                                    frameVariant: f.id as StyleState["frameVariant"],
                                   }))
                                 }
-                                className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1 text-[10px] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]"
+                                className={[
+                                  "flex flex-col gap-1 rounded-2xl border px-3 py-2 text-left text-[11px] transition",
+                                  isActive
+                                    ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[color:var(--color-text)] shadow-sm"
+                                    : "border-[var(--color-border)] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]",
+                                ].join(" ")}
                               >
-                                {label}
+                                <div className="flex items-center justify-center">
+                                  <div className="flex flex-col items-center gap-1 rounded-xl bg-[var(--color-bg)] px-3 py-2">
+                                    {f.id === "label-top" && (
+                                      <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
+                                    )}
+
+                                    <div className="h-7 w-7 rounded-[7px] border border-[var(--color-border)] bg-[var(--color-surface)]" />
+
+                                    {f.id === "label-bottom" && (
+                                      <div className="h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="mt-1">
+                                  <div className="font-semibold">
+                                    {f.label}
+                                  </div>
+                                  <div className="text-[10px] leading-snug">
+                                    {f.description}
+                                  </div>
+                                </div>
                               </button>
-                            ))}
-                          </div>
+                            );
+                          })}
                         </div>
+
+                        {style.frameVariant !== "none" && (
+                          <div className="space-y-2">
+                            <div className="mt-2 flex items-center justify-between gap-2">
+                              <label className="text-xs font-medium text-[color:var(--color-text)]">
+                                Frame label
+                              </label>
+                              <span className="text-[10px] text-[color:var(--color-subtle)]">
+                                Short and action-oriented works best.
+                              </span>
+                            </div>
+
+                            <Input
+                              className="h-10 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A5B0FF] focus-visible:ring-offset-0 transition-shadow"
+                              value={style.frameLabel}
+                              onChange={(e) =>
+                                setStyle((s) => ({
+                                  ...s,
+                                  frameLabel: e.target.value,
+                                }))
+                              }
+                              placeholder="SCAN ME"
+                            />
+
+                            <div className="flex flex-wrap gap-1.5">
+                              {[
+                                "SCAN ME",
+                                "OPEN MENU",
+                                "OPEN SITE",
+                                "FOLLOW US",
+                              ].map((label) => (
+                                <button
+                                  key={label}
+                                  type="button"
+                                  onClick={() =>
+                                    setStyle((s) => ({
+                                      ...s,
+                                      frameLabel: label,
+                                    }))
+                                  }
+                                  className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1 text-[10px] text-[color:var(--color-subtle)] hover:border-[var(--color-accent)] hover:text-[color:var(--color-text)]"
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </section>
+
+                    {/* LOGO SECTION */}
+                    <section className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-semibold text-[color:var(--color-text)]">
+                            Logo
+                          </p>
+                          <p className="text-[11px] text-[color:var(--color-subtle)]">
+                            Center logo, with optional background removal.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setStyle((s) => ({
+                              ...s,
+                              logoEnabled: !s.logoEnabled,
+                            }))
+                          }
+                          className={
+                            "inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium transition " +
+                            (style.logoEnabled
+                              ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[color:var(--color-text)]"
+                              : "border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-subtle)]")
+                          }
+                        >
+                          {style.logoEnabled ? "On" : "Off"}
+                        </button>
+                      </div>
+
+                      {style.logoEnabled && (
+                        <>
+                          <div className="flex items-center gap-3">
+                            <input
+                              id="designer-logo-upload"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleLogoUpload}
+                            />
+                            <label
+                              htmlFor="designer-logo-upload"
+                              className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[11px] font-medium text-[color:var(--color-text)] hover:bg-[var(--color-bg)] cursor-pointer"
+                            >
+                              Upload logo
+                            </label>
+                            {style.logoUrl && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setStyle((s) => ({
+                                    ...s,
+                                    logoUrl: null,
+                                    logoEnabled: false,
+                                  }))
+                                }
+                                className="text-[11px] text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+
+                          {style.logoUrl && (
+                            <div className="flex items-center gap-3 text-[11px] text-[color:var(--color-subtle)]">
+                              <div className="h-10 w-10 overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={style.logoUrl}
+                                  alt="Logo preview"
+                                  className="h-full w-full object-contain"
+                                />
+                              </div>
+                              <p>
+                                This logo is used in previews and PNG/SVG exports.
+                              </p>
+                            </div>
+                          )}
+
+                          <label className="flex items-center gap-2 text-[11px] text-[color:var(--color-subtle)]">
+                            <input
+                              type="checkbox"
+                              className="h-3 w-3 rounded border border-[var(--color-border)]"
+                              checked={style.logoBgTransparent}
+                              onChange={(e) =>
+                                setStyle((s) => ({
+                                  ...s,
+                                  logoBgTransparent: e.target.checked,
+                                }))
+                              }
+                            />
+                            Remove background dots behind logo
+                          </label>
+                        </>
                       )}
-                    </div>
+                    </section>
 
                     <p className="text-[11px] text-[color:var(--color-subtle)]">
-                      Logo upload and advanced shapes will plug into this same
-                      designer later – no new workflow to learn.
+                      You can also upload logos for existing codes in the list below – they’ll use the same rendering engine.
                     </p>
                   </div>
                 )}
               </div>
-            </CardContent>
+            
+              {/* NEW: Form footer CTA */}
+              <div className="mt-6 flex flex-col gap-4 border-t border-[var(--color-border)] pt-3 md:flex-row md:items-center md:justify-between">
+                <div className="text-xs text-[color:var(--color-subtle)]">
+                  <div>Destination preview</div>
+                  <div className="mt-1 break-all text-[11px] text-[color:var(--color-text)]">
+                    {urlPreview || "—"}
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-stretch gap-1 md:items-end">
+                  <Button
+                    type="button"
+                    disabled={creating}
+                    onClick={form.handleSubmit(onSubmit)}
+                    className="md:min-w-[220px] inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-[color:var(--color-text)] hover:bg-[var(--color-accent-soft)] transition disabled:opacity-60"
+                  >
+                    {creating ? "Creating…" : "Create Kompi Code"}
+                  </Button>
+                </div>
+              </div>
+
+</CardContent>
           </Card>
 
-          {/* RIGHT: preview only (sticky) */}
+          {/* RIGHT: Live preview */}
           <div className="sticky top-24">
             <Card className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
               <CardHeader className="border-b border-[var(--color-border)] pb-4">
                 <CardTitle className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
-                  <span>Live Preview</span>
+                  <span>Live preview</span>
                   <span className="text-[11px] font-normal text-[color:var(--color-subtle)]">
                     Updates as you type
                   </span>
@@ -1532,7 +2221,6 @@ export default function KRCodesPage() {
               </CardHeader>
               <CardContent className="flex flex-col gap-6 pt-4">
                 <div className="flex flex-col items-center justify-center gap-4">
-                  {/* Frame + QR */}
                   <div
                     className={[
                       "inline-flex flex-col items-center justify-center rounded-3xl",
@@ -1558,32 +2246,11 @@ export default function KRCodesPage() {
                       style={{ backgroundColor: style.bg }}
                     >
                       <div className="relative inline-block">
-                        <QRCode
+                        <StyledQRCode
                           value={urlPreview || "https://kompi.app"}
                           size={style.size}
-                          fgColor={style.fg}
-                          bgColor={style.bg}
-                          level={
-                            style.logoUrl ? "H" : style.ecLevel
-                          }
+                          style={style}
                         />
-                        {style.logoUrl && (
-                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                            <div
-                              className="flex items-center justify-center rounded-md bg-white/90"
-                              style={{
-                                width: style.size * 0.22,
-                                height: style.size * 0.22,
-                              }}
-                            >
-                              <img
-                                src={style.logoUrl}
-                                alt="Logo"
-                                className="max-h-full max-w-full object-contain"
-                              />
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -1595,17 +2262,38 @@ export default function KRCodesPage() {
                   </div>
 
                   <p className="max-w-xs text-center text-xs text-[color:var(--color-subtle)]">
-                    This is a preview of your Kompi Code. The final printed
-                    code will use your workspace’s domain and redirect
-                    through Kompi for full analytics.
+                    Final PNG/SVG downloads use your workspace domain and
+                    keep this styling.
                   </p>
                 </div>
-              </CardContent>
+              
+              {/* NEW: Form footer CTA */}
+              <div className="mt-6 flex flex-col gap-4 border-t border-[var(--color-border)] pt-3 md:flex-row md:items-center md:justify-between">
+                <div className="text-xs text-[color:var(--color-subtle)]">
+                  <div>Destination preview</div>
+                  <div className="mt-1 break-all text-[11px] text-[color:var(--color-text)]">
+                    {urlPreview || "—"}
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-stretch gap-1 md:items-end">
+                  <Button
+                    type="button"
+                    disabled={creating}
+                    onClick={form.handleSubmit(onSubmit)}
+                    className="md:min-w-[220px] inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-[color:var(--color-text)] hover:bg-[var(--color-accent-soft)] transition disabled:opacity-60"
+                  >
+                    {creating ? "Creating…" : "Create Kompi Code"}
+                  </Button>
+                </div>
+              </div>
+
+</CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Row 2: full-width "Your KR Codes" */}
+        {/* Row 2: list */}
         <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between gap-2 border-b border-[var(--color-border)] pb-4">
             <div>
@@ -1653,73 +2341,12 @@ export default function KRCodesPage() {
                       className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3 md:flex-row md:items-center md:justify-between"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="hidden rounded-xl bg-[var(--color-surface)] p-2 md:block">
-                          <div className="relative inline-block">
-                            {(() => {
-                              const styleFromCode =
-                                (code.style ??
-                                  {}) as KRCodeStyle;
-                              const hasLogo =
-                                !!(styleFromCode.logoUrl as
-                                  | string
-                                  | null
-                                  | undefined);
-                              const ecLevel =
-                                (hasLogo
-                                  ? "H"
-                                  : styleFromCode.ecLevel) ??
-                                "M";
-                              return (
-                                <QRCode
-                                  value={code.destination}
-                                  size={56}
-                                  fgColor={
-                                    styleFromCode.fg ??
-                                    "#FFFFFF"
-                                  }
-                                  bgColor={
-                                    styleFromCode.bg ??
-                                    "#020617"
-                                  }
-                                  level={
-                                    ecLevel as
-                                      | "L"
-                                      | "M"
-                                      | "Q"
-                                      | "H"
-                                  }
-                                />
-                              );
-                            })()}
-                            {(() => {
-                              const styleFromCode =
-                                (code.style ??
-                                  {}) as KRCodeStyle;
-                              const logo =
-                                styleFromCode.logoUrl as
-                                  | string
-                                  | null
-                                  | undefined;
-                              if (!logo) return null;
-                              return (
-                                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                                  <div
-                                    className="flex items-center justify-center rounded-sm bg-white/90"
-                                    style={{
-                                      width: 56 * 0.2,
-                                      height: 56 * 0.2,
-                                    }}
-                                  >
-                                    <img
-                                      src={logo}
-                                      alt="Logo"
-                                      className="max-h-full max-w-full object-contain"
-                                    />
-                                  </div>
-                                </div>
-                              );
-                            })()}
-                          </div>
+                        <div className="hidden md:block">
+                          <StyledQRCode
+                            value={code.destination}
+                            size={96}
+                            style={getStyleForCode(code)}
+                          />
                         </div>
                         <div className="space-y-1">
                           <div className="text-sm font-medium text-[color:var(--color-text)]">
@@ -1751,9 +2378,9 @@ export default function KRCodesPage() {
                           </span>
                         </div>
 
-                        {/* Actions: Edit / Delete / Download + inline confirm */}
+                        {/* Actions */}
                         <div className="relative flex items-center gap-1.5">
-                          {/* Edit icon button */}
+                          {/* Edit */}
                           <button
                             type="button"
                             onClick={() => handleEdit(code)}
@@ -1763,92 +2390,7 @@ export default function KRCodesPage() {
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
 
-                          {/* Logo upload */}
-                          <div className="relative ml-1">
-                            <input
-                              id={`logo-upload-${code.id}`}
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={async (e) => {
-                                const file =
-                                  e.target.files?.[0];
-                                if (!file) return;
-                                setUploadingLogoFor(
-                                  code.id,
-                                );
-                                try {
-                                  const fd = new FormData();
-                                  fd.append("file", file);
-                                  const res =
-                                    await fetch(
-                                      `/api/kr-codes/${code.id}/logo`,
-                                      {
-                                        method: "POST",
-                                        body: fd,
-                                        credentials:
-                                          "include",
-                                      },
-                                    );
-                                  if (!res.ok) {
-                                    console.error(
-                                      "Logo upload failed",
-                                      await res.text(),
-                                    );
-                                  } else {
-                                    const json =
-                                      await res.json();
-                                    setStyle((s) => ({
-                                      ...s,
-                                      logoUrl:
-                                        json.logoUrl as string,
-                                    }));
-                                    setCodes((prev) =>
-                                      prev.map((c) =>
-                                        c.id === code.id
-                                          ? {
-                                              ...c,
-                                              style: {
-                                                ...(c.style ??
-                                                  {}),
-                                                logoUrl:
-                                                  json.logoUrl,
-                                                ecLevel:
-                                                  "H",
-                                              },
-                                            }
-                                          : c,
-                                      ),
-                                    );
-                                  }
-                                } catch (err) {
-                                  console.error(
-                                    "Logo upload error",
-                                    err,
-                                  );
-                                } finally {
-                                  setUploadingLogoFor(
-                                    (current) =>
-                                      current ===
-                                      code.id
-                                        ? null
-                                        : current,
-                                  );
-                                  e.target.value = "";
-                                }
-                              }}
-                            />
-                            <label
-                              htmlFor={`logo-upload-${code.id}`}
-                              className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[11px] font-medium text-[color:var(--color-text)] hover:bg-[var(--color-bg)] cursor-pointer"
-                            >
-                              {uploadingLogoFor === code.id
-                                ? "Uploading…"
-                                : "Upload logo"}
-                            </label>
-                          </div>
-
-                          {/* Delete icon button (opens confirm) */}
+                          {/* Delete */}
                           <button
                             type="button"
                             onClick={() =>
@@ -1865,6 +2407,7 @@ export default function KRCodesPage() {
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
 
+                          {/* Analytics */}
                           <Link
                             href={`/kr-codes/${code.id}`}
                             className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[11px] font-medium text-[color:var(--color-text)] hover:bg-[var(--color-bg)]"
@@ -1872,7 +2415,7 @@ export default function KRCodesPage() {
                             Analytics
                           </Link>
 
-                          {/* Download button + popover */}
+                          {/* Download */}
                           <div className="relative ml-1">
                             <Button
                               type="button"
@@ -1929,7 +2472,7 @@ export default function KRCodesPage() {
                             )}
                           </div>
 
-                          {/* Inline delete confirmation popover */}
+                          {/* Delete confirm */}
                           {isDeleteOpen && (
                             <div className="absolute right-0 top-full z-20 mt-2 w-60 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-md">
                               <p className="text-xs font-medium text-[color:var(--color-text)]">
@@ -1947,10 +2490,9 @@ export default function KRCodesPage() {
                                 ?
                               </p>
                               <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
-                                This action can’t be
-                                undone and will stop
-                                tracking scans from
-                                this Kompi Code.
+                                This action can’t be undone and will
+                                stop tracking scans from this Kompi
+                                Code.
                               </p>
                               <div className="mt-3 flex items-center gap-2">
                                 <button
@@ -1983,7 +2525,29 @@ export default function KRCodesPage() {
                 })}
               </div>
             )}
-          </CardContent>
+          
+              {/* NEW: Form footer CTA */}
+              <div className="mt-6 flex flex-col gap-4 border-t border-[var(--color-border)] pt-3 md:flex-row md:items-center md:justify-between">
+                <div className="text-xs text-[color:var(--color-subtle)]">
+                  <div>Destination preview</div>
+                  <div className="mt-1 break-all text-[11px] text-[color:var(--color-text)]">
+                    {urlPreview || "—"}
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-stretch gap-1 md:items-end">
+                  <Button
+                    type="button"
+                    disabled={creating}
+                    onClick={form.handleSubmit(onSubmit)}
+                    className="md:min-w-[220px] inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-[color:var(--color-text)] hover:bg-[var(--color-accent-soft)] transition disabled:opacity-60"
+                  >
+                    {creating ? "Creating…" : "Create Kompi Code"}
+                  </Button>
+                </div>
+              </div>
+
+</CardContent>
         </Card>
       </section>
 
@@ -2011,12 +2575,10 @@ export default function KRCodesPage() {
             <div className="mt-4 flex flex-col items-center gap-3">
               <div className="inline-flex flex-col items-center justify-center rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg)] px-5 py-4">
                 <div className="rounded-2xl bg-[var(--color-surface)] p-3">
-                  <QRCode
+                  <StyledQRCode
                     value={createdPreview.destination}
                     size={192}
-                    fgColor="#020617"
-                    bgColor="#FFFFFF"
-                    level="M"
+                    style={getStyleForCode(createdPreview)}
                   />
                 </div>
                 <p className="mt-3 max-w-xs text-center text-xs text-[color:var(--color-subtle)]">

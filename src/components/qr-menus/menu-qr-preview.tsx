@@ -5,13 +5,18 @@ import QRCode from "qrcode";
 
 type MenuQrPreviewProps = {
   slug: string | null;
+  /**
+   * Compact mode: just render a small QR image/placeholder,
+   * suitable for list views (e.g. dashboard cards).
+   */
+  compact?: boolean;
 };
 
 /**
  * Small QR preview card for a /m/{slug} public menu URL.
  * Uses the `qrcode` library to generate a PNG data URL client-side.
  */
-export function MenuQrPreview({ slug }: MenuQrPreviewProps) {
+export function MenuQrPreview({ slug, compact = false }: MenuQrPreviewProps) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,7 +49,23 @@ export function MenuQrPreview({ slug }: MenuQrPreviewProps) {
     };
   }, [slug]);
 
+  // No slug: render appropriate fallback
   if (!slug) {
+    if (compact) {
+      return (
+        <div
+          className="flex h-16 w-16 items-center justify-center rounded-xl text-[10px]"
+          style={{
+            border: "1px solid var(--color-border)",
+            color: "var(--color-subtle)",
+            backgroundColor: "var(--color-bg)",
+          }}
+        >
+          No slug
+        </div>
+      );
+    }
+
     return (
       <div
         className="rounded-2xl border px-4 py-4 text-[11px]"
@@ -59,6 +80,33 @@ export function MenuQrPreview({ slug }: MenuQrPreviewProps) {
     );
   }
 
+  // Compact mode: just a small square QR (or loading placeholder)
+  if (compact) {
+    return (
+      <div className="flex items-center justify-center">
+        {dataUrl ? (
+          <img
+            src={dataUrl}
+            alt={`QR code for /m/${slug}`}
+            className="h-16 w-16 rounded-xl bg-white p-1"
+          />
+        ) : (
+          <div
+            className="flex h-16 w-16 items-center justify-center rounded-xl text-[10px]"
+            style={{
+              border: "1px solid var(--color-border)",
+              color: "var(--color-subtle)",
+              backgroundColor: "var(--color-bg)",
+            }}
+          >
+            QR…
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Full card mode (used in editors or preview panels)
   return (
     <div
       className="rounded-2xl border px-4 py-4"

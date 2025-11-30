@@ -42,10 +42,6 @@ export type LinkListItem = {
 type LinksListClientProps = {
   links: LinkListItem[];
   workspaceId?: string;
-  /**
-   * Optional handler for activating/deactivating a link.
-   * Parent can wire this to a server action or API call.
-   */
   onToggleActive?: (linkId: string, nextActive: boolean) => void;
 };
 
@@ -100,15 +96,12 @@ export function LinksListClient({
   const remainingLinks = Math.max(FREE_LINK_LIMIT - usedLinks, 0);
   const isAtLimit = usedLinks >= FREE_LINK_LIMIT;
 
-
   const handleToggleActive = (linkId: string, nextActive: boolean) => {
-    // If parent provided a handler, delegate to it
     if (onToggleActive) {
       onToggleActive(linkId, nextActive);
       return;
     }
 
-    // Default behaviour: call API and reload
     startTransition(async () => {
       try {
         const res = await fetch(`/api/links/${linkId}`, {
@@ -134,82 +127,147 @@ export function LinksListClient({
 
   return (
     <div className={cn("wf-dashboard-main space-y-6")}>
-      {/* Dashboard/PageHeader + FilterBar */}
-      <header className="wf-dashboard-header border-b border-[color:var(--color-border)] pb-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-[20px] font-semibold text-[color:var(--color-text)]">
-            Your links
-          </h1>
-          <p className="text-sm text-[color:var(--color-subtle)]">
-            Manage short links, track engagements, and jump into analytics.
-          </p>
-          <p className="text-xs text-[color:var(--color-subtle)]">
-            {usedLinks} / {FREE_LINK_LIMIT} links used on the Free plan
-            {isAtLimit ? " – delete a link to create more." : ""}
-          </p>
-        </div>
+      {/* -------------------------------------------------- */}
+      {/* HERO HEADER – matches Kompilink banner            */}
+      {/* -------------------------------------------------- */}
+      <header className="wf-dashboard-header">
+        <div className="w-full rounded-[32px] bg-[#006476] px-6 py-6 sm:px-10 sm:py-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            {/* Left: image + title + controls */}
+            <div className="flex flex-1 flex-col gap-5 lg:flex-row lg:items-center">
+              {/* Stacked image card */}
+              <div className="flex justify-start lg:items-center lg:justify-center">
+                <div className="relative h-20 w-20 shrink-0 sm:h-24 sm:w-24">
+                  <div className="absolute -left-4 top-3 h-16 w-14 rounded-2xl bg-[#F5FF47]" />
+                  <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#FF5A4A]">
+                    <img
+                      src="/kompi-business.png"
+                      alt="Kompi hero"
+                      className="h-full w-full object-cover"
+                      draggable={false}
+                    />
+                  </div>
+                </div>
+              </div>
 
-        <div className="wf-dashboard-filters mt-4 flex flex-col gap-3 md:mt-0 md:flex-row md:items-center md:justify-end">
-          {/* Status filter pill */}
-          <div className="inline-flex items-center gap-1 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1 text-xs">
-            <button
-              type="button"
-              onClick={() => setStatusFilter("all")}
-              className={cn(
-                "rounded-full px-3 py-1 transition",
-                statusFilter === "all"
-                  ? "bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
-                  : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-bg)]",
-              )}
-            >
-              All
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusFilter("active")}
-              className={cn(
-                "rounded-full px-3 py-1 transition",
-                statusFilter === "active"
-                  ? "bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
-                  : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-bg)]",
-              )}
-            >
-              Active
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusFilter("inactive")}
-              className={cn(
-                "rounded-full px-3 py-1 transition",
-                statusFilter === "inactive"
-                  ? "bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
-                  : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-bg)]",
-              )}
-            >
-              Inactive
-            </button>
+              <div className="flex-1 space-y-3">
+                {/* Title + subtitle */}
+                <div className="space-y-1">
+                  <p
+                    className="text-[32px] sm:text-[40px]"
+                    style={{
+                      fontFamily: '"Instrument Serif", Georgia, serif',
+                      fontWeight: 400,
+                      fontStyle: "normal",
+                      color: "#F4FBFF",
+                    }}
+                  >
+                    Your links.
+                  </p>
+                  <p
+                    className="text-sm sm:text-base"
+                    style={{
+                      fontFamily:
+                        '"Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                      color: "rgba(244,251,255,0.9)",
+                    }}
+                  >
+                    Manage short links, track engagement, and jump into analytics.
+                  </p>
+                </div>
+
+                {/* Filters + search + create button */}
+                <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center">
+                  {/* Status pill */}
+                  <div className="inline-flex w-full max-w-xs items-center rounded-full bg-white p-1 text-sm lg:max-w-[320px]">
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter("all")}
+                      className={cn(
+                        "flex-1 rounded-full px-4 py-2 transition",
+                        statusFilter === "all"
+                          ? "bg-[#006476] text-white"
+                          : "text-[#006476]"
+                      )}
+                    >
+                      All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter("active")}
+                      className={cn(
+                        "flex-1 rounded-full px-4 py-2 transition",
+                        statusFilter === "active"
+                          ? "bg-[#006476] text-white"
+                          : "text-[#006476]"
+                      )}
+                    >
+                      Active
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter("inactive")}
+                      className={cn(
+                        "flex-1 rounded-full px-4 py-2 transition",
+                        statusFilter === "inactive"
+                          ? "bg-[#006476] text-white"
+                          : "text-[#006476]"
+                      )}
+                    >
+                      Inactive
+                    </button>
+                  </div>
+
+                  {/* Search + create */}
+                  <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+                    <Input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Search by title, URL, code, or short link..."
+                      className={cn(
+                        "h-11 flex-1 rounded-full border-0 bg-white px-4 text-sm",
+                        "text-[#003426] placeholder:text-[rgba(0,0,0,0.4)]",
+                        "focus-visible:ring-2 focus-visible:ring-[#00A7C0] focus-visible:ring-offset-0"
+                      )}
+                      disabled={noLinksAtAll}
+                    />
+
+                    <Button
+                      asChild
+                      disabled={isAtLimit}
+                      className="h-11 rounded-full px-6 text-[15px] font-semibold shadow-none disabled:opacity-60"
+                      style={{
+                        backgroundColor: "#D8FF3B",
+                        color: "#003426",
+                        fontFamily:
+                          '"Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                      }}
+                    >
+                      <Link href="/links/new">Create link</Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: usage text */}
+            <div className="mt-2 text-right lg:mt-0">
+              <p
+                className="text-xs sm:text-sm"
+                style={{
+                  fontFamily:
+                    '"Instrument Serif", Georgia, serif',
+                  fontWeight: 400,
+                  color: "#F4FBFF",
+                }}
+              >
+                {usedLinks}/{FREE_LINK_LIMIT} links used on the Free plan
+                {isAtLimit
+                  ? " - delete a link to create more."
+                  : " - delete a link to create more."}
+              </p>
+            </div>
           </div>
-
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title, URL, code, or short link…"
-            className={cn(
-              "order-1 w-full max-w-sm rounded-full border bg-white px-3 py-2 text-sm",
-              "border-[color:var(--color-border)] text-[color:var(--color-text)]",
-              "placeholder:text-[color:var(--color-subtle)]",
-              "focus-visible:ring-1 focus-visible:ring-[color:var(--color-accent)] focus-visible:border-[color:var(--color-accent)]",
-              "md:order-none",
-            )}
-            disabled={noLinksAtAll}
-          />
-
-          <Button
-            asChild
-            className="h-10 rounded-full px-4 text-[13px] font-semibold"
-          >
-            <Link href="/links/new">Create link</Link>
-          </Button>
         </div>
       </header>
 
@@ -276,7 +334,6 @@ export function LinksListClient({
                   ? `${host} – ${link.code}`
                   : host || link.code || "untitled");
 
-              // Use site favicon as the “logo bubble” where possible
               const faviconStyle =
                 host != null
                   ? {
@@ -301,7 +358,6 @@ export function LinksListClient({
                         className="flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
                         style={faviconStyle}
                       >
-                        {/* Fallback arrow when we don't have a favicon */}
                         {!host && (
                           <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[color:var(--color-accent)] text-[11px] font-semibold text-[color:var(--color-text)]">
                             →
@@ -312,7 +368,6 @@ export function LinksListClient({
 
                     {/* Middle content column */}
                     <div className="min-w-0 flex-1 space-y-1.5">
-                      {/* Title row */}
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="truncate text-[15px] font-semibold text-[color:var(--color-text)]">
                           {displayTitle}
@@ -330,7 +385,6 @@ export function LinksListClient({
                         </span>
                       </div>
 
-                      {/* Short link */}
                       {composedShortUrl && (
                         <div className="flex flex-wrap items-center gap-2 text-[13px]">
                           <a
@@ -344,13 +398,11 @@ export function LinksListClient({
                         </div>
                       )}
 
-                      {/* Long destination */}
                       <div className="flex items-start gap-1.5 text-[13px] text-[color:var(--color-subtle)]">
                         <CornerDownRight className="mt-[2px] h-[14px] w-[14px] text-[color:var(--color-subtle)] opacity-80" />
                         <span className="truncate">{link.targetUrl}</span>
                       </div>
 
-                      {/* Meta row */}
                       <div className="mt-1.5 flex flex-wrap gap-4 text-[12px] text-[color:var(--color-subtle)]">
                         <span className="inline-flex items-center gap-1">
                           <MousePointer2 className="h-[14px] w-[14px] text-[color:var(--color-subtle)] opacity-80" />
@@ -371,7 +423,6 @@ export function LinksListClient({
 
                     {/* Right actions column */}
                     <div className="flex items-center gap-2 pt-1">
-                      {/* Active / inactive toggle */}
                       <button
                         type="button"
                         role="switch"
@@ -394,7 +445,6 @@ export function LinksListClient({
                         />
                       </button>
 
-                      {/* Copy icon button */}
                       <button
                         type="button"
                         onClick={() => {
@@ -423,7 +473,6 @@ export function LinksListClient({
                         )}
                       </button>
 
-                      {/* View icon button */}
                       <Link
                         href={`/links/${link.id}`}
                         className={cn(
@@ -436,7 +485,6 @@ export function LinksListClient({
                         <Eye className="h-4 w-4" />
                       </Link>
 
-                      {/* 3-dots menu button */}
                       <LinkActionsMenu
                         id={link.id}
                         shortUrl={composedShortUrl}

@@ -5,16 +5,16 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FooterCTA } from "@/components/footer-cta";
-import  WhyKompi  from "@/components/why-kompi";
+import WhyKompi from "@/components/why-kompi";
 import { GoProBanner } from "@/components/GoProBanner";
 import GoProModal from "@/components/modals/GoProModal";
 import "./pricing.css";
 
-
 type BillingPeriod = "monthly" | "yearly";
+type PlanId = "free" | "creator" | "enterprise";
 
 type Plan = {
-  id: "free" | "creator" | "studio";
+  id: PlanId;
   name: string;
   tagline: string;
   monthly: number;
@@ -23,6 +23,7 @@ type Plan = {
   highlighted?: boolean;
   bestFor: string;
   features: string[];
+  comingSoon?: boolean;
 };
 
 const plans: Plan[] = [
@@ -36,10 +37,12 @@ const plans: Plan[] = [
     bestFor: "Creators getting started",
     features: [
       "1 workspace",
-      "10 active short links",
+      "Up to 10 active short links",
       "1 Link-in-Bio page",
       "Basic click analytics",
-      "Standard Kompi Codes™ (QR)",
+      "Standard Kompi Codes™ (QR generator)",
+      "K-Cards (basic profile)",
+      "Link shortener",
       "Kompi branding on public pages",
       "Standard email support",
     ],
@@ -48,8 +51,8 @@ const plans: Plan[] = [
     id: "creator",
     name: "Creator",
     tagline: "For solo founders & small brands.",
-    monthly: 12.99,
-    yearly: 131.88,
+    monthly: 9.99,
+    yearly: 119.88, // tweak if you want a discount
     cta: "Choose Creator",
     highlighted: true,
     bestFor: "Freelancers, coaches, personal brands",
@@ -60,19 +63,21 @@ const plans: Plan[] = [
       "Advanced analytics (UTM, referrers, devices)",
       "Custom branding (logo, colors)",
       "Branded Kompi Codes™ (QR styles)",
-      "Remove Kompi branding",
+      "K-Cards with themes & layouts",
       "Smart UTM builder",
+      "Remove Kompi branding",
       "Priority email support",
     ],
   },
   {
-    id: "studio",
-    name: "Studio",
+    id: "enterprise",
+    name: "Enterprise",
     tagline: "For agencies, studios & teams.",
-    monthly: 24.99,
-    yearly: 239.88,
-    cta: "Choose Studio",
+    monthly: 0,
+    yearly: 0,
+    cta: "Coming soon",
     bestFor: "Studios, agencies, multi-brand teams",
+    comingSoon: true,
     features: [
       "Unlimited workspaces",
       "Up to 10 team members",
@@ -81,6 +86,7 @@ const plans: Plan[] = [
       "Workspace roles & approvals",
       "Advanced analytics & CSV export",
       "Premium Kompi Codes™ (logos, frames, palettes)",
+      "K-Cards for teams & clients",
       "Smart Links routing (device & geo rules)",
       "SLA-backed priority support",
       "Early access to experimental features",
@@ -125,6 +131,8 @@ const featureSections = [
 
 function formatPrice(plan: Plan, period: BillingPeriod): string {
   if (plan.id === "free") return "£0";
+  if (plan.comingSoon) return "Coming soon";
+
   if (period === "monthly") return `£${plan.monthly.toFixed(2)}`;
   const monthlyEquivalent = plan.yearly / 12;
   return `£${monthlyEquivalent.toFixed(2)}`;
@@ -132,11 +140,13 @@ function formatPrice(plan: Plan, period: BillingPeriod): string {
 
 function subLabel(plan: Plan, period: BillingPeriod): string {
   if (plan.id === "free") return "Always free";
+  if (plan.comingSoon) return "Launching soon";
+
   if (period === "monthly") return "Billed monthly";
   return `Billed yearly (£${plan.yearly.toFixed(2)})`;
 }
 
-function cell(planId: Plan["id"], row: string): string {
+function cell(planId: PlanId, row: string): string {
   switch (row) {
     case "Active short links":
       if (planId === "free") return "10";
@@ -151,7 +161,7 @@ function cell(planId: Plan["id"], row: string): string {
     case "Bulk link creation":
       return planId === "free" ? "—" : "✓";
     case "Smart redirect rules":
-      return planId === "studio" ? "✓" : "—";
+      return planId === "enterprise" ? "✓" : "—";
 
     case "Custom Link-in-Bio themes":
       if (planId === "free") return "Basic";
@@ -163,18 +173,18 @@ function cell(planId: Plan["id"], row: string): string {
       if (planId === "creator") return "Branded";
       return "Premium";
     case "Custom domains":
-      return planId === "studio" ? "✓" : "—";
+      return planId === "enterprise" ? "✓" : "—";
 
     case "Basic click counts":
       return "✓";
     case "UTM & referrer analytics":
       return planId === "free" ? "—" : "✓";
     case "Device / browser insights":
-      if (planId === "studio") return "✓";
+      if (planId === "enterprise") return "✓";
       if (planId === "creator") return "Lite";
       return "—";
     case "Export & reporting":
-      return planId === "studio" ? "✓" : "—";
+      return planId === "enterprise" ? "✓" : "—";
 
     case "Team members":
       if (planId === "free") return "1";
@@ -182,10 +192,10 @@ function cell(planId: Plan["id"], row: string): string {
       return "Up to 10";
     case "Priority support":
       if (planId === "creator") return "Email";
-      if (planId === "studio") return "Priority";
+      if (planId === "enterprise") return "Priority";
       return "—";
     case "Early feature access":
-      return planId === "studio" ? "✓" : "—";
+      return planId === "enterprise" ? "✓" : "—";
     default:
       return "—";
   }
@@ -198,124 +208,135 @@ export default function PricingPage() {
   return (
     <>
       <main className="wf-pricing-page">
-        {/* Top Go Pro banner */}
         <GoProBanner onGoProClick={() => setShowProModal(true)} />
 
-        {/* HeroA – Pricing hero with billing toggle */}
+        {/* NEW: hero + cards inside one rounded frame */}
         <section className="wf-section wf-pricing-hero">
           <div className="wf-pricing-container">
-            <div className="wf-pricing-hero-shell">
-              <p className="wf-pricing-eyebrow">Kompi pricing</p>
-              <h1 className="wf-pricing-hero-heading">
-                Pricing for the next generation of links.
-              </h1>
-              <p className="wf-pricing-hero-body">
-                Start free. Scale into Kompi Codes™, smart redirects, branded
-                hubs and studio-grade analytics — without switching tools.
-              </p>
+            <div className="wf-pricing-frame">
+              <div className="wf-pricing-hero-shell">
+                <p className="wf-pricing-eyebrow">Pricing</p>
+                <h1 className="wf-pricing-hero-heading">
+                  Membership pricing for growing brands.
+                </h1>
+                <p className="wf-pricing-hero-body">
+                  Start free. When you’re ready, unlock K-Cards, link
+                  shortener, QR code generator and studio-grade analytics in
+                  one place.
+                </p>
 
-              {/* Billing toggle */}
-              <div className="wf-billing-toggle">
-                <button
-                  type="button"
-                  onClick={() => setBilling("monthly")}
-                  className={
-                    "wf-billing-toggle-btn" +
-                    (billing === "monthly"
-                      ? " wf-billing-toggle-btn-active"
-                      : "")
-                  }
-                >
-                  Monthly
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBilling("yearly")}
-                  className={
-                    "wf-billing-toggle-btn wf-billing-toggle-btn-right" +
-                    (billing === "yearly"
-                      ? " wf-billing-toggle-btn-active"
-                      : "")
-                  }
-                >
-                  <span>Yearly</span>
-                  <span className="wf-billing-toggle-pill">
-                    save up to 20%
-                  </span>
-                </button>
+                <div className="wf-billing-toggle">
+                  <button
+                    type="button"
+                    onClick={() => setBilling("monthly")}
+                    className={
+                      "wf-billing-toggle-btn" +
+                      (billing === "monthly"
+                        ? " wf-billing-toggle-btn-active"
+                        : "")
+                    }
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBilling("yearly")}
+                    className={
+                      "wf-billing-toggle-btn wf-billing-toggle-btn-right" +
+                      (billing === "yearly"
+                        ? " wf-billing-toggle-btn-active"
+                        : "")
+                    }
+                  >
+                    <span>Yearly</span>
+                    <span className="wf-billing-toggle-pill">
+                      save up to 20%
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Cards now live inside the frame, like your screenshot */}
+              <div className="grid gap-5 md:grid-cols-3 wf-pricing-plans-grid">
+                {plans.map((plan) => {
+                  const price = formatPrice(plan, billing);
+                  const label = subLabel(plan, billing);
+
+                  const highlightClass = plan.highlighted
+                    ? "wf-plan-card-highlighted"
+                    : "wf-plan-card-standard";
+
+                  return (
+                    <Card
+                      key={plan.id}
+                      className={[
+                        "wf-plan-card",
+                        highlightClass,
+                        "flex flex-col",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <h2 className="wf-plan-title">{plan.name}</h2>
+                        {plan.highlighted && (
+                          <div className="wf-plan-pill">Popular</div>
+                        )}
+                        {plan.comingSoon && (
+                          <div className="wf-plan-pill">Coming soon</div>
+                        )}
+                      </div>
+
+                      <p className="wf-plan-tagline">{plan.tagline}</p>
+
+                      <div className="wf-plan-price-block">
+                        <div className="wf-plan-price-row">
+                          <span className="wf-plan-price">{price}</span>
+                          {!plan.comingSoon && (
+                            <span className="wf-plan-price-suffix">
+                              /month
+                            </span>
+                          )}
+                        </div>
+                        <div className="wf-plan-price-sub">{label}</div>
+                        <div className="wf-plan-price-best">
+                          Best for: {plan.bestFor}
+                        </div>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        className={
+                          "wf-plan-cta" +
+                          (plan.highlighted
+                            ? " wf-plan-cta-primary"
+                            : " wf-plan-cta-secondary")
+                        }
+                        asChild={!plan.comingSoon}
+                        disabled={plan.comingSoon}
+                      >
+                        {plan.comingSoon ? (
+                          <span>{plan.cta}</span>
+                        ) : (
+                          <Link href="/signin">{plan.cta}</Link>
+                        )}
+                      </Button>
+
+                      <ul className="wf-plan-features">
+                        {plan.features.map((f) => (
+                          <li key={f} className="wf-plan-feature-row">
+                            <span className="wf-plan-feature-dot" />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           </div>
         </section>
 
-        {/* ValueGrid – Plan cards */}
-        <section className="wf-section wf-pricing-plans">
-          <div className="wf-pricing-container">
-            <div className="grid gap-5 md:grid-cols-3">
-              {plans.map((plan) => {
-                const price = formatPrice(plan, billing);
-                const label = subLabel(plan, billing);
-
-                const highlightClass = plan.highlighted
-                  ? "wf-plan-card-highlighted"
-                  : "wf-plan-card-standard";
-
-                return (
-                  <Card
-                    key={plan.id}
-                    className={[
-                      "wf-plan-card",
-                      highlightClass,
-                      "flex flex-col",
-                    ].join(" ")}
-                  >
-                    {plan.highlighted && (
-                      <div className="wf-plan-pill">Most popular</div>
-                    )}
-
-                    <h2 className="wf-plan-title">{plan.name}</h2>
-                    <p className="wf-plan-tagline">{plan.tagline}</p>
-
-                    <div className="wf-plan-price-block">
-                      <div className="wf-plan-price-row">
-                        <span className="wf-plan-price">{price}</span>
-                        <span className="wf-plan-price-suffix">/month</span>
-                      </div>
-                      <div className="wf-plan-price-sub">{label}</div>
-                      <div className="wf-plan-price-best">
-                        Best for: {plan.bestFor}
-                      </div>
-                    </div>
-
-                    <ul className="wf-plan-features">
-                      {plan.features.map((f) => (
-                        <li key={f} className="wf-plan-feature-row">
-                          <span className="wf-plan-feature-dot" />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <Button
-                      size="sm"
-                      className={
-                        "wf-plan-cta" +
-                        (plan.highlighted
-                          ? " wf-plan-cta-primary"
-                          : " wf-plan-cta-secondary")
-                      }
-                      asChild
-                    >
-                      <Link href="/signin">{plan.cta}</Link>
-                    </Button>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ValueGrid / Comparison – Feature comparison table */}
+        {/* Comparison (Free / Creator / Enterprise) */}
         <section className="wf-section wf-pricing-compare">
           <div className="wf-pricing-container">
             <div className="wf-compare-shell">
@@ -330,7 +351,7 @@ export default function PricingPage() {
                 <div className="wf-compare-tags">
                   <span>Free → Launch</span>
                   <span>Creator → Grow</span>
-                  <span>Studio → Scale</span>
+                  <span>Enterprise → Scale</span>
                 </div>
               </div>
 
@@ -341,7 +362,7 @@ export default function PricingPage() {
                       <th className="wf-compare-th-feature">Feature</th>
                       <th className="wf-compare-th">Free</th>
                       <th className="wf-compare-th">Creator</th>
-                      <th className="wf-compare-th">Studio</th>
+                      <th className="wf-compare-th">Enterprise</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -368,7 +389,7 @@ export default function PricingPage() {
                               {cell("creator", row)}
                             </td>
                             <td className="wf-compare-cell">
-                              {cell("studio", row)}
+                              {cell("enterprise", row)}
                             </td>
                           </tr>
                         ))}
@@ -381,14 +402,12 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* Why Kompi – 3-card widget near bottom */}
         <section className="wf-section wf-pricing-why">
           <div className="wf-pricing-container">
             <WhyKompi />
           </div>
         </section>
 
-        {/* CTA_Footer */}
         <FooterCTA />
       </main>
 

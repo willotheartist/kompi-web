@@ -16,6 +16,14 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,6 +53,12 @@ import {
   Mail,
   Globe2,
   UploadCloud,
+  Image as ImageIcon,
+  Video,
+  Sparkles,
+  Trash2,
+  Plus,
+  Search,
 } from "lucide-react";
 
 import type React from "react";
@@ -59,7 +73,13 @@ import {
   type KCardFontToken,
 } from "./kcard-theme-presets";
 
-type DesignSection = "header" | "theme" | "text" | "buttons" | "colors" | "links";
+type DesignSection =
+  | "header"
+  | "theme"
+  | "text"
+  | "buttons"
+  | "colors"
+  | "links";
 
 const SECTION_LABELS: Record<DesignSection, string> = {
   header: "Header",
@@ -68,6 +88,18 @@ const SECTION_LABELS: Record<DesignSection, string> = {
   buttons: "Buttons",
   colors: "Colors",
   links: "Links",
+};
+
+const SECTION_ICONS: Record<
+  DesignSection,
+  React.ComponentType<React.SVGProps<SVGSVGElement>>
+> = {
+  header: UserCircle2,
+  theme: Palette,
+  text: Type,
+  buttons: Square,
+  colors: Palette,
+  links: Link2,
 };
 
 const FONT_OPTIONS = [
@@ -107,7 +139,33 @@ const SOCIAL_ICON_MAP: Record<
 
 const SOCIAL_OPTIONS = Object.keys(SOCIAL_ICON_MAP);
 
+function slugFromTitle(raw: string): string {
+  if (!raw) return "";
+  let s = raw.trim().toLowerCase();
+
+  // strip leading @
+  if (s.startsWith("@")) s = s.slice(1);
+
+  // replace non-alphanumeric with hyphens
+  s = s.replace(/[^a-z0-9]+/g, "-");
+
+  // trim hyphens
+  s = s.replace(/^-+|-+$/g, "");
+
+  // ignore empty / placeholder
+  if (!s || s === "yourname") return "";
+
+  return s;
+}
+
 type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+type KCardShareResponse = {
+  slug?: string;
+  isPublic?: boolean;
+  error?: string;
+};
+
 
 export type KCardsInitialData = {
   profileLayout?: "classic" | "hero";
@@ -117,7 +175,11 @@ export type KCardsInitialData = {
   theme?: KCardThemeState;
   links?: KCardLink[];
   socials?: string[];
+  socialUrls?: Record<string, string>;
   avatarDataUrl?: string | null;
+  avatarSize?: "small" | "medium" | "large";
+  headerTextSize?: "small" | "medium" | "large";
+  avatarShadow?: "shadow" | "flat";
 };
 
 type KCardsPageProps = {
@@ -127,7 +189,8 @@ type KCardsPageProps = {
 
 export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   // which section is currently "active" for the left nav
-  const [activeSection, setActiveSection] = useState<DesignSection>("header");
+  const [activeSection, setActiveSection] =
+    useState<DesignSection>("header");
 
   // refs for scroll + intersection observer
   const headerRef = useRef<HTMLElement | null>(null);
@@ -137,28 +200,44 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   const colorsRef = useRef<HTMLElement | null>(null);
   const linksRef = useRef<HTMLElement | null>(null);
 
-  const sectionRefs: Record<
-    DesignSection,
-    React.RefObject<HTMLElement | null>
-  > = {
-    header: headerRef,
-    theme: themeRef,
-    text: textRef,
-    buttons: buttonsRef,
-    colors: colorsRef,
-    links: linksRef,
-  };
+  const sectionRefs = useMemo<
+    Record<DesignSection, React.RefObject<HTMLElement | null>>
+  >(
+    () => ({
+      header: headerRef,
+      theme: themeRef,
+      text: textRef,
+      buttons: buttonsRef,
+      colors: colorsRef,
+      links: linksRef,
+    }),
+    [],
+  );
 
   // header
   const [profileLayout, setProfileLayout] = useState<"classic" | "hero">(
-    initialData?.profileLayout === "hero" ? "hero" : "classic"
+    initialData?.profileLayout === "hero" ? "hero" : "classic",
   );
   const [title, setTitle] = useState(initialData?.title ?? "@yourname");
-  const [subtitle, setSubtitle] = useState(initialData?.subtitle ?? "Designer · Creator · Founder");
+  const [subtitle, setSubtitle] = useState(
+    initialData?.subtitle ?? "Designer · Creator · Founder",
+  );
+
+  // header sizing (applies to the live K-Card)
+  const [avatarSize, setAvatarSize] = useState<
+    "small" | "medium" | "large"
+  >(initialData?.avatarSize ?? "medium");
+  const [headerTextSize, setHeaderTextSize] = useState<
+    "small" | "medium" | "large"
+  >(initialData?.headerTextSize ?? "medium");
+
+  const [avatarShadow, setAvatarShadow] = useState<"shadow" | "flat">(
+    initialData?.avatarShadow ?? "shadow",
+  );
 
   // profile image – persisted as data URL in K-Card JSON
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(
-    initialData?.avatarDataUrl ?? null
+    initialData?.avatarDataUrl ?? null,
   );
   const avatarPreview = avatarDataUrl;
 
@@ -180,28 +259,40 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
 
   // theme — single source of truth for all style tokens
   const [theme, setTheme] = useState<KCardThemeState>(
-    (initialData?.theme as KCardThemeState | undefined) ?? DEFAULT_KCARD_THEME
+    (initialData?.theme as KCardThemeState | undefined) ??
+      DEFAULT_KCARD_THEME,
   );
 
   // keep title size as an independent tweak
   const [titleSize, setTitleSize] = useState<"small" | "large">(
-    initialData?.titleSize === "large" ? "large" : "small"
+    initialData?.titleSize === "large" ? "large" : "small",
   );
 
   // links
   const [links, setLinks] = useState<KCardLink[]>(
-    (initialData?.links as KCardLink[] | undefined) ?? INITIAL_LINKS
+    (initialData?.links as KCardLink[] | undefined) ?? INITIAL_LINKS,
   );
 
   // socials
   const [socials, setSocials] = useState<string[]>(
-    initialData?.socials ?? ["Instagram", "YouTube", "Website"]
+    initialData?.socials ?? ["Instagram", "YouTube", "Website"],
   );
+  const [socialUrls, setSocialUrls] = useState<Record<string, string>>(
+    initialData?.socialUrls ?? {},
+  );
+
+  function setSocialUrl(platform: string, url: string) {
+    setSocialUrls((prev) => ({
+      ...prev,
+      [platform]: url,
+    }));
+  }
 
   // autosave state
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveTimeoutRef =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialLoadRef = useRef(true);
 
   // Sharing (public URL / slug)
@@ -210,7 +301,6 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   const [shareLoading, setShareLoading] = useState<boolean>(true);
   const [shareSaving, setShareSaving] = useState<boolean>(false);
   const [shareOpen, setShareOpen] = useState<boolean>(false);
-
 
   const publicUrl =
     shareSlug && shareIsPublic ? `${baseUrl}/k/${shareSlug}` : null;
@@ -222,7 +312,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
       try {
         const res = await fetch("/api/k-cards/share");
         if (!res.ok) throw new Error("Failed to load share settings");
-        const data = await res.json();
+        const data: KCardShareResponse = await res.json();
         if (cancelled) return;
         setShareSlug(data.slug ?? "");
         setShareIsPublic(data.isPublic ?? true);
@@ -239,6 +329,51 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
       cancelled = true;
     };
   }, [baseUrl]);
+
+  // Auto-claim a public slug from the title the first time the user changes it
+  useEffect(() => {
+    // If we already have a slug, don't auto-claim again.
+    if (shareSlug) return;
+    // Don't run while share settings are still loading/saving.
+    if (shareLoading || shareSaving) return;
+
+    const derived = slugFromTitle(title);
+    if (!derived) return;
+
+    // Optimistically set local state so the UI shows something.
+    setShareSlug((current) => current || derived);
+
+    (async () => {
+      try {
+        const res = await fetch("/api/k-cards/share", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slug: derived,
+            isPublic: true,
+          }),
+        });
+
+        const data: KCardShareResponse = await res.json();
+
+        if (!res.ok) {
+          // Clear slug and surface error so the user can adjust later.
+          setShareSlug("");
+          const message = data.error || "Couldn’t claim that handle";
+          toast.error(message, {
+            description:
+              "Try a different title or edit your URL in Share settings.",
+          });
+          return;
+        }
+
+        setShareSlug(data.slug ?? derived);
+        setShareIsPublic(data.isPublic ?? true);
+      } catch (err) {
+        console.error("Auto-claim K-Card slug failed", err);
+      }
+    })();
+  }, [title, shareSlug, shareLoading, shareSaving]);
 
   async function saveShareSettings() {
     if (!shareSlug.trim()) {
@@ -290,6 +425,12 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
     }
   }
 
+  function shareComingSoon(destination: string) {
+    toast(`${destination} sharing coming soon`, {
+      description: "For now, copy your K-Card link and paste it anywhere.",
+    });
+  }
+
   const {
     wallpaper,
     pageBackground,
@@ -333,8 +474,8 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
         buttonShadow === "none"
           ? "none"
           : buttonShadow === "soft"
-          ? "0 6px 14px rgba(15,23,42,0.35)"
-          : "0 10px 24px rgba(15,23,42,0.6)",
+            ? "0 6px 14px rgba(15,23,42,0.35)"
+            : "0 10px 24px rgba(15,23,42,0.6)",
       border: "1px solid transparent",
     };
 
@@ -355,13 +496,19 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
     }
 
     return style;
-  }, [buttonStyle, buttonRadius, buttonShadow, buttonColor, buttonTextColor]);
+  }, [
+    buttonStyle,
+    buttonRadius,
+    buttonShadow,
+    buttonColor,
+    buttonTextColor,
+  ]);
 
   function toggleSocial(name: string) {
     setSocials((prev) =>
       prev.includes(name)
         ? prev.filter((s) => s !== name)
-        : [...prev, name]
+        : [...prev, name],
     );
   }
 
@@ -387,8 +534,8 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   function updateLink(id: string, patch: Partial<KCardLink>) {
     setLinks((prev) =>
       prev.map((link) =>
-        link.id === id ? { ...link, ...patch } : link
-      )
+        link.id === id ? { ...link, ...patch } : link,
+      ),
     );
   }
 
@@ -402,7 +549,13 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
 
   const visibleLinks = links.filter((l) => l.enabled);
 
+  // mark initial load as completed so autosave can run
+  useEffect(() => {
+    isInitialLoadRef.current = false;
+  }, []);
+
   // -------- Autosave whenever relevant state changes --------
+
   useEffect(() => {
     if (isInitialLoadRef.current) {
       return;
@@ -416,7 +569,11 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
       theme,
       links,
       socials,
+      socialUrls,
       avatarDataUrl,
+      avatarSize,
+      headerTextSize,
+      avatarShadow,
     };
 
     if (saveTimeoutRef.current) {
@@ -448,7 +605,20 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [profileLayout, title, subtitle, titleSize, theme, links, socials, avatarDataUrl]);
+  }, [
+    profileLayout,
+    title,
+    subtitle,
+    titleSize,
+    theme,
+    links,
+    socials,
+    socialUrls,
+    avatarDataUrl,
+    avatarSize,
+    headerTextSize,
+    avatarShadow,
+  ]);
 
   // IntersectionObserver for auto-highlight in the sections list
   useEffect(() => {
@@ -479,7 +649,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
       {
         root: null,
         threshold: [0.2, 0.4, 0.6],
-      }
+      },
     );
 
     (Object.keys(sectionRefs) as DesignSection[]).forEach((key) => {
@@ -507,45 +677,38 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
         {/* LEFT: Sections list */}
         <aside className="hidden w-40 shrink-0 lg:block">
           <div className="sticky top-20">
-            <p
-              className="mb-4 text-[11px] font-medium uppercase tracking-[0.16em]"
-              style={{ color: "var(--color-subtle)" }}
-            >
-              Sections
-            </p>
-            <nav className="space-y-1">
-              {(Object.keys(SECTION_LABELS) as DesignSection[]).map((id) => {
-                const active = activeSection === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => scrollToSection(id)}
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-full px-3 py-1.5 text-left text-xs transition",
-                      active
-                        ? "bg-[var(--color-accent-soft)]"
-                        : "hover:bg-[var(--color-surface)]"
-                    )}
-                    style={{
-                      color: active
-                        ? "var(--color-text)"
-                        : "var(--color-subtle)",
-                    }}
-                  >
-                    <span>{SECTION_LABELS[id]}</span>
-                    <span
-                      className="h-1.5 w-1.5 rounded-full"
-                      style={{
-                        backgroundColor: active
-                          ? "var(--color-accent)"
-                          : "transparent",
-                      }}
-                    />
-                  </button>
-                );
-              })}
-            </nav>
+            <div className="rounded-3xl bg-white p-3">
+              <p
+                className="mb-3 text-[12px] font-semibold tracking-[0.18em] font-instrument-serif"
+                style={{ color: "var(--color-text)" }}
+              >
+                Sections
+              </p>
+              <nav className="space-y-1">
+                {(Object.keys(SECTION_LABELS) as DesignSection[]).map(
+                  (id) => {
+                    const active = activeSection === id;
+                    const Icon = SECTION_ICONS[id];
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => scrollToSection(id)}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-full px-3 py-2 text-left text-[13px] font-medium transition font-instrument-serif",
+                          active
+                            ? "bg-[var(--color-accent)] text-[#050505]"
+                            : "text-[var(--color-subtle)] hover:bg-[var(--color-surface)]",
+                        )}
+                      >
+                        {Icon && <Icon className="h-4 w-4" />}
+                        <span>{SECTION_LABELS[id]}</span>
+                      </button>
+                    );
+                  },
+                )}
+              </nav>
+            </div>
             {/* Tiny save indicator */}
             <div
               className="mt-4 text-[11px]"
@@ -554,7 +717,8 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
               {saveStatus === "saving" && "Saving…"}
               {saveStatus === "saved" &&
                 (lastSavedAt ? `Saved ${lastSavedAt}` : "Saved")}
-              {saveStatus === "error" && "Error saving – changes kept locally"}
+              {saveStatus === "error" &&
+                "Error saving – changes kept locally"}
             </div>
           </div>
         </aside>
@@ -570,30 +734,34 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
               className="scroll-mt-24"
             >
               <Card
-                className="rounded-2xl shadow-sm"
+                className="rounded-2xl shadow-none"
                 style={{ backgroundColor: "var(--color-surface)" }}
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
                     Header
                   </CardTitle>
-                  <CardDescription
-                    className="text-xs"
-                    style={{ color: "var(--color-subtle)" }}
-                  >
-                    Profile layout, avatar, title and subtitle for your K-Card.
-                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <HeaderSection
-                    profileLayout={profileLayout}
-                    setProfileLayout={setProfileLayout}
                     title={title}
                     setTitle={setTitle}
                     subtitle={subtitle}
                     setSubtitle={setSubtitle}
                     onAvatarChange={handleAvatarChange}
+                    onAvatarClear={() => setAvatarDataUrl(null)}
                     avatarPreview={avatarPreview}
+                    socials={socials}
+                    socialIconMap={SOCIAL_ICON_MAP}
+                    onToggleSocial={toggleSocial}
+                    socialUrls={socialUrls}
+                    setSocialUrl={setSocialUrl}
+                    avatarSize={avatarSize}
+                    setAvatarSize={setAvatarSize}
+                    headerTextSize={headerTextSize}
+                    setHeaderTextSize={setHeaderTextSize}
+                    avatarShadow={avatarShadow}
+                    setAvatarShadow={setAvatarShadow}
                   />
                 </CardContent>
               </Card>
@@ -606,7 +774,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
               className="scroll-mt-24"
             >
               <Card
-                className="rounded-2xl shadow-sm"
+                className="rounded-2xl shadow-none"
                 style={{ backgroundColor: "var(--color-surface)" }}
               >
                 <CardHeader className="pb-3">
@@ -633,7 +801,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
               className="scroll-mt-24"
             >
               <Card
-                className="rounded-2xl shadow-sm"
+                className="rounded-2xl shadow-none"
                 style={{ backgroundColor: "var(--color-surface)" }}
               >
                 <CardHeader className="pb-3">
@@ -665,7 +833,10 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                     }
                     pageTextColor={pageTextColor}
                     setPageTextColor={(v) =>
-                      setTheme((prev) => ({ ...prev, pageTextColor: v }))
+                      setTheme((prev) => ({
+                        ...prev,
+                        pageTextColor: v,
+                      }))
                     }
                   />
                 </CardContent>
@@ -679,7 +850,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
               className="scroll-mt-24"
             >
               <Card
-                className="rounded-2xl shadow-sm"
+                className="rounded-2xl shadow-none"
                 style={{ backgroundColor: "var(--color-surface)" }}
               >
                 <CardHeader className="pb-3">
@@ -723,7 +894,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
               className="scroll-mt-24"
             >
               <Card
-                className="rounded-2xl shadow-sm"
+                className="rounded-2xl shadow-none"
                 style={{ backgroundColor: "var(--color-surface)" }}
               >
                 <CardHeader className="pb-3">
@@ -745,7 +916,10 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                     }
                     pageTextColor={pageTextColor}
                     setPageTextColor={(v) =>
-                      setTheme((prev) => ({ ...prev, pageTextColor: v }))
+                      setTheme((prev) => ({
+                        ...prev,
+                        pageTextColor: v,
+                      }))
                     }
                     buttonColor={buttonColor}
                     setButtonColor={setButtonColorValue}
@@ -763,7 +937,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
               className="scroll-mt-24"
             >
               <Card
-                className="rounded-2xl shadow-sm"
+                className="rounded-2xl shadow-none"
                 style={{ backgroundColor: "var(--color-surface)" }}
               >
                 <CardHeader className="pb-3">
@@ -801,9 +975,11 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                         <Input
                           value={link.title}
                           onChange={(e) =>
-                            updateLink(link.id, { title: e.target.value })
+                            updateLink(link.id, {
+                              title: e.target.value,
+                            })
                           }
-                          className="h-9 rounded-2xl text-sm"
+                          className="h-7 border-0 bg-transparent p-0 text-sm font-semibold focus-visible:outline-none focus-visible:ring-0"
                           style={{
                             backgroundColor: "var(--color-surface)",
                             color: "var(--color-text)",
@@ -829,13 +1005,16 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                         <button
                           type="button"
                           onClick={() =>
-                            updateLink(link.id, { enabled: !link.enabled })
+                            updateLink(link.id, {
+                              enabled: !link.enabled,
+                            })
                           }
                           className={cn(
-                            "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium transition"
+                            "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium transition",
                           )}
                           style={{
-                            border: "1px solid var(--color-border)",
+                            border:
+                              "1px solid var(--color-border)",
                             backgroundColor: link.enabled
                               ? "var(--color-accent-soft)"
                               : "var(--color-surface)",
@@ -845,7 +1024,9 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                           }}
                         >
                           <span
-                            className={cn("mr-1 h-2 w-2 rounded-full")}
+                            className={cn(
+                              "mr-1 h-2 w-2 rounded-full",
+                            )}
                             style={{
                               backgroundColor: link.enabled
                                 ? "var(--color-accent)"
@@ -868,8 +1049,8 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                       }}
                     >
                       No links yet. Click{" "}
-                      <span className="font-medium">Add link</span> to start
-                      building your K-Card.
+                      <span className="font-medium">Add link</span>{" "}
+                      to start building your K-Card.
                     </div>
                   )}
                 </CardContent>
@@ -894,155 +1075,169 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                   profileLayout={profileLayout}
                   avatarPreview={avatarPreview}
                   socials={socials}
-                  socialIconMap={SOCIAL_ICON_MAP}
+                  socialUrls={socialUrls}
                   visibleLinks={visibleLinks}
                   buttonBaseStyles={buttonBaseStyles}
+                  avatarSize={avatarSize}
+                  headerTextSize={headerTextSize}
+                  avatarShadow={avatarShadow}
                 />
 
                 {/* Share K-Card controls under the preview */}
-                <div className="mt-3 flex w-full flex-col items-center">
+                <div className="mt-4 flex w-full flex-col items-center relative">
                   <button
                     type="button"
                     onClick={() => setShareOpen((v) => !v)}
-                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium shadow-sm"
+                    className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-semibold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
                     style={{
-                      backgroundColor: "var(--color-surface)",
-                      border: "1px solid var(--color-border)",
-                      color: "var(--color-text)",
+                      backgroundColor: "var(--color-accent)",
+                      color: "#050505",
                     }}
                   >
-                    <Share2 className="h-3.5 w-3.5" />
-                    <span>Share K-Card</span>
+                    <Share2 className="h-4 w-4" />
+                    <span>{publicUrl ? "Share K-Card" : "Enable sharing"}</span>
                   </button>
 
                   {shareOpen && (
-                    <div
-                      className="mt-2 w-full max-w-[320px] rounded-2xl p-3 text-xs shadow-lg"
-                      style={{
-                        backgroundColor: "var(--color-surface)",
-                        border: "1px solid var(--color-border)",
-                      }}
-                    >
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <div>
-                          <div
-                            className="text-[11px] font-semibold"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            Share your K-Card
-                          </div>
-                          {publicUrl && (
-                            <div
-                              className="text-[10px]"
-                              style={{ color: "var(--color-subtle)" }}
-                            >
-                              Public and ready to share
-                            </div>
-                          )}
-                        </div>
+                    <div className="absolute bottom-[64px] z-30 w-[360px] max-w-[90vw]">
+                      <div
+                        className="relative rounded-3xl border px-6 py-5 shadow-2xl"
+                        style={{
+                          backgroundColor: "var(--color-surface)",
+                          borderColor: "var(--color-border)",
+                        }}
+                      >
                         <button
                           type="button"
                           onClick={() => setShareOpen(false)}
-                          className="text-[10px]"
+                          className="absolute right-4 top-4 text-[11px]"
                           style={{ color: "var(--color-subtle)" }}
                         >
-                          Close
+                          
                         </button>
-                      </div>
 
-                      <div className="mb-2 space-y-1">
-                        <div
-                          className="text-[10px]"
-                          style={{ color: "var(--color-subtle)" }}
-                        >
-                          Public URL
+                        <div className="mb-4 text-center">
+                          <p
+                            className="text-sm font-semibold"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            Share your Kard.
+                          </p>
                         </div>
+
                         <div
-                          className="flex items-center gap-1 rounded-full px-2 py-1.5"
-                          style={{
-                            backgroundColor: "var(--color-bg)",
-                            border: "1px solid var(--color-border)",
-                          }}
+                          className="mb-4 flex items-center gap-3 rounded-2xl px-3 py-2"
+                          style={{ backgroundColor: "var(--color-bg)" }}
                         >
-                          <span
-                            className="truncate text-[10px]"
+                          <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
+                            {avatarPreview ? (
+                              <img
+                                src={avatarPreview}
+                                alt="Profile preview"
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <UserCircle2 className="h-6 w-6" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className="truncate text-[13px] font-semibold"
+                              style={{ color: "var(--color-text)" }}
+                            >
+                              {title || "@yourname"}
+                            </p>
+                            <p
+                              className="truncate text-[11px]"
+                              style={{ color: "var(--color-subtle)" }}
+                            >
+                              {publicUrl || `${baseUrl}/k/yourname`}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <p
+                            className="text-[11px]"
                             style={{ color: "var(--color-subtle)" }}
                           >
-                            {baseUrl}/k/
-                          </span>
-                          <input
-                            className="flex-1 bg-transparent text-[11px] outline-none"
-                            style={{ color: "var(--color-text)" }}
-                            value={shareSlug}
-                            onChange={(e) => setShareSlug(e.target.value)}
-                            placeholder="yourname"
-                            disabled={shareLoading || shareSaving}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setShareIsPublic((v) => !v)}
-                          className="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-medium"
-                          style={{
-                            border: "1px solid var(--color-border)",
-                            backgroundColor: shareIsPublic
-                              ? "var(--color-accent-soft)"
-                              : "var(--color-bg)",
-                            color: shareIsPublic
-                              ? "var(--color-text)"
-                              : "var(--color-subtle)",
-                          }}
-                        >
-                          <span
-                            className="mr-1 h-1.5 w-1.5 rounded-full"
+                            Public URL
+                          </p>
+                          <div
+                            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px]"
                             style={{
-                              backgroundColor: shareIsPublic
-                                ? "var(--color-accent)"
-                                : "var(--color-border)",
+                              backgroundColor: "var(--color-bg)",
+                              border: "1px solid var(--color-border)",
                             }}
-                          />
-                          {shareIsPublic ? "Public" : "Hidden"}
-                        </button>
+                          >
+                            <span
+                              className="truncate"
+                              style={{ color: "var(--color-subtle)" }}
+                            >
+                              {baseUrl}/k/
+                            </span>
+                            <input
+                              className="flex-1 bg-transparent outline-none"
+                              style={{ color: "var(--color-text)" }}
+                              value={shareSlug}
+                              onChange={(e) => setShareSlug(e.target.value)}
+                              placeholder="yourname"
+                              disabled={shareLoading || shareSaving}
+                            />
+                          </div>
+                        </div>
 
-                        <div className="flex items-center gap-2">
-                          {publicUrl && (
+                        <div className="mt-4 flex items-center justify-between gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setShareIsPublic((v) => !v)}
+                            className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium"
+                            style={{
+                              border: "1px solid var(--color-border)",
+                              backgroundColor: shareIsPublic
+                                ? "var(--color-accent-soft)"
+                                : "var(--color-bg)",
+                              color: shareIsPublic
+                                ? "var(--color-text)"
+                                : "var(--color-subtle)",
+                            }}
+                          >
+                            <span
+                              className="mr-1 h-1.5 w-1.5 rounded-full"
+                              style={{
+                                backgroundColor: shareIsPublic
+                                  ? "var(--color-accent)"
+                                  : "var(--color-border)",
+                              }}
+                            />
+                            {shareIsPublic ? "Public" : "Hidden"}
+                          </button>
+
+                          <div className="flex items-center gap-2">
+                            {publicUrl && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-7 rounded-full px-3 text-[11px]"
+                                onClick={copyPublicUrl}
+                                disabled={shareSaving}
+                              >
+                                Copy link
+                              </Button>
+                            )}
                             <Button
                               type="button"
-                              variant="outline"
                               size="sm"
-                              className="h-7 rounded-full px-3 text-[10px]"
-                              onClick={copyPublicUrl}
-                              disabled={shareSaving}
+                              className="h-7 rounded-full px-3 text-[11px]"
+                              onClick={saveShareSettings}
+                              disabled={shareLoading || shareSaving}
                             >
-                              Copy link
+                              {shareSaving ? "Saving…" : "Save"}
                             </Button>
-                          )}
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="h-7 rounded-full px-3 text-[10px]"
-                            onClick={saveShareSettings}
-                            disabled={shareLoading || shareSaving}
-                          >
-                            {shareSaving ? "Saving…" : "Save"}
-                          </Button>
+                          </div>
                         </div>
                       </div>
-
-                      {publicUrl && (
-                        <a
-                          href={publicUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block text-[10px] underline"
-                          style={{ color: "var(--color-subtle)" }}
-                        >
-                          Open public page
-                        </a>
-                      )}
                     </div>
                   )}
                 </div>
@@ -1058,145 +1253,648 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
 /* ---------- Sections ---------- */
 
 type HeaderSectionProps = {
-  profileLayout: "classic" | "hero";
-  setProfileLayout: (v: "classic" | "hero") => void;
   title: string;
   setTitle: (v: string) => void;
   subtitle: string;
   setSubtitle: (v: string) => void;
   onAvatarChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onAvatarClear: () => void;
   avatarPreview: string | null;
+  socials: string[];
+  socialIconMap: Record<
+    string,
+    React.ComponentType<React.SVGProps<SVGSVGElement>>
+  >;
+  onToggleSocial: (name: string) => void;
+  socialUrls: Record<string, string>;
+  setSocialUrl: (platform: string, url: string) => void;
+  avatarSize: "small" | "medium" | "large";
+  setAvatarSize: (v: "small" | "medium" | "large") => void;
+  headerTextSize: "small" | "medium" | "large";
+  setHeaderTextSize: (v: "small" | "medium" | "large") => void;
+  avatarShadow: "shadow" | "flat";
+  setAvatarShadow: (v: "shadow" | "flat") => void;
 };
 
 function HeaderSection({
-  profileLayout,
-  setProfileLayout,
   title,
   setTitle,
   subtitle,
   setSubtitle,
   onAvatarChange,
+  onAvatarClear,
   avatarPreview,
+  socials,
+  socialIconMap,
+  onToggleSocial,
+  socialUrls,
+  setSocialUrl,
+  avatarSize,
+  setAvatarSize,
+  headerTextSize,
+  setHeaderTextSize,
+  avatarShadow,
+  setAvatarShadow,
 }: HeaderSectionProps) {
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isSocialDialogOpen, setIsSocialDialogOpen] = useState(false);
+  const [socialSearch, setSocialSearch] = useState("");
+  const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const openPicker = () => setIsPickerOpen(true);
+
+  const triggerFilePicker = () => {
+    setIsPickerOpen(false);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    onAvatarChange(e);
+    setIsPickerOpen(false);
+  };
+
+  const handleClearAvatar = () => {
+    onAvatarClear();
+    setIsPickerOpen(false);
+  };
+
+  const avatarSizeClasses =
+    avatarSize === "small"
+      ? "h-12 w-12"
+      : avatarSize === "medium"
+        ? "h-14 w-14"
+        : "h-18 w-18";
+
+  const filteredSocialOptions = (
+    Object.keys(socialIconMap) as string[]
+  ).filter(
+    (name) =>
+      !socialSearch.trim() ||
+      name
+        .toLowerCase()
+        .includes(socialSearch.trim().toLowerCase()),
+  );
+
   return (
-    <div className="space-y-6">
-      {/* Avatar upload */}
-      <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-bg)]">
-          {avatarPreview ? (
-            <img
-              src={avatarPreview}
-              alt="Profile preview"
-              className="h-11 w-11 rounded-full object-cover"
-            />
-          ) : (
-            <UserCircle2 className="h-7 w-7" />
-          )}
-        </div>
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-[var(--color-text)]">
-            Profile image
-          </p>
-          <p
-            className="text-[11px]"
-            style={{ color: "var(--color-subtle)" }}
-          >
-            Upload an avatar for this K-Card. Square images work best.
-          </p>
-          <div className="flex items-center gap-2">
-            <label>
-              <span
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium"
-                style={{
-                  backgroundColor: "var(--color-surface)",
-                  border: "1px solid var(--color-border)",
-                  color: "var(--color-text)",
-                }}
+    <>
+      {/* Avatar + title / subtitle */}
+      <Dialog open={isPickerOpen} onOpenChange={setIsPickerOpen}>
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={openPicker}
+              className={cn(
+                "group relative flex items-center justify-center rounded-full transition hover:scale-[1.02]",
+                avatarSizeClasses,
+              )}
+            >
+              {avatarPreview ? (
+                <img
+                  src={avatarPreview}
+                  alt="Profile preview"
+                  className="h-full w-full rounded-full object-cover"
+                />
+              ) : (
+                <UserCircle2 className="h-7 w-7" />
+              )}
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition group-hover:opacity-100">
+                <span className="text-[10px] font-medium text-white">
+                  Edit
+                </span>
+              </div>
+            </button>
+
+            <div className="flex-1 space-y-3">
+              <div className="space-y-1">
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={40}
+                  placeholder="@yourname"
+                  className={cn(
+                    "block w-full border-0 border-b border-[var(--color-border)] bg-transparent px-0 py-1 text-sm font-semibold outline-none focus-visible:border-[var(--color-text)]",
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <textarea
+                  value={subtitle}
+                  onChange={(e) =>
+                    setSubtitle(e.target.value)
+                  }
+                  rows={2}
+                  maxLength={80}
+                  placeholder="Your Brand. Your World."
+                  className={cn(
+                    "block w-full resize-none border-0 border-b border-[var(--color-border)] bg-transparent px-0 py-1 text-xs outline-none focus-visible:border-[var(--color-text)]",
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Layout + sizes */}
+          <div className="grid gap-6 pt-2 md:grid-cols-3">
+            {/* Avatar style */}
+            <div className="space-y-2">
+              <p className="text-[11px] text-[var(--color-subtle)]">
+                Avatar style
+              </p>
+              <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setAvatarShadow("shadow")}
+                  className={cn(
+                    "flex-1 rounded-full px-3 py-1",
+                    avatarShadow === "shadow"
+                      ? "bg-[var(--color-text)] text-[var(--color-bg)]"
+                      : "text-[var(--color-subtle)]",
+                  )}
+                >
+                  Shadow
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAvatarShadow("flat")}
+                  className={cn(
+                    "flex-1 rounded-full px-3 py-1",
+                    avatarShadow === "flat"
+                      ? "bg-[var(--color-text)] text-[var(--color-bg)]"
+                      : "text-[var(--color-subtle)]",
+                  )}
+                >
+                  Flat
+                </button>
+              </div>
+            </div>
+
+            {/* Profile image size */}
+            <div className="space-y-2">
+              <p className="text-[11px] text-[var(--color-subtle)]">
+                Profile image size
+              </p>
+              <div className="flex items-center gap-3">
+                {(
+                  ["small", "medium", "large"] as const
+                ).map((size, idx) => {
+                  const isActive = avatarSize === size;
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => setAvatarSize(size)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full transition hover:scale-105"
+                    >
+                      <span
+                        className={cn(
+                          "rounded-full",
+                          idx === 0 && "h-4 w-4",
+                          idx === 1 && "h-5 w-5",
+                          idx === 2 && "h-6 w-6",
+                          isActive
+                            ? "scale-110"
+                            : "opacity-70",
+                        )}
+                        style={{
+                          backgroundColor: isActive
+                            ? "var(--color-accent)"
+                            : "var(--color-border)",
+                        }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Text size */}
+            <div className="space-y-2">
+              <p className="text-[11px] text-[var(--color-subtle)]">
+                Text size
+              </p>
+              <div className="flex items-center gap-3">
+                {(
+                  ["small", "medium", "large"] as const
+                ).map((size) => {
+                  const isActive =
+                    headerTextSize === size;
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() =>
+                        setHeaderTextSize(size)
+                      }
+                      className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-full border transition",
+                        isActive
+                          ? "bg-[var(--color-accent-soft)]"
+                          : "bg-transparent",
+                      )}
+                      style={{
+                        borderColor: isActive
+                          ? "var(--color-accent)"
+                          : "var(--color-border)",
+                      }}
+                    >
+                      <span
+                        className={cn(
+                          "font-semibold",
+                          size === "small" && "text-xs",
+                          size === "medium" && "text-sm",
+                          size === "large" && "text-lg",
+                          isActive
+                            ? "text-[var(--color-text)]"
+                            : "text-[var(--color-subtle)]",
+                        )}
+                      >
+                        t
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Social media chips */}
+          <div className="space-y-2 pt-1">
+            <p className="text-[11px] font-medium text-[var(--color-text)]">
+              Social media
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {socials.map((name) => {
+                const Icon = socialIconMap[name];
+                if (!Icon) return null;
+                const active = true;
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => onToggleSocial(name)}
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-full border text-[13px] transition",
+                      active
+                        ? "border-transparent bg-[var(--color-accent)]"
+                        : "border-[var(--color-border)] bg-[var(--color-bg)]",
+                    )}
+                    style={{
+                      color: active
+                        ? "#050505"
+                        : "var(--color-text)",
+                    }}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setIsSocialDialogOpen(true)
+                }
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] transition hover:bg-[var(--color-surface)]"
               >
-                <UploadCloud className="h-3.5 w-3.5" />
-                Upload image
-              </span>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={onAvatarChange}
-              />
-            </label>
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Hidden native file input for "Select image or GIF" */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+
+            {/* Profile image picker dialog */}
+            <DialogContent className="max-w-sm rounded-3xl">
+              <DialogHeader className="space-y-1">
+                <DialogTitle className="text-sm font-semibold">
+                  Profile image
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  Choose how you want to update your profile
+                  image.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="mt-2 space-y-2 text-xs">
+                <button
+                  type="button"
+                  onClick={triggerFilePicker}
+                  className="flex w-full items-center justify-between rounded-2xl border px-3 py-2 text-left transition hover:bg-[var(--color-bg)]"
+                  style={{
+                    borderColor: "var(--color-border)",
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-accent-soft)]">
+                      <ImageIcon className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <div className="text-[12px] font-semibold">
+                        Select image or GIF
+                      </div>
+                      <div
+                        className="text-[10px]"
+                        style={{
+                          color: "var(--color-subtle)",
+                        }}
+                      >
+                        Upload a new profile picture from
+                        your device.
+                      </div>
+                    </span>
+                  </span>
+                  <span
+                    className="text-[14px]"
+                    aria-hidden="true"
+                  >
+                    ›
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast("Video profile coming soon", {
+                      description:
+                        "You’ll soon be able to use short videos here.",
+                    })
+                  }
+                  className="flex w-full items-center justify-between rounded-2xl border px-3 py-2 text-left transition hover:bg-[var(--color-bg)]"
+                  style={{
+                    borderColor: "var(--color-border)",
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-bg)]">
+                      <Video className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <div className="text-[12px] font-semibold">
+                        Select video
+                      </div>
+                      <div
+                        className="text-[10px]"
+                        style={{
+                          color: "var(--color-subtle)",
+                        }}
+                      >
+                        Use a short looping video as your
+                        profile.
+                      </div>
+                    </span>
+                  </span>
+                  <span
+                    className="text-[14px]"
+                    aria-hidden="true"
+                  >
+                    ›
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast("AI styling coming soon", {
+                      description:
+                        "We’re working on AI-powered profile looks.",
+                    })
+                  }
+                  className="flex w-full items-center justify-between rounded-2xl border px-3 py-2 text-left transition hover:bg-[var(--color-bg)]"
+                  style={{
+                    borderColor: "var(--color-border)",
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-bg)]">
+                      <Sparkles className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <div className="text-[12px] font-semibold">
+                        Restyle your image with AI
+                      </div>
+                      <div
+                        className="text-[10px]"
+                        style={{
+                          color: "var(--color-subtle)",
+                        }}
+                      >
+                        Generate new styles from your
+                        existing photo.
+                      </div>
+                    </span>
+                  </span>
+                  <span
+                    className="text-[14px]"
+                    aria-hidden="true"
+                  >
+                    ›
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast("Canva integration coming soon", {
+                      description:
+                        "Design custom avatars in Canva, then sync them.",
+                    })
+                  }
+                  className="flex w-full items-center justify-between rounded-2xl border px-3 py-2 text-left transition hover:bg-[var(--color-bg)]"
+                  style={{
+                    borderColor: "var(--color-border)",
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-bg)]">
+                      <span className="text-[11px] font-semibold">
+                        Canva
+                      </span>
+                    </span>
+                    <span>
+                      <div className="text-[12px] font-semibold">
+                        Design with Canva
+                      </div>
+                      <div
+                        className="text-[10px]"
+                        style={{
+                          color: "var(--color-subtle)",
+                        }}
+                      >
+                        Open Canva to create a unique profile
+                        image.
+                      </div>
+                    </span>
+                  </span>
+                  <span
+                    className="text-[14px]"
+                    aria-hidden="true"
+                  >
+                    ›
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleClearAvatar}
+                  disabled={!avatarPreview}
+                  className="mt-1 flex w-full items-center justify-between rounded-2xl border px-3 py-2 text-left text-[11px] font-medium transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  style={{
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text)",
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-100/80">
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </span>
+                    <span>Delete current profile image</span>
+                  </span>
+                </button>
+              </div>
+            </DialogContent>
           </div>
         </div>
-      </div>
+      </Dialog>
 
-      {/* Layout toggle */}
-      <div className="space-y-2">
-        <p className="text-[11px] text-[var(--color-subtle)]">
-          Profile image layout
-        </p>
-        <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
-          <button
-            type="button"
-            onClick={() => setProfileLayout("classic")}
-            className={cn(
-              "flex-1 rounded-full px-3 py-1",
-              profileLayout === "classic"
-                ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                : "text-[var(--color-subtle)]"
-            )}
-          >
-            Classic
-          </button>
-          <button
-            type="button"
-            onClick={() => setProfileLayout("hero")}
-            className={cn(
-              "flex-1 rounded-full px-3 py-1",
-              profileLayout === "hero"
-                ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                : "text-[var(--color-subtle)]"
-            )}
-          >
-            Hero
-          </button>
-        </div>
-      </div>
+      {/* Social media picker dialog */}
+      <Dialog
+        open={isSocialDialogOpen}
+        onOpenChange={setIsSocialDialogOpen}
+      >
+        <DialogContent className="max-w-sm rounded-3xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm font-semibold">
+              Add social icon
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Choose which social platforms appear on your
+              K-Card.
+            </DialogDescription>
+          </DialogHeader>
 
-      {/* Title + subtitle */}
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Title
-          </label>
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="h-9 rounded-2xl text-sm"
-            style={{
-              backgroundColor: "var(--color-bg)",
-              color: "var(--color-text)",
-              borderColor: "var(--color-border)",
-            }}
-            maxLength={40}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Subtitle
-          </label>
-          <Textarea
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            rows={2}
-            className="rounded-2xl text-sm"
-            style={{
-              backgroundColor: "var(--color-bg)",
-              color: "var(--color-text)",
-              borderColor: "var(--color-border)",
-            }}
-            maxLength={80}
-          />
-        </div>
-      </div>
-    </div>
+          <div className="mt-2 space-y-3 text-xs">
+            <div
+              className="flex items-center gap-2 rounded-full px-3 py-1.5"
+              style={{
+                backgroundColor: "var(--color-bg)",
+                border:
+                  "1px solid var(--color-border)",
+              }}
+            >
+              <Search className="h-3.5 w-3.5" />
+              <input
+                value={socialSearch}
+                onChange={(e) =>
+                  setSocialSearch(e.target.value)
+                }
+                placeholder="Search"
+                className="flex-1 bg-transparent text-[11px] outline-none"
+                style={{ color: "var(--color-text)" }}
+              />
+            </div>
+
+            <div className="max-h-72 space-y-1 overflow-y-auto">
+              {filteredSocialOptions.map((name) => {
+                const Icon = socialIconMap[name];
+                if (!Icon) return null;
+                const isActive = socials.includes(name);
+
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => {
+                      if (!isActive) onToggleSocial(name);
+                      setEditingPlatform(name);
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-[12px] transition hover:bg-[var(--color-bg)]"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-bg)]">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="font-medium">{name}</span>
+                    </span>
+                    <span
+                      className="text-[11px]"
+                      style={{
+                        color: "var(--color-subtle)",
+                      }}
+                    >
+                      {socialUrls[name]?.trim() ? "Linked" : isActive ? "Added" : "Add"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {editingPlatform && (
+              <div className="mt-3 space-y-2 border-t border-[var(--color-border)] pt-3">
+                <p
+                  className="text-[11px] font-medium"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {editingPlatform === "YouTube"
+                    ? "Enter your YouTube channel link"
+                    : editingPlatform === "Instagram"
+                    ? "Enter your Instagram profile link"
+                    : editingPlatform === "TikTok"
+                    ? "Enter your TikTok profile link"
+                    : editingPlatform === "Email"
+                    ? "Enter your email link (mailto:you@example.com)"
+                    : `Enter your ${editingPlatform} link`}
+                </p>
+                <Input
+                  value={socialUrls[editingPlatform] ?? ""}
+                  onChange={(e) => setSocialUrl(editingPlatform, e.target.value)}
+                  placeholder={
+                    editingPlatform === "YouTube"
+                      ? "https://youtube.com/@yourchannel"
+                      : editingPlatform === "Instagram"
+                      ? "https://instagram.com/yourusername"
+                      : editingPlatform === "TikTok"
+                      ? "https://www.tiktok.com/@yourusername"
+                      : editingPlatform === "LinkedIn"
+                      ? "https://www.linkedin.com/in/yourprofile"
+                      : editingPlatform === "WhatsApp"
+                      ? "https://wa.me/1234567890"
+                      : editingPlatform === "Email"
+                      ? "mailto:you@example.com"
+                      : "https://your-link.com"
+                  }
+                  className="h-9 rounded-2xl text-xs"
+                  style={{
+                    backgroundColor: "var(--color-bg)",
+                    color: "var(--color-text)",
+                    borderColor: "var(--color-border)",
+                  }}
+                />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 rounded-full px-3 text-[11px]"
+                    onClick={() => setEditingPlatform(null)}
+                  >
+                    Done
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -1245,7 +1943,9 @@ function TextSection({
             </SelectTrigger>
             <SelectContent
               className="text-xs"
-              style={{ backgroundColor: "var(--color-surface)" }}
+              style={{
+                backgroundColor: "var(--color-surface)",
+              }}
             >
               {FONT_OPTIONS.map((f) => (
                 <SelectItem key={f.value} value={f.value}>
@@ -1265,11 +1965,15 @@ function TextSection({
               type="color"
               className="h-8 w-10 cursor-pointer rounded bg-transparent"
               value={titleColor}
-              onChange={(e) => setTitleColor(e.target.value)}
+              onChange={(e) =>
+                setTitleColor(e.target.value)
+              }
             />
             <Input
               value={titleColor}
-              onChange={(e) => setTitleColor(e.target.value)}
+              onChange={(e) =>
+                setTitleColor(e.target.value)
+              }
               className="h-9 rounded-2xl text-xs"
               style={{
                 backgroundColor: "var(--color-bg)",
@@ -1294,7 +1998,7 @@ function TextSection({
                 "flex-1 rounded-full px-3 py-1",
                 titleSize === "small"
                   ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                  : "text-[var(--color-subtle)]"
+                  : "text-[var(--color-subtle)]",
               )}
             >
               Small
@@ -1306,7 +2010,7 @@ function TextSection({
                 "flex-1 rounded-full px-3 py-1",
                 titleSize === "large"
                   ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                  : "text-[var(--color-subtle)]"
+                  : "text-[var(--color-subtle)]",
               )}
             >
               Large
@@ -1331,7 +2035,9 @@ function TextSection({
             </SelectTrigger>
             <SelectContent
               className="text-xs"
-              style={{ backgroundColor: "var(--color-surface)" }}
+              style={{
+                backgroundColor: "var(--color-surface)",
+              }}
             >
               {FONT_OPTIONS.map((f) => (
                 <SelectItem key={f.value} value={f.value}>
@@ -1352,11 +2058,15 @@ function TextSection({
             type="color"
             className="h-8 w-10 cursor-pointer rounded bg-transparent"
             value={pageTextColor}
-            onChange={(e) => setPageTextColor(e.target.value)}
+            onChange={(e) =>
+              setPageTextColor(e.target.value)
+            }
           />
           <Input
             value={pageTextColor}
-            onChange={(e) => setPageTextColor(e.target.value)}
+            onChange={(e) =>
+              setPageTextColor(e.target.value)
+            }
             className="h-9 rounded-2xl text-xs"
             style={{
               backgroundColor: "var(--color-bg)",
@@ -1398,7 +2108,9 @@ function ButtonsSection({
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <p className="text-[11px] text-[var(--color-subtle)]">Style</p>
+        <p className="text-[11px] text-[var(--color-subtle)]">
+          Style
+        </p>
         <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
           {BUTTON_STYLES.map((style) => (
             <button
@@ -1409,7 +2121,7 @@ function ButtonsSection({
                 "flex-1 rounded-full px-3 py-1 capitalize",
                 buttonStyle === style
                   ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                  : "text-[var(--color-subtle)]"
+                  : "text-[var(--color-subtle)]",
               )}
             >
               {style}
@@ -1432,7 +2144,9 @@ function ButtonsSection({
               min={4}
               max={30}
               value={buttonRadius}
-              onChange={(e) => setButtonRadius(Number(e.target.value))}
+              onChange={(e) =>
+                setButtonRadius(Number(e.target.value))
+              }
               className="flex-1 accent-[var(--color-accent)]"
             />
             <span className="text-[11px] text-[var(--color-subtle)]">
@@ -1455,7 +2169,7 @@ function ButtonsSection({
                   "flex-1 rounded-full px-3 py-1 capitalize",
                   buttonShadow === s
                     ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                    : "text-[var(--color-subtle)]"
+                    : "text-[var(--color-subtle)]",
                 )}
               >
                 {s}
@@ -1475,11 +2189,15 @@ function ButtonsSection({
               type="color"
               className="h-8 w-10 cursor-pointer rounded bg-transparent"
               value={buttonColor}
-              onChange={(e) => setButtonColor(e.target.value)}
+              onChange={(e) =>
+                setButtonColor(e.target.value)
+              }
             />
             <Input
               value={buttonColor}
-              onChange={(e) => setButtonColor(e.target.value)}
+              onChange={(e) =>
+                setButtonColor(e.target.value)
+              }
               className="h-9 rounded-2xl text-xs"
               style={{
                 backgroundColor: "var(--color-bg)",
@@ -1499,11 +2217,15 @@ function ButtonsSection({
               type="color"
               className="h-8 w-10 cursor-pointer rounded bg-transparent"
               value={buttonTextColor}
-              onChange={(e) => setButtonTextColor(e.target.value)}
+              onChange={(e) =>
+                setButtonTextColor(e.target.value)
+              }
             />
             <Input
               value={buttonTextColor}
-              onChange={(e) => setButtonTextColor(e.target.value)}
+              onChange={(e) =>
+                setButtonTextColor(e.target.value)
+              }
               className="h-9 rounded-2xl text-xs"
               style={{
                 backgroundColor: "var(--color-bg)",
@@ -1542,7 +2264,11 @@ function ColorsSection({
   return (
     <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-2">
-        <ColorField label="Title" value={titleColor} onChange={setTitleColor} />
+        <ColorField
+          label="Title"
+          value={titleColor}
+          onChange={setTitleColor}
+        />
         <ColorField
           label="Page text"
           value={pageTextColor}
@@ -1586,7 +2312,9 @@ function ColorField({ label, value, onChange }: ColorFieldProps) {
         />
         <Input
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) =>
+            onChange(e.target.value)
+          }
           className="h-9 rounded-2xl text-xs"
           style={{
             backgroundColor: "var(--color-bg)",

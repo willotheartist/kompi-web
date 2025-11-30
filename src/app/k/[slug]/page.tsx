@@ -1,3 +1,4 @@
+// src/app/k/[slug]/page.tsx
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
@@ -101,6 +102,9 @@ export default async function PublicKCardPage(props: {
     links: linksRaw,
     socials: socialsRaw,
     avatarDataUrl = null,
+    avatarSize = "medium",
+    headerTextSize = "medium",
+    avatarShadow = "shadow",
   } = data || {};
 
   const theme: KCardThemeState = {
@@ -196,9 +200,12 @@ export default async function PublicKCardPage(props: {
           profileLayout={profileLayout}
           avatarPreview={avatarDataUrl}
           socials={socials}
-          socialIconMap={SOCIAL_ICON_MAP}
+          
           visibleLinks={visibleLinks}
           buttonBaseStyles={buttonBaseStyles}
+          avatarSize={avatarSize}
+          headerTextSize={headerTextSize}
+          avatarShadow={avatarShadow}
         />
         <p className="text-[10px] text-neutral-500">
           Made with <span className="font-semibold">Kompi</span>

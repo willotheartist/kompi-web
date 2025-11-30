@@ -31,6 +31,21 @@ import Faqs from "@/components/faqs";
 export const dynamic = "force-static";
 
 export default function HomePage() {
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Kompi",
+    url: "https://kompi.app",
+    logo: "https://kompi.app/Kompiwhite.svg",
+  };
+
+  const webSiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Kompi",
+    url: "https://kompi.app",
+  };
+
   return (
     <div className="wf-page">
       <Navbar />
@@ -42,6 +57,22 @@ export default function HomePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
+        {/* SEO structured data for Google */}
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(webSiteJsonLd),
+          }}
+        />
+
         {/* HeroA – Calm Product Hero */}
         <Hero />
 

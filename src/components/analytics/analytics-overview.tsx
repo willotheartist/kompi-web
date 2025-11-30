@@ -77,7 +77,7 @@ export function AnalyticsOverview({ data }: Props) {
   return (
     <div className="wf-dashboard-main flex flex-col gap-6">
       {/* Pattern: DashboardPageHeaderA */}
-      <div className="wf-dashboard-header border-b border-[color:var(--color-border)] pb-4">
+      <div className="wf-dashboard-header pb-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2">
@@ -93,7 +93,7 @@ export function AnalyticsOverview({ data }: Props) {
           </div>
 
           <div className="wf-dashboard-filters flex flex-col gap-2 text-xs md:flex-row md:items-center md:justify-end">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-1">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[color:var(--color-accent)]" />
               <span className="font-medium text-[color:var(--color-text)]">
                 {fromLabel} — {toLabel}
@@ -110,79 +110,92 @@ export function AnalyticsOverview({ data }: Props) {
         </div>
       </div>
 
+      
       {/* Pattern: StatsRowA – lifetime KPI row */}
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
-          <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
-              Total engagements
-            </p>
-            <p className="text-2xl font-semibold text-[color:var(--color-text)]">
-              {totalEngagements.toLocaleString()}
-            </p>
-            <p className="text-xs text-[color:var(--color-subtle)]">
-              Across the selected date range.
-            </p>
-          </CardContent>
-        </Card>
+      <section className="space-y-3">
+        <div>
+          <h2
+            className="text-[18px] font-semibold tracking-tight text-[color:var(--color-text)]"
+          >
+            Lifetime totals
+          </h2>
+          <p className="text-xs text-[color:var(--color-subtle)]">
+            High-level performance across your workspace.
+          </p>
+        </div>
 
-        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
-          <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
-              Avg engagements / day
-            </p>
-            <p className="text-2xl font-semibold text-[color:var(--color-text)]">
-              {avgPerDay.toFixed(1)}
-            </p>
-            <p className="text-xs text-[color:var(--color-subtle)]">
-              Based on {totalDays.toLocaleString()} days of activity.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
-          <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
-              Active days
-            </p>
-            <p className="text-2xl font-semibold text-[color:var(--color-text)]">
-              {activeDays.toLocaleString()}
-            </p>
-            <p className="text-xs text-[color:var(--color-subtle)]">
-              Days with at least one engagement.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
-          <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
-              Audience snapshot
-            </p>
-            <p className="text-sm font-semibold text-[color:var(--color-text)]">
-              {uniqueDevices} device types · Top: {topCountry}
-            </p>
-            {topDate ? (
-              <p className="text-xs text-[color:var(--color-subtle)]">
-                Peak on{" "}
-                <span className="font-medium text-[color:var(--color-accent)]">
-                  {format(new Date(topDate.date), "MMM d")}
-                </span>{" "}
-                with {topDate.count.toLocaleString()} engagements.
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <Card className="border-none bg-white shadow-none rounded-3xl">
+            <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
+                Total engagements
               </p>
-            ) : (
-              <p className="text-xs text-[color:var(--color-subtle)]">
-                Peak activity data will appear once you start getting clicks.
+              <p className="text-2xl font-semibold text-[color:var(--color-text)]">
+                {totalEngagements.toLocaleString()}
               </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              <p className="text-xs text-[color:var(--color-subtle)]">
+                Across the selected date range.
+              </p>
+            </CardContent>
+          </Card>
 
-      {/* Pattern: InsightsGridA – main charts row */}
+          <Card className="border-none bg-white shadow-none rounded-3xl">
+            <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
+                Avg engagements / day
+              </p>
+              <p className="text-2xl font-semibold text-[color:var(--color-text)]">
+                {avgPerDay.toFixed(1)}
+              </p>
+              <p className="text-xs text-[color:var(--color-subtle)]">
+                Based on {totalDays.toLocaleString()} days of activity.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none bg-white shadow-none rounded-3xl">
+            <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
+                Active days
+              </p>
+              <p className="text-2xl font-semibold text-[color:var(--color-text)]">
+                {activeDays.toLocaleString()}
+              </p>
+              <p className="text-xs text-[color:var(--color-subtle)]">
+                Days with at least one engagement.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none bg-white shadow-none rounded-3xl">
+            <CardContent className="flex h-full flex-col justify-between gap-1 p-5">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-subtle)]">
+                Audience snapshot
+              </p>
+              <p className="text-sm font-semibold text-[color:var(--color-text)]">
+                {uniqueDevices} device types · Top: {topCountry}
+              </p>
+              {topDate ? (
+                <p className="text-xs text-[color:var(--color-subtle)]">
+                  Peak on{" "}
+                  <span className="font-medium text-[color:var(--color-accent)]">
+                    {format(new Date(topDate.date), "MMM d")}
+                  </span>{" "}
+                  with {topDate.count.toLocaleString()} engagements.
+                </p>
+              ) : (
+                <p className="text-xs text-[color:var(--color-subtle)]">
+                  Peak activity data will appear once you start getting clicks.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+{/* Pattern: InsightsGridA – main charts row */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Activity over time */}
-        <Card className="lg:col-span-2 border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <Card className="lg:col-span-2 border-none bg-white shadow-none rounded-3xl">
           <CardContent className="h-64 px-6 py-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="space-y-0.5">
@@ -244,7 +257,7 @@ export function AnalyticsOverview({ data }: Props) {
         </Card>
 
         {/* Devices donut */}
-        <Card className="border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <Card className="border-none bg-white shadow-none rounded-3xl">
           <CardContent className="flex h-64 flex-col gap-4 px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
@@ -330,7 +343,7 @@ export function AnalyticsOverview({ data }: Props) {
 
       {/* Pattern: PromoBandA – hero CTA */}
       <Card className="border-none bg-transparent p-0">
-        <CardContent className="flex flex-col gap-6 overflow-hidden rounded-3xl bg-[#e3e3e3] px-6 py-8 md:flex-row md:items-center md:justify-between md:px-10 md:py-10">
+        <CardContent className="flex flex-col gap-6 overflow-hidden rounded-3xl bg-white px-6 py-8 md:flex-row md:items-center md:justify-between md:px-10 md:py-10">
           <div className="max-w-xl space-y-3">
             <p className="text-3xl leading-[1.1] tracking-[-0.03em] text-[color:var(--color-text)] md:text-4xl">
               <span>Connect your </span>
@@ -352,7 +365,7 @@ export function AnalyticsOverview({ data }: Props) {
               their weight and where your audience loves to tap.
             </p>
             <Button
-              className="mt-2 rounded-full px-6 py-2 text-sm font-semibold shadow-sm hover:shadow-md"
+              className="mt-2 rounded-full px-6 py-2 text-sm font-semibold"
               style={{
                 backgroundColor: "#D5FF3F",
                 color: "#111111",
@@ -379,7 +392,7 @@ export function AnalyticsOverview({ data }: Props) {
       {/* Pattern: InsightsGridB – sources + geography */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Referrer bar chart */}
-        <Card className="lg:col-span-1 border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <Card className="lg:col-span-1 border-none bg-white shadow-none rounded-3xl">
           <CardContent className="h-64 px-6 py-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="space-y-0.5">
@@ -441,7 +454,7 @@ export function AnalyticsOverview({ data }: Props) {
         </Card>
 
         {/* Country table */}
-        <Card className="lg:col-span-2 border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <Card className="lg:col-span-2 border-none bg-white shadow-none rounded-3xl">
           <CardContent className="px-6 py-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="space-y-0.5">

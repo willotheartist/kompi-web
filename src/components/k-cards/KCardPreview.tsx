@@ -1,9 +1,33 @@
-// src/components/k-cards/KCardPreview.tsx
 "use client";
 
 import type React from "react";
 import { cn } from "@/lib/utils";
-import { UserCircle2 } from "lucide-react";
+import {
+  UserCircle2,
+  Instagram,
+  Youtube,
+  Music2,
+  Facebook,
+  Linkedin,
+  MessageCircle,
+  Mail,
+  Globe2,
+} from "lucide-react";
+
+const SOCIAL_ICON_MAP: Record<
+  string,
+  React.ComponentType<React.SVGProps<SVGSVGElement>>
+> = {
+  Instagram,
+  YouTube: Youtube,
+  TikTok: Music2,
+  Twitter: Facebook, // placeholder
+  LinkedIn: Linkedin,
+  WhatsApp: MessageCircle,
+  Email: Mail,
+  Website: Globe2,
+};
+
 
 type KCardPreviewProps = {
   wallpaperStyle: React.CSSProperties;
@@ -18,12 +42,12 @@ type KCardPreviewProps = {
   profileLayout: "classic" | "hero";
   avatarPreview: string | null;
   socials: string[];
-  socialIconMap: Record<
-    string,
-    React.ComponentType<React.SVGProps<SVGSVGElement>>
-  >;
+  socialUrls?: Record<string, string>;
   visibleLinks: { id: string; title: string; url: string; enabled: boolean }[];
   buttonBaseStyles: React.CSSProperties;
+  avatarSize: "small" | "medium" | "large";
+  headerTextSize: "small" | "medium" | "large";
+  avatarShadow: "shadow" | "flat";
 };
 
 export function KCardPreview({
@@ -35,16 +59,42 @@ export function KCardPreview({
   subtitle,
   titleColor,
   pageTextColor,
-  titleSize,
+  titleSize: _titleSize,
   profileLayout,
   avatarPreview,
   socials,
-  socialIconMap,
+  socialUrls = {},
   visibleLinks,
   buttonBaseStyles,
+  avatarSize,
+  headerTextSize,
+  avatarShadow,
 }: KCardPreviewProps) {
   const effectiveTitleColor = titleColor || "#f9fafb";
   const effectiveTextColor = pageTextColor || "#cbd5f5";
+
+  const avatarSizeClass =
+    avatarSize === "small"
+      ? "h-14 w-14"
+      : avatarSize === "medium"
+      ? "h-16 w-16"
+      : "h-20 w-20";
+
+  const titleSizeClass =
+    headerTextSize === "small"
+      ? "text-sm"
+      : headerTextSize === "medium"
+      ? "text-base"
+      : "text-lg";
+
+  const subtitleSizeClass =
+    headerTextSize === "small"
+      ? "text-[10px]"
+      : headerTextSize === "medium"
+      ? "text-[11px]"
+      : "text-sm";
+
+  const headerMarginTop = headerTextSize === "large" ? "mt-2" : "mt-1";
 
   return (
     <div
@@ -73,13 +123,14 @@ export function KCardPreview({
               className={cn(
                 "mb-4 flex flex-col items-center gap-2 text-center",
                 previewTitleFont,
-                titleSize === "large" ? "mt-2" : "mt-1"
+                headerMarginTop
               )}
             >
               <div
                 className={cn(
-                  "rounded-full overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.5)]",
-                  profileLayout === "classic" ? "h-16 w-16" : "h-20 w-20"
+                  "overflow-hidden rounded-full",
+                  avatarSizeClass,
+                  avatarShadow === "shadow" && "shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
                 )}
               >
                 {avatarPreview ? (
@@ -95,16 +146,13 @@ export function KCardPreview({
                 )}
               </div>
               <div
-                className={cn(
-                  "font-semibold",
-                  titleSize === "large" ? "text-base" : "text-sm"
-                )}
+                className={cn("font-semibold", titleSizeClass)}
                 style={{ color: effectiveTitleColor }}
               >
                 {title || "@yourname"}
               </div>
               <div
-                className="text-[11px]"
+                className={cn(subtitleSizeClass)}
                 style={{ color: effectiveTextColor }}
               >
                 {subtitle || "Short bio line for your card."}
@@ -114,15 +162,19 @@ export function KCardPreview({
             {/* socials */}
             <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
               {socials.map((s) => {
-                const Icon = socialIconMap[s];
+                const Icon = SOCIAL_ICON_MAP[s];
                 if (!Icon) return null;
+                const href = socialUrls[s]?.trim();
                 return (
-                  <span
+                  <a
                     key={s}
+                    href={href || "#"}
+                    target={href ? "_blank" : undefined}
+                    rel={href ? "noreferrer" : undefined}
                     className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white"
                   >
                     <Icon className="h-3.5 w-3.5" />
-                  </span>
+                  </a>
                 );
               })}
             </div>

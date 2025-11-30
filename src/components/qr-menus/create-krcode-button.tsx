@@ -2,24 +2,20 @@
 "use client";
 
 import { useState } from "react";
-import { QrCode } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { QrCode, Loader2 } from "lucide-react";
 
 type CreateKrcodeButtonProps = {
   menuId: string;
-  disabled?: boolean;
 };
 
-export function CreateKrcodeButton({ menuId, disabled }: CreateKrcodeButtonProps) {
+export function CreateKrcodeButton({ menuId }: CreateKrcodeButtonProps) {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleClick() {
-    if (!menuId) {
-      toast.error("Missing menu id");
-      return;
-    }
-
     setLoading(true);
     try {
       const res = await fetch(`/api/qr-menus/${menuId}/create-krcode`, {
@@ -27,31 +23,30 @@ export function CreateKrcodeButton({ menuId, disabled }: CreateKrcodeButtonProps
       });
 
       if (!res.ok) {
-        let msg = "Failed to create Kompi Code";
+        let message = "Failed to create Kompi Code";
         try {
-          const txt = await res.text();
-          if (txt) msg = txt;
+          const data = await res.json();
+          if (data?.error) message = data.error;
         } catch {
-          // ignore
+          // ignore JSON parse errors
         }
-        throw new Error(msg);
+        throw new Error(message);
       }
 
-      // We don't care about the payload here – we just need to know it worked.
-      // const data = (await res.json()) as { id?: string };
+      const json = await res.json();
+      const krCode = json?.krCode;
 
-      toast.success("Kompi Code created");
-
-      // ✅ DO NOT push to /kr-codes/[id] anymore.
-      // Just send them to the KR Codes dashboard list, where the new code is visible
-      // and your existing UX can handle edit/customise/download.
-      if (typeof window !== "undefined") {
-        window.location.href = "/dashboard/kr-codes";
+      if (!krCode?.id) {
+        throw new Error("Invalid response from server (missing Kompi Code id)");
       }
-    } catch (err: unknown) {
-      console.error(err);
+
+      toast.success("Kompi Code ready – you can now style it.");
+      // 🔗 Go to KR Codes designer with this code pre-selected
+      router.push(`/kr-codes?edit=${encodeURIComponent(krCode.id)}`);
+    } catch (err) {
+      console.error("CreateKrcodeButton error", err);
       const message =
-        err instanceof Error ? err.message : "Failed to create Kompi Code";
+        err instanceof Error ? err.message : "Could not create Kompi Code";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -62,17 +57,22 @@ export function CreateKrcodeButton({ menuId, disabled }: CreateKrcodeButtonProps
     <Button
       type="button"
       size="sm"
-      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium"
-      style={{
-        border: "1px solid var(--color-border)",
-        color: "var(--color-text)",
-        backgroundColor: "var(--color-bg)",
-      }}
+      variant="outline"
       onClick={handleClick}
-      disabled={loading || disabled}
+      disabled={loading}
+      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px]"
     >
-      <QrCode className="h-3.5 w-3.5" />
-      {loading ? "Creating…" : "Create Kompi Code"}
+      {loading ? (
+        <>
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Creating…
+        </>
+      ) : (
+        <>
+          <QrCode className="h-3.5 w-3.5" />
+          Edit QR code
+        </>
+      )}
     </Button>
   );
 }

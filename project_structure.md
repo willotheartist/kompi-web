@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 28/11/2025, 22:43:45*
+*Generated on: 29/11/2025, 21:32:14*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 263 |
-| 📁 Total Folders | 113 |
+| 📄 Total Files | 310 |
+| 📁 Total Folders | 138 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,57 +26,57 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 119 files (45.2%)
-- 🔷 **.ts** (TypeScript files): 37 files (14.1%)
-- 🖼️ **.png** (PNG images): 30 files (11.4%)
-- 📄 **.sql** (Other files): 13 files (4.9%)
-- 📄 **.zip** (Other files): 12 files (4.6%)
-- 🎨 **.css** (Stylesheets): 10 files (3.8%)
-- 🎨 **.svg** (SVG images): 7 files (2.7%)
-- 📄 **.mjs** (Other files): 5 files (1.9%)
-- ⚙️ **.json** (JSON files): 3 files (1.1%)
-- 📄 **.bak** (Other files): 3 files (1.1%)
-- 📖 **.md** (Markdown files): 2 files (0.8%)
-- 🖼️ **.ico** (Icon files): 2 files (0.8%)
-- 📄 **.bak-limit** (Other files): 2 files (0.8%)
-- 🚫 **.gitignore** (Git ignore): 1 files (0.4%)
-- 🐳 **.dockerfile** (Docker files): 1 files (0.4%)
-- ⚙️ **.yml** (YAML files): 1 files (0.4%)
-- 📄 **.patch** (Other files): 1 files (0.4%)
-- ⚙️ **.yaml** (YAML files): 1 files (0.4%)
-- ⚙️ **.toml** (TOML files): 1 files (0.4%)
-- 📄 **.prisma** (Other files): 1 files (0.4%)
-- 🖼️ **.jpg** (JPEG images): 1 files (0.4%)
-- 📄 **.sh** (Other files): 1 files (0.4%)
-- 📄 **.gz** (Other files): 1 files (0.4%)
-- 📄 **.bak-plan** (Other files): 1 files (0.4%)
-- 📜 **.js** (JavaScript files): 1 files (0.4%)
-- 📄 **.bak-console** (Other files): 1 files (0.4%)
-- 📄 **.orig** (Other files): 1 files (0.4%)
-- 📄 **.rej** (Other files): 1 files (0.4%)
-- 📄 **.bak-upgrade** (Other files): 1 files (0.4%)
-- 📄 **.bak2** (Other files): 1 files (0.4%)
-- 📄 **.tsbuildinfo** (Other files): 1 files (0.4%)
+- ⚛️ **.tsx** (React TypeScript files): 146 files (47.1%)
+- 🔷 **.ts** (TypeScript files): 51 files (16.5%)
+- 🖼️ **.png** (PNG images): 31 files (10.0%)
+- 📄 **.sql** (Other files): 16 files (5.2%)
+- 📄 **.zip** (Other files): 12 files (3.9%)
+- 🎨 **.css** (Stylesheets): 10 files (3.2%)
+- 🎨 **.svg** (SVG images): 7 files (2.3%)
+- 📄 **.mjs** (Other files): 5 files (1.6%)
+- 📄 **.bak** (Other files): 4 files (1.3%)
+- ⚙️ **.json** (JSON files): 3 files (1.0%)
+- 📖 **.md** (Markdown files): 2 files (0.6%)
+- 🖼️ **.ico** (Icon files): 2 files (0.6%)
+- 📄 **.bak-limit** (Other files): 2 files (0.6%)
+- 📄 **.bak2** (Other files): 2 files (0.6%)
+- 🚫 **.gitignore** (Git ignore): 1 files (0.3%)
+- 🐳 **.dockerfile** (Docker files): 1 files (0.3%)
+- ⚙️ **.yml** (YAML files): 1 files (0.3%)
+- 📄 **.patch** (Other files): 1 files (0.3%)
+- ⚙️ **.yaml** (YAML files): 1 files (0.3%)
+- ⚙️ **.toml** (TOML files): 1 files (0.3%)
+- 📄 **.prisma** (Other files): 1 files (0.3%)
+- 🖼️ **.jpg** (JPEG images): 1 files (0.3%)
+- 📄 **.sh** (Other files): 1 files (0.3%)
+- 📄 **.gz** (Other files): 1 files (0.3%)
+- 📄 **.bak-plan** (Other files): 1 files (0.3%)
+- 📜 **.js** (JavaScript files): 1 files (0.3%)
+- 📄 **.bak-console** (Other files): 1 files (0.3%)
+- 📄 **.orig** (Other files): 1 files (0.3%)
+- 📄 **.rej** (Other files): 1 files (0.3%)
+- 📄 **.bak-upgrade** (Other files): 1 files (0.3%)
+- 📄 **.tsbuildinfo** (Other files): 1 files (0.3%)
 
 ### By Category
 
-- **React**: 119 files (45.2%)
-- **Other**: 46 files (17.5%)
-- **Assets**: 40 files (15.2%)
-- **TypeScript**: 37 files (14.1%)
-- **Styles**: 10 files (3.8%)
-- **Config**: 6 files (2.3%)
-- **DevOps**: 2 files (0.8%)
-- **Docs**: 2 files (0.8%)
-- **JavaScript**: 1 files (0.4%)
+- **React**: 146 files (47.1%)
+- **Other**: 51 files (16.5%)
+- **TypeScript**: 51 files (16.5%)
+- **Assets**: 41 files (13.2%)
+- **Styles**: 10 files (3.2%)
+- **Config**: 6 files (1.9%)
+- **DevOps**: 2 files (0.6%)
+- **Docs**: 2 files (0.6%)
+- **JavaScript**: 1 files (0.3%)
 
 ### 📁 Largest Directories
 
-- **root**: 263 files
-- **src**: 176 files
-- **src/components**: 93 files
-- **src/app**: 78 files
-- **public**: 39 files
+- **root**: 310 files
+- **src**: 219 files
+- **src/components**: 108 files
+- **src/app**: 104 files
+- **public**: 40 files
 
 ## 🌳 Directory Structure
 
@@ -133,6 +133,12 @@ kompi-web/
 │   │   │   └── 📄 migration.sql
 │   │   ├── 📂 20251128203225_add_menu_background_hex/
 │   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251129013058_creator_tools/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251129120427_contact_form_option_b/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251129123720_add_stripe_fields_to_workspace/
+│   │   │   └── 📄 migration.sql
 │   │   └── ⚙️ migration_lock.toml
 │   └── 📄 schema.prisma
 ├── 📖 project_structure.md
@@ -173,6 +179,9 @@ kompi-web/
 │   ├── 🎨 next.svg
 │   ├── 🖼️ pexels-dom-j-7304-45982.jpg
 │   ├── 🖼️ rosadjkompi.png
+│   ├── 📂 uploads/
+│   │   └── 📂 krcodes/
+│   │   │   └── 🖼️ cmiadm2e00003js049itq83xr.png
 │   ├── 🎨 vercel.svg
 │   ├── 🎨 window.svg
 │   └── 🖼️ workspacekompi.png
@@ -192,11 +201,28 @@ kompi-web/
 │   │   │   ├── 📂 auth/
 │   │   │   │   └── 📂 [...nextauth]/
 │   │   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 billing/
+│   │   │   │   ├── 📂 create-checkout-session/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   ├── 📂 create-portal-session/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   └── 📂 downgrade/
+│   │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 bio/
 │   │   │   │   ├── 📂 bootstrap/
 │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   ├── 📂 links/
 │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 contact-forms/
+│   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   ├── 🔷 route.ts
+│   │   │   │   │   └── 📂 submissions/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 discount-codes/
+│   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 engagement-events/
 │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 health/
 │   │   │   │   └── 🔷 route.ts
@@ -240,9 +266,24 @@ kompi-web/
 │   │   │   ├── 📂 settings/
 │   │   │   │   └── 📂 profile/
 │   │   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 stripe/
+│   │   │   │   └── 📂 webhook/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 subscribers/
+│   │   │   │   └── 🔷 route.ts
 │   │   │   └── 📂 workspaces/
 │   │   │   │   └── 🔷 route.ts
 │   │   ├── 📂 dashboard/
+│   │   │   ├── 📂 contact-forms/
+│   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── ⚛️ contact-form-card.tsx
+│   │   │   │   ├── ⚛️ contact-form-detail.tsx
+│   │   │   │   ├── ⚛️ contact-forms-table.tsx
+│   │   │   │   ├── ⚛️ layout.tsx
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 discount-codes/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 k-cards/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 kr-codes/
@@ -267,6 +308,7 @@ kompi-web/
 │   │   │   │   ├── 📂 branding/
 │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 domains/
+│   │   │   │   │   ├── ⚛️ domains-client.tsx
 │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 integrations/
 │   │   │   │   │   └── ⚛️ page.tsx
@@ -274,17 +316,23 @@ kompi-web/
 │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   └── 📂 profile/
 │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 subscribers/
+│   │   │   │   ├── ⚛️ layout.tsx
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   └── 📂 support/
 │   │   │   │   ├── ⚛️ layout.tsx
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🖼️ favicon.ico
 │   │   ├── 📂 features/
 │   │   │   └── 📂 url-shortener/
+│   │   │   │   ├── ⚛️ head.tsx
+│   │   │   │   ├── ⚛️ layout.tsx
 │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   └── 🎨 url-shortener.css
 │   │   ├── 🎨 globals.css
 │   │   ├── 📂 growth/
 │   │   │   └── ⚛️ page.tsx
+│   │   ├── ⚛️ head.tsx
 │   │   ├── 📂 k/
 │   │   │   └── 📂 [slug]/
 │   │   │   │   └── ⚛️ page.tsx
@@ -321,6 +369,7 @@ kompi-web/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── ⚛️ page.tsx
 │   │   ├── 📂 pricing/
+│   │   │   ├── ⚛️ layout.tsx
 │   │   │   ├── ⚛️ page.tsx
 │   │   │   └── 🎨 pricing.css
 │   │   ├── 📂 qr-code-generator/
@@ -336,19 +385,28 @@ kompi-web/
 │   │   ├── 📂 r/
 │   │   │   └── 📂 [code]/
 │   │   │   │   └── 🔷 route.ts
-│   │   └── 📂 signin/
+│   │   ├── 🔷 robots.ts
+│   │   ├── 📂 signin/
 │   │   │   └── ⚛️ page.tsx
+│   │   └── 🔷 sitemap.ts
 │   ├── 🧩 components/
 │   │   ├── 📂 analytics/
 │   │   │   └── ⚛️ analytics-overview.tsx
 │   │   ├── 📂 billing/
-│   │   │   └── ⚛️ plan-limit-modal.tsx
+│   │   │   ├── ⚛️ downgrade-button.tsx
+│   │   │   ├── ⚛️ manage-billing-button.tsx
+│   │   │   ├── ⚛️ plan-limit-modal.tsx
+│   │   │   └── ⚛️ upgrade-button.tsx
 │   │   ├── 📂 bio/
 │   │   │   └── ⚛️ bio-card.tsx
+│   │   ├── 📂 contact/
+│   │   │   ├── ⚛️ contact-form-card.tsx
+│   │   │   └── ⚛️ contact-form-inline.tsx
 │   │   ├── 📂 dashboard/
 │   │   │   ├── ⚛️ create-modal.tsx
 │   │   │   ├── ⚛️ create-workspace-empty.tsx
 │   │   │   ├── ⚛️ dashboard-activity-card.tsx
+│   │   │   ├── ⚛️ dashboard-activity-strip.tsx
 │   │   │   ├── ⚛️ dashboard-announcement-banner.tsx
 │   │   │   ├── ⚛️ dashboard-feature-grid.tsx
 │   │   │   ├── ⚛️ dashboard-hero-stats.tsx
@@ -364,7 +422,12 @@ kompi-web/
 │   │   │   ├── ⚛️ dashboard-topbar.tsx
 │   │   │   ├── 🔷 dashboard-types.ts
 │   │   │   └── ⚛️ glass-card.tsx
+│   │   ├── 📂 discounts/
+│   │   │   ├── ⚛️ discount-codes-table.tsx
+│   │   │   └── ⚛️ discount-pill.tsx
 │   │   ├── ⚛️ do-more.tsx
+│   │   ├── 📂 engagement/
+│   │   │   └── ⚛️ locked-content.tsx
 │   │   ├── ⚛️ faqs.tsx
 │   │   ├── ⚛️ features-megamenu.tsx
 │   │   ├── 🎨 footer-cta.css
@@ -383,6 +446,7 @@ kompi-web/
 │   │   │   ├── 🔷 kcard-theme-presets.ts
 │   │   │   ├── ⚛️ KCardPreview.tsx
 │   │   │   ├── ⚛️ KCardsPage.tsx
+│   │   │   ├── ⚛️ KCardSubscribeBlock.tsx
 │   │   │   └── ⚛️ KCardThemeSection.tsx
 │   │   ├── ⚛️ KBenefits.tsx
 │   │   ├── ⚛️ KolorKards.tsx
@@ -391,6 +455,8 @@ kompi-web/
 │   │   ├── ⚛️ KPromo.tsx
 │   │   ├── 📂 kr-codes/
 │   │   │   ├── ⚛️ KRCodesPage.tsx
+│   │   │   ├── 📄 KRCodesPage.tsx.bak
+│   │   │   ├── 📄 KRCodesPage.tsx.bak2
 │   │   │   ├── 📄 KRCodesPage.tsx.orig
 │   │   │   └── 📄 KRCodesPage.tsx.rej
 │   │   ├── 🎨 krow.css
@@ -433,6 +499,10 @@ kompi-web/
 │   │   │   └── ⚛️ value-grid.tsx
 │   │   ├── 📂 settings/
 │   │   │   └── ⚛️ profile-settings-client.tsx
+│   │   ├── 📂 subscribers/
+│   │   │   ├── ⚛️ subscribe-inline-form.tsx
+│   │   │   ├── ⚛️ subscribe-inline.tsx
+│   │   │   └── ⚛️ subscribers-table.tsx
 │   │   ├── 🎨 ui/
 │   │   │   ├── ⚛️ button.tsx
 │   │   │   ├── ⚛️ card.tsx
@@ -454,7 +524,9 @@ kompi-web/
 │   │   ├── 🔷 analytics-overview.ts
 │   │   ├── 🔷 auth.ts
 │   │   ├── 🔷 fonts.ts
+│   │   ├── 🔷 plan-limits.ts
 │   │   ├── 🔷 prisma.ts
+│   │   ├── 🔷 stripe.ts
 │   │   └── 🔷 utils.ts
 ├── 🟡 🔷 **tsconfig.json**
 └── 📄 tsconfig.tsbuildinfo

@@ -48,7 +48,11 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
   });
   const [isPending, startTransition] = useTransition();
 
-  // NEW: dynamic plan usage
+  // NEW: success popup state
+  const [createdLinkId, setCreatedLinkId] = useState<string | null>(null);
+  const [createdShortUrl, setCreatedShortUrl] = useState<string | null>(null);
+
+  // dynamic plan usage
   const [linkCount, setLinkCount] = useState<number | null>(null);
   const [linkLimit, setLinkLimit] = useState<number | null>(null);
   const [planLabel, setPlanLabel] = useState<string>("Free plan limit");
@@ -84,7 +88,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
         setLinkLimit(limit);
         setPlanLabel(label);
       } catch {
-        // silent fail – keep defaults
+        // ignore
       }
     }
 
@@ -152,7 +156,10 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
       if (!res.ok) {
         const msg = await res.text();
         const lower = msg.toLowerCase();
-        if (lower.includes("free plan limit") || lower.includes("creator plan limit")) {
+        if (
+          lower.includes("free plan limit") ||
+          lower.includes("creator plan limit")
+        ) {
           setLimitOpen(true);
         } else {
           toast.error(msg || "Could not create link");
@@ -164,7 +171,18 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
       toast.success("Short link created");
 
       if (link.id) {
-        router.push(`/links/${link.id}`);
+        // Build short URL for the popup
+        const shortUrl: string =
+          link.shortUrl ??
+          (link.code
+            ? `${
+                typeof window !== "undefined" ? window.location.origin : ""
+              }/r/${link.code}`
+            : "");
+
+        setCreatedLinkId(link.id);
+        setCreatedShortUrl(shortUrl || null);
+        // stay on page, popup will show
       } else {
         router.push("/links");
       }
@@ -184,6 +202,27 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
       ? `You’re using ${linkCount} of ${linkLimit} links in this workspace.`
       : "Checking your link usage…";
 
+  const handleGoToLinkPage = () => {
+    if (!createdLinkId) return;
+    router.push(`/links/${createdLinkId}`);
+  };
+
+  const handleCopyCreatedLink = async () => {
+    if (!createdShortUrl || typeof navigator === "undefined") return;
+    try {
+      await navigator.clipboard.writeText(createdShortUrl);
+      toast.success("Link copied to clipboard");
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleCreateAnother = () => {
+    router.push("/links/new");
+  };
+
+  const successOpen = !!createdLinkId;
+
   return (
     <>
       <main
@@ -197,112 +236,171 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
           onSubmit={handleSubmit}
           className="mx-auto flex w-full max-w-5xl flex-col gap-8 pb-16 pt-10"
         >
-          {/* Dashboard/PageHeader */}
-          <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-3">
-              <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-4xl leading-[1.03]">
-                Create a new{" "}
-                <span
-                  className="italic"
-                  style={{
-                    fontFamily:
-                      "Instrument Serif, 'Times New Roman', serif",
-                  }}
-                >
-                  link
-                </span>
-              </h1>
-              <p className="max-w-xl text-base text-[color:var(--color-subtle)]">
-                Shorten a URL, optionally generate a Kompi Code, and add UTM
-                tracking so every visit is measured.
-              </p>
-            </div>
-            {/* StatsRow – single stat */}
-            <div
-              className="inline-flex min-w-[220px] flex-col gap-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 text-right shadow-sm"
-              aria-label="Plan link limit"
-            >
-              <span className="inline-flex h-1.5 w-1.5 self-end rounded-full bg-[var(--color-accent)]" />
-              <p className="text-xs font-medium uppercase tracking-[0.12em] text-[color:var(--color-subtle)]">
-                {planLabel}
-              </p>
-              <p className="text-2xl font-semibold leading-tight text-[color:var(--color-text)]">
-                {effectiveLimit} links
-              </p>
-              <p className="text-xs text-[color:var(--color-subtle)]">
-                {usageText}
-              </p>
-            </div>
-          </header>
+          {/* --------------------------------------------------- */}
+          {/* HERO HEADER – Kompilink-style banner                */}
+          {/* --------------------------------------------------- */}
+          <header className="w-full">
+            <div className="w-full rounded-[32px] bg-[#006476] px-6 py-6 sm:px-10 sm:py-8">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                {/* Left: image + text */}
+                <div className="flex items-center gap-6">
+                  {/* Stacked image card */}
+                  <div className="relative h-24 w-24 shrink-0 sm:h-28 sm:w-28">
+                    <div className="absolute -left-4 top-3 h-20 w-16 rounded-3xl bg-[#F5FF47]" />
+                    <div className="relative h-full w-full overflow-hidden rounded-3xl bg-[#FF5A4A]">
+                      <img
+                        src="/kompi-business.png"
+                        alt="Kompi link hero"
+                        className="h-full w-full object-cover"
+                        draggable={false}
+                      />
+                    </div>
+                  </div>
 
-          {/* Link details – primary card */}
-          <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-6 shadow-sm md:px-7 md:py-7">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
-                  <Link2 className="h-5 w-5 text-[color:var(--color-text)]" />
-                </span>
-                <div className="space-y-1">
-                  <h2 className="text-base font-semibold text-[color:var(--color-text)]">
-                    Link details
-                  </h2>
-                  <p className="text-sm text-[color:var(--color-subtle)]">
-                    Set the destination URL, short link, and optional title.
-                  </p>
+                  <div className="space-y-2">
+                    <div className="leading-tight">
+                      <p
+                        className="text-[28px] sm:text-[34px]"
+                        style={{
+                          fontFamily:
+                            '"Inter Tight", system-ui, -apple-system, sans-serif',
+                          color: "#F4FBFF",
+                          fontWeight: 500,
+                          fontStyle: "normal",
+                        }}
+                      >
+                        Create a new
+                      </p>
+                      <p
+                        className="text-[32px] sm:text-[38px]"
+                        style={{
+                          fontFamily: '"Instrument Serif", Georgia, serif',
+                          color: "#F4FBFF",
+                          fontWeight: 400,
+                          fontStyle: "normal",
+                        }}
+                      >
+                        Kompi link.
+                      </p>
+                    </div>
+
+                    <p
+                      className="max-w-xl text-[13px] sm:text-sm"
+                      style={{
+                        fontFamily:
+                          '"Inter Tight", system-ui, -apple-system, sans-serif',
+                        color: "rgba(244,251,255,0.9)",
+                      }}
+                    >
+                      Shorten a URL, optionally generate a Kompi Code, and add
+                      UTM tracking so every visit is measured.
+                    </p>
+
+                    <p
+                      className="text-[11px] sm:text-xs"
+                      style={{
+                        fontFamily:
+                          '"Inter Tight", system-ui, -apple-system, sans-serif',
+                        color: "rgba(244,251,255,0.85)",
+                      }}
+                    >
+                      {planLabel}: {usageText}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right: tiny stat pill */}
+                <div className="flex justify-start lg:justify-end">
+                  <div className="min-w-[210px] rounded-2xl bg-[rgba(0,0,0,0.18)] px-4 py-3 text-right">
+                    <p
+                      className="text-[11px] font-medium uppercase tracking-[0.12em]"
+                      style={{ color: "rgba(244,251,255,0.8)" }}
+                    >
+                      {planLabel}
+                    </p>
+                    <p
+                      className="text-2xl font-semibold leading-tight"
+                      style={{ color: "#F5FF47" }}
+                    >
+                      {effectiveLimit} links
+                    </p>
+                    <p
+                      className="text-[11px]"
+                      style={{ color: "rgba(244,251,255,0.75)" }}
+                    >
+                      {usageText}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
+          </header>
 
-            <div className="space-y-5">
-              {/* Destination URL */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="destination-url"
-                  className="text-sm font-medium text-[color:var(--color-text)]"
-                >
-                  Destination URL
-                </label>
+          {/* --------------------------------------------------- */}
+          {/* Link details – primary card                         */}
+          {/* --------------------------------------------------- */}
+          <Card className="shadow-none rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-8 md:px-10 md:py-10">
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+              <span
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full"
+                style={{ backgroundColor: "#111827" }}
+              >
+                <Link2 className="h-5 w-5" style={{ color: "#D8FF3B" }} />
+              </span>
+              <div className="space-y-0.5">
+                <h2 className="text-sm font-semibold text-[color:var(--color-text)]">
+                  Link details
+                </h2>
+                <p className="text-sm text-[color:var(--color-subtle)]">
+                  Set the destination URL, short link, and optional title.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              {/* BIG destination URL – no eyebrow label */}
+              <div className="space-y-3">
                 <Input
                   id="destination-url"
-                  placeholder="https://example.com/my-long-url"
+                  placeholder="Paste your long link here"
                   value={targetUrl}
                   onChange={(e) => setTargetUrl(e.target.value)}
-                  className="h-11 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                  className="h-20 border-0 border-b-2 border-[var(--color-border)] bg-transparent px-0 text-[28px] font-medium text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-0 focus-visible:border-[color:var(--color-text)] rounded-none md:text-[32px]"
                 />
               </div>
 
               {/* Short link */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[color:var(--color-text)]">
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
                   Short link
-                </label>
+                </p>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <div className="sm:w-48">
+                  <div className="sm:w-52">
                     <Select value={domain} onValueChange={setDomain}>
-                      <SelectTrigger className="h-11 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0">
+                      <SelectTrigger className="h-10 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0">
                         <SelectValue placeholder="Choose domain" />
                       </SelectTrigger>
-                      <SelectContent className="border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)]">
+                      <SelectContent className="border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)]">
                         {/* TODO: populate from workspace domains */}
                         <SelectItem value="kmp.li">kmp.li</SelectItem>
                         <SelectItem value="kompi.app">kompi.app</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <span className="hidden text-lg text-[color:var(--color-subtle)] sm:inline">
+                  <span className="hidden text-sm text-[color:var(--color-subtle)] sm:inline">
                     /
                   </span>
                   <Input
                     placeholder="custom-code (optional)"
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
-                    className="h-11 flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 flex-1 border-0 border-b border-[var(--color-border)] bg-transparent px-0 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-0 focus-visible:border-[color:var(--color-text)] rounded-none"
                   />
                 </div>
                 {shortUrlPreview && (
-                  <p className="text-sm text-[color:var(--color-subtle)]">
+                  <p className="text-xs text-[color:var(--color-subtle)]">
                     This will be your short link:{" "}
-                    <span className="font-medium text-[color:var(--color-text)] underline decoration-[var(--color-accent)] decoration-2 underline-offset-4">
+                    <span className="font-medium text-[color:var(--color-text)] underline decoration-[var(--color-accent)] underline-offset-4">
                       {shortUrlPreview}
                     </span>
                   </p>
@@ -310,35 +408,33 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
               </div>
 
               {/* Title */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="link-title"
-                  className="text-sm font-medium text-[color:var(--color-text)]"
-                >
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
                   Title{" "}
-                  <span className="font-normal text-[color:var(--color-subtle)]">
-                    (optional)
-                  </span>
-                </label>
+                  <span className="font-normal normal-case">(optional)</span>
+                </p>
                 <Input
                   id="link-title"
                   placeholder="Give this link a friendly name"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="h-11 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                  className="h-10 border-0 border-b border-[var(--color-border)] bg-transparent px-0 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-0 focus-visible:border-[color:var(--color-text)] rounded-none"
                 />
               </div>
             </div>
           </Card>
 
           {/* Sharing options */}
-          <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-6 shadow-sm md:px-7 md:py-7">
+          <Card className="shadow-none rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-8 md:px-10 md:py-10">
             <div className="mb-5 flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
-                <QrCode className="h-5 w-5 text-[color:var(--color-text)]" />
+              <span
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full"
+                style={{ backgroundColor: "#111827" }}
+              >
+                <QrCode className="h-5 w-5" style={{ color: "#D8FF3B" }} />
               </span>
-              <div className="space-y-1">
-                <h2 className="text-base font-semibold text-[color:var(--color-text)]">
+              <div className="space-y-0.5">
+                <h2 className="text-sm font-semibold text-[color:var(--color-text)]">
                   Sharing options
                 </h2>
                 <p className="text-sm text-[color:var(--color-subtle)]">
@@ -482,14 +578,20 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
           </Card>
 
           {/* Advanced settings / UTM */}
-          <Card className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-6 shadow-sm md:px-7 md:py-7">
+          <Card className="shadow-none rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-8 md:px-10 md:py-10">
             <div className="mb-5 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-accent-soft)]">
-                  <SlidersHorizontal className="h-5 w-5 text-[color:var(--color-text)]" />
+                <span
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full"
+                  style={{ backgroundColor: "#111827" }}
+                >
+                  <SlidersHorizontal
+                    className="h-5 w-5"
+                    style={{ color: "#D8FF3B" }}
+                  />
                 </span>
-                <div className="space-y-1">
-                  <h2 className="text-base font-semibold text-[color:var(--color-text)]">
+                <div className="space-y-0.5">
+                  <h2 className="text-sm font-semibold text-[color:var(--color-text)]">
                     Advanced settings
                   </h2>
                   <p className="text-sm text-[color:var(--color-subtle)]">
@@ -521,7 +623,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                     placeholder="facebook, newsletter"
                     value={utm.source}
                     onChange={(e) => updateUtm("source", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
                   />
                 </div>
                 <div className="space-y-2">
@@ -532,7 +634,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                     placeholder="cpc, email"
                     value={utm.medium}
                     onChange={(e) => updateUtm("medium", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
                   />
                 </div>
                 <div className="space-y-2">
@@ -543,7 +645,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                     placeholder="spring_sale"
                     value={utm.campaign}
                     onChange={(e) => updateUtm("campaign", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
                   />
                 </div>
                 <div className="space-y-2">
@@ -554,7 +656,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                     placeholder="keyword"
                     value={utm.term}
                     onChange={(e) => updateUtm("term", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -565,7 +667,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                     placeholder="banner_variant_a"
                     value={utm.content}
                     onChange={(e) => updateUtm("content", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-base text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
                   />
                 </div>
               </div>
@@ -590,13 +692,76 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
             <Button
               type="submit"
               disabled={isPending}
-              className="h-10 rounded-full bg-[var(--color-accent)] px-6 text-sm font-semibold text-[color:var(--color-text)] shadow-sm hover:shadow-md disabled:opacity-70"
+              className="h-10 rounded-full bg-[var(--color-accent)] px-6 text-sm font-semibold text-[color:var(--color-text)] disabled:opacity-70"
             >
               {isPending ? "Creating…" : "Create your link"}
             </Button>
           </div>
         </form>
+
+        {/* --------------------------------------------------- */}
+        {/* SUCCESS POPUP                                       */}
+        {/* --------------------------------------------------- */}
+        {successOpen && createdLinkId && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40">
+            <div
+              className="relative mx-4 w-full max-w-3xl rounded-[40px] px-8 py-10 text-center sm:px-12 sm:py-12"
+              style={{ backgroundColor: "#004233" }}
+            >
+              {/* Close X – ALWAYS goes to link page */}
+              <button
+                type="button"
+                onClick={handleGoToLinkPage}
+                className="absolute right-6 top-6 text-2xl font-medium text-white"
+                aria-label="Close"
+              >
+                ×
+              </button>
+
+              <p className="mb-6 text-lg font-medium text-white sm:text-2xl">
+                Your link is ready 🔥
+              </p>
+
+              <p
+                className="mb-10 text-3xl sm:text-4xl md:text-5xl"
+                style={{
+                  fontFamily: '"Instrument Serif", Georgia, serif',
+                  color: "#F9FF8A",
+                  fontStyle: "italic",
+                }}
+              >
+                {createdShortUrl || "kompi.app/r/your-code"}
+              </p>
+
+              <div className="mb-8 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:gap-6">
+                <button
+                  type="button"
+                  onClick={handleGoToLinkPage}
+                  className="inline-flex flex-1 items-center justify-center rounded-full bg-[#F5FF47] px-6 py-3 text-base font-semibold text-[#003426]"
+                >
+                  Go to link page
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyCreatedLink}
+                  className="inline-flex flex-1 items-center justify-center rounded-full bg-[#A8DFCF] px-6 py-3 text-base font-semibold text-[#003426]"
+                >
+                  Copy link
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCreateAnother}
+                className="text-sm font-medium text-white underline-offset-4 hover:underline sm:text-base"
+              >
+                Create another link →
+              </button>
+            </div>
+          </div>
+        )}
       </main>
+
       <PlanLimitModal
         open={limitOpen}
         onOpenChange={setLimitOpen}

@@ -79,6 +79,49 @@ export async function POST(req: Request) {
       },
     });
 
+    // Automatically create a Kompi QR code (KRCode) pointing at this menu's public URL.
+    // This is a best-effort side effect; failures here should not block menu creation.
+    try {
+      const workspace = await prisma.workspace.findFirst({
+        where: { ownerId: userId },
+        orderBy: { createdAt: "asc" },
+      });
+
+      if (workspace) {
+        const headerOrigin = req.headers.get("origin");
+
+        const url = new URL(req.url);
+        const urlOrigin = `${url.protocol}//${url.host}`;
+
+        const envOrUrlOrigin = process.env.NEXT_PUBLIC_APP_URL ?? urlOrigin;
+        const origin = headerOrigin ?? envOrUrlOrigin ?? "https://kompi.app";
+
+        const destination = `${origin}/m/${slug}`;
+
+        const existingKrCode = await prisma.kRCode.findFirst({
+          where: {
+            userId,
+            workspaceId: workspace.id,
+            destination,
+          },
+        });
+
+        if (!existingKrCode) {
+          await prisma.kRCode.create({
+            data: {
+              userId,
+              workspaceId: workspace.id,
+              title: title || "QR Menu",
+              destination,
+              type: "menu",
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.error("[QR-MENUS_POST_CREATE_KRCODE]", err);
+    }
+
     return NextResponse.json(created, { status: 201 });
   } catch (error: unknown) {
     console.error("[QR-MENUS_POST]", error);

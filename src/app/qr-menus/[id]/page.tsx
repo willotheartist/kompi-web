@@ -1,5 +1,4 @@
 // src/app/qr-menus/[id]/page.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Plus, Trash2, ArrowLeft, ExternalLink, QrCode } from "lucide-react";
+import { MenuQrPreview } from "@/components/qr-menus/menu-qr-preview";
 
 type MenuSectionItem = {
   id: string;
@@ -16,7 +16,6 @@ type MenuSectionItem = {
   description?: string;
   price?: string;
   badge?: string;
-  isAvailable?: boolean; // NEW
 };
 
 type MenuSection = {
@@ -30,7 +29,9 @@ type MenuData = {
   title: string | null;
   slug: string | null;
   description: string | null;
+  logoUrl: string | null;
   accentHex: string | null;
+  backgroundHex: string | null;
   sections: MenuSection[] | null;
 };
 
@@ -42,14 +43,37 @@ export default function EditQrMenuPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [creatingCode, setCreatingCode] = useState(false);
   const [menu, setMenu] = useState<MenuData | null>(null);
 
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
+
+  const [logoUrl, setLogoUrl] = useState("");
   const [accentHex, setAccentHex] = useState("#ff571f");
+  const [backgroundHex, setBackgroundHex] = useState("#050609");
+
   const [sections, setSections] = useState<MenuSection[]>([]);
+
+  // Shared "Typeform-ish" input style: flat, underlined, no box, no shadows.
+  const fieldStyle = {
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    border: "none",
+    borderBottom: "1px solid var(--color-border)",
+    color: "var(--color-text)",
+    paddingLeft: 0,
+    paddingRight: 0,
+    boxShadow: "none",
+    outline: "none",
+  } as const;
+
+  const textAreaStyle = {
+    ...fieldStyle,
+    paddingTop: "0.35rem",
+    paddingBottom: "0.35rem",
+    minHeight: "3.5rem",
+  } as const;
 
   useEffect(() => {
     if (!id) return;
@@ -78,9 +102,11 @@ export default function EditQrMenuPage() {
         setTitle(m.title || "");
         setSlug(m.slug || "");
         setDescription(m.description || "");
+        setLogoUrl(m.logoUrl || "");
         setAccentHex(m.accentHex || "#ff571f");
+        setBackgroundHex(m.backgroundHex || "#050609");
         setSections(
-          Array.isArray(m.sections) ? (m.sections as MenuSection[]) : [],
+          Array.isArray(m.sections) ? (m.sections as MenuSection[]) : []
         );
       } catch (err) {
         console.error(err);
@@ -114,7 +140,7 @@ export default function EditQrMenuPage() {
 
   function updateSectionName(sectionId: string, name: string) {
     setSections((prev) =>
-      prev.map((s) => (s.id === sectionId ? { ...s, name } : s)),
+      prev.map((s) => (s.id === sectionId ? { ...s, name } : s))
     );
   }
 
@@ -125,13 +151,12 @@ export default function EditQrMenuPage() {
       description: "",
       price: "",
       badge: "",
-      isAvailable: true, // NEW default
     };
 
     setSections((prev) =>
       prev.map((s) =>
-        s.id === sectionId ? { ...s, items: [...s.items, newItem] } : s,
-      ),
+        s.id === sectionId ? { ...s, items: [...s.items, newItem] } : s
+      )
     );
   }
 
@@ -140,15 +165,15 @@ export default function EditQrMenuPage() {
       prev.map((s) =>
         s.id === sectionId
           ? { ...s, items: s.items.filter((i) => i.id !== itemId) }
-          : s,
-      ),
+          : s
+      )
     );
   }
 
   function updateItem(
     sectionId: string,
     itemId: string,
-    patch: Partial<MenuSectionItem>,
+    patch: Partial<MenuSectionItem>
   ) {
     setSections((prev) =>
       prev.map((s) =>
@@ -156,11 +181,11 @@ export default function EditQrMenuPage() {
           ? {
               ...s,
               items: s.items.map((i) =>
-                i.id === itemId ? { ...i, ...patch } : i,
+                i.id === itemId ? { ...i, ...patch } : i
               ),
             }
-          : s,
-      ),
+          : s
+      )
     );
   }
 
@@ -172,6 +197,7 @@ export default function EditQrMenuPage() {
 
     const rawTitle = title.trim();
     const rawSlug = slug.trim();
+    const rawLogo = logoUrl.trim();
 
     const autoSlug =
       !rawSlug && rawTitle
@@ -193,7 +219,9 @@ export default function EditQrMenuPage() {
         title: rawTitle || null,
         slug: finalSlug,
         description: description.trim() || null,
+        logoUrl: rawLogo || null,
         accentHex: accentHex || "#ff571f",
+        backgroundHex: backgroundHex || "#050609",
         sections,
       };
 
@@ -208,7 +236,9 @@ export default function EditQrMenuPage() {
         try {
           const txt = await res.text();
           if (txt) msg = txt;
-        } catch {}
+        } catch {
+          // ignore
+        }
         throw new Error(msg);
       }
 
@@ -243,7 +273,9 @@ export default function EditQrMenuPage() {
         try {
           const txt = await res.text();
           if (txt) msg = txt;
-        } catch {}
+        } catch {
+          // ignore body read errors
+        }
         throw new Error(msg);
       }
 
@@ -276,44 +308,45 @@ export default function EditQrMenuPage() {
     }
   }
 
-  async function handleCreateKompiCode() {
+  async function handleEditQr() {
     if (!id) {
       toast.error("Missing menu id");
       return;
     }
-    if (!slug) {
-      toast.error("Set a slug first");
-      return;
-    }
 
-    setCreatingCode(true);
     try {
       const res = await fetch(`/api/qr-menus/${id}/create-krcode`, {
         method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
       });
 
       if (!res.ok) {
-        let msg = "Failed to create Kompi Code";
+        let msg = "Failed to open QR editor";
         try {
           const txt = await res.text();
           if (txt) msg = txt;
-        } catch {}
+        } catch {
+          // ignore
+        }
         throw new Error(msg);
       }
 
-      const data = (await res.json()) as { id: string };
-      if (!data.id) {
-        throw new Error("Missing Kompi Code id in response");
+      const data = await res.json();
+      const krCodeId: string | undefined =
+        data?.krCode?.id ?? data?.id ?? undefined;
+
+      if (!krCodeId) {
+        throw new Error("QR code id missing from response");
       }
 
-      router.push(`/dashboard/kr-codes/${data.id}`);
-    } catch (err: unknown) {
+      router.push(`/kr-codes/${krCodeId}`);
+    } catch (err) {
       console.error(err);
       const message =
-        err instanceof Error ? err.message : "Failed to create Kompi Code";
+        err instanceof Error ? err.message : "Failed to open QR editor";
       toast.error(message);
-    } finally {
-      setCreatingCode(false);
     }
   }
 
@@ -358,16 +391,6 @@ export default function EditQrMenuPage() {
 
             <Button
               type="button"
-              size="sm"
-              className="h-8 rounded-full px-3 text-[11px]"
-              onClick={handleCreateKompiCode}
-              disabled={creatingCode || loading || !slug}
-            >
-              {creatingCode ? "Creating code…" : "Create Kompi Code"}
-            </Button>
-
-            <Button
-              type="button"
               variant="outline"
               size="sm"
               className="h-8 rounded-full px-3 text-[11px]"
@@ -399,6 +422,7 @@ export default function EditQrMenuPage() {
               style={{
                 borderColor: "var(--color-border)",
                 backgroundColor: "var(--color-surface)",
+                boxShadow: "none",
               }}
             >
               <div className="mb-3 space-y-1">
@@ -421,13 +445,9 @@ export default function EditQrMenuPage() {
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Pin-Pan Bar & Grill"
-                    className="h-9 rounded-2xl text-sm"
-                    style={{
-                      backgroundColor: "var(--color-bg)",
-                      color: "var(--color-text)",
-                      borderColor: "var(--color-border)",
-                    }}
+                    placeholder="New Restaurant"
+                    className="h-9 rounded-none border-none shadow-none text-sm px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    style={fieldStyle}
                     disabled={loading}
                   />
                 </div>
@@ -453,16 +473,12 @@ export default function EditQrMenuPage() {
                         setSlug(
                           e.target.value
                             .toLowerCase()
-                            .replace(/[^a-z0-9-]/g, "-"),
+                            .replace(/[^a-z0-9-]/g, "-")
                         )
                       }
-                      placeholder="pin-pan"
-                      className="h-9 rounded-2xl text-sm"
-                      style={{
-                        backgroundColor: "var(--color-bg)",
-                        color: "var(--color-text)",
-                        borderColor: "var(--color-border)",
-                      }}
+                      placeholder="new-restaurant"
+                      className="h-9 rounded-none border-none shadow-none text-sm px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      style={fieldStyle}
                       disabled={loading}
                     />
                   </div>
@@ -496,13 +512,9 @@ export default function EditQrMenuPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
-                    placeholder="Neighbourhood bar & grill with craft beers, cocktails and comfort food."
-                    className="rounded-2xl text-sm"
-                    style={{
-                      backgroundColor: "var(--color-bg)",
-                      color: "var(--color-text)",
-                      borderColor: "var(--color-border)",
-                    }}
+                    placeholder="Short description that appears at the top of the menu."
+                    className="rounded-none border-none shadow-none text-sm px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    style={textAreaStyle}
                     disabled={loading}
                   />
                 </div>
@@ -515,6 +527,7 @@ export default function EditQrMenuPage() {
               style={{
                 borderColor: "var(--color-border)",
                 backgroundColor: "var(--color-surface)",
+                boxShadow: "none",
               }}
             >
               <div className="mb-3 flex items-center justify-between gap-3">
@@ -526,7 +539,8 @@ export default function EditQrMenuPage() {
                     className="text-[11px]"
                     style={{ color: "var(--color-subtle)" }}
                   >
-                    Group your items into sections like Starters, Mains, Drinks.
+                    Organise dishes into sections like Starters, Mains,
+                    Desserts or Drinks.
                   </p>
                 </div>
                 <Button
@@ -556,28 +570,26 @@ export default function EditQrMenuPage() {
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {sections.map((section) => (
                   <div
                     key={section.id}
-                    className="rounded-2xl border px-3 py-3"
+                    className="rounded-2xl border px-4 py-4"
                     style={{
                       borderColor: "var(--color-border)",
                       backgroundColor: "var(--color-bg)",
+                      boxShadow: "none",
                     }}
                   >
-                    <div className="mb-2 flex items-center justify-between gap-3">
+                    {/* Section header */}
+                    <div className="mb-3 flex items-center justify-between gap-3">
                       <Input
                         value={section.name}
                         onChange={(e) =>
                           updateSectionName(section.id, e.target.value)
                         }
-                        className="h-8 rounded-2xl text-xs"
-                        style={{
-                          backgroundColor: "var(--color-surface)",
-                          color: "var(--color-text)",
-                          borderColor: "var(--color-border)",
-                        }}
+                        className="h-9 text-sm font-medium border-none shadow-none rounded-none px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        style={fieldStyle}
                         placeholder="Section name (e.g. Starters)"
                       />
                       <button
@@ -587,55 +599,50 @@ export default function EditQrMenuPage() {
                         style={{
                           border: "1px solid var(--color-border)",
                           color: "var(--color-subtle)",
+                          backgroundColor: "transparent",
                         }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
 
-                    <div className="space-y-2">
-                      {section.items.map((item) => {
-                        const available = item.isAvailable !== false;
+                    {/* Items */}
+                    <div className="space-y-5">
+                      {section.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="space-y-3 rounded-xl px-1 py-1"
+                          style={{ boxShadow: "none" }}
+                        >
+                          {/* Name + description */}
+                          <div className="space-y-1.5">
+                            <Input
+                              value={item.name}
+                              onChange={(e) =>
+                                updateItem(section.id, item.id, {
+                                  name: e.target.value,
+                                })
+                              }
+                              className="h-8 text-sm border-none shadow-none rounded-none px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                              style={fieldStyle}
+                              placeholder="New item"
+                            />
+                            <Textarea
+                              value={item.description || ""}
+                              onChange={(e) =>
+                                updateItem(section.id, item.id, {
+                                  description: e.target.value,
+                                })
+                              }
+                              rows={2}
+                              className="text-xs border-none shadow-none rounded-none px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                              style={textAreaStyle}
+                              placeholder="Short description"
+                            />
+                          </div>
 
-                        return (
-                          <div
-                            key={item.id}
-                            className="grid gap-2 rounded-2xl bg-[var(--color-surface)] px-3 py-3 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_140px_40px]"
-                          >
-                            <div className="space-y-1.5">
-                              <Input
-                                value={item.name}
-                                onChange={(e) =>
-                                  updateItem(section.id, item.id, {
-                                    name: e.target.value,
-                                  })
-                                }
-                                className="h-8 rounded-2xl text-xs"
-                                style={{
-                                  backgroundColor: "var(--color-bg)",
-                                  color: "var(--color-text)",
-                                  borderColor: "var(--color-border)",
-                                }}
-                                placeholder="Item name"
-                              />
-                              <Textarea
-                                value={item.description || ""}
-                                onChange={(e) =>
-                                  updateItem(section.id, item.id, {
-                                    description: e.target.value,
-                                  })
-                                }
-                                rows={2}
-                                className="rounded-2xl text-xs"
-                                style={{
-                                  backgroundColor: "var(--color-bg)",
-                                  color: "var(--color-text)",
-                                  borderColor: "var(--color-border)",
-                                }}
-                                placeholder="Short description"
-                              />
-                            </div>
-
+                          {/* Badge + price + delete */}
+                          <div className="mt-1 grid itemsEnd gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)_40px]">
                             <div className="space-y-1.5">
                               <label className="text-[11px] font-medium text-[var(--color-text)]">
                                 Badge (optional)
@@ -647,12 +654,8 @@ export default function EditQrMenuPage() {
                                     badge: e.target.value,
                                   })
                                 }
-                                className="h-8 rounded-2xl text-xs"
-                                style={{
-                                  backgroundColor: "var(--color-bg)",
-                                  color: "var(--color-text)",
-                                  borderColor: "var(--color-border)",
-                                }}
+                                className="h-8 text-xs border-none shadow-none rounded-none px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                                style={fieldStyle}
                                 placeholder="e.g. New, Spicy, Vegan"
                               />
                             </div>
@@ -668,72 +671,38 @@ export default function EditQrMenuPage() {
                                     price: e.target.value,
                                   })
                                 }
-                                className="h-8 rounded-2xl text-xs"
-                                style={{
-                                  backgroundColor: "var(--color-bg)",
-                                  color: "var(--color-text)",
-                                  borderColor: "var(--color-border)",
-                                }}
-                                placeholder="€12"
+                                className="h-8 text-xs border-none shadow-none rounded-none px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                                style={fieldStyle}
+                                placeholder="£9.50"
                               />
-                              {/* Availability pill */}
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateItem(section.id, item.id, {
-                                    isAvailable: !available,
-                                  })
-                                }
-                                className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px]"
-                                style={{
-                                  border: "1px solid var(--color-border)",
-                                  backgroundColor: available
-                                    ? "var(--color-bg)"
-                                    : "var(--color-surface)",
-                                  color: available
-                                    ? "var(--color-text)"
-                                    : "var(--color-subtle)",
-                                }}
-                              >
-                                <span
-                                  className="h-2 w-2 rounded-full"
-                                  style={{
-                                    backgroundColor: available
-                                      ? "var(--color-text)"
-                                      : "var(--color-subtle)",
-                                  }}
-                                />
-                                {available ? "Available" : "Sold out"}
-                              </button>
                             </div>
 
-                            <div className="flex items-start justify-end">
+                            <div className="flex items-end justify-end">
                               <button
                                 type="button"
-                                onClick={() =>
-                                  removeItem(section.id, item.id)
-                                }
-                                className="mt-5 inline-flex items-center justify-center rounded-full p-1.5"
+                                onClick={() => removeItem(section.id, item.id)}
+                                className="inline-flex items-center justify-center rounded-full p-1.5"
                                 style={{
                                   border: "1px solid var(--color-border)",
                                   color: "var(--color-subtle)",
+                                  backgroundColor: "transparent",
                                 }}
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
 
                       <button
                         type="button"
                         onClick={() => addItem(section.id)}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px]"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-dashed px-4 py-1.5 text-[11px]"
                         style={{
-                          border: "1px dashed var(--color-border)",
+                          borderColor: "var(--color-border)",
                           color: "var(--color-subtle)",
-                          backgroundColor: "var(--color-surface)",
+                          backgroundColor: "transparent",
                         }}
                       >
                         <Plus className="h-3.5 w-3.5" />
@@ -746,55 +715,148 @@ export default function EditQrMenuPage() {
             </div>
           </div>
 
-          {/* Right: accent & helper */}
+          {/* Right: branding, QR & helper */}
           <div className="space-y-4">
+            {/* Branding */}
             <div
               className="rounded-2xl border px-4 py-4 sm:px-5 sm:py-5"
               style={{
                 borderColor: "var(--color-border)",
                 backgroundColor: "var(--color-surface)",
+                boxShadow: "none",
               }}
             >
               <div className="mb-3 space-y-1">
                 <p className="text-xs font-medium text-[var(--color-text)]">
-                  Accent colour
+                  Branding
                 </p>
                 <p
                   className="text-[11px]"
                   style={{ color: "var(--color-subtle)" }}
                 >
-                  Used on the public menu for highlights and prices.
+                  Logo, accent colour and page background used on the live QR
+                  menu.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  className="h-9 w-10 cursor-pointer rounded bg-transparent"
-                  value={accentHex}
-                  onChange={(e) => setAccentHex(e.target.value)}
-                  disabled={loading}
-                />
-                <Input
-                  value={accentHex}
-                  onChange={(e) => setAccentHex(e.target.value)}
-                  className="h-9 rounded-2xl text-xs"
-                  style={{
-                    backgroundColor: "var(--color-bg)",
-                    color: "var(--color-text)",
-                    borderColor: "var(--color-border)",
-                  }}
-                  disabled={loading}
-                />
+              <div className="space-y-3">
+                {/* Logo URL */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[var(--color-text)]">
+                    Logo URL (optional)
+                  </label>
+                  <Input
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    className="h-9 rounded-none border-none shadow-none text-xs px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    style={fieldStyle}
+                    placeholder="https://…/logo.png"
+                    disabled={loading}
+                  />
+                  {logoUrl.trim() && (
+                    <div className="mt-1 inline-flex items-center gap-2 text-[11px]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={logoUrl}
+                        alt="Logo preview"
+                        className="h-6 w-6 rounded-full border border-[color:var(--color-border)] object-cover"
+                      />
+                      <span style={{ color: "var(--color-subtle)" }}>
+                        Preview
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Accent colour */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[var(--color-text)]">
+                    Accent colour
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      className="h-9 w-10 cursor-pointer rounded bg-transparent"
+                      value={accentHex}
+                      onChange={(e) => setAccentHex(e.target.value)}
+                      disabled={loading}
+                    />
+                    <Input
+                      value={accentHex}
+                      onChange={(e) => setAccentHex(e.target.value)}
+                      className="h-9 rounded-none border-none shadow-none text-xs px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      style={fieldStyle}
+                      disabled={loading}
+                    />
+                  </div>
+                  <p
+                    className="text-[11px]"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
+                    Used for headings, badges and prices.
+                  </p>
+                </div>
+
+                {/* Background colour */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[var(--color-text)]">
+                    Page background colour
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      className="h-9 w-10 cursor-pointer rounded bg-transparent"
+                      value={backgroundHex}
+                      onChange={(e) => setBackgroundHex(e.target.value)}
+                      disabled={loading}
+                    />
+                    <Input
+                      value={backgroundHex}
+                      onChange={(e) => setBackgroundHex(e.target.value)}
+                      className="h-9 rounded-none border-none shadow-none text-xs px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      style={fieldStyle}
+                      disabled={loading}
+                    />
+                  </div>
+                  <p
+                    className="text-[11px]"
+                    style={{ color: "var(--color-subtle)" }}
+                  >
+                    Used behind the whole menu page.
+                  </p>
+                </div>
               </div>
             </div>
 
+            {/* QR preview + edit QR */}
+            <div className="space-y-2">
+              <MenuQrPreview slug={slug || null} />
+              <div className="flex items-center justify-between gap-2 text-[11px]">
+                <p style={{ color: "var(--color-subtle)" }}>
+                  Edit styling or download this QR in{" "}
+                  <span className="font-medium">Kompi Codes</span>.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 rounded-full px-3 text-[10px]"
+                  onClick={handleEditQr}
+                  disabled={!slug || loading}
+                >
+                  Edit QR
+                </Button>
+              </div>
+            </div>
+
+            {/* Helper / QR instructions */}
             <div
               className="rounded-2xl border px-4 py-4 text-[11px]"
               style={{
                 borderColor: "var(--color-border)",
                 backgroundColor: "var(--color-surface)",
                 color: "var(--color-subtle)",
+                boxShadow: "none",
               }}
             >
               <p className="mb-1 font-medium text-[var(--color-text)]">
@@ -802,14 +864,10 @@ export default function EditQrMenuPage() {
               </p>
               <ol className="list-decimal space-y-1 pl-4">
                 <li>Create or update this menu and save.</li>
+                <li>Copy the public URL {publicPath || "/m/<slug>"}.</li>
                 <li>
-                  Click{" "}
-                  <span className="font-semibold">Create Kompi Code</span> at
-                  the top to auto-generate a QR for this menu.
-                </li>
-                <li>
-                  You&apos;ll be taken to the Kompi Code where you can tweak
-                  styling and download it.
+                  Generate or customise a Kompi Code that points to this URL and
+                  print it on your tables, flyers or posters.
                 </li>
               </ol>
             </div>

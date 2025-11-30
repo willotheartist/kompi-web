@@ -26,7 +26,7 @@ export type KCardThemeState = {
   curated?: boolean;
 };
 
-// Full presets (Linktree-style templates)
+// Full presets
 export const KCARD_THEME_PRESETS: KCardThemeState[] = [
   // ---------- Customizable ----------
   {
