@@ -1,18 +1,67 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 function SignInInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { status } = useSession();
+
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const handleFromUrl = searchParams.get("handle") ?? "";
   const error = searchParams.get("error");
   const [loading, setLoading] = useState<"google" | null>(null);
+  const [processingHandle, setProcessingHandle] = useState(false);
+
+  // After the user is authenticated (Google finished), optionally claim handle
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    if (processingHandle) return;
+
+    setProcessingHandle(true);
+
+    (async () => {
+      try {
+        // 1) Try to get handle from URL first, then from cookie
+        let handle = handleFromUrl;
+
+        if (!handle) {
+          const cookie = document.cookie
+            .split("; ")
+            .find((c) => c.startsWith("kompi_desired_handle="));
+          if (cookie) {
+            handle = decodeURIComponent(cookie.split("=")[1] || "");
+          }
+        }
+
+        // 2) If we have a handle, attempt to claim it
+        if (handle) {
+          try {
+            await fetch("/api/handles/claim", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ handle }),
+            });
+          } catch (err) {
+            console.error("error claiming kompi handle", err);
+          }
+        }
+      } finally {
+        // 3) Always clear the cookie and send them to the final destination
+        document.cookie =
+          "kompi_desired_handle=; path=/; max-age=0; SameSite=Lax";
+        router.replace(callbackUrl);
+      }
+    })();
+  }, [status, handleFromUrl, callbackUrl, router, processingHandle]);
+
+  const isFinishing = status === "authenticated";
 
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-white">
@@ -55,12 +104,19 @@ function SignInInner() {
                 className="w-full h-11 text-base flex items-center justify-center gap-2"
                 onClick={() => {
                   setLoading("google");
-                  signIn("google", { callbackUrl });
+                  // IMPORTANT: no callbackUrl here – we want NextAuth
+                  // to return to this page so we can claim the handle,
+                  // then *we* send the user to callbackUrl.
+                  signIn("google");
                 }}
-                disabled={loading !== null}
+                disabled={loading !== null || isFinishing}
               >
                 <GoogleIcon className="h-5 w-5" />
-                {loading === "google" ? "Signing in…" : "Continue with Google"}
+                {loading === "google"
+                  ? "Signing in…"
+                  : isFinishing
+                  ? "Finishing up…"
+                  : "Continue with Google"}
               </Button>
 
               {/* Forgot links – blue + bigger */}

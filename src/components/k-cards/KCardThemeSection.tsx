@@ -1,132 +1,299 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import type React from "react";
+
 import { cn } from "@/lib/utils";
 import {
-  KCARD_THEME_PRESETS,
+  DEFAULT_KCARD_THEME,
   type KCardThemeState,
 } from "./kcard-theme-presets";
 
-type ThemeTab = "customizable" | "curated";
-
 type KCardThemeSectionProps = {
   value: KCardThemeState;
-  onChange: (v: KCardThemeState) => void;
+  onChange: (theme: KCardThemeState) => void;
 };
 
-export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
-  const [themeTab, setThemeTab] = useState<ThemeTab>("customizable");
+type ThemeTab = "random" | "curated";
 
-  const themesForTab = KCARD_THEME_PRESETS.filter((theme) =>
-    themeTab === "customizable" ? !theme.curated : theme.curated
+type ThemeOption = {
+  id: string;
+  name: string;
+  theme: KCardThemeState;
+};
+
+// ---- Base themes ----
+
+// Completely blank: no wallpaper, solid page background.
+const BLANK_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper: "none",
+  pageBackground: "#f5f2eb",
+};
+
+// Your original Blood Orange look
+const BLOOD_ORANGE_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "linear-gradient(135deg, #ff6721 0%, #ff8c24 45%, #ffb52e 100%)",
+  pageBackground: "#ff7a2f",
+  buttonColor: "#ffb52e",
+  buttonTextColor: "#050505",
+};
+
+const SUNSET_PLUM_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "linear-gradient(135deg, #ff7a7a 0%, #f97316 35%, #7c3aed 100%)",
+  pageBackground: "#0f172a",
+  buttonColor: "#fbbf24",
+  buttonTextColor: "#050505",
+};
+
+const MINT_CREAM_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "linear-gradient(135deg, #ecfdf3 0%, #a7f3d0 40%, #22c55e 100%)",
+  pageBackground: "#022c22",
+  buttonColor: "#bbf7d0",
+  buttonTextColor: "#022c22",
+};
+
+const ULTRA_VIOLET_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "linear-gradient(135deg, #312e81 0%, #4c1d95 45%, #a855f7 100%)",
+  pageBackground: "#020617",
+  buttonColor: "#f97316",
+  buttonTextColor: "#050505",
+};
+
+const NOIR_GLASS_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "radial-gradient(circle at 0 0, #27272a 0%, #020617 55%, #000000 100%)",
+  pageBackground: "#020617",
+  buttonColor: "#e4e4e7",
+  buttonTextColor: "#020617",
+};
+
+const CANDY_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "linear-gradient(135deg, #fb7185 0%, #f97316 40%, #facc15 85%, #fef3c7 100%)",
+  pageBackground: "#0f172a",
+  buttonColor: "#facc15",
+  buttonTextColor: "#050505",
+};
+
+const OCEAN_DEPTHS_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "linear-gradient(135deg, #0ea5e9 0%, #0369a1 40%, #022c22 100%)",
+  pageBackground: "#020617",
+  buttonColor: "#22c55e",
+  buttonTextColor: "#022c22",
+};
+
+const SAND_DUNE_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "linear-gradient(135deg, #f97316 0%, #fbbf24 40%, #fde68a 100%)",
+  pageBackground: "#292524",
+  buttonColor: "#fef3c7",
+  buttonTextColor: "#1f2933",
+};
+
+const NEON_POP_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "linear-gradient(135deg, #22c55e 0%, #22d3ee 35%, #6366f1 75%, #db2777 100%)",
+  pageBackground: "#020617",
+  buttonColor: "#a855f7",
+  buttonTextColor: "#050505",
+};
+
+const MIDNIGHT_BLUR_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "radial-gradient(circle at 10% 0, #0ea5e9 0%, transparent 45%), radial-gradient(circle at 90% 100%, #a855f7 0%, #020617 60%)",
+  pageBackground: "#020617",
+  buttonColor: "#e5e7eb",
+  buttonTextColor: "#020617",
+};
+
+const ROSE_CLOUD_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper:
+    "linear-gradient(135deg, #fed7e2 0%, #f97373 30%, #fb7185 65%, #fef3c7 100%)",
+  pageBackground: "#111827",
+  buttonColor: "#fecaca",
+  buttonTextColor: "#111827",
+};
+
+const CURATED_THEMES: ThemeOption[] = [
+  { id: "blank", name: "Blank", theme: BLANK_THEME },
+  { id: "blood-orange", name: "Blood Orange", theme: BLOOD_ORANGE_THEME },
+  { id: "sunset-plum", name: "Sunset Plum", theme: SUNSET_PLUM_THEME },
+  { id: "mint-cream", name: "Mint Cream", theme: MINT_CREAM_THEME },
+  { id: "ultra-violet", name: "Ultra Violet", theme: ULTRA_VIOLET_THEME },
+  { id: "noir-glass", name: "Noir Glass", theme: NOIR_GLASS_THEME },
+  { id: "candy", name: "Candy", theme: CANDY_THEME },
+  { id: "ocean-depths", name: "Ocean Depths", theme: OCEAN_DEPTHS_THEME },
+  { id: "sand-dune", name: "Sand Dune", theme: SAND_DUNE_THEME },
+  { id: "neon-pop", name: "Neon Pop", theme: NEON_POP_THEME },
+  { id: "midnight-blur", name: "Midnight Blur", theme: MIDNIGHT_BLUR_THEME },
+  { id: "rose-cloud", name: "Rose Cloud", theme: ROSE_CLOUD_THEME },
+];
+
+const TABS: { id: ThemeTab; label: string }[] = [
+  { id: "random", label: "Random" },
+  { id: "curated", label: "Curated" },
+];
+
+function isSameTheme(a: KCardThemeState, b: KCardThemeState): boolean {
+  return (
+    a.wallpaper === b.wallpaper &&
+    a.pageBackground === b.pageBackground &&
+    a.buttonColor === b.buttonColor &&
+    a.buttonTextColor === b.buttonTextColor
   );
+}
 
-  function handleSelectTheme(theme: KCardThemeState) {
-    // full template apply (wallpaper, colors, fonts, buttons…)
-    onChange({ ...theme });
-  }
+export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
+  const [activeTab, setActiveTab] = useState<ThemeTab>("random");
 
-  function handleBackgroundChange(next: string) {
-    onChange({
-      ...value,
-      pageBackground: next,
-    });
-  }
+  const handleSelectTheme = (option: ThemeOption) => {
+    onChange(option.theme);
+  };
+
+  const handleRandomizeTheme = () => {
+    const pool = CURATED_THEMES.filter((t) => t.id !== "blank");
+    if (!pool.length) return;
+    const idx = Math.floor(Math.random() * pool.length);
+    onChange(pool[idx].theme);
+  };
+
+  const isBlankActive = value.wallpaper === "none";
 
   return (
-    <div className="space-y-4">
-      {/* Header + tabs */}
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-medium text-[color:var(--color-text)]">
-          Theme
-        </p>
+    <div className="space-y-6">
+      {/* Tabs */}
+      <div className="flex justify-center">
+        <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-xs font-medium">
+          {TABS.map((tab) => {
+            const active = activeTab === tab.id;
+            const isRandom = tab.id === "random";
 
-        <div
-          className="inline-flex items-center rounded-full border bg-[var(--color-bg)] p-0.5 text-[11px]"
-          style={{ borderColor: "var(--color-border)" }}
-        >
-          <button
-            type="button"
-            onClick={() => setThemeTab("customizable")}
-            className={cn(
-              "rounded-full px-2.5 py-1 transition",
-              themeTab === "customizable"
-                ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                : "text-[color:var(--color-subtle)]"
-            )}
-          >
-            Customizable
-          </button>
-          <button
-            type="button"
-            onClick={() => setThemeTab("curated")}
-            className={cn(
-              "rounded-full px-2.5 py-1 transition",
-              themeTab === "curated"
-                ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                : "text-[color:var(--color-subtle)]"
-            )}
-          >
-            Curated
-          </button>
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (isRandom) handleRandomizeTheme();
+                }}
+                className={cn(
+                  "min-w-[96px] rounded-full px-4 py-2 transition",
+                  active
+                    ? "border border-black bg-white text-[#050505] shadow-[0_2px_0_#000000]"
+                    : "bg-[#dedbd5] text-[#555555]"
+                )}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Preset grid */}
-      <div className="grid gap-3 sm:grid-cols-4">
-        {themesForTab.map((theme) => {
-          const active = value.id === theme.id;
+      {/* Themes grid */}
+      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {CURATED_THEMES.map((option) => {
+          const isBlank = option.id === "blank";
+
+          const selected = isBlank
+            ? isBlankActive
+            : isSameTheme(value, option.theme);
+
+          const previewStyle: React.CSSProperties = isBlank
+            ? {
+                background:
+                  "linear-gradient(135deg,#f7f3eb 0%,#f1ece3 45%,#e9e4db 100%)",
+              }
+            : {
+                background: option.theme.wallpaper,
+              };
+
           return (
             <button
-              key={theme.id}
+              key={option.id}
               type="button"
-              onClick={() => handleSelectTheme(theme)}
+              onClick={() => handleSelectTheme(option)}
               className={cn(
-                "flex flex-col gap-2 rounded-2xl p-2 text-left text-[11px] transition",
-                active
-                  ? "bg-[var(--color-bg)] border border-[var(--color-text)]"
-                  : "bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-text)]"
+                "flex h-32 flex-col rounded-3xl border px-3 py-2 text-left text-xs transition",
+                selected
+                  ? "border-black bg-white shadow-[0_2px_0_#000000]"
+                  : "border-transparent bg-[#e9e6e1] hover:bg-[#e0ded9]"
               )}
             >
               <div
-                className="h-16 w-full rounded-xl border"
-                style={{
-                  background: theme.wallpaper,
-                  borderColor: "rgba(15,23,42,0.6)",
-                }}
-              />
-              <span className="truncate text-[color:var(--color-text)]">
-                {theme.name}
-              </span>
+                className="mb-2 flex-1 rounded-2xl p-2"
+                style={previewStyle}
+              >
+                {isBlank ? (
+                  <div className="flex h-full w-full items-center justify-center rounded-2xl border border-white/60 text-[10px] font-semibold text-white/70">
+                    <span className="px-2 py-1">Blank</span>
+                  </div>
+                ) : (
+                  <div className="h-full w-full rounded-2xl" />
+                )}
+              </div>
+              <p className="truncate text-[11px] font-semibold text-[var(--color-text)]">
+                {option.name}
+              </p>
             </button>
           );
         })}
       </div>
 
-      {/* Background override */}
-      <div className="space-y-2">
-        <p className="text-xs font-medium text-[color:var(--color-text)]">
-          Page background
-        </p>
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            className="h-8 w-10 cursor-pointer rounded bg-transparent"
-            style={{ border: "1px solid var(--color-border)" }}
-            value={value.pageBackground}
-            onChange={(e) => handleBackgroundChange(e.target.value)}
-          />
-          <Input
-            value={value.pageBackground}
-            onChange={(e) => handleBackgroundChange(e.target.value)}
-            className="h-9 rounded-2xl bg-[var(--color-bg)] text-xs text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)]"
-          />
+      {/* Page background color – only active for Blank */}
+      <div className="border-t border-[var(--color-border)] pt-5">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-base font-semibold text-[var(--color-text)]">
+              Page Background Color
+            </p>
+            {!isBlankActive && (
+              <p className="text-[11px] text-[var(--color-subtle)]">
+                Pick the <span className="font-medium">Blank</span> theme to edit this.
+              </p>
+            )}
+          </div>
+          <label
+            className={cn(
+              "relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full",
+              !isBlankActive && "opacity-40"
+            )}
+          >
+            <span
+              className="absolute inset-0 rounded-full border border-black"
+              style={{ backgroundColor: value.pageBackground }}
+            />
+            <input
+              type="color"
+              value={value.pageBackground}
+              onChange={(e) =>
+                onChange({
+                  ...value,
+                  wallpaper: "none",
+                  pageBackground: e.target.value,
+                })
+              }
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            />
+          </label>
         </div>
-        <p className="text-[10px] text-[color:var(--color-subtle)]">
-          Wallpaper comes from the theme. Background controls the surface behind
-          your content.
-        </p>
       </div>
     </div>
   );

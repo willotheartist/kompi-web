@@ -41,7 +41,7 @@ const navGroups = [
     section: "Grow",
     items: [
       { href: "/analytics", label: "Analytics", icon: BarChart3 },
-      { href: "/growth", label: "Growth", icon: Rocket },
+      { href: "/dashboard/growth", label: "Growth", icon: Rocket },
     ],
   },
   {

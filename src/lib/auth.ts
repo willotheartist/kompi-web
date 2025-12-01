@@ -5,8 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
-
-
+import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,17 +14,42 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
     }),
     CredentialsProvider({
-      name: "Dev Email",
-      credentials: { email: { label: "Email", type: "email" } },
+      name: "Email & Password",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
       async authorize(credentials) {
-        const raw = credentials?.email;
-        const email = typeof raw === "string" ? raw.trim().toLowerCase() : "";
-        if (!email) return null;
+        const email = credentials?.email?.trim().toLowerCase();
+        const password = credentials?.password ?? "";
 
-        let user = await prisma.user.findUnique({ where: { email } });
-        if (!user) user = await prisma.user.create({ data: { email } });
+        if (!email || !password) return null;
 
-        return { id: user.id, email: user.email, name: user.name ?? undefined };
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            image: true,
+            passwordHash: true,
+          },
+        });
+
+        if (!user || !user.passwordHash) {
+          // no such user, or Google-only account
+          return null;
+        }
+
+        const ok = await bcrypt.compare(password, user.passwordHash);
+        if (!ok) return null;
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name ?? undefined,
+          image: user.image ?? undefined,
+        };
       },
     }),
   ],
@@ -42,7 +66,6 @@ export const authOptions: NextAuthOptions = {
         image?: string | null;
       };
 
-      // When a user signs in, persist id + email (+ optional name/image) onto the token
       if (user) {
         if ("id" in user && typeof user.id === "string") {
           mutableToken.id = user.id;
@@ -71,13 +94,15 @@ export const authOptions: NextAuthOptions = {
         image?: string | null;
       };
 
-      // Always try to hydrate from the database so profile changes (name etc.)
-      // are reflected everywhere (e.g. dashboard topbar).
       let dbUser:
-        | { id: string; email: string; name: string | null; image: string | null }
+        | {
+            id: string;
+            email: string;
+            name: string | null;
+            image: string | null;
+          }
         | null = null;
 
-      // 1) Try by id if present
       if (typedToken.id) {
         dbUser = await prisma.user.findUnique({
           where: { id: typedToken.id },
@@ -85,7 +110,6 @@ export const authOptions: NextAuthOptions = {
         });
       }
 
-      // 2) If that fails or id isn't a Prisma id (e.g. Google sub), fall back to email
       if (!dbUser && typedToken.email) {
         dbUser = await prisma.user.findUnique({
           where: { email: typedToken.email },
@@ -107,7 +131,6 @@ export const authOptions: NextAuthOptions = {
           image?: string | null;
         };
       } else {
-        // Fallback to token-based values if for some reason we can't find the user
         session.user = {
           ...session.user,
           id: typedToken.id,
@@ -133,9 +156,6 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-/**
- * Convenience helper: use this instead of calling getServerSession everywhere.
- */
 export async function auth() {
   return getServerSession(authOptions);
 }
@@ -144,19 +164,10 @@ export async function getSession() {
   return auth();
 }
 
-/**
- * Robust user lookup:
- * - Prefer session.user.id if present
- * - Fallback to session.user.email
- * - In development, optionally use DEV_EMAIL
- * - In production with no session, redirect to /signin
- */
 export async function requireUser() {
   const session = await auth();
 
-  // 1) No session at all -> dev fallback or redirect
   if (!session || !session.user) {
-    // Dev convenience: allow DEV_EMAIL if set
     if (process.env.NODE_ENV === "development" && process.env.DEV_EMAIL) {
       const email = process.env.DEV_EMAIL;
 
@@ -168,11 +179,9 @@ export async function requireUser() {
       return user;
     }
 
-    // Live (or dev without DEV_EMAIL): go to sign-in page, don't crash
     redirect("/signin");
   }
 
-  // At this point we know session.user exists
   const { id, email: sessionEmail } = session.user as {
     id?: string | null;
     email?: string | null;
@@ -181,16 +190,13 @@ export async function requireUser() {
   const userId = id ?? undefined;
   let email = sessionEmail ?? undefined;
 
-  // 2) Try by id first if we have it
   if (userId) {
     const byId = await prisma.user.findUnique({ where: { id: userId } });
     if (byId) {
       return byId;
     }
-    // fall through to email next
   }
 
-  // 3) Need an email to continue; fallback to DEV_EMAIL in dev, otherwise redirect
   if (!email) {
     if (process.env.NODE_ENV === "development" && process.env.DEV_EMAIL) {
       email = process.env.DEV_EMAIL;
@@ -199,7 +205,6 @@ export async function requireUser() {
     }
   }
 
-  // 4) Find or create by email
   let user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     user = await prisma.user.create({ data: { email } });

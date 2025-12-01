@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 29/11/2025, 21:32:14*
+*Generated on: 01/12/2025, 12:46:17*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 310 |
-| 📁 Total Folders | 138 |
+| 📄 Total Files | 331 |
+| 📁 Total Folders | 151 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,16 +26,16 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 146 files (47.1%)
-- 🔷 **.ts** (TypeScript files): 51 files (16.5%)
-- 🖼️ **.png** (PNG images): 31 files (10.0%)
-- 📄 **.sql** (Other files): 16 files (5.2%)
-- 📄 **.zip** (Other files): 12 files (3.9%)
-- 🎨 **.css** (Stylesheets): 10 files (3.2%)
-- 🎨 **.svg** (SVG images): 7 files (2.3%)
-- 📄 **.mjs** (Other files): 5 files (1.6%)
-- 📄 **.bak** (Other files): 4 files (1.3%)
-- ⚙️ **.json** (JSON files): 3 files (1.0%)
+- ⚛️ **.tsx** (React TypeScript files): 152 files (45.9%)
+- 🔷 **.ts** (TypeScript files): 56 files (16.9%)
+- 🖼️ **.png** (PNG images): 31 files (9.4%)
+- 📄 **.sql** (Other files): 19 files (5.7%)
+- 📄 **.zip** (Other files): 12 files (3.6%)
+- 🎨 **.css** (Stylesheets): 10 files (3.0%)
+- 🎨 **.svg** (SVG images): 7 files (2.1%)
+- 📄 **.mjs** (Other files): 5 files (1.5%)
+- 📄 **.bak** (Other files): 4 files (1.2%)
+- ⚙️ **.json** (JSON files): 3 files (0.9%)
 - 📖 **.md** (Markdown files): 2 files (0.6%)
 - 🖼️ **.ico** (Icon files): 2 files (0.6%)
 - 📄 **.bak-limit** (Other files): 2 files (0.6%)
@@ -48,11 +48,18 @@
 - ⚙️ **.toml** (TOML files): 1 files (0.3%)
 - 📄 **.prisma** (Other files): 1 files (0.3%)
 - 🖼️ **.jpg** (JPEG images): 1 files (0.3%)
+- 📄 **.py** (Other files): 1 files (0.3%)
 - 📄 **.sh** (Other files): 1 files (0.3%)
 - 📄 **.gz** (Other files): 1 files (0.3%)
 - 📄 **.bak-plan** (Other files): 1 files (0.3%)
 - 📜 **.js** (JavaScript files): 1 files (0.3%)
 - 📄 **.bak-console** (Other files): 1 files (0.3%)
+- 📄 **.bak_from_py** (Other files): 1 files (0.3%)
+- 📄 **.bak_kcards_fix** (Other files): 1 files (0.3%)
+- 📄 **.fix-onavatarclear** (Other files): 1 files (0.3%)
+- 📄 **.header-social** (Other files): 1 files (0.3%)
+- 📄 **.header-v2** (Other files): 1 files (0.3%)
+- 📄 **.pre-kcards-modal** (Other files): 1 files (0.3%)
 - 📄 **.orig** (Other files): 1 files (0.3%)
 - 📄 **.rej** (Other files): 1 files (0.3%)
 - 📄 **.bak-upgrade** (Other files): 1 files (0.3%)
@@ -60,23 +67,23 @@
 
 ### By Category
 
-- **React**: 146 files (47.1%)
-- **Other**: 51 files (16.5%)
-- **TypeScript**: 51 files (16.5%)
-- **Assets**: 41 files (13.2%)
-- **Styles**: 10 files (3.2%)
-- **Config**: 6 files (1.9%)
+- **React**: 152 files (45.9%)
+- **Other**: 61 files (18.4%)
+- **TypeScript**: 56 files (16.9%)
+- **Assets**: 41 files (12.4%)
+- **Styles**: 10 files (3.0%)
+- **Config**: 6 files (1.8%)
 - **DevOps**: 2 files (0.6%)
 - **Docs**: 2 files (0.6%)
 - **JavaScript**: 1 files (0.3%)
 
 ### 📁 Largest Directories
 
-- **root**: 310 files
-- **src**: 219 files
-- **src/components**: 108 files
-- **src/app**: 104 files
-- **public**: 40 files
+- **root**: 331 files
+- **src**: 236 files
+- **src/components**: 116 files
+- **src/app**: 112 files
+- **src/app/api**: 41 files
 
 ## 🌳 Directory Structure
 
@@ -139,6 +146,12 @@ kompi-web/
 │   │   │   └── 📄 migration.sql
 │   │   ├── 📂 20251129123720_add_stripe_fields_to_workspace/
 │   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251130193524_add_password_hash_to_user/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251130200601_add_marketing_optin_and_password_reset/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251130205515_init_auth_features/
+│   │   │   └── 📄 migration.sql
 │   │   └── ⚙️ migration_lock.toml
 │   └── 📄 schema.prisma
 ├── 📖 project_structure.md
@@ -190,6 +203,8 @@ kompi-web/
 ├── 📂 scripts/
 │   ├── 📄 debug-db.mjs
 │   ├── 📄 debug-events.mjs
+│   ├── 📂 python3 scripts/
+│   │   └── 📄 patch_kcards_header_v2.py
 │   ├── 📄 smoke.sh
 │   └── 📄 test-click-event.mjs
 ├── 📄 settings.tar.gz
@@ -199,7 +214,13 @@ kompi-web/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🔌 api/
 │   │   │   ├── 📂 auth/
-│   │   │   │   └── 📂 [...nextauth]/
+│   │   │   │   ├── 📂 [...nextauth]/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   ├── 📂 forgot-password/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   ├── 📂 register/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   └── 📂 reset-password/
 │   │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 billing/
 │   │   │   │   ├── 📂 create-checkout-session/
@@ -224,6 +245,9 @@ kompi-web/
 │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 engagement-events/
 │   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 handles/
+│   │   │   │   └── 📂 check/
+│   │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 health/
 │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 k-cards/
@@ -284,6 +308,9 @@ kompi-web/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 discount-codes/
 │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 growth/
+│   │   │   │   ├── ⚛️ layout.tsx
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 k-cards/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 kr-codes/
@@ -329,9 +356,9 @@ kompi-web/
 │   │   │   │   ├── ⚛️ layout.tsx
 │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   └── 🎨 url-shortener.css
-│   │   ├── 🎨 globals.css
-│   │   ├── 📂 growth/
+│   │   ├── 📂 forgot-password/
 │   │   │   └── ⚛️ page.tsx
+│   │   ├── 🎨 globals.css
 │   │   ├── ⚛️ head.tsx
 │   │   ├── 📂 k/
 │   │   │   └── 📂 [slug]/
@@ -385,8 +412,12 @@ kompi-web/
 │   │   ├── 📂 r/
 │   │   │   └── 📂 [code]/
 │   │   │   │   └── 🔷 route.ts
+│   │   ├── 📂 reset-password/
+│   │   │   └── ⚛️ page.tsx
 │   │   ├── 🔷 robots.ts
 │   │   ├── 📂 signin/
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 signup/
 │   │   │   └── ⚛️ page.tsx
 │   │   └── 🔷 sitemap.ts
 │   ├── 🧩 components/
@@ -399,6 +430,9 @@ kompi-web/
 │   │   │   └── ⚛️ upgrade-button.tsx
 │   │   ├── 📂 bio/
 │   │   │   └── ⚛️ bio-card.tsx
+│   │   ├── 📂 claim/
+│   │   │   ├── ⚛️ claim-handle-hero.tsx
+│   │   │   └── ⚛️ claim-handle-inline.tsx
 │   │   ├── 📂 contact/
 │   │   │   ├── ⚛️ contact-form-card.tsx
 │   │   │   └── ⚛️ contact-form-inline.tsx
@@ -446,6 +480,12 @@ kompi-web/
 │   │   │   ├── 🔷 kcard-theme-presets.ts
 │   │   │   ├── ⚛️ KCardPreview.tsx
 │   │   │   ├── ⚛️ KCardsPage.tsx
+│   │   │   ├── 📄 KCardsPage.tsx.bak_from_py
+│   │   │   ├── 📄 KCardsPage.tsx.bak_kcards_fix
+│   │   │   ├── 📄 KCardsPage.tsx.fix-onAvatarClear
+│   │   │   ├── 📄 KCardsPage.tsx.header-social
+│   │   │   ├── 📄 KCardsPage.tsx.header-v2
+│   │   │   ├── 📄 KCardsPage.tsx.pre-kcards-modal
 │   │   │   ├── ⚛️ KCardSubscribeBlock.tsx
 │   │   │   └── ⚛️ KCardThemeSection.tsx
 │   │   ├── ⚛️ KBenefits.tsx
@@ -523,6 +563,7 @@ kompi-web/
 │   └── 📚 lib/
 │   │   ├── 🔷 analytics-overview.ts
 │   │   ├── 🔷 auth.ts
+│   │   ├── 🔷 email.ts
 │   │   ├── 🔷 fonts.ts
 │   │   ├── 🔷 plan-limits.ts
 │   │   ├── 🔷 prisma.ts

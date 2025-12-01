@@ -27,6 +27,8 @@ import HowItWorksSection from "@/components/sections/how-it-works";
 import AnalyticsSection from "@/components/sections/analytics";
 import TestimonialsSection from "@/components/sections/testimonials";
 import Faqs from "@/components/faqs";
+import { ClaimHandleInline } from "@/components/claim/claim-handle-inline";
+
 
 export const dynamic = "force-static";
 
@@ -116,6 +118,7 @@ export default function HomePage() {
         <TestimonialsSection />
       </motion.main>
       <Faqs />
+    <ClaimHandleInline />
 
       {/* CTA_Footer – handled by shared component */}
       <FooterCTA />

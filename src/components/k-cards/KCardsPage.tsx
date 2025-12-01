@@ -59,6 +59,8 @@ import {
   Trash2,
   Plus,
   Search,
+  GripVertical,
+  Pencil,
 } from "lucide-react";
 
 import type React from "react";
@@ -109,7 +111,7 @@ const FONT_OPTIONS = [
 ];
 
 const BUTTON_STYLES: KCardButtonStyle[] = ["solid", "glass", "outline"];
-const BUTTON_SHADOWS: KCardButtonShadow[] = ["none", "soft", "hard"];
+const BUTTON_SHADOWS: KCardButtonShadow[] = ["none", "soft", "hard", "3d"];
 
 type KCardLink = {
   id: string;
@@ -272,6 +274,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   const [links, setLinks] = useState<KCardLink[]>(
     (initialData?.links as KCardLink[] | undefined) ?? INITIAL_LINKS,
   );
+  const [draggingLinkId, setDraggingLinkId] = useState<string | null>(null);
 
   // socials
   const [socials, setSocials] = useState<string[]>(
@@ -467,42 +470,49 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
     }
   }, [pageFont]);
 
-  const buttonBaseStyles = useMemo(() => {
-    const style: React.CSSProperties = {
-      borderRadius: buttonRadius,
-      boxShadow:
-        buttonShadow === "none"
-          ? "none"
-          : buttonShadow === "soft"
-            ? "0 6px 14px rgba(15,23,42,0.35)"
-            : "0 10px 24px rgba(15,23,42,0.6)",
-      border: "1px solid transparent",
-    };
+  
+const buttonBaseStyles = useMemo(() => {
+  const style: React.CSSProperties = {
+    borderRadius: buttonRadius,
+    boxShadow:
+      buttonShadow === "none"
+        ? "none"
+        : buttonShadow === "soft"
+          ? "0 6px 14px rgba(15,23,42,0.35)"
+          : buttonShadow === "hard"
+            ? "0 10px 24px rgba(15,23,42,0.6)"
+            : buttonShadow === "3d"
+              ? "0 6px 0 rgba(0,0,0,0.45), 0 12px 0 rgba(0,0,0,0.3)"
+              : "none",
+    border: "1px solid transparent",
+  };
 
-    if (buttonStyle === "solid") {
-      style.backgroundColor = buttonColor;
-      style.color = buttonTextColor;
-      style.border = "1px solid rgba(15,23,42,0.5)";
-    } else if (buttonStyle === "glass") {
-      style.backgroundColor = "rgba(15,23,42,0.35)";
-      style.color = "var(--color-surface)";
-      style.border = "1px solid rgba(15,23,42,0.35)";
-      style.backdropFilter = "blur(12px)";
-    } else {
-      style.backgroundColor = "transparent";
-      style.color = buttonColor;
-      style.border = `1px solid ${buttonColor}`;
-      style.boxShadow = "none";
-    }
+  if (buttonStyle === "solid") {
+    style.backgroundColor = buttonColor;
+    style.color = buttonTextColor;
+    style.border = "1px solid rgba(15,23,42,0.5)";
+  } else if (buttonStyle === "glass") {
+    style.backgroundColor = "rgba(15,23,42,0.35)";
+    style.color = "var(--color-surface)";
+    style.border = "1px solid rgba(15,23,42,0.35)";
+    style.backdropFilter = "blur(12px)";
+  } else {
+    // outline
+    style.backgroundColor = "transparent";
+    style.color = buttonColor;
+    style.border = `1px solid ${buttonColor}`;
+    style.boxShadow = "none";
+  }
 
-    return style;
-  }, [
-    buttonStyle,
-    buttonRadius,
-    buttonShadow,
-    buttonColor,
-    buttonTextColor,
-  ]);
+  return style;
+}, [
+  buttonStyle,
+  buttonRadius,
+  buttonShadow,
+  buttonColor,
+  buttonTextColor,
+]);
+
 
   function toggleSocial(name: string) {
     setSocials((prev) =>
@@ -545,6 +555,39 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
       ...prev,
       { id, title: "New link", url: "https://", enabled: true },
     ]);
+  }
+
+
+  function handleLinkDragStart(id: string) {
+    setDraggingLinkId(id);
+  }
+
+  function handleLinkDragEnd() {
+    setDraggingLinkId(null);
+  }
+
+  function handleLinkDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+  }
+
+  function handleLinkDrop(
+    e: React.DragEvent<HTMLDivElement>,
+    targetId: string,
+  ) {
+    e.preventDefault();
+    if (!draggingLinkId || draggingLinkId === targetId) return;
+
+    setLinks((prev) => {
+      const next = [...prev];
+      const fromIndex = next.findIndex((l) => l.id === draggingLinkId);
+      const toIndex = next.findIndex((l) => l.id === targetId);
+      if (fromIndex === -1 || toIndex === -1) return prev;
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+
+    setDraggingLinkId(null);
   }
 
   const visibleLinks = links.filter((l) => l.enabled);
@@ -818,25 +861,20 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                 <CardContent>
                   <TextSection
                     titleFont={titleFont}
-                    setTitleFont={(v) =>
+                    setTitleFont={(v: KCardFontToken) =>
                       setTheme((prev) => ({ ...prev, titleFont: v }))
                     }
-                    titleColor={titleColor}
-                    setTitleColor={(v) =>
-                      setTheme((prev) => ({ ...prev, titleColor: v }))
-                    }
-                    titleSize={titleSize}
-                    setTitleSize={setTitleSize}
                     pageFont={pageFont}
-                    setPageFont={(v) =>
+                    setPageFont={(v: KCardFontToken) =>
                       setTheme((prev) => ({ ...prev, pageFont: v }))
                     }
+                    titleColor={titleColor}
+                    setTitleColor={(v: string) =>
+                      setTheme((prev) => ({ ...prev, titleColor: v }))
+                    }
                     pageTextColor={pageTextColor}
-                    setPageTextColor={(v) =>
-                      setTheme((prev) => ({
-                        ...prev,
-                        pageTextColor: v,
-                      }))
+                    setPageTextColor={(v: string) =>
+                      setTheme((prev) => ({ ...prev, pageTextColor: v }))
                     }
                   />
                 </CardContent>
@@ -853,29 +891,23 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                 className="rounded-2xl shadow-none"
                 style={{ backgroundColor: "var(--color-surface)" }}
               >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base font-semibold text-[var(--color-text)]">
                     Buttons
                   </CardTitle>
-                  <CardDescription
-                    className="text-xs"
-                    style={{ color: "var(--color-subtle)" }}
-                  >
-                    Shape, shadow and colors for your primary links.
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ButtonsSection
                     buttonStyle={buttonStyle}
-                    setButtonStyle={(v) =>
+                    setButtonStyle={(v: KCardButtonStyle) =>
                       setTheme((prev) => ({ ...prev, buttonStyle: v }))
                     }
                     buttonRadius={buttonRadius}
-                    setButtonRadius={(v) =>
+                    setButtonRadius={(v: number) =>
                       setTheme((prev) => ({ ...prev, buttonRadius: v }))
                     }
                     buttonShadow={buttonShadow}
-                    setButtonShadow={(v) =>
+                    setButtonShadow={(v: KCardButtonShadow) =>
                       setTheme((prev) => ({ ...prev, buttonShadow: v }))
                     }
                     buttonColor={buttonColor}
@@ -911,11 +943,11 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                 <CardContent>
                   <ColorsSection
                     titleColor={titleColor}
-                    setTitleColor={(v) =>
+                    setTitleColor={(v: string) =>
                       setTheme((prev) => ({ ...prev, titleColor: v }))
                     }
                     pageTextColor={pageTextColor}
-                    setPageTextColor={(v) =>
+                    setPageTextColor={(v: string) =>
                       setTheme((prev) => ({
                         ...prev,
                         pageTextColor: v,
@@ -929,7 +961,6 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                 </CardContent>
               </Card>
             </section>
-
             {/* Links manager */}
             <section
               ref={linksRef}
@@ -943,35 +974,40 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between text-sm font-semibold text-[var(--color-text)]">
                     <span>Links</span>
-                    <Button
+                    <button
                       type="button"
-                      size="sm"
-                      className="inline-flex h-8 items-center gap-2 rounded-full px-3 text-xs font-medium"
-                      style={{
-                        backgroundColor: "var(--color-accent)",
-                        color: "var(--color-text)",
-                      }}
                       onClick={addLink}
+                      className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold shadow-[0_2px_0_#000000] transition hover:-translate-y-0.5"
+                      style={{ backgroundColor: "#d9ff2f", color: "#050505" }}
                     >
-                      <Link2 className="h-3.5 w-3.5" />
-                      Add link
-                    </Button>
+                      <span className="text-lg leading-none">+</span>
+                      <span>Add</span>
+                    </button>
                   </CardTitle>
-                  <CardDescription
-                    className="text-xs"
-                    style={{ color: "var(--color-subtle)" }}
-                  >
-                    Manage the links that appear on this K-Card.
-                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {links.map((link) => (
                     <div
                       key={link.id}
-                      className="flex flex-col gap-2 rounded-2xl px-4 py-3 md:flex-row md:items-center md:gap-0"
+                      draggable
+                      onDragStart={() => handleLinkDragStart(link.id)}
+                      onDragEnd={handleLinkDragEnd}
+                      onDragOver={handleLinkDragOver}
+                      onDrop={(e) => handleLinkDrop(e, link.id)}
+                      className={cn(
+                        "flex items-center gap-4 rounded-[24px] px-4 py-4 transition",
+                        draggingLinkId === link.id ? "opacity-70" : "opacity-100",
+                      )}
                       style={{ backgroundColor: "var(--color-bg)" }}
                     >
-                      <div className="flex-1 space-y-2">
+                      <button
+                        type="button"
+                        className="flex h-10 w-6 items-center justify-center cursor-grab text-[var(--color-subtle)] active:cursor-grabbing"
+                        aria-label="Reorder link"
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </button>
+                      <div className="flex-1 space-y-1">
                         <Input
                           value={link.title}
                           onChange={(e) =>
@@ -979,63 +1015,47 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                               title: e.target.value,
                             })
                           }
-                          className="h-7 border-0 bg-transparent p-0 text-sm font-semibold focus-visible:outline-none focus-visible:ring-0"
+                          className="h-6 border-0 bg-transparent p-0 text-sm font-semibold focus-visible:outline-none focus-visible:ring-0"
                           style={{
-                            backgroundColor: "var(--color-surface)",
                             color: "var(--color-text)",
-                            borderColor: "var(--color-border)",
                           }}
-                          placeholder="Link title"
+                          placeholder="Title"
                         />
                         <Input
                           value={link.url}
                           onChange={(e) =>
                             updateLink(link.id, { url: e.target.value })
                           }
-                          className="h-9 rounded-2xl text-xs"
+                          className="h-6 border-0 bg-transparent p-0 text-xs focus-visible:outline-none focus-visible:ring-0"
                           style={{
-                            backgroundColor: "var(--color-surface)",
-                            color: "var(--color-text)",
-                            borderColor: "var(--color-border)",
+                            color: "var(--color-subtle)",
                           }}
-                          placeholder="https://"
+                          placeholder="Link · URL"
                         />
                       </div>
-                      <div className="mt-1 flex items-center gap-2 self-start md:mt-0 md:self-auto">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateLink(link.id, {
-                              enabled: !link.enabled,
-                            })
-                          }
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateLink(link.id, {
+                            enabled: !link.enabled,
+                          })
+                        }
+                        className={cn(
+                          "relative inline-flex h-6 w-11 items-center rounded-full border transition-all",
+                          link.enabled ? "bg-[#050505]" : "bg-[#e4e2dd]",
+                        )}
+                        style={{
+                          borderColor: link.enabled ? "#050505" : "transparent",
+                        }}
+                        aria-pressed={link.enabled}
+                      >
+                        <span
                           className={cn(
-                            "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium transition",
+                            "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-150",
+                            link.enabled ? "translate-x-5" : "translate-x-1",
                           )}
-                          style={{
-                            border:
-                              "1px solid var(--color-border)",
-                            backgroundColor: link.enabled
-                              ? "var(--color-accent-soft)"
-                              : "var(--color-surface)",
-                            color: link.enabled
-                              ? "var(--color-text)"
-                              : "var(--color-subtle)",
-                          }}
-                        >
-                          <span
-                            className={cn(
-                              "mr-1 h-2 w-2 rounded-full",
-                            )}
-                            style={{
-                              backgroundColor: link.enabled
-                                ? "var(--color-accent)"
-                                : "var(--color-border)",
-                            }}
-                          />
-                          {link.enabled ? "On" : "Off"}
-                        </button>
-                      </div>
+                        />
+                      </button>
                     </div>
                   ))}
 
@@ -1049,13 +1069,14 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                       }}
                     >
                       No links yet. Click{" "}
-                      <span className="font-medium">Add link</span>{" "}
+                      <span className="font-medium">Add</span>{" "}
                       to start building your K-Card.
                     </div>
                   )}
                 </CardContent>
               </Card>
             </section>
+
           </div>
 
           {/* RIGHT: Frozen preview (320 × 680, responsive) */}
@@ -1088,14 +1109,26 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
                   <button
                     type="button"
                     onClick={() => setShareOpen((v) => !v)}
-                    className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-semibold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
-                    style={{
-                      backgroundColor: "var(--color-accent)",
-                      color: "#050505",
-                    }}
+                    className="group inline-flex w-full items-center justify-between rounded-full bg-white px-5 py-3 text-xs font-medium shadow-[0_12px_30px_rgba(15,23,42,0.16)] ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.22)]"
                   >
-                    <Share2 className="h-4 w-4" />
-                    <span>{publicUrl ? "Share K-Card" : "Enable sharing"}</span>
+                    <div className="flex min-w-0 flex-1 items-center justify-center gap-1">
+                      <span
+                        className="truncate text-[11px]"
+                        style={{ color: "#7b8cff" }}
+                      >
+                        {baseUrl.replace(/^https?:\/\//, "")}/k/
+                      </span>
+                      <span
+                        className="truncate text-[11px]"
+                        style={{ color: "#050505" }}
+                      >
+                        {shareSlug || "yourname"}
+                      </span>
+                    </div>
+
+                    <span className="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#050505] text-white transition group-hover:scale-105">
+                      <Share2 className="h-3.5 w-3.5" />
+                    </span>
                   </button>
 
                   {shareOpen && (
@@ -1901,12 +1934,10 @@ function HeaderSection({
 type TextSectionProps = {
   titleFont: KCardFontToken;
   setTitleFont: (v: KCardFontToken) => void;
-  titleColor: string;
-  setTitleColor: (v: string) => void;
-  titleSize: "small" | "large";
-  setTitleSize: (v: "small" | "large") => void;
   pageFont: KCardFontToken;
   setPageFont: (v: KCardFontToken) => void;
+  titleColor: string;
+  setTitleColor: (v: string) => void;
   pageTextColor: string;
   setPageTextColor: (v: string) => void;
 };
@@ -1914,166 +1945,115 @@ type TextSectionProps = {
 function TextSection({
   titleFont,
   setTitleFont,
-  titleColor,
-  setTitleColor,
-  titleSize,
-  setTitleSize,
   pageFont,
   setPageFont,
+  titleColor,
+  setTitleColor,
   pageTextColor,
   setPageTextColor,
 }: TextSectionProps) {
   return (
-    <div className="space-y-4">
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Title font
-          </label>
-          <Select value={titleFont} onValueChange={setTitleFont}>
-            <SelectTrigger
-              className="h-9 rounded-2xl text-xs"
-              style={{
-                backgroundColor: "var(--color-bg)",
-                color: "var(--color-text)",
-                borderColor: "var(--color-border)",
-              }}
-            >
-              <SelectValue placeholder="Font" />
-            </SelectTrigger>
-            <SelectContent
-              className="text-xs"
-              style={{
-                backgroundColor: "var(--color-surface)",
-              }}
-            >
-              {FONT_OPTIONS.map((f) => (
-                <SelectItem key={f.value} value={f.value}>
-                  {f.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="space-y-8">
+      {/* Title font row */}
+      <div className="space-y-3">
+        <p className="text-base font-semibold text-[var(--color-text)]">
+          Title Font
+        </p>
+        <div className="flex flex-wrap gap-4">
+          {FONT_OPTIONS.map((opt) => {
+            const active = titleFont === opt.value;
+            const isSerif = opt.value === "serif";
+            const isDisplay = opt.value === "display";
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Title color
-          </label>
-          <div className="flex items-center gap-3">
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setTitleFont(opt.value as KCardFontToken)}
+                className={cn(
+                  "min-w-[120px] rounded-[18px] border px-6 py-3 text-sm tracking-[0.02em] transition",
+                  active
+                    ? "border-black bg-white shadow-[0_2px_0_#000000]"
+                    : "border-transparent bg-[#e9e6e1] text-[#555555]",
+                  isDisplay && "font-semibold",
+                  isSerif && "font-serif"
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Page font row */}
+      <div className="space-y-3">
+        <p className="text-base font-semibold text-[var(--color-text)]">
+          Page Font
+        </p>
+        <div className="flex flex-wrap gap-4">
+          {FONT_OPTIONS.map((opt) => {
+            const active = pageFont === opt.value;
+            const isSerif = opt.value === "serif";
+            const isDisplay = opt.value === "display";
+
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setPageFont(opt.value as KCardFontToken)}
+                className={cn(
+                  "min-w-[120px] rounded-[18px] border px-6 py-3 text-sm tracking-[0.02em] transition",
+                  active
+                    ? "border-black bg-white shadow-[0_2px_0_#000000]"
+                    : "border-transparent bg-[#e9e6e1] text-[#555555]",
+                  isDisplay && "font-semibold",
+                  isSerif && "font-serif"
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Colors */}
+      <div className="space-y-6 pt-2">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-base font-semibold text-[var(--color-text)]">
+            Title Color
+          </p>
+          <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
+            <span
+              className="absolute inset-0 rounded-full border border-black"
+              style={{ backgroundColor: titleColor }}
+            />
             <input
               type="color"
-              className="h-8 w-10 cursor-pointer rounded bg-transparent"
               value={titleColor}
-              onChange={(e) =>
-                setTitleColor(e.target.value)
-              }
+              onChange={(e) => setTitleColor(e.target.value)}
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             />
-            <Input
-              value={titleColor}
-              onChange={(e) =>
-                setTitleColor(e.target.value)
-              }
-              className="h-9 rounded-2xl text-xs"
-              style={{
-                backgroundColor: "var(--color-bg)",
-                color: "var(--color-text)",
-                borderColor: "var(--color-border)",
-              }}
+          </label>
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-base font-semibold text-[var(--color-text)]">
+            Page Text Color
+          </p>
+          <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
+            <span
+              className="absolute inset-0 rounded-full border border-black"
+              style={{ backgroundColor: pageTextColor }}
             />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid items-center gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)]">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Title size
+            <input
+              type="color"
+              value={pageTextColor}
+              onChange={(e) => setPageTextColor(e.target.value)}
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            />
           </label>
-          <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
-            <button
-              type="button"
-              onClick={() => setTitleSize("small")}
-              className={cn(
-                "flex-1 rounded-full px-3 py-1",
-                titleSize === "small"
-                  ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                  : "text-[var(--color-subtle)]",
-              )}
-            >
-              Small
-            </button>
-            <button
-              type="button"
-              onClick={() => setTitleSize("large")}
-              className={cn(
-                "flex-1 rounded-full px-3 py-1",
-                titleSize === "large"
-                  ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                  : "text-[var(--color-subtle)]",
-              )}
-            >
-              Large
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Page font
-          </label>
-          <Select value={pageFont} onValueChange={setPageFont}>
-            <SelectTrigger
-              className="h-9 rounded-2xl text-xs"
-              style={{
-                backgroundColor: "var(--color-bg)",
-                color: "var(--color-text)",
-                borderColor: "var(--color-border)",
-              }}
-            >
-              <SelectValue placeholder="Font" />
-            </SelectTrigger>
-            <SelectContent
-              className="text-xs"
-              style={{
-                backgroundColor: "var(--color-surface)",
-              }}
-            >
-              {FONT_OPTIONS.map((f) => (
-                <SelectItem key={f.value} value={f.value}>
-                  {f.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-[var(--color-text)]">
-          Page text color
-        </label>
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            className="h-8 w-10 cursor-pointer rounded bg-transparent"
-            value={pageTextColor}
-            onChange={(e) =>
-              setPageTextColor(e.target.value)
-            }
-          />
-          <Input
-            value={pageTextColor}
-            onChange={(e) =>
-              setPageTextColor(e.target.value)
-            }
-            className="h-9 rounded-2xl text-xs"
-            style={{
-              backgroundColor: "var(--color-bg)",
-              color: "var(--color-text)",
-              borderColor: "var(--color-border)",
-            }}
-          />
         </div>
       </div>
     </div>
@@ -2106,134 +2086,131 @@ function ButtonsSection({
   setButtonTextColor,
 }: ButtonsSectionProps) {
   return (
-    <div className="space-y-4">
-      <div className="space-y-1.5">
-        <p className="text-[11px] text-[var(--color-subtle)]">
+    <div className="space-y-8">
+      {/* Style row */}
+      <div className="space-y-3">
+        <p className="text-base font-semibold text-[var(--color-text)]">
           Style
         </p>
-        <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
-          {BUTTON_STYLES.map((style) => (
-            <button
-              key={style}
-              type="button"
-              onClick={() => setButtonStyle(style)}
-              className={cn(
-                "flex-1 rounded-full px-3 py-1 capitalize",
-                buttonStyle === style
-                  ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                  : "text-[var(--color-subtle)]",
-              )}
-            >
-              {style}
-            </button>
-          ))}
-        </div>
-      </div>
+        <div className="flex flex-wrap gap-4">
+          {(["solid", "glass", "outline"] as const).map((style) => {
+            const active = buttonStyle === style;
+            const label =
+              style == "solid" ? "Solid" : style == "glass" ? "Glass" : "Outline";
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Corners
-          </label>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] text-[var(--color-subtle)]">
-              Square
-            </span>
-            <input
-              type="range"
-              min={4}
-              max={30}
-              value={buttonRadius}
-              onChange={(e) =>
-                setButtonRadius(Number(e.target.value))
-              }
-              className="flex-1 accent-[var(--color-accent)]"
-            />
-            <span className="text-[11px] text-[var(--color-subtle)]">
-              Round
-            </span>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Shadow
-          </label>
-          <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-[11px]">
-            {BUTTON_SHADOWS.map((s) => (
+            return (
               <button
-                key={s}
+                key={style}
                 type="button"
-                onClick={() => setButtonShadow(s)}
+                onClick={() => setButtonStyle(style)}
                 className={cn(
-                  "flex-1 rounded-full px-3 py-1 capitalize",
-                  buttonShadow === s
-                    ? "bg-[var(--color-text)] text-[var(--color-bg)]"
-                    : "text-[var(--color-subtle)]",
+                  "min-w-[120px] rounded-[18px] border px-6 py-3 text-sm font-medium tracking-[0.02em] transition",
+                  active
+                    ? "border-black bg-white shadow-[0_2px_0_#000000]"
+                    : "border-transparent bg-[#e9e6e1] text-[#555555]"
                 )}
               >
-                {s}
+                {label}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Button color
-          </label>
-          <div className="flex items-center gap-3">
+      {/* Shadows row */}
+      <div className="space-y-3">
+        <p className="text-base font-semibold text-[var(--color-text)]">
+          Shadows
+        </p>
+        <div className="flex flex-wrap gap-4">
+          {(["none", "soft", "hard", "3d"] as const).map((shadow) => {
+            const active = buttonShadow === shadow;
+            const label =
+              shadow == "none"
+                ? "None"
+                : shadow == "soft"
+                ? "Soft"
+                : shadow == "hard"
+                ? "Hard"
+                : "3D";
+
+            return (
+              <button
+                key={shadow}
+                type="button"
+                onClick={() => setButtonShadow(shadow)}
+                className={cn(
+                  "min-w-[96px] rounded-[18px] border px-6 py-3 text-sm font-medium tracking-[0.02em] transition",
+                  active
+                    ? "border-black bg-white shadow-[0_2px_0_#000000]"
+                    : "border-transparent bg-[#e9e6e1] text-[#555555]"
+                )}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Corners slider */}
+      <div className="space-y-3">
+        <p className="text-base font-semibold text-[var(--color-text)]">
+          Corners
+        </p>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-[var(--color-text)]">Square</span>
+          <div className="flex-1 rounded-full bg-[#e0ded9] px-3 py-2">
             <input
-              type="color"
-              className="h-8 w-10 cursor-pointer rounded bg-transparent"
-              value={buttonColor}
-              onChange={(e) =>
-                setButtonColor(e.target.value)
-              }
-            />
-            <Input
-              value={buttonColor}
-              onChange={(e) =>
-                setButtonColor(e.target.value)
-              }
-              className="h-9 rounded-2xl text-xs"
-              style={{
-                backgroundColor: "var(--color-bg)",
-                color: "var(--color-text)",
-                borderColor: "var(--color-border)",
-              }}
+              type="range"
+              min={0}
+              max={40}
+              value={buttonRadius}
+              onChange={(e) => setButtonRadius(Number(e.target.value))}
+              className="w-full"
+              style={{ accentColor: "#d9ff2f" }}
             />
           </div>
+          <span className="text-sm text-[var(--color-text)]">Round</span>
+        </div>
+      </div>
+
+      {/* Colors */}
+      <div className="space-y-6 pt-2">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-base font-semibold text-[var(--color-text)]">
+            Button Color
+          </p>
+          <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
+            <span
+              className="absolute inset-0 rounded-full border border-black"
+              style={{ backgroundColor: buttonColor }}
+            />
+            <input
+              type="color"
+              value={buttonColor}
+              onChange={(e) => setButtonColor(e.target.value)}
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            />
+          </label>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--color-text)]">
-            Button text
-          </label>
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-base font-semibold text-[var(--color-text)]">
+            Button Text Color
+          </p>
+          <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
+            <span
+              className="absolute inset-0 rounded-full border border-black"
+              style={{ backgroundColor: buttonTextColor }}
+            />
             <input
               type="color"
-              className="h-8 w-10 cursor-pointer rounded bg-transparent"
               value={buttonTextColor}
-              onChange={(e) =>
-                setButtonTextColor(e.target.value)
-              }
+              onChange={(e) => setButtonTextColor(e.target.value)}
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             />
-            <Input
-              value={buttonTextColor}
-              onChange={(e) =>
-                setButtonTextColor(e.target.value)
-              }
-              className="h-9 rounded-2xl text-xs"
-              style={{
-                backgroundColor: "var(--color-bg)",
-                color: "var(--color-text)",
-                borderColor: "var(--color-border)",
-              }}
-            />
-          </div>
+          </label>
         </div>
       </div>
     </div>
@@ -2262,67 +2239,81 @@ function ColorsSection({
   setButtonTextColor,
 }: ColorsSectionProps) {
   return (
-    <div className="space-y-4">
-      <div className="grid gap-3 md:grid-cols-2">
-        <ColorField
-          label="Title"
-          value={titleColor}
-          onChange={setTitleColor}
-        />
-        <ColorField
-          label="Page text"
-          value={pageTextColor}
-          onChange={setPageTextColor}
-        />
-        <ColorField
-          label="Buttons"
-          value={buttonColor}
-          onChange={setButtonColor}
-        />
-        <ColorField
-          label="Button text"
-          value={buttonTextColor}
-          onChange={setButtonTextColor}
-        />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-base font-semibold text-[var(--color-text)]">
+          Title Color
+        </p>
+        <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
+          <span
+            className="absolute inset-0 rounded-full border border-black"
+            style={{ backgroundColor: titleColor }}
+          />
+          <input
+            type="color"
+            value={titleColor}
+            onChange={(e) => setTitleColor(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+        </label>
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-base font-semibold text-[var(--color-text)]">
+          Page Text Color
+        </p>
+        <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
+          <span
+            className="absolute inset-0 rounded-full border border-black"
+            style={{ backgroundColor: pageTextColor }}
+          />
+          <input
+            type="color"
+            value={pageTextColor}
+            onChange={(e) => setPageTextColor(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+        </label>
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-base font-semibold text-[var(--color-text)]">
+          Buttons
+        </p>
+        <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
+          <span
+            className="absolute inset-0 rounded-full border border-black"
+            style={{ backgroundColor: buttonColor }}
+          />
+          <input
+            type="color"
+            value={buttonColor}
+            onChange={(e) => setButtonColor(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+        </label>
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-base font-semibold text-[var(--color-text)]">
+          Button Text
+        </p>
+        <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
+          <span
+            className="absolute inset-0 rounded-full border border-black"
+            style={{ backgroundColor: buttonTextColor }}
+          />
+          <input
+            type="color"
+            value={buttonTextColor}
+            onChange={(e) => setButtonTextColor(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+        </label>
       </div>
     </div>
   );
 }
 
 /* ---------- Shared bits ---------- */
-
-type ColorFieldProps = {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-};
-
-function ColorField({ label, value, onChange }: ColorFieldProps) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-medium text-[var(--color-text)]">
-        {label}
-      </label>
-      <div className="flex items-center gap-3">
-        <input
-          type="color"
-          className="h-8 w-10 cursor-pointer rounded bg-transparent"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        />
-        <Input
-          value={value}
-          onChange={(e) =>
-            onChange(e.target.value)
-          }
-          className="h-9 rounded-2xl text-xs"
-          style={{
-            backgroundColor: "var(--color-bg)",
-            color: "var(--color-text)",
-            borderColor: "var(--color-border)",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
+ 

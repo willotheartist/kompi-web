@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   User,
   Globe2,
@@ -39,7 +33,7 @@ const sections = [
   {
     href: "/dashboard/settings/billing",
     title: "Billing & Plan",
-    description: "Review your plan. Billing will plug in here later.",
+    description: "Review your plan & subscriptions.",
     icon: CreditCard,
   },
   {
@@ -62,74 +56,61 @@ export default function DashboardSettingsPage() {
       className="wf-settings-page flex flex-1 flex-col gap-6"
       style={{ color: "var(--color-text)" }}
     >
-      {/* Pattern: Settings/Header */}
+      {/* Header */}
       <header className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold tracking-tight">
-          <span
-            style={{
-              fontFamily:
-                "var(--font-instrument-serif), var(--font-inter-tight), system-ui",
-              fontStyle: "italic",
-            }}
-          >
-            Settings
-          </span>
+          Settings
         </h1>
         <p
-          className="text-sm max-w-xl"
+          className="max-w-xl text-sm"
           style={{ color: "var(--color-subtle)" }}
         >
           Configure your Kompi workspace, branding, and account.
         </p>
       </header>
 
-      {/* Pattern: Settings/OverviewGrid */}
+      {/* Overview grid */}
       <div className="grid gap-4 md:grid-cols-2">
         {sections.map(({ href, title, description, icon: Icon }) => (
-          <Link key={href} href={href}>
+          <Link key={href} href={href} className="block">
             <Card
-              className="group h-full cursor-pointer rounded-2xl transition-all"
+              className="group h-full cursor-pointer rounded-3xl border-0 px-8 py-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.16)]"
               style={{
                 backgroundColor: "var(--color-surface)",
-                border: "1px solid var(--color-border)",
               }}
             >
-              <CardHeader className="flex flex-row items-start gap-3">
-                <div
-                  className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl"
-                  style={{
-                    backgroundColor: "var(--color-accent-soft)",
-                    color: "var(--color-accent)",
-                  }}
-                >
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="space-y-1">
-                  <CardTitle className="text-sm font-semibold">
-                    {title}
-                  </CardTitle>
-                  <CardDescription
-                    className="text-xs"
-                    style={{ color: "var(--color-subtle)" }}
+              <div className="flex h-full flex-col justify-between">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-full"
+                    style={{
+                      backgroundColor: "#063a35",
+                      color: "#d9ff2f",
+                    }}
                   >
-                    {description}
-                  </CardDescription>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold">{title}</p>
+                    <p
+                      className="max-w-sm text-xs leading-snug"
+                      style={{ color: "var(--color-subtle)" }}
+                    >
+                      {description}
+                    </p>
+                  </div>
                 </div>
-                <span
-                  className="ml-auto text-[10px] font-medium uppercase tracking-wide"
-                  style={{ color: "var(--color-subtle)" }}
-                >
-                  Open
-                </span>
-              </CardHeader>
-              <CardContent>
-                <p
-                  className="text-xs"
-                  style={{ color: "var(--color-subtle)" }}
-                >
-                  Open {title.toLowerCase()} settings
-                </p>
-              </CardContent>
+
+                <div className="mt-4 flex justify-start">
+                  <span
+                    className="text-sm transition-transform group-hover:translate-x-0.5"
+                    style={{ color: "var(--color-subtle)" }}
+                    aria-hidden="true"
+                  >
+                    ›
+                  </span>
+                </div>
+              </div>
             </Card>
           </Link>
         ))}

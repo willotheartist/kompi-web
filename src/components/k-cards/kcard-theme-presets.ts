@@ -2,7 +2,7 @@
 
 export type KCardFontToken = "system" | "serif" | "display";
 export type KCardButtonStyle = "solid" | "glass" | "outline";
-export type KCardButtonShadow = "none" | "soft" | "hard";
+export type KCardButtonShadow = "none" | "soft" | "hard" | "3d";
 
 export type KCardThemeState = {
   id: string;

@@ -28,7 +28,6 @@ const SOCIAL_ICON_MAP: Record<
   Website: Globe2,
 };
 
-
 type KCardPreviewProps = {
   wallpaperStyle: React.CSSProperties;
   pageBackground: string;
@@ -96,6 +95,16 @@ export function KCardPreview({
 
   const headerMarginTop = headerTextSize === "large" ? "mt-2" : "mt-1";
 
+  // If the theme has a real wallpaper (not "none"), use it.
+  // Otherwise, use the solid pageBackground color (for the Blank theme).
+  const hasWallpaper =
+    typeof wallpaperStyle?.background === "string" &&
+    wallpaperStyle.background.trim().toLowerCase() !== "none";
+
+  const cardBackgroundStyle: React.CSSProperties = hasWallpaper
+    ? wallpaperStyle
+    : { backgroundColor: pageBackground || "#020617" };
+
   return (
     <div
       className="relative"
@@ -104,107 +113,105 @@ export function KCardPreview({
         aspectRatio: "320 / 680",
       }}
     >
-      <div
-        className="absolute inset-0 rounded-[32px]"
-        style={{ backgroundColor: pageBackground || "#020617" }}
-      >
+      <div className="absolute inset-0 rounded-[32px]" style={cardBackgroundStyle}>
         <div
-          className="flex h-full w-full flex-col overflow-hidden rounded-[32px]"
-          style={wallpaperStyle}
+          className={cn(
+            "flex h-full w-full flex-col gap-0 overflow-hidden rounded-[32px] px-6 pb-6 pt-10",
+            previewBodyFont
+          )}
         >
+          {/* header */}
           <div
             className={cn(
-              "flex h-full w-full flex-col gap-0 px-6 pb-6 pt-10",
-              previewBodyFont
+              "mb-4 flex flex-col items-center gap-2 text-center",
+              previewTitleFont,
+              headerMarginTop
             )}
           >
-            {/* header */}
             <div
               className={cn(
-                "mb-4 flex flex-col items-center gap-2 text-center",
-                previewTitleFont,
-                headerMarginTop
+                "overflow-hidden rounded-full",
+                avatarSizeClass,
+                avatarShadow === "shadow" &&
+                  "shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
               )}
             >
-              <div
-                className={cn(
-                  "overflow-hidden rounded-full",
-                  avatarSizeClass,
-                  avatarShadow === "shadow" && "shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
-                )}
-              >
-                {avatarPreview ? (
-                  <img
-                    src={avatarPreview}
-                    alt="Profile"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-black/40">
-                    <UserCircle2 className="h-8 w-8 text-white" />
-                  </div>
-                )}
-              </div>
-              <div
-                className={cn("font-semibold", titleSizeClass)}
-                style={{ color: effectiveTitleColor }}
-              >
-                {title || "@yourname"}
-              </div>
-              <div
-                className={cn(subtitleSizeClass)}
-                style={{ color: effectiveTextColor }}
-              >
-                {subtitle || "Short bio line for your card."}
-              </div>
-            </div>
-
-            {/* socials */}
-            <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
-              {socials.map((s) => {
-                const Icon = SOCIAL_ICON_MAP[s];
-                if (!Icon) return null;
-                const href = socialUrls[s]?.trim();
-                return (
-                  <a
-                    key={s}
-                    href={href || "#"}
-                    target={href ? "_blank" : undefined}
-                    rel={href ? "noreferrer" : undefined}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white"
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                  </a>
-                );
-              })}
-            </div>
-
-            {/* links */}
-            <div className="space-y-2">
-              {visibleLinks.length === 0 ? (
-                <div className="rounded-full border border-dashed border-white/20 bg-black/30 px-4 py-2 text-center text-[11px] text-white/60">
-                  Add a link below to see it here.
-                </div>
+              {avatarPreview ? (
+                <img
+                  src={avatarPreview}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                visibleLinks.slice(0, 5).map((link) => (
-                  <button
-                    key={link.id}
-                    type="button"
-                    className="flex w-full items-center justify-center px-4 py-2.5 text-[11px] font-medium transition"
-                    style={buttonBaseStyles}
-                  >
-                    <span className="truncate">
-                      {link.title || "Untitled link"}
-                    </span>
-                  </button>
-                ))
+                <div className="flex h-full w-full items-center justify-center bg-black/40">
+                  <UserCircle2 className="h-8 w-8 text-white" />
+                </div>
               )}
             </div>
-
-            {/* footer */}
-            <div className="mt-auto pt-6 text-center text-[10px] text-white/40">
-              kompi.app/yourcard · Analytics included
+            <div
+              className={cn("font-semibold", titleSizeClass)}
+              style={{ color: effectiveTitleColor }}
+            >
+              {title || "@yourname"}
             </div>
+            <div
+              className={cn(subtitleSizeClass)}
+              style={{ color: effectiveTextColor }}
+            >
+              {subtitle || "Short bio line for your card."}
+            </div>
+          </div>
+
+          {/* socials */}
+          <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
+            {socials.map((s) => {
+              const Icon = SOCIAL_ICON_MAP[s];
+              if (!Icon) return null;
+              const href = socialUrls[s]?.trim();
+              return (
+                <a
+                  key={s}
+                  href={href || "#"}
+                  target={href ? "_blank" : undefined}
+                  rel={href ? "noreferrer" : undefined}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white"
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                </a>
+              );
+            })}
+          </div>
+
+          {/* links */}
+          <div className="space-y-2">
+            {visibleLinks.length === 0 ? (
+              <div className="rounded-full border border-dashed border-white/20 bg-black/30 px-4 py-2 text-center text-[11px] text-white/60">
+                Add a link below to see it here.
+              </div>
+            ) : (
+              visibleLinks.slice(0, 5).map((link) => (
+                <button
+                  key={link.id}
+                  type="button"
+                  className="flex w-full items-center justify-center px-4 py-2.5 text-[11px] font-medium transition"
+                  style={{
+                    ...buttonBaseStyles,
+                    transform: buttonBaseStyles?.boxShadow?.includes("0 6px 0")
+                      ? "translateY(-2px)"
+                      : undefined,
+                  }}
+                >
+                  <span className="truncate">
+                    {link.title || "Untitled link"}
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* footer */}
+          <div className="mt-auto pt-6 text-center text-[10px] text-white/40">
+            kompi.app/yourcard · Analytics included
           </div>
         </div>
       </div>
