@@ -342,18 +342,14 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
     };
   }, [baseUrl]);
 
-  // Auto-claim a public slug from the title the first time the user changes it
+  // Keep the public K-Card URL slug in sync with the header title.
+  // Whenever the title changes, we derive a slug and upsert it via the share API.
   useEffect(() => {
-    // If we already have a slug, don't auto-claim again.
-    if (shareSlug) return;
     // Don't run while share settings are still loading/saving.
     if (shareLoading || shareSaving) return;
 
     const derived = slugFromTitle(title);
     if (!derived) return;
-
-    // Optimistically set local state so the UI shows something.
-    setShareSlug((current) => current || derived);
 
     (async () => {
       try {
@@ -369,8 +365,6 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
         const data: KCardShareResponse = await res.json();
 
         if (!res.ok) {
-          // Clear slug and surface error so the user can adjust later.
-          setShareSlug("");
           const message = data.error || "Couldn’t claim that handle";
           toast.error(message, {
             description:
@@ -382,10 +376,10 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
         setShareSlug(data.slug ?? derived);
         setShareIsPublic(data.isPublic ?? true);
       } catch (err) {
-        console.error("Auto-claim K-Card slug failed", err);
+        console.error("Sync K-Card slug with title failed", err);
       }
     })();
-  }, [title, shareSlug, shareLoading, shareSaving]);
+  }, [title, shareLoading, shareSaving]);
 
   async function saveShareSettings() {
     if (!shareSlug.trim()) {
