@@ -61,6 +61,7 @@ import {
   Search,
   GripVertical,
   Pencil,
+  Copy,
 } from "lucide-react";
 
 import type React from "react";
@@ -202,6 +203,9 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   const colorsRef = useRef<HTMLElement | null>(null);
   const linksRef = useRef<HTMLElement | null>(null);
 
+  const shareTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const sharePanelRef = useRef<HTMLDivElement | null>(null);
+
   const sectionRefs = useMemo<
     Record<DesignSection, React.RefObject<HTMLElement | null>>
   >(
@@ -307,6 +311,11 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
 
   const publicUrl =
     shareSlug && shareIsPublic ? `${baseUrl}/k/${shareSlug}` : null;
+
+  const derivedSlugFromTitle = slugFromTitle(title);
+  const visualSlug = shareSlug || derivedSlugFromTitle || "yourname";
+
+  const shareDisplayUrl = `${baseUrl}/k/${visualSlug}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -419,9 +428,10 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   }
 
   async function copyPublicUrl() {
-    if (!publicUrl) return;
+    const urlToCopy = publicUrl || shareDisplayUrl;
+
     try {
-      await navigator.clipboard.writeText(publicUrl);
+      await navigator.clipboard.writeText(urlToCopy);
       toast.success("K-Card link copied to clipboard");
     } catch {
       toast.error("Could not copy link");
@@ -705,6 +715,35 @@ const buttonBaseStyles = useMemo(() => {
     };
   }, [sectionRefs]);
 
+  useEffect(() => {
+    if (!shareOpen) return;
+
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node | null;
+      if (!target) return;
+
+      const panel = sharePanelRef.current;
+      const trigger = shareTriggerRef.current;
+
+      if (
+        panel &&
+        !panel.contains(target) &&
+        trigger &&
+        !trigger.contains(target)
+      ) {
+        setShareOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [shareOpen]);
+
   function scrollToSection(id: DesignSection) {
     const el = sectionRefs[id].current;
     if (!el) return;
@@ -985,7 +1024,7 @@ const buttonBaseStyles = useMemo(() => {
                     </button>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-5">
                   {links.map((link) => (
                     <div
                       key={link.id}
@@ -995,7 +1034,7 @@ const buttonBaseStyles = useMemo(() => {
                       onDragOver={handleLinkDragOver}
                       onDrop={(e) => handleLinkDrop(e, link.id)}
                       className={cn(
-                        "flex items-center gap-4 rounded-[24px] px-4 py-4 transition",
+                        "flex items-center gap-5 rounded-[26px] px-5 py-8 min-h-[120px] transition",
                         draggingLinkId === link.id ? "opacity-70" : "opacity-100",
                       )}
                       style={{ backgroundColor: "var(--color-bg)" }}
@@ -1007,7 +1046,7 @@ const buttonBaseStyles = useMemo(() => {
                       >
                         <GripVertical className="h-4 w-4" />
                       </button>
-                      <div className="flex-1 space-y-1">
+                      <div className="flex-1 space-y-2">
                         <Input
                           value={link.title}
                           onChange={(e) =>
@@ -1015,7 +1054,7 @@ const buttonBaseStyles = useMemo(() => {
                               title: e.target.value,
                             })
                           }
-                          className="h-6 border-0 bg-transparent p-0 text-sm font-semibold focus-visible:outline-none focus-visible:ring-0"
+                          className="h-9 border-0 bg-transparent px-0 text-sm font-semibold focus-visible:outline-none focus-visible:ring-0"
                           style={{
                             color: "var(--color-text)",
                           }}
@@ -1026,36 +1065,50 @@ const buttonBaseStyles = useMemo(() => {
                           onChange={(e) =>
                             updateLink(link.id, { url: e.target.value })
                           }
-                          className="h-6 border-0 bg-transparent p-0 text-xs focus-visible:outline-none focus-visible:ring-0"
+                          className="h-8 border-0 bg-transparent px-0 text-xs focus-visible:outline-none focus-visible:ring-0"
                           style={{
                             color: "var(--color-subtle)",
                           }}
                           placeholder="Link · URL"
                         />
                       </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateLink(link.id, {
-                            enabled: !link.enabled,
-                          })
-                        }
-                        className={cn(
-                          "relative inline-flex h-6 w-11 items-center rounded-full border transition-all",
-                          link.enabled ? "bg-[#050505]" : "bg-[#e4e2dd]",
-                        )}
-                        style={{
-                          borderColor: link.enabled ? "#050505" : "transparent",
-                        }}
-                        aria-pressed={link.enabled}
-                      >
-                        <span
+                      <div className="flex h-full flex-col items-end justify-between py-1">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateLink(link.id, {
+                              enabled: !link.enabled,
+                            })
+                          }
                           className={cn(
-                            "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-150",
-                            link.enabled ? "translate-x-5" : "translate-x-1",
+                            "relative inline-flex h-6 w-11 items-center rounded-full border transition-all",
+                            link.enabled ? "bg-[#050505]" : "bg-[#e4e2dd]",
                           )}
-                        />
-                      </button>
+                          style={{
+                            borderColor: link.enabled ? "#050505" : "transparent",
+                          }}
+                          aria-pressed={link.enabled}
+                        >
+                          <span
+                            className={cn(
+                              "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-150",
+                              link.enabled ? "translate-x-5" : "translate-x-1",
+                            )}
+                          />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setLinks((prev) =>
+                              prev.filter((l) => l.id !== link.id),
+                            )
+                          }
+                          className="mt-3 inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--color-subtle)] hover:bg-[#f3eee7]"
+                          aria-label="Delete link"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
 
@@ -1107,22 +1160,17 @@ const buttonBaseStyles = useMemo(() => {
                 {/* Share K-Card controls under the preview */}
                 <div className="mt-4 flex w-full flex-col items-center relative">
                   <button
+                    ref={shareTriggerRef}
                     type="button"
                     onClick={() => setShareOpen((v) => !v)}
-                    className="group inline-flex w-full items-center justify-between rounded-full bg-white px-5 py-3 text-xs font-medium shadow-[0_12px_30px_rgba(15,23,42,0.16)] ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.22)]"
+                    className="group inline-flex w-full items-center justify-between rounded-full bg-white px-4 py-2.5 text-[11px] font-medium border border-black/5 hover:bg-[#f5f3ee] transition"
                   >
-                    <div className="flex min-w-0 flex-1 items-center justify-center gap-1">
-                      <span
-                        className="truncate text-[11px]"
-                        style={{ color: "#7b8cff" }}
-                      >
-                        {baseUrl.replace(/^https?:\/\//, "")}/k/
-                      </span>
+                    <div className="flex min-w-0 flex-1 items-center justify-center">
                       <span
                         className="truncate text-[11px]"
                         style={{ color: "#050505" }}
                       >
-                        {shareSlug || "yourname"}
+                        {baseUrl.replace(/^https?:\/\//, "")}/k/{visualSlug}
                       </span>
                     </div>
 
@@ -1132,37 +1180,41 @@ const buttonBaseStyles = useMemo(() => {
                   </button>
 
                   {shareOpen && (
-                    <div className="absolute bottom-[64px] z-30 w-[360px] max-w-[90vw]">
+                    <div
+                      ref={sharePanelRef}
+                      className="absolute bottom-[64px] z-30 w-[360px] max-w-[90vw]"
+                    >
                       <div
-                        className="relative rounded-3xl border px-6 py-5 shadow-2xl"
+                        className="relative rounded-[32px] px-5 py-5 shadow-[0_14px_40px_rgba(15,23,42,0.24)]"
                         style={{
-                          backgroundColor: "var(--color-surface)",
-                          borderColor: "var(--color-border)",
+                          backgroundColor: "#ffffff",
+                          borderColor: "transparent",
                         }}
                       >
                         <button
                           type="button"
                           onClick={() => setShareOpen(false)}
-                          className="absolute right-4 top-4 text-[11px]"
+                          className="absolute right-4 top-4 text-[18px] leading-none"
                           style={{ color: "var(--color-subtle)" }}
+                          aria-label="Close"
                         >
-                          
+                          ×
                         </button>
 
-                        <div className="mb-4 text-center">
+                        <div className="mb-5 text-center">
                           <p
-                            className="text-sm font-semibold"
-                            style={{ color: "var(--color-text)" }}
+                            className="text-[15px] font-semibold tracking-tight"
+                            style={{ color: "#050505" }}
                           >
-                            Share your Kard.
+                            Share you Kard.
                           </p>
                         </div>
 
                         <div
-                          className="mb-4 flex items-center gap-3 rounded-2xl px-3 py-2"
-                          style={{ backgroundColor: "var(--color-bg)" }}
+                          className="mb-4 flex items-center gap-3 rounded-[999px] px-4 py-3"
+                          style={{ backgroundColor: "#f6f4f0" }}
                         >
-                          <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
+                          <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white shadow-[0_8px_18px_rgba(15,23,42,0.25)]">
                             {avatarPreview ? (
                               <img
                                 src={avatarPreview}
@@ -1176,100 +1228,48 @@ const buttonBaseStyles = useMemo(() => {
                           <div className="flex-1 min-w-0">
                             <p
                               className="truncate text-[13px] font-semibold"
-                              style={{ color: "var(--color-text)" }}
+                              style={{ color: "#050505" }}
                             >
                               {title || "@yourname"}
                             </p>
                             <p
                               className="truncate text-[11px]"
-                              style={{ color: "var(--color-subtle)" }}
+                              style={{ color: "#8a8680" }}
                             >
-                              {publicUrl || `${baseUrl}/k/yourname`}
+                              {subtitle || "Tell people what you do"}
                             </p>
                           </div>
                         </div>
 
-                        <div className="space-y-1">
-                          <p
-                            className="text-[11px]"
-                            style={{ color: "var(--color-subtle)" }}
-                          >
-                            Public URL
-                          </p>
-                          <div
-                            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px]"
-                            style={{
-                              backgroundColor: "var(--color-bg)",
-                              border: "1px solid var(--color-border)",
-                            }}
-                          >
-                            <span
-                              className="truncate"
-                              style={{ color: "var(--color-subtle)" }}
-                            >
-                              {baseUrl}/k/
-                            </span>
-                            <input
-                              className="flex-1 bg-transparent outline-none"
-                              style={{ color: "var(--color-text)" }}
-                              value={shareSlug}
-                              onChange={(e) => setShareSlug(e.target.value)}
-                              placeholder="yourname"
-                              disabled={shareLoading || shareSaving}
-                            />
-                          </div>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={copyPublicUrl}
+                          className="mt-1 flex w-full items-center justify-between rounded-[999px] px-6 py-3.5"
+                          style={{
+                            backgroundColor: "#d9ff2f",
+                            color: "#050505",
+                          }}
+                        >
+                          <span className="truncate text-[13px] font-normal">
+                            {shareDisplayUrl
+                              .replace(/^https?:\/\//, "")
+                              .replace(/\/$/, "")}
+                          </span>
+                          <Copy className="ml-3 h-4 w-4" />
+                        </button>
 
-                        <div className="mt-4 flex items-center justify-between gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setShareIsPublic((v) => !v)}
-                            className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium"
-                            style={{
-                              border: "1px solid var(--color-border)",
-                              backgroundColor: shareIsPublic
-                                ? "var(--color-accent-soft)"
-                                : "var(--color-bg)",
-                              color: shareIsPublic
-                                ? "var(--color-text)"
-                                : "var(--color-subtle)",
-                            }}
-                          >
-                            <span
-                              className="mr-1 h-1.5 w-1.5 rounded-full"
-                              style={{
-                                backgroundColor: shareIsPublic
-                                  ? "var(--color-accent)"
-                                  : "var(--color-border)",
-                              }}
-                            />
-                            {shareIsPublic ? "Public" : "Hidden"}
-                          </button>
-
-                          <div className="flex items-center gap-2">
-                            {publicUrl && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-7 rounded-full px-3 text-[11px]"
-                                onClick={copyPublicUrl}
-                                disabled={shareSaving}
-                              >
-                                Copy link
-                              </Button>
-                            )}
-                            <Button
-                              type="button"
-                              size="sm"
-                              className="h-7 rounded-full px-3 text-[11px]"
-                              onClick={saveShareSettings}
-                              disabled={shareLoading || shareSaving}
-                            >
-                              {shareSaving ? "Saving…" : "Save"}
-                            </Button>
-                          </div>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => shareComingSoon("Social")}
+                          className="mt-6 flex w-full items-center justify-between px-1 py-1 text-[13px]"
+                          style={{ color: "#050505" }}
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            <UploadCloud className="h-4 w-4" />
+                            <span>Share to...</span>
+                          </span>
+                          <span className="text-lg leading-none">&gt;</span>
+                        </button>
                       </div>
                     </div>
                   )}

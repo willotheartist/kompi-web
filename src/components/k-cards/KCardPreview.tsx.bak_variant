@@ -47,8 +47,6 @@ type KCardPreviewProps = {
   avatarSize: "small" | "medium" | "large";
   headerTextSize: "small" | "medium" | "large";
   avatarShadow: "shadow" | "flat";
-  /** builder = small phone preview, public = full-width card */
-  variant?: "builder" | "public";
   className?: string;
 };
 
@@ -71,7 +69,6 @@ export function KCardPreview({
   avatarSize,
   headerTextSize,
   avatarShadow,
-  variant = "builder",
   className,
 }: KCardPreviewProps) {
   const effectiveTitleColor = titleColor || "#f9fafb";
@@ -110,23 +107,15 @@ export function KCardPreview({
     ? wallpaperStyle
     : { backgroundColor: pageBackground || "#020617" };
 
-  const isPublic = variant === "public";
-
   return (
     <div
       className={cn("relative", className)}
       style={{
-        // builder: small phone preview used in UI
-        // public: full-width card like Linktree
-        width: isPublic ? "min(480px, 100%)" : "min(320px, 24vw)",
-        maxWidth: "100%",
+        width: "min(320px, 24vw)",
         aspectRatio: "320 / 680",
       }}
     >
-      <div
-        className="absolute inset-0 rounded-[32px]"
-        style={cardBackgroundStyle}
-      >
+      <div className="absolute inset-0 rounded-[32px]" style={cardBackgroundStyle}>
         <div
           className={cn(
             "flex h-full w-full flex-col gap-0 overflow-hidden rounded-[32px] px-6 pb-6 pt-10",

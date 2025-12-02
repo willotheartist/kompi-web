@@ -1,3 +1,4 @@
+// src/app/api/kr-codes/[id]/png/route.ts
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { getKrCodeLinkAndUrl } from "../qr-helpers";
@@ -36,11 +37,19 @@ export async function GET(req: Request, ctx: RouteContext) {
     const bg =
       bgRaw.toLowerCase() === "transparent" ? "#FFFFFF" : bgRaw;
 
-    const margin = typeof style.margin === "number" ? style.margin : 2;
-    const baseSize = typeof style.size === "number" ? style.size : 240;
+    const margin =
+      typeof style.margin === "number" ? style.margin : 2;
+    const baseSize =
+      typeof style.size === "number" ? style.size : 240;
 
     // Keep exports fairly large for print
     const width = Math.max(512, baseSize * 2);
+
+    const hasLogo =
+      !!style.logoUrl && style.logoEnabled !== false;
+
+    const ecLevel =
+      hasLogo && style.ecLevel !== "H" ? "H" : style.ecLevel ?? "M";
 
     // Base QR code
     const qrBuffer = await QRCode.toBuffer(qrUrl, {
@@ -51,25 +60,23 @@ export async function GET(req: Request, ctx: RouteContext) {
         dark: fg,
         light: bg,
       },
+      errorCorrectionLevel: ecLevel,
     });
 
     let outputBuffer = qrBuffer;
 
-    // Optional center logo
-    if (style.logoUrl) {
+    if (hasLogo) {
       try {
-        const logoUrl = style.logoUrl;
+        const logoUrl = style.logoUrl as string;
         let logoBuffer: Buffer | null = null;
 
         if (logoUrl.startsWith("data:")) {
-          // data URL from client
           const commaIndex = logoUrl.indexOf(",");
           if (commaIndex !== -1) {
             const base64 = logoUrl.slice(commaIndex + 1);
             logoBuffer = Buffer.from(base64, "base64");
           }
         } else if (logoUrl.startsWith("/")) {
-          // local file served from /public (e.g. /uploads/krcodes/...)
           const logoPath = path.join(
             process.cwd(),
             "public",
@@ -89,8 +96,35 @@ export async function GET(req: Request, ctx: RouteContext) {
             .png()
             .toBuffer();
 
+          const composites: sharp.OverlayOptions[] = [];
+
+          // If logoBgTransparent is true, paint a solid bg square behind the logo area
+          if (style.logoBgTransparent) {
+            const bgSquare = await sharp({
+              create: {
+                width: logoSize,
+                height: logoSize,
+                channels: 4,
+                background: bg,
+              },
+            })
+              .png()
+              .toBuffer();
+
+            composites.push({
+              input: bgSquare,
+              gravity: "centre",
+            });
+          }
+
+          // Then place the logo itself on top
+          composites.push({
+            input: resizedLogo,
+            gravity: "centre",
+          });
+
           outputBuffer = await qrImage
-            .composite([{ input: resizedLogo, gravity: "centre" }])
+            .composite(composites)
             .png()
             .toBuffer();
         }

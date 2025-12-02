@@ -1,3 +1,4 @@
+// src/app/api/kr-codes/[id]/qr-helpers.ts
 import { prisma } from "@/lib/prisma";
 
 type StyleObject = {
@@ -6,24 +7,32 @@ type StyleObject = {
   size?: number;
   margin?: number;
   logoUrl?: string | null;
+  logoEnabled?: boolean;         // 👈 NEW
+  logoBgTransparent?: boolean;   // 👈 NEW
   cornerRadius?: number;
   ecLevel?: "L" | "M" | "Q" | "H";
   [key: string]: unknown;
 };
 
-const DEFAULT_STYLE: Required<
-  Pick<StyleObject, "fg" | "bg" | "size" | "margin" | "ecLevel">
-> & { logoUrl: string | null } = {
+type NormalizedStyle = Required<
+  Pick<
+    StyleObject,
+    "fg" | "bg" | "size" | "margin" | "ecLevel" | "logoEnabled" | "logoBgTransparent"
+  >
+> & { logoUrl: string | null };
+
+const DEFAULT_STYLE: NormalizedStyle = {
   fg: "#0EA5E9",
   bg: "transparent",
   size: 240,
   margin: 2,
   ecLevel: "M",
   logoUrl: null,
+  logoEnabled: false,
+  logoBgTransparent: true, // 👈 matches frontend default
 };
 
 export async function getKrCodeLinkAndUrl(id: string, req: Request) {
-  // Look up the KR Code
   const krcode = await prisma.kRCode.findUnique({
     where: { id },
   });
@@ -32,7 +41,6 @@ export async function getKrCodeLinkAndUrl(id: string, req: Request) {
     throw new Error("KR Code or short link not found");
   }
 
-  // Look up the linked short URL
   const link = await prisma.link.findUnique({
     where: { id: krcode.shortCodeId },
   });
@@ -41,17 +49,14 @@ export async function getKrCodeLinkAndUrl(id: string, req: Request) {
     throw new Error("Linked short code not found");
   }
 
-  // Determine app origin (use NEXT_PUBLIC_APP_URL if set, otherwise infer)
   const origin =
     process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin;
 
-  // URL that will hit /r/[code] and create ClickEvent rows
   const qrUrl = `${origin}/r/${link.code}`;
 
-  // ---- NEW: normalize style for exports ----
   const rawStyle = (krcode.style ?? {}) as StyleObject;
 
-  const style = {
+  const style: NormalizedStyle = {
     fg:
       typeof rawStyle.fg === "string"
         ? rawStyle.fg
@@ -75,6 +80,14 @@ export async function getKrCodeLinkAndUrl(id: string, req: Request) {
       typeof rawStyle.logoUrl === "string"
         ? rawStyle.logoUrl
         : DEFAULT_STYLE.logoUrl,
+    logoEnabled:
+      typeof rawStyle.logoEnabled === "boolean"
+        ? rawStyle.logoEnabled
+        : DEFAULT_STYLE.logoEnabled,
+    logoBgTransparent:
+      typeof rawStyle.logoBgTransparent === "boolean"
+        ? rawStyle.logoBgTransparent
+        : DEFAULT_STYLE.logoBgTransparent,
   };
 
   return { krcode, link, qrUrl, style };

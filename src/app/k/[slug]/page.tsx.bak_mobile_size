@@ -184,32 +184,35 @@ export default async function PublicKCardPage(props: {
 
   const socials = socialsRaw ?? ["Instagram", "YouTube", "Website"];
 
-  return (
+    return (
     <main
       className="min-h-screen flex items-center justify-center"
       style={wallpaperStyle}
     >
-      <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10">
-        <KCardPreview
-          variant="public"
-          wallpaperStyle={wallpaperStyle}
-          pageBackground={pageBackground}
-          previewTitleFont={previewTitleFont}
-          previewBodyFont={previewBodyFont}
-          title={title}
-          subtitle={subtitle}
-          titleColor={titleColor}
-          pageTextColor={pageTextColor}
-          titleSize={titleSize}
-          profileLayout={profileLayout}
-          avatarPreview={avatarDataUrl}
-          socials={socials}
-          visibleLinks={visibleLinks}
-          buttonBaseStyles={buttonBaseStyles}
-          avatarSize={avatarSize}
-          headerTextSize={headerTextSize}
-          avatarShadow={avatarShadow}
-        />
+      <div className="w-full max-w-md px-4 py-10 flex flex-col items-center">
+        <div className="w-full flex justify-center">
+          <div className="origin-center scale-[1.4] md:scale-[1.1]">
+            <KCardPreview
+              wallpaperStyle={wallpaperStyle}
+              pageBackground={pageBackground}
+              previewTitleFont={previewTitleFont}
+              previewBodyFont={previewBodyFont}
+              title={title}
+              subtitle={subtitle}
+              titleColor={titleColor}
+              pageTextColor={pageTextColor}
+              titleSize={titleSize}
+              profileLayout={profileLayout}
+              avatarPreview={avatarDataUrl}
+              socials={socials}
+              visibleLinks={visibleLinks}
+              buttonBaseStyles={buttonBaseStyles}
+              avatarSize={avatarSize}
+              headerTextSize={headerTextSize}
+              avatarShadow={avatarShadow}
+            />
+          </div>
+        </div>
         <p className="mt-6 text-center text-[10px] text-neutral-500">
           Made with <span className="font-semibold">Kompi</span>
         </p>
@@ -217,3 +220,5 @@ export default async function PublicKCardPage(props: {
     </main>
   );
 }
+
+

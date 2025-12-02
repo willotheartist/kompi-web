@@ -1,3 +1,4 @@
+// src/app/api/kr-codes/[id]/svg/route.ts
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { getKrCodeLinkAndUrl } from "../qr-helpers";
@@ -37,6 +38,12 @@ export async function GET(req: Request, ctx: RouteContext) {
     const baseSize = style.size ?? 240;
     const width = Math.max(512, baseSize * 2);
 
+    const hasLogo =
+      !!style.logoUrl && style.logoEnabled !== false;
+
+    const ecLevel =
+      hasLogo && style.ecLevel !== "H" ? "H" : style.ecLevel ?? "M";
+
     let svg = await QRCode.toString(qrUrl, {
       type: "svg",
       margin,
@@ -45,16 +52,15 @@ export async function GET(req: Request, ctx: RouteContext) {
         dark: fg,
         light: bg,
       },
+      errorCorrectionLevel: ecLevel,
     });
 
-    // Optional embedded logo
-    if (style.logoUrl) {
+    if (hasLogo) {
       try {
-        const logoUrl = style.logoUrl;
+        const logoUrl = style.logoUrl as string;
         let logoDataUri: string | null = null;
 
         if (logoUrl.startsWith("data:")) {
-          // already a data URL
           logoDataUri = logoUrl;
         } else if (logoUrl.startsWith("/")) {
           const logoPath = path.join(
@@ -72,7 +78,13 @@ export async function GET(req: Request, ctx: RouteContext) {
         }
 
         if (logoDataUri) {
-          const insertion = `<image href="${logoDataUri}" x="30%" y="30%" width="40%" height="40%" preserveAspectRatio="xMidYMid meet" />`;
+          const bgRect = style.logoBgTransparent
+            ? `<rect x="30%" y="30%" width="40%" height="40%" fill="${bg}" />`
+            : "";
+
+          const imageTag = `<image href="${logoDataUri}" x="30%" y="30%" width="40%" height="40%" preserveAspectRatio="xMidYMid meet" />`;
+
+          const insertion = `${bgRect}${imageTag}`;
           svg = svg.replace("</svg>", `${insertion}</svg>`);
         }
       } catch (e) {

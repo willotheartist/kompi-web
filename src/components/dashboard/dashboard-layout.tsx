@@ -34,7 +34,17 @@ const navGroups = [
       { href: "/links", label: "Links", icon: Link2 },
       { href: "/k-cards", label: "K-Cards", icon: LayoutGrid },
       { href: "/dashboard/qr-menus", label: "QR Menus", icon: LayoutGrid },
-      { href: "/kr-codes", label: "Kompi Codes™ (KR)", icon: QrCode },
+      {
+        href: "/kr-codes",
+        label: "Kompi Codes™ (KR)",
+        icon: QrCode,
+        children: [
+          {
+            href: "/dashboard/kr-codes/your",
+            label: "Your QR codes",
+          },
+        ],
+      },
     ],
   },
   {
@@ -170,51 +180,86 @@ function Sidebar({
               )}
 
               <div className="flex flex-col gap-1">
-                {group.items.map(({ href, label, icon: Icon }) => {
+                {group.items.map(({ href, label, icon: Icon, children }) => {
+                  const childActive =
+                    (children ?? []).some((child) =>
+                      pathname.startsWith(child.href)
+                    );
+
                   const active =
                     href === "/dashboard"
                       ? pathname === "/dashboard"
-                      : pathname.startsWith(href);
+                      : pathname.startsWith(href) || childActive;
 
                   return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={cn(
-                        "wf-dashboard-nav-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
-                        collapsed && "justify-center"
-                      )}
-                      style={{
-                        backgroundColor: active
-                          ? "var(--color-accent-soft)"
-                          : "transparent",
-                        color: "var(--color-text)",
-                      }}
-                    >
-                      {!collapsed && (
-                        <span
-                          className="wf-dashboard-nav-accent h-6 w-1 rounded-full"
-                          style={{
-                            backgroundColor: active
-                              ? "var(--color-accent)"
-                              : "transparent",
-                          }}
-                          aria-hidden="true"
-                        />
-                      )}
-
-                      <Icon
+                    <div key={href} className="flex flex-col gap-1">
+                      <Link
+                        href={href}
                         className={cn(
-                          "h-5 w-5 shrink-0",
-                          !collapsed &&
-                            "group-hover:translate-x-0.5 transition-transform"
+                          "wf-dashboard-nav-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
+                          collapsed && "justify-center"
                         )}
-                      />
+                        style={{
+                          backgroundColor: active
+                            ? "var(--color-accent-soft)"
+                            : "transparent",
+                          color: "var(--color-text)",
+                        }}
+                      >
+                        {!collapsed && (
+                          <span
+                            className="wf-dashboard-nav-accent h-6 w-1 rounded-full"
+                            style={{
+                              backgroundColor: active
+                                ? "var(--color-accent)"
+                                : "transparent",
+                            }}
+                            aria-hidden="true"
+                          />
+                        )}
 
-                      {!collapsed && (
-                        <span className="truncate">{label}</span>
+                        <Icon
+                          className={cn(
+                            "h-5 w-5 shrink-0",
+                            !collapsed &&
+                              "group-hover:translate-x-0.5 transition-transform"
+                          )}
+                        />
+
+                        {!collapsed && (
+                          <span className="truncate">{label}</span>
+                        )}
+                      </Link>
+
+                      {children && !collapsed && (
+                        <div
+                          className="ml-6 flex flex-col gap-1 border-l pl-3"
+                          style={{ borderColor: "var(--color-border)" }}
+                        >
+                          {children.map((child) => {
+                            const childIsActive = pathname.startsWith(child.href);
+                            return (
+                              <Link
+                                key={child.href}
+                                href={child.href}
+                                className={cn(
+                                  "wf-dashboard-nav-subitem flex items-center rounded-xl px-3 py-2 text-sm transition",
+                                  childIsActive && "font-medium"
+                                )}
+                                style={{
+                                  color: "var(--color-text)",
+                                  backgroundColor: childIsActive
+                                    ? "var(--color-accent-soft)"
+                                    : "transparent",
+                                }}
+                              >
+                                {child.label}
+                              </Link>
+                            );
+                          })}
+                        </div>
                       )}
-                    </Link>
+                    </div>
                   );
                 })}
               </div>

@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 01/12/2025, 12:46:17*
+*Generated on: 02/12/2025, 12:27:16*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 331 |
-| 📁 Total Folders | 151 |
+| 📄 Total Files | 342 |
+| 📁 Total Folders | 154 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,13 +26,13 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 152 files (45.9%)
-- 🔷 **.ts** (TypeScript files): 56 files (16.9%)
-- 🖼️ **.png** (PNG images): 31 files (9.4%)
-- 📄 **.sql** (Other files): 19 files (5.7%)
-- 📄 **.zip** (Other files): 12 files (3.6%)
-- 🎨 **.css** (Stylesheets): 10 files (3.0%)
-- 🎨 **.svg** (SVG images): 7 files (2.1%)
+- ⚛️ **.tsx** (React TypeScript files): 155 files (45.3%)
+- 🔷 **.ts** (TypeScript files): 57 files (16.7%)
+- 🖼️ **.png** (PNG images): 37 files (10.8%)
+- 📄 **.sql** (Other files): 19 files (5.6%)
+- 📄 **.zip** (Other files): 12 files (3.5%)
+- 🎨 **.css** (Stylesheets): 10 files (2.9%)
+- 🎨 **.svg** (SVG images): 7 files (2.0%)
 - 📄 **.mjs** (Other files): 5 files (1.5%)
 - 📄 **.bak** (Other files): 4 files (1.2%)
 - ⚙️ **.json** (JSON files): 3 files (0.9%)
@@ -60,6 +60,7 @@
 - 📄 **.header-social** (Other files): 1 files (0.3%)
 - 📄 **.header-v2** (Other files): 1 files (0.3%)
 - 📄 **.pre-kcards-modal** (Other files): 1 files (0.3%)
+- 📄 **.bak_edit_route** (Other files): 1 files (0.3%)
 - 📄 **.orig** (Other files): 1 files (0.3%)
 - 📄 **.rej** (Other files): 1 files (0.3%)
 - 📄 **.bak-upgrade** (Other files): 1 files (0.3%)
@@ -67,11 +68,11 @@
 
 ### By Category
 
-- **React**: 152 files (45.9%)
-- **Other**: 61 files (18.4%)
-- **TypeScript**: 56 files (16.9%)
-- **Assets**: 41 files (12.4%)
-- **Styles**: 10 files (3.0%)
+- **React**: 155 files (45.3%)
+- **Other**: 62 files (18.1%)
+- **TypeScript**: 57 files (16.7%)
+- **Assets**: 47 files (13.7%)
+- **Styles**: 10 files (2.9%)
 - **Config**: 6 files (1.8%)
 - **DevOps**: 2 files (0.6%)
 - **Docs**: 2 files (0.6%)
@@ -79,11 +80,11 @@
 
 ### 📁 Largest Directories
 
-- **root**: 331 files
-- **src**: 236 files
-- **src/components**: 116 files
-- **src/app**: 112 files
-- **src/app/api**: 41 files
+- **root**: 342 files
+- **src**: 241 files
+- **src/components**: 117 files
+- **src/app**: 116 files
+- **public**: 46 files
 
 ## 🌳 Directory Structure
 
@@ -159,6 +160,13 @@ kompi-web/
 │   ├── 🖼️ favicon.ico
 │   ├── 🎨 file.svg
 │   ├── 🎨 globe.svg
+│   ├── 📂 growth/
+│   │   ├── 🖼️ analytics.png
+│   │   ├── 🖼️ k-cards.png
+│   │   ├── 🖼️ kompi-codes.png
+│   │   ├── 🖼️ links.png
+│   │   ├── 🖼️ menu-builder.png
+│   │   └── 🖼️ subscribers.png
 │   ├── 🖼️ herobg.png
 │   ├── 🖼️ herowoman.png
 │   ├── 🖼️ kcard-dashboard-card.png
@@ -263,6 +271,7 @@ kompi-web/
 │   │   │   │   │   ├── 📂 png/
 │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   ├── 🔷 qr-helpers.ts
+│   │   │   │   │   ├── 🔷 route.route.bak.ts
 │   │   │   │   │   ├── 🔷 route.ts
 │   │   │   │   │   ├── 📂 style/
 │   │   │   │   │   │   └── 🔷 route.ts
@@ -314,7 +323,9 @@ kompi-web/
 │   │   │   ├── 📂 k-cards/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 kr-codes/
-│   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   └── 📂 your/
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 links/
 │   │   │   │   └── 📂 new/
 │   │   │   │   │   └── ⚛️ page.tsx
@@ -368,6 +379,8 @@ kompi-web/
 │   │   ├── 🎨 kompi-marketing.css
 │   │   ├── 📂 kr-codes/
 │   │   │   ├── 📂 [id]/
+│   │   │   │   ├── 📂 edit/
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 page.jsrtener/
 │   │   │   │   └── 📜 page.js
@@ -413,7 +426,8 @@ kompi-web/
 │   │   │   └── 📂 [code]/
 │   │   │   │   └── 🔷 route.ts
 │   │   ├── 📂 reset-password/
-│   │   │   └── ⚛️ page.tsx
+│   │   │   ├── ⚛️ page.tsx
+│   │   │   └── ⚛️ ResetPasswordClient.tsx
 │   │   ├── 🔷 robots.ts
 │   │   ├── 📂 signin/
 │   │   │   └── ⚛️ page.tsx
@@ -496,6 +510,7 @@ kompi-web/
 │   │   ├── 📂 kr-codes/
 │   │   │   ├── ⚛️ KRCodesPage.tsx
 │   │   │   ├── 📄 KRCodesPage.tsx.bak
+│   │   │   ├── 📄 KRCodesPage.tsx.bak_edit_route
 │   │   │   ├── 📄 KRCodesPage.tsx.bak2
 │   │   │   ├── 📄 KRCodesPage.tsx.orig
 │   │   │   └── 📄 KRCodesPage.tsx.rej

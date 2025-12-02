@@ -1,5 +1,3 @@
-
-
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -24,6 +22,8 @@ type Tile = {
   subtitle: string;
   href?: string;
   comingSoon?: boolean;
+  imageSrc?: string;   // 👈 per-card image
+  imageAlt?: string;   // 👈 optional custom alt
 };
 
 const AVAILABLE: Tile[] = [
@@ -33,6 +33,7 @@ const AVAILABLE: Tile[] = [
     subtitle:
       "Turn any URL into a fast, trackable short link that works everywhere.",
     href: "/links",
+    imageSrc: "/growth/links.png",
   },
   {
     title: "K-Cards",
@@ -40,6 +41,7 @@ const AVAILABLE: Tile[] = [
     subtitle:
       "A smart digital business card you can update anytime — no app required.",
     href: "/k-cards",
+    imageSrc: "/growth/k-cards.png",
   },
   {
     title: "QR Menus",
@@ -47,18 +49,21 @@ const AVAILABLE: Tile[] = [
     subtitle:
       "Upload your items, customise your design, and share with a single QR.",
     href: "/dashboard/qr-menus",
+    imageSrc: "/growth/qr-menus.png",
   },
   {
     title: "Kompi Codes™",
     headline: `Identity-powered QR codes that <i>track everything</i>`,
     subtitle: "Turn scans into insights with dynamic, brandable Kompi Codes.",
     href: "/kr-codes",
+    imageSrc: "/growth/kompi-codes.png",
   },
   {
     title: "Analytics",
     headline: `Monitor your audience in <i>real time</i>`,
     subtitle: "See clicks, scans, visitors and engagement — all without cookies.",
     href: "/analytics",
+    imageSrc: "/growth/analytics.png",
   },
   {
     title: "Subscribers",
@@ -66,12 +71,14 @@ const AVAILABLE: Tile[] = [
     subtitle:
       "Capture emails and build your contact list directly from your links.",
     href: "/dashboard/subscribers",
+    imageSrc: "/growth/subscribers.png",
   },
   {
     title: "Contact Forms",
     headline: `Collect messages from <i>anywhere</i>`,
     subtitle: "Create simple, embeddable forms that send submissions instantly.",
     href: "/dashboard/contact-forms",
+    imageSrc: "/growth/contact-forms.png",
   },
   {
     title: "Discount Codes",
@@ -79,6 +86,7 @@ const AVAILABLE: Tile[] = [
     subtitle:
       "Create limited-time offers and track performance in one dashboard.",
     href: "/dashboard/discount-codes",
+    imageSrc: "/growth/discount-codes.png",
   },
   {
     title: "Menu Builder",
@@ -86,6 +94,7 @@ const AVAILABLE: Tile[] = [
     subtitle:
       "Build interactive menus with custom categories, prices and styles.",
     href: "/menu",
+    imageSrc: "/growth/menu-builder.png",
   },
 ];
 
@@ -95,6 +104,7 @@ const COMING_SOON: Tile[] = [
     headline: `Plan and schedule posts from <i>one place</i>`,
     subtitle: "Draft, queue and publish content across multiple platforms.",
     comingSoon: true,
+    imageSrc: "/growth/social-planner.png",
   },
   {
     title: "AI Post Ideas",
@@ -102,6 +112,7 @@ const COMING_SOON: Tile[] = [
     subtitle:
       "Generate fresh post ideas tailored to your brand and audience.",
     comingSoon: true,
+    imageSrc: "/growth/ai-post-ideas.png",
   },
   {
     title: "Instagram Auto-Reply",
@@ -109,6 +120,7 @@ const COMING_SOON: Tile[] = [
     subtitle:
       "Respond instantly to keywords, links, promotions and more.",
     comingSoon: true,
+    imageSrc: "/growth/instagram-auto-reply.png",
   },
 ];
 
@@ -202,13 +214,16 @@ function GrowthTile({ tile, color }: { tile: Tile; color: string }) {
 
   const wrapperStyle = { backgroundColor: color };
 
+  const imageSrc = tile.imageSrc ?? "/kompi-business.png"; // 👈 fallback
+  const imageAlt = tile.imageAlt ?? tile.title;
+
   const content = (
     <>
       {/* BIG CENTERED IMAGE */}
       <div className="mb-4 flex justify-center">
         <Image
-          src="/kompi-business.png"
-          alt={tile.title}
+          src={imageSrc}
+          alt={imageAlt}
           width={150}
           height={150}
           className="rounded-xl object-cover"

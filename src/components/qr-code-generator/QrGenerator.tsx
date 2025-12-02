@@ -17,6 +17,8 @@ type DotEngineType =
   | "classy-rounded"
   | "extra-rounded";
 
+type DesignTab = "shape" | "frame" | "logo";
+
 const qrTypes: { key: QrType; label: string }[] = [
   { key: "url", label: "Link" },
   { key: "text", label: "Text" },
@@ -62,10 +64,7 @@ function drawRoundedRect(
   height: number,
   radius: number
 ) {
-  const r = Math.max(
-    0,
-    Math.min(radius, Math.min(width / 2, height / 2))
-  );
+  const r = Math.max(0, Math.min(radius, Math.min(width / 2, height / 2)));
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.lineTo(x + width - r, y);
@@ -110,6 +109,7 @@ export function QrGenerator() {
   // QR dot style & quality
   const [dotStyle, setDotStyle] = useState<DotStyle>("square");
   const [qrQuality, setQrQuality] = useState<QrQuality>("medium");
+  const [activeDesignTab, setActiveDesignTab] = useState<DesignTab>("shape");
 
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [logoShape, setLogoShape] = useState<"square" | "circle">("square");
@@ -219,9 +219,6 @@ export function QrGenerator() {
       ? 32
       : 9999;
 
-  const logoScalePercent =
-    logoScale === "small" ? 14 : logoScale === "large" ? 22 : 18;
-
   // ---------- live preview using qr-code-styling + canvas ----------
 
   useEffect(() => {
@@ -268,11 +265,12 @@ export function QrGenerator() {
           image: logoDataUrl || undefined,
           imageOptions: {
             hideBackgroundDots: removeLogoBg,
+            // Make S / M / L logo sizes clearly different
             imageSize:
               logoScale === "small"
-                ? 0.14
+                ? 0.12
                 : logoScale === "large"
-                ? 0.22
+                ? 0.28
                 : 0.18,
             crossOrigin: "anonymous",
           },
@@ -320,13 +318,11 @@ export function QrGenerator() {
           ctx.save();
 
           // Card background with rounded corners
-          drawRoundedRect(ctx, 0, 0, cardWidth, cardHeight, radius);
-          ctx.clip();
-
           ctx.fillStyle = "#f9fafb";
-          ctx.fillRect(0, 0, cardWidth, cardHeight);
+          drawRoundedRect(ctx, 0, 0, cardWidth, cardHeight, radius);
+          ctx.fill();
 
-          // Card border
+          // Card border (outer only – QR stays fully square inside)
           if (borderWidth > 0) {
             ctx.lineWidth = borderWidth * (qrSize / 512);
             ctx.strokeStyle = borderColor;
@@ -348,7 +344,7 @@ export function QrGenerator() {
             ctx.setLineDash([]);
           }
 
-          // QR image
+          // QR image (square, untouched by card shape)
           const qrX = padding;
           const qrY = padding;
           ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
@@ -362,14 +358,7 @@ export function QrGenerator() {
             const barRadius = 16 * (qrSize / 512);
 
             ctx.fillStyle = frameBgColor;
-            drawRoundedRect(
-              ctx,
-              qrX,
-              barY,
-              qrSize,
-              barHeight,
-              barRadius
-            );
+            drawRoundedRect(ctx, qrX, barY, qrSize, barHeight, barRadius);
             ctx.fill();
 
             ctx.fillStyle = frameTextColor;
@@ -385,21 +374,20 @@ export function QrGenerator() {
             ctx.fillText(text, textX, textY, maxWidth);
           }
 
-          // --- Kompi branding (always on for free SEO QR codes) ---
+          // --- Kompi branding (always on, anchored to QR bottom-right) ---
           const brandText = "kompi";
-          const brandFontSize = 22 * (qrSize / 512); // scales with quality
-          const brandPaddingX = padding;
-          const brandPaddingY = padding * 0.75;
+          const brandFontSize = 22 * (qrSize / 512);
+          const brandPaddingX = padding * 0.8;
+          const brandPaddingY = padding * 0.8;
 
-          ctx.fillStyle = "#4F46E5"; // Kompi brand-ish purple – tweak if needed
+          const brandX = qrX + qrSize - brandPaddingX;
+          const brandY = qrY + qrSize - brandPaddingY;
+
+          ctx.fillStyle = "#4F46E5";
           ctx.font = `600 ${brandFontSize}px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
           ctx.textAlign = "right";
           ctx.textBaseline = "bottom";
-          ctx.fillText(
-            brandText,
-            cardWidth - brandPaddingX,
-            cardHeight - brandPaddingY
-          );
+          ctx.fillText(brandText, brandX, brandY);
           // --------------------------------------------------------
 
           ctx.restore();
@@ -465,120 +453,116 @@ export function QrGenerator() {
   // ---------- UI ----------
 
   return (
-    <section className="bg-[var(--color-bg)] px-4 py-16">
+    <section className="bg-[#f5f3ee] px-4 py-16">
       <div className="mx-auto max-w-6xl space-y-8">
         {/* Hero */}
         <header className="space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">
-            Free QR codes that{" "}
-            <span className="relative inline-block">
-              <span className="font-['Instrument_Serif'] italic">
-                just work
-              </span>
-              <span className="absolute inset-x-0 -bottom-1 h-[2px] rounded-full bg-[var(--color-accent)]" />
-            </span>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Free QR code generator
+          </p>
+          <h1
+            className="text-[28px] font-semibold tracking-tight text-slate-950 sm:text-[32px]"
+            style={{ letterSpacing: "-0.04em" }}
+          >
+            Clean, custom QR codes
+            <br />
+            that just{" "}
+            <span className="wf-serif-accent italic">work.</span>
           </h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-[var(--color-subtle)]">
-            Paste a link or add text, customise the QR style and card, then
-            download a scan-ready PNG in seconds.
+          <p className="max-w-2xl text-sm leading-relaxed text-slate-600">
+            Paste a link or add content, style the QR card to match your brand,
+            then download a sharp PNG that&apos;s ready for menus, flyers,
+            packaging and more.
           </p>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-          {/* LEFT: controls */}
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-md)] lg:p-7">
-            {/* Content type selector */}
-            <div className="mb-6 space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-subtle)]">
-                  QR content type
-                </p>
-                <p className="text-[11px] text-[var(--color-subtle)]">
-                  What happens after{" "}
-                  <span className="font-medium text-[var(--color-text)]">
-                    the scan
-                  </span>
-                  .
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-                {qrTypes.map((type) => {
-                  const isActive = type.key === activeType;
-                  return (
-                    <button
-                      key={type.key}
-                      type="button"
-                      onClick={() => setActiveType(type.key)}
-                      className={[
-                        "flex flex-col items-start gap-1 rounded-[10px] border p-2 text-left transition-colors",
-                        isActive
-                          ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-text)]"
-                          : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-subtle)] hover:bg-[var(--color-bg)]",
-                      ].join(" ")}
-                    >
-                      <span className="text-base">
-                        {qrTypeIcons[type.key]}
-                      </span>
-                      <span className="text-xs font-medium">
-                        {type.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Step 1 – content */}
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[var(--color-bg)] text-[11px] font-medium text-[var(--color-text)]">
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2.1fr)]">
+          {/* LEFT: content + design */}
+          <div className="space-y-5">
+            {/* STEP 1 – CONTENT */}
+            <div className="rounded-[32px] border border-black/5 bg-white p-6 shadow-none lg:p-7">
+              <div className="mb-5 flex items-start gap-3">
+                <div className="flex h-7 w-7 items-center justify-center rounded-[11px] bg-slate-900 text-[11px] font-semibold text-white">
                   1
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-[var(--color-text)]">
-                    Complete the content
+                  <p className="text-sm font-semibold text-slate-950">
+                    Choose what your QR does
                   </p>
-                  <p className="text-xs text-[var(--color-subtle)]">
-                    This is what opens when someone scans your QR code.
+                  <p className="text-[11px] leading-relaxed text-slate-600">
+                    Pick a content type, then fill in the details. This is what
+                    opens when someone scans your QR code.
                   </p>
                 </div>
               </div>
 
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="space-y-6 text-sm"
-              >
-                {/* Per-type content fields */}
+              {/* Content type selector */}
+              <div className="space-y-3">
+                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">
+                  QR content
+                </p>
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                  {qrTypes.map((type) => {
+                    const isActive = type.key === activeType;
+                    return (
+                      <button
+                        key={type.key}
+                        type="button"
+                        onClick={() => setActiveType(type.key)}
+                        className={[
+                          "flex flex-col items-start gap-1 rounded-[14px] border px-2.5 py-2 text-left transition-colors",
+                          isActive
+                            ? "border-slate-900 bg-slate-900 text-slate-50 shadow-[0_2px_0_#000000]"
+                            : "border-black/10 bg-slate-50/70 text-slate-600 hover:bg-slate-100",
+                        ].join(" ")}
+                      >
+                        <span className="text-base">
+                          {qrTypeIcons[type.key]}
+                        </span>
+                        <span className="text-[11px] font-medium">
+                          {type.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Content fields */}
+              <div className="mt-6 space-y-4 text-sm">
                 {activeType === "url" && (
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-[var(--color-text)]">
-                      Enter your website
+                    <label className="block text-xs font-medium text-slate-900">
+                      Destination URL
                     </label>
                     <input
                       type="url"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       placeholder="https://your-restaurant.com/menu"
-                      className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                      className="w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                     />
-                    <p className="text-[11px] text-[var(--color-subtle)]">
-                      Use a full URL including{" "}
-                      <span className="font-mono text-[10px]">https://</span>.
+                    <p className="text-[11px] text-slate-500">
+                      Use the full link including{" "}
+                      <span className="font-mono text-[10px]">
+                        https://
+                      </span>
+                      .
                     </p>
                   </div>
                 )}
 
                 {activeType === "text" && (
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-[var(--color-text)]">
-                      Text to encode
+                    <label className="block text-xs font-medium text-slate-900">
+                      Text to show on scan
                     </label>
                     <textarea
                       rows={3}
                       value={textContent}
                       onChange={(e) => setTextContent(e.target.value)}
                       placeholder="Scan me to see this text…"
-                      className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                      className="w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                     />
                   </div>
                 )}
@@ -586,7 +570,7 @@ export function QrGenerator() {
                 {activeType === "email" && (
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-medium text-[var(--color-text)]">
+                      <label className="block text-xs font-medium text-slate-900">
                         Email address
                       </label>
                       <input
@@ -594,12 +578,12 @@ export function QrGenerator() {
                         value={emailAddress}
                         onChange={(e) => setEmailAddress(e.target.value)}
                         placeholder="you@example.com"
-                        className="mt-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                        className="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                       />
                     </div>
                     <div className="grid gap-3 md:grid-cols-2">
                       <div>
-                        <label className="block text-xs font-medium text-[var(--color-text)]">
+                        <label className="block text-xs font-medium text-slate-900">
                           Subject
                         </label>
                         <input
@@ -607,11 +591,11 @@ export function QrGenerator() {
                           value={emailSubject}
                           onChange={(e) => setEmailSubject(e.target.value)}
                           placeholder="Subject line"
-                          className="mt-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                          className="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-[var(--color-text)]">
+                        <label className="block text-xs font-medium text-slate-900">
                           Message
                         </label>
                         <input
@@ -619,7 +603,7 @@ export function QrGenerator() {
                           value={emailBody}
                           onChange={(e) => setEmailBody(e.target.value)}
                           placeholder="Thanks for reaching out…"
-                          className="mt-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                          className="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -628,7 +612,7 @@ export function QrGenerator() {
 
                 {activeType === "phone" && (
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-[var(--color-text)]">
+                    <label className="block text-xs font-medium text-slate-900">
                       Phone number
                     </label>
                     <input
@@ -636,14 +620,14 @@ export function QrGenerator() {
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="+1 555 123 4567"
-                      className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                      className="w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                     />
                   </div>
                 )}
 
                 {activeType === "sms" && (
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-[var(--color-text)]">
+                    <label className="block text-xs font-medium text-slate-900">
                       SMS details
                     </label>
                     <div className="grid gap-3 md:grid-cols-2">
@@ -652,14 +636,14 @@ export function QrGenerator() {
                         value={smsNumber}
                         onChange={(e) => setSmsNumber(e.target.value)}
                         placeholder="Number"
-                        className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                        className="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                       />
                       <input
                         type="text"
                         value={smsMessage}
                         onChange={(e) => setSmsMessage(e.target.value)}
                         placeholder="Message"
-                        className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                        className="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -669,7 +653,7 @@ export function QrGenerator() {
                   <div className="space-y-3">
                     <div className="grid gap-3 md:grid-cols-2">
                       <div>
-                        <label className="block text-xs font-medium text-[var(--color-text)]">
+                        <label className="block text-xs font-medium text-slate-900">
                           Network name (SSID)
                         </label>
                         <input
@@ -677,11 +661,11 @@ export function QrGenerator() {
                           value={wifiSsid}
                           onChange={(e) => setWifiSsid(e.target.value)}
                           placeholder="My Wi-Fi"
-                          className="mt-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                          className="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-[var(--color-text)]">
+                        <label className="block text-xs font-medium text-slate-900">
                           Password
                         </label>
                         <input
@@ -689,14 +673,13 @@ export function QrGenerator() {
                           value={wifiPassword}
                           onChange={(e) => setWifiPassword(e.target.value)}
                           placeholder="••••••••"
-                          className="mt-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none"
+                          className="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                         />
                       </div>
                     </div>
-
                     <div className="grid gap-3 md:grid-cols-2">
                       <div>
-                        <label className="block text-xs font-medium text-[var(--color-text)]">
+                        <label className="block text-xs font-medium text-slate-900">
                           Encryption
                         </label>
                         <select
@@ -706,84 +689,91 @@ export function QrGenerator() {
                               e.target.value as "WPA" | "WEP" | "nopass"
                             )
                           }
-                          className="mt-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs text-[var(--color-text)] focus:outline-none"
+                          className="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none"
                         >
                           <option value="WPA">WPA</option>
                           <option value="WEP">WEP</option>
                           <option value="nopass">No password</option>
                         </select>
                       </div>
-                      <p className="self-end text-[11px] text-[var(--color-subtle)]">
-                        We embed the Wi-Fi details in the QR. Your password
-                        never leaves this page.
+                      <p className="self-end text-[11px] leading-relaxed text-slate-500">
+                        Wi-Fi details are encoded directly in the QR. They never
+                        leave this page.
                       </p>
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
 
-                {/* DESIGN PANEL */}
-                <div className="space-y-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[var(--color-surface)] text-[11px] font-medium text-[var(--color-text)]">
-                        2
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium text-[var(--color-text)]">
-                          Design your QR code
-                        </p>
-                        <p className="text-[11px] text-[var(--color-subtle)]">
-                          Tweak dot style, card and centre logo for a clean,
-                          scannable result.
-                        </p>
-                      </div>
-                    </div>
-                    {loading && canGenerate && (
-                      <span className="text-[11px] text-[var(--color-subtle)]">
-                        Updating preview…
-                      </span>
-                    )}
+            {/* STEP 2 – DESIGN */}
+            <div className="rounded-[32px] border border-black/5 bg-white p-6 shadow-none lg:p-7">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-[11px] bg-slate-900 text-[11px] font-semibold text-white">
+                    2
                   </div>
-
-                  {/* Hint tabs */}
-                  <div className="flex flex-wrap gap-2 text-[11px]">
-                    <button
-                      type="button"
-                      className="rounded-[999px] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-[var(--color-subtle)]"
-                    >
-                      Frame
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-[999px] border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-3 py-1 text-[11px] font-medium text-[var(--color-text)]"
-                    >
-                      Shape
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-[999px] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-[var(--color-subtle)]"
-                    >
-                      Logo
-                    </button>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-slate-950">
+                      Design your QR card
+                    </p>
+                    <p className="text-[11px] leading-relaxed text-slate-600">
+                      Adjust the dot style, colours, frame and logo so it feels
+                      on-brand but still easy to scan.
+                    </p>
                   </div>
+                </div>
+                {loading && canGenerate && (
+                  <span className="text-[11px] text-slate-500">
+                    Updating preview…
+                  </span>
+                )}
+              </div>
 
-                  {/* Shape & color – with dot style */}
-                  <section className="space-y-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-semibold text-[var(--color-text)]">
-                        Shape &amp; color
-                      </p>
-                      <p className="text-[11px] text-[var(--color-subtle)]">
-                        Dot style changes the QR pattern – keep contrast high.
-                      </p>
-                    </div>
+              {/* Tabs */}
+              <div className="mb-4 inline-flex rounded-full bg-slate-100 p-1 text-[11px]">
+                {[
+                  { key: "shape", label: "Shape & colour" },
+                  { key: "frame", label: "Frame & label" },
+                  { key: "logo", label: "Center logo" },
+                ].map((tab) => {
+                  const isActive = activeDesignTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() =>
+                        setActiveDesignTab(tab.key as DesignTab)
+                      }
+                      className={[
+                        "rounded-full px-3 py-1.5 font-medium transition",
+                        isActive
+                          ? "bg-white text-slate-950 shadow-none"
+                          : "text-slate-500",
+                      ].join(" ")}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
 
-                    {/* Dot style row */}
-                    <div className="space-y-2">
-                      <p className="text-[11px] font-medium text-[var(--color-text)]">
-                        Dot style
-                      </p>
-                      <div className="flex flex-wrap gap-2">
+              <div className="space-y-4">
+                {/* TAB: SHAPE & COLOUR */}
+                {activeDesignTab === "shape" && (
+                  <div className="space-y-4">
+                    {/* Dot style */}
+                    <section className="space-y-3 rounded-2xl border border-black/5 bg-slate-50/70 p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-slate-950">
+                          Dot style
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          Keep strong contrast between foreground and
+                          background.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-[11px]">
                         {(
                           [
                             { key: "square", label: "Square" },
@@ -801,69 +791,72 @@ export function QrGenerator() {
                               type="button"
                               onClick={() => setDotStyle(opt.key)}
                               className={[
-                                "flex items-center gap-2 rounded-[999px] border px-3 py-1.5 text-[11px] transition-colors",
+                                "flex items-center gap-2 rounded-full border px-3 py-1.5 transition-colors",
                                 isActive
-                                  ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-text)]"
-                                  : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-subtle)] hover:bg-[var(--color-bg)]",
+                                  ? "border-slate-900 bg-slate-900 text-slate-50"
+                                  : "border-black/10 bg-white text-slate-600 hover:bg-slate-100",
                               ].join(" ")}
                             >
-                              <span className="flex h-5 w-5 items-center justify-center rounded-[999px] border border-[var(--color-border)] bg-[var(--color-bg)]">
-                                <span
-                                  className={[
-                                    "block h-3 w-3 bg-[var(--color-text)]",
-                                    opt.key === "square" && "rounded-[2px]",
-                                    opt.key === "rounded" && "rounded-[6px]",
-                                    opt.key === "circle" && "rounded-full",
-                                    opt.key === "diamond" &&
-                                      "rotate-45 rounded-[2px]",
-                                    opt.key === "star" &&
-                                      "clip-path-[polygon(50%_0%,61%_35%,98%_35%,68%_57%,79%_91%,50%_70%,21%_91%,32%_57%,2%_35%,39%_35%)]",
-                                    opt.key === "plus" &&
-                                      "bg-transparent before:block before:h-3 before:w-[1px] before:bg-[var(--color-text)] before:content-[''] after:block after:h-[1px] after:w-3 after:bg-[var(--color-text)] after:content-['']",
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" ")}
-                                />
+                              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-black/10 bg-slate-100">
+                                <span className="block h-3 w-3 rounded-[3px] bg-slate-900" />
                               </span>
                               {opt.label}
                             </button>
                           );
                         })}
                       </div>
-                    </div>
+                    </section>
 
-                    {/* Colors */}
-                    <div className="grid gap-4 text-[11px] md:grid-cols-3">
-                      <div className="space-y-2">
-                        <p className="text-[var(--color-subtle)]">Foreground</p>
+                    {/* Colours + quiet zone */}
+                    <section className="grid gap-4 text-[11px] md:grid-cols-3">
+                      <div className="space-y-2 rounded-2xl border border-black/5 bg-white p-3">
+                        <p className="text-[11px] font-medium text-slate-700">
+                          Foreground
+                        </p>
                         <div className="flex items-center gap-3">
-                          <input
-                            type="color"
-                            value={fgColor}
-                            onChange={(e) => setFgColor(e.target.value)}
-                            className="h-8 w-12 cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]"
-                          />
-                          <span className="text-[var(--color-subtle)]">
+                          <label className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center">
+                            <span
+                              className="block h-6 w-6 rounded-full border border-black/10"
+                              style={{ backgroundColor: fgColor }}
+                            />
+                            <input
+                              type="color"
+                              value={fgColor}
+                              onChange={(e) => setFgColor(e.target.value)}
+                              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                            />
+                          </label>
+                          <span className="text-slate-500">
                             Dark modules
                           </span>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-[var(--color-subtle)]">Background</p>
+                      <div className="space-y-2 rounded-2xl border border-black/5 bg-white p-3">
+                        <p className="text-[11px] font-medium text-slate-700">
+                          Background
+                        </p>
                         <div className="flex items-center gap-3">
-                          <input
-                            type="color"
-                            value={bgColor}
-                            onChange={(e) => setBgColor(e.target.value)}
-                            className="h-8 w-12 cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]"
-                          />
-                          <span className="text-[var(--color-subtle)]">
+                          <label className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center">
+                            <span
+                              className="block h-6 w-6 rounded-full border border-black/10"
+                              style={{ backgroundColor: bgColor }}
+                            />
+                            <input
+                              type="color"
+                              value={bgColor}
+                              onChange={(e) => setBgColor(e.target.value)}
+                              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                            />
+                          </label>
+                          <span className="text-slate-500">
                             Behind QR
                           </span>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-[var(--color-subtle)]">Quiet zone</p>
+                      <div className="space-y-2 rounded-2xl border border-black/5 bg-white p-3">
+                        <p className="text-[11px] font-medium text-slate-700">
+                          Quiet zone
+                        </p>
                         <div className="flex items-center gap-3">
                           <input
                             type="range"
@@ -874,43 +867,56 @@ export function QrGenerator() {
                             onChange={(e) =>
                               setMargin(Number(e.target.value))
                             }
-                            className="flex-1 accent-[var(--color-accent)]"
+                            className="flex-1"
                           />
-                          <span className="w-5 text-right text-[var(--color-subtle)]">
+                          <span className="w-5 text-right text-slate-500">
                             {margin}
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </section>
 
-                    {/* Output size / download quality */}
-                    <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-3 py-3">
+                    {/* Quality */}
+                    <section className="space-y-2 rounded-2xl border border-black/5 bg-slate-50/80 p-3">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-[11px] font-semibold text-[var(--color-text)]">
+                        <p className="text-[11px] font-semibold text-slate-900">
                           Download quality
                         </p>
-                        <span className="rounded-full bg-[var(--color-text)] px-2 py-[2px] text-[9px] font-medium tracking-wide text-[var(--color-surface)]">
+                        <span className="rounded-full bg-slate-900 px-2 py-[2px] text-[9px] font-medium tracking-wide text-slate-50">
                           PNG size
                         </span>
                       </div>
-
                       <div className="flex flex-wrap gap-2 text-[11px]">
                         {[
-                          { key: "low", label: "Low", detail: "512px • quick share" },
-                          { key: "medium", label: "Medium", detail: "1024px • default" },
-                          { key: "high", label: "High", detail: "2048px • print-ready" },
+                          {
+                            key: "low",
+                            label: "Low",
+                            detail: "512px • quick share",
+                          },
+                          {
+                            key: "medium",
+                            label: "Medium",
+                            detail: "1024px • default",
+                          },
+                          {
+                            key: "high",
+                            label: "High",
+                            detail: "2048px • print",
+                          },
                         ].map((opt) => {
                           const isActive = qrQuality === opt.key;
                           return (
                             <button
                               key={opt.key}
                               type="button"
-                              onClick={() => setQrQuality(opt.key as QrQuality)}
+                              onClick={() =>
+                                setQrQuality(opt.key as QrQuality)
+                              }
                               className={[
-                                "flex flex-col items-start gap-[2px] rounded-[999px] border px-3 py-1.5 text-left transition-colors",
+                                "flex flex-col items-start gap-[2px] rounded-full border px-3 py-1.5 text-left transition-colors",
                                 isActive
-                                  ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-surface)]"
-                                  : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-subtle)] hover:bg-[var(--color-bg)]",
+                                  ? "border-slate-900 bg-slate-900 text-slate-50"
+                                  : "border-black/10 bg-white text-slate-600 hover:bg-slate-100",
                               ].join(" ")}
                             >
                               <span className="text-[11px] font-semibold">
@@ -923,274 +929,173 @@ export function QrGenerator() {
                           );
                         })}
                       </div>
-
-                      <p className="text-[10px] text-[var(--color-subtle)]">
-                        “High” gives you a big, sharp PNG that’s good enough for print.
+                      <p className="text-[10px] text-slate-500">
+                        “High” is best for printed menus, posters and packaging.
                       </p>
-                    </div>
-                  </section>
+                    </section>
+                  </div>
+                )}
 
-                  {/* Card & border */}
-                  <section className="space-y-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-                    <p className="text-xs font-semibold text-[var(--color-text)]">
-                      Card &amp; border
-                    </p>
-                    <div className="grid gap-4 text-[11px] md:grid-cols-3">
-                      <div className="space-y-2">
-                        <p className="text-[var(--color-subtle)]">Card shape</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          {[
-                            { key: "square", label: "Square" },
-                            { key: "rounded", label: "Rounded" },
-                            { key: "pill", label: "Soft" },
-                          ].map((opt) => {
-                            const isActive = borderRadiusStyle === opt.key;
-                            return (
-                              <button
-                                key={opt.key}
-                                type="button"
-                                onClick={() =>
-                                  setBorderRadiusStyle(
-                                    opt.key as "square" | "rounded" | "pill"
-                                  )
-                                }
-                                className={[
-                                  "flex flex-col items-center gap-1 rounded-[10px] border px-2 py-1.5 text-[10px] transition-colors",
-                                  isActive
-                                    ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-text)]"
-                                    : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-subtle)] hover:bg-[var(--color-bg)]",
-                                ].join(" ")}
-                              >
-                                <div className="flex h-6 w-9 items-center justify-center rounded-[6px] border border-[var(--color-border)] bg-[var(--color-bg)]">
-                                  <div
-                                    className={[
-                                      "h-3 w-6 border border-[var(--color-text)] bg-[var(--color-surface)]",
-                                      opt.key === "square"
-                                        ? "rounded-[4px]"
-                                        : opt.key === "rounded"
-                                        ? "rounded-[10px]"
-                                        : "rounded-[999px]",
-                                    ].join(" ")}
-                                  />
-                                </div>
-                                {opt.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <p className="text-[var(--color-subtle)]">
-                          Border + width
-                        </p>
+                {/* TAB: FRAME & LABEL */}
+                {activeDesignTab === "frame" && (
+                  <div className="space-y-4">
+                    {/* Card shape & border */}
+                    <section className="space-y-3 rounded-2xl border border-black/5 bg-slate-50/70 p-4">
+                      <p className="text-xs font-semibold text-slate-950">
+                        Card shape & border
+                      </p>
+                      <div className="grid gap-4 text-[11px] md:grid-cols-3">
                         <div className="space-y-2">
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="color"
-                              value={borderColor}
-                              onChange={(e) => setBorderColor(e.target.value)}
-                              className="h-8 w-12 cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]"
-                            />
-                            <span className="text-[var(--color-subtle)]">
-                              Card border
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="range"
-                              min={0}
-                              max={16}
-                              step={1}
-                              value={borderWidth}
-                              onChange={(e) =>
-                                setBorderWidth(Number(e.target.value))
-                              }
-                              className="flex-1 accent-[var(--color-accent)]"
-                            />
-                            <span className="w-5 text-right text-[var(--color-subtle)]">
-                              {borderWidth}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <p className="text-[var(--color-subtle)]">
-                          Border style
-                        </p>
-                        <select
-                          value={borderStyle}
-                          onChange={(e) =>
-                            setBorderStyle(e.target.value as "solid" | "dashed")
-                          }
-                          className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs text-[var(--color-text)] focus:outline-none"
-                        >
-                          <option value="solid">Solid</option>
-                          <option value="dashed">Dashed</option>
-                        </select>
-                        <div className="mt-1 flex items-center gap-2">
-                          <span
-                            className={[
-                              "h-[1px] flex-1 border-t border-[var(--color-text)]",
-                              borderStyle === "dashed" ? "border-dashed" : "",
-                            ].join(" ")}
-                          />
-                          <span className="text-[10px] text-[var(--color-subtle)]">
-                            Preview
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Center logo & frame */}
-                  <section className="grid gap-4 text-[11px] md:grid-cols-2">
-                    {/* Center logo & shape */}
-                    <div className="space-y-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-                      <p className="text-xs font-semibold text-[var(--color-text)]">
-                        Center logo &amp; shape
-                      </p>
-
-                      {/* Upload */}
-                      <div className="space-y-2">
-                        <label className="text-[11px] text-[var(--color-subtle)]">
-                          Upload logo
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleLogoUpload}
-                          className="w-full text-[11px] text-[var(--color-subtle)] file:mr-2 file:cursor-pointer file:rounded-[var(--radius-md)] file:border file:border-[var(--color-border)] file:bg-[var(--color-surface)] file:px-3 file:py-1.5 file:text-[11px] file:font-medium file:text-[var(--color-text)]"
-                        />
-                      </div>
-
-                      {/* Shape & size row */}
-                      <div className="flex flex-wrap justify-between gap-6">
-                        {/* Shape column */}
-                        <div className="min-w-[120px] flex-1 space-y-2">
-                          <p className="text-[11px] font-medium text-[var(--color-text)]">
-                            Shape
-                          </p>
-                          <div className="inline-flex gap-2">
-                            {["square", "circle"].map((shape) => {
-                              const isActive = logoShape === shape;
+                          <p className="text-slate-500">Card shape</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { key: "square", label: "Square" },
+                              { key: "rounded", label: "Rounded" },
+                              { key: "pill", label: "Soft" },
+                            ].map((opt) => {
+                              const isActive =
+                                borderRadiusStyle === opt.key;
                               return (
                                 <button
-                                  key={shape}
+                                  key={opt.key}
                                   type="button"
                                   onClick={() =>
-                                    setLogoShape(shape as "square" | "circle")
+                                    setBorderRadiusStyle(
+                                      opt.key as
+                                        | "square"
+                                        | "rounded"
+                                        | "pill"
+                                    )
                                   }
                                   className={[
-                                    "rounded-[999px] border px-4 py-1.5 text-[11px] capitalize transition-colors",
+                                    "flex flex-col items-center gap-1 rounded-2xl border px-2 py-1.5 text-[10px] transition-colors",
                                     isActive
-                                      ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-text)]"
-                                      : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-subtle)] hover:bg-[var(--color-bg)]",
+                                      ? "border-slate-900 bg-slate-900 text-slate-50"
+                                      : "border-black/10 bg-white text-slate-600 hover:bg-slate-100",
                                   ].join(" ")}
                                 >
-                                  {shape}
+                                  <div className="flex h-6 w-9 items-center justify-center rounded-xl border border-black/10 bg-slate-100">
+                                    <div
+                                      className={[
+                                        "h-3 w-6 border border-slate-900 bg-white",
+                                        opt.key === "square"
+                                          ? "rounded-[4px]"
+                                          : opt.key === "rounded"
+                                          ? "rounded-[10px]"
+                                          : "rounded-full",
+                                      ].join(" ")}
+                                    />
+                                  </div>
+                                  {opt.label}
                                 </button>
                               );
                             })}
                           </div>
                         </div>
 
-                        {/* Size column */}
-                        <div className="min-w-[140px] flex-1 space-y-2">
-                          <p className="text-[11px] font-medium text-[var(--color-text)]">
-                            Size
+                        <div className="space-y-2">
+                          <p className="text-slate-500">
+                            Border & width
                           </p>
-                          <div className="inline-flex gap-2">
-                            {(["small", "medium", "large"] as LogoScale[]).map(
-                              (size) => {
-                                const isActive = logoScale === size;
-                                return (
-                                  <button
-                                    key={size}
-                                    type="button"
-                                    onClick={() => setLogoScale(size)}
-                                    className={[
-                                      "rounded-[999px] border px-4 py-1.5 text-[11px] capitalize transition-colors",
-                                      isActive
-                                        ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-text)]"
-                                        : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-subtle)] hover:bg-[var(--color-bg)]",
-                                    ].join(" ")}
-                                  >
-                                    {size}
-                                  </button>
-                                );
-                              }
-                            )}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <label className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center">
+                                <span
+                                  className="block h-6 w-6 rounded-full border border-black/10"
+                                  style={{ backgroundColor: borderColor }}
+                                />
+                                <input
+                                  type="color"
+                                  value={borderColor}
+                                  onChange={(e) =>
+                                    setBorderColor(e.target.value)
+                                  }
+                                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                />
+                              </label>
+                              <span className="text-slate-500">
+                                Card border
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min={0}
+                                max={16}
+                                step={1}
+                                value={borderWidth}
+                                onChange={(e) =>
+                                  setBorderWidth(
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="flex-1"
+                              />
+                              <span className="w-5 text-right text-slate-500">
+                                {borderWidth}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <p className="text-slate-500">Border style</p>
+                          <select
+                            value={borderStyle}
+                            onChange={(e) =>
+                              setBorderStyle(
+                                e.target.value as "solid" | "dashed"
+                              )
+                            }
+                            className="w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none"
+                          >
+                            <option value="solid">Solid</option>
+                            <option value="dashed">Dashed</option>
+                          </select>
+                          <div className="mt-1 flex items-center gap-2">
+                            <span
+                              className={[
+                                "h-px flex-1 border-t border-slate-900",
+                                borderStyle === "dashed"
+                                  ? "border-dashed"
+                                  : "",
+                              ].join(" ")}
+                            />
+                            <span className="text-[10px] text-slate-500">
+                              Preview
+                            </span>
                           </div>
                         </div>
                       </div>
+                    </section>
 
-                      <p className="text-[11px] text-[var(--color-subtle)]">
-                        Use a simple mark and avoid covering too much of the
-                        center.
-                      </p>
-
-                      <div className="flex items-center justify-between gap-2 pt-1">
-                        <p className="text-[11px] text-[var(--color-subtle)]">
-                          Remove background behind logo
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => setRemoveLogoBg((v) => !v)}
-                          className={[
-                            "inline-flex items-center gap-2 rounded-[999px] border px-2 py-1 text-[10px] transition-colors",
-                            removeLogoBg
-                              ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-text)]"
-                              : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-subtle)]",
-                          ].join(" ")}
-                        >
-                          <span
-                            className={[
-                              "relative flex h-4 w-7 items-center rounded-[999px] border border-[var(--color-border)] bg-[var(--color-bg)] transition-colors",
-                              removeLogoBg && "border-[var(--color-accent)]",
-                            ].join(" ")}
-                          >
-                            <span
-                              className={[
-                                "absolute h-3 w-3 translate-x-[2px] rounded-full bg-[var(--color-subtle)] transition-transform",
-                                removeLogoBg &&
-                                  "translate-x-[14px] bg-[var(--color-accent)]",
-                              ].join(" ")}
-                            />
-                          </span>
-                          {removeLogoBg ? "On" : "Off"}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Frame label with on/off toggle */}
-                    <div className="space-y-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+                    {/* Frame label */}
+                    <section className="space-y-3 rounded-2xl border border-black/5 bg-white p-4">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold text-[var(--color-text)]">
+                        <p className="text-xs font-semibold text-slate-950">
                           Frame label
                         </p>
                         <button
                           type="button"
                           onClick={() => setShowFrame((v) => !v)}
                           className={[
-                            "inline-flex items-center gap-2 rounded-[999px] border px-2 py-1 text-[10px] transition-colors",
+                            "inline-flex items-center gap-2 rounded-full border px-2 py-1 text-[10px] transition-colors",
                             showFrame
-                              ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-text)]"
-                              : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-subtle)]",
+                              ? "border-slate-900 bg-slate-900 text-slate-50"
+                              : "border-black/10 bg-slate-50 text-slate-600",
                           ].join(" ")}
                         >
                           <span
                             className={[
-                              "relative flex h-4 w-7 items-center rounded-[999px] border border-[var(--color-border)] bg-[var(--color-bg)] transition-colors",
-                              showFrame && "border-[var(--color-accent)]",
+                              "relative flex h-4 w-7 items-center rounded-full border border-black/20 bg-slate-100 transition-colors",
+                              showFrame && "border-slate-900",
                             ].join(" ")}
                           >
                             <span
                               className={[
-                                "absolute h-3 w-3 translate-x-[2px] rounded-full bg-[var(--color-subtle)] transition-transform",
+                                "absolute h-3 w-3 translate-x-[2px] rounded-full bg-slate-400 transition-transform",
                                 showFrame &&
-                                  "translate-x-[14px] bg-[var(--color-accent)]",
+                                  "translate-x-[14px] bg-slate-50",
                               ].join(" ")}
                             />
                           </span>
@@ -1205,136 +1110,249 @@ export function QrGenerator() {
                         ].join(" ")}
                       >
                         <div className="space-y-2">
-                          <label className="text-[11px] text-[var(--color-subtle)]">
+                          <label className="text-[11px] text-slate-600">
                             Text
                           </label>
                           <input
                             type="text"
                             value={frameText}
-                            onChange={(e) => setFrameText(e.target.value)}
+                            onChange={(e) =>
+                              setFrameText(e.target.value)
+                            }
                             placeholder="Scan me"
                             disabled={!showFrame}
-                            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] focus:outline-none disabled:cursor-not-allowed"
+                            className="w-full rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none disabled:cursor-not-allowed"
                           />
                         </div>
                         <div className="grid gap-3 md:grid-cols-2">
                           <div className="space-y-2">
-                            <label className="block text-[11px] text-[var(--color-subtle)]">
-                              Frame bg
+                            <label className="block text-[11px] text-slate-600">
+                              Frame background
                             </label>
-                            <input
-                              type="color"
-                              value={frameBgColor}
-                              onChange={(e) =>
-                                setFrameBgColor(e.target.value)
-                              }
-                              disabled={!showFrame}
-                              className="h-8 w-12 cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] disabled:cursor-not-allowed"
-                            />
+                            <label className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center">
+                              <span
+                                className="block h-6 w-6 rounded-full border border-black/10"
+                                style={{ backgroundColor: frameBgColor }}
+                              />
+                              <input
+                                type="color"
+                                value={frameBgColor}
+                                onChange={(e) =>
+                                  setFrameBgColor(e.target.value)
+                                }
+                                disabled={!showFrame}
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+                              />
+                            </label>
                           </div>
                           <div className="space-y-2">
-                            <label className="block text-[11px] text-[var(--color-subtle)]">
-                              Text color
+                            <label className="block text-[11px] text-slate-600">
+                              Text colour
                             </label>
-                            <input
-                              type="color"
-                              value={frameTextColor}
-                              onChange={(e) =>
-                                setFrameTextColor(e.target.value)
-                              }
-                              disabled={!showFrame}
-                              className="h-8 w-12 cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] disabled:cursor-not-allowed"
-                            />
+                            <label className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center">
+                              <span
+                                className="block h-6 w-6 rounded-full border border-black/10"
+                                style={{ backgroundColor: frameTextColor }}
+                              />
+                              <input
+                                type="color"
+                                value={frameTextColor}
+                                onChange={(e) =>
+                                  setFrameTextColor(e.target.value)
+                                }
+                                disabled={!showFrame}
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+                              />
+                            </label>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </section>
-                </div>
+                    </section>
+                  </div>
+                )}
 
-                {/* Upsell */}
-                <div className="mt-4 flex items-start gap-3 rounded-[var(--radius-md)] border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-3 py-3 text-[11px] text-[var(--color-text)]">
-                  <span className="mt-[2px] inline-flex h-5 min-w-[38px] items-center justify-center rounded-[10px] bg-[var(--color-accent)] text-[10px] font-semibold uppercase tracking-[0.16em]">
-                    Pro
-                  </span>
-                  <span>
-                    Want dynamic QR codes you can edit later and track?{" "}
-                    <a
-                      href="/signin"
-                      className="font-medium underline underline-offset-2"
-                    >
-                      Create a free Kompi account
-                    </a>
-                    .
-                  </span>
-                </div>
-              </form>
+                {/* TAB: LOGO */}
+                {activeDesignTab === "logo" && (
+                  <div className="space-y-4">
+                    <section className="space-y-3 rounded-2xl border border-black/5 bg-white p-4">
+                      <p className="text-xs font-semibold text-slate-950">
+                        Center logo
+                      </p>
+
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-600">
+                          Upload logo
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="w-full text-[11px] text-slate-500 file:mr-2 file:cursor-pointer file:rounded-xl file:border file:border-black/10 file:bg-white file:px-3 file:py-1.5 file:text-[11px] file:font-medium file:text-slate-900"
+                        />
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap justify-between gap-6">
+                        <div className="min-w-[120px] flex-1 space-y-2">
+                          <p className="text-[11px] font-medium text-slate-800">
+                            Shape
+                          </p>
+                          <div className="inline-flex gap-2">
+                            {["square", "circle"].map((shape) => {
+                              const isActive = logoShape === shape;
+                              return (
+                                <button
+                                  key={shape}
+                                  type="button"
+                                  onClick={() =>
+                                    setLogoShape(
+                                      shape as "square" | "circle"
+                                    )
+                                  }
+                                  className={[
+                                    "rounded-full border px-4 py-1.5 text-[11px] capitalize transition-colors",
+                                    isActive
+                                      ? "border-slate-900 bg-slate-900 text-slate-50"
+                                      : "border-black/10 bg-slate-50 text-slate-600 hover:bg-slate-100",
+                                  ].join(" ")}
+                                >
+                                  {shape}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="min-w-[140px] flex-1 space-y-2">
+                          <p className="text-[11px] font-medium text-slate-800">
+                            Size
+                          </p>
+                          <div className="inline-flex gap-2">
+                            {(
+                              ["small", "medium", "large"] as LogoScale[]
+                            ).map((size) => {
+                              const isActive = logoScale === size;
+                              return (
+                                <button
+                                  key={size}
+                                  type="button"
+                                  onClick={() => setLogoScale(size)}
+                                  className={[
+                                    "rounded-full border px-4 py-1.5 text-[11px] capitalize transition-colors",
+                                    isActive
+                                      ? "border-slate-900 bg-slate-900 text-slate-50"
+                                      : "border-black/10 bg-slate-50 text-slate-600 hover:bg-slate-100",
+                                  ].join(" ")}
+                                >
+                                  {size}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="mt-3 text-[11px] text-slate-500">
+                        Use a simple logo with good contrast. Avoid covering too
+                        much of the centre area.
+                      </p>
+
+                      <div className="mt-3 flex items-center justify-between gap-2 pt-1">
+                        <p className="text-[11px] text-slate-600">
+                          Remove background behind logo
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setRemoveLogoBg((v) => !v)}
+                          className={[
+                            "inline-flex items-center gap-2 rounded-full border px-2 py-1 text-[10px] transition-colors",
+                            removeLogoBg
+                              ? "border-slate-900 bg-slate-900 text-slate-50"
+                              : "border-black/10 bg-slate-50 text-slate-600",
+                          ].join(" ")}
+                        >
+                          <span
+                            className={[
+                              "relative flex h-4 w-7 items-center rounded-full border border-black/20 bg-slate-100 transition-colors",
+                              removeLogoBg && "border-slate-900",
+                            ].join(" ")}
+                          >
+                            <span
+                              className={[
+                                "absolute h-3 w-3 translate-x-[2px] rounded-full bg-slate-400 transition-transform",
+                                removeLogoBg &&
+                                  "translate-x-[14px] bg-slate-50",
+                              ].join(" ")}
+                            />
+                          </span>
+                          {removeLogoBg ? "On" : "Off"}
+                        </button>
+                      </div>
+                    </section>
+                  </div>
+                )}
+              </div>
+
+              {/* Upsell */}
+              <div className="mt-5 flex items-start gap-3 rounded-2xl border border-black/10 bg-slate-50 px-3.5 py-3 text-[11px] text-slate-800">
+                <span className="mt-[2px] inline-flex h-5 min-w-[40px] items-center justify-center rounded-[12px] bg-slate-900 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-50">
+                  Pro
+                </span>
+                <span>
+                  Want dynamic QR codes you can edit later and track?{" "}
+                  <a
+                    href="/signin"
+                    className="font-medium underline underline-offset-2"
+                  >
+                    Create a free Kompi account
+                  </a>
+                  .
+                </span>
+              </div>
             </div>
           </div>
 
           {/* RIGHT: preview / step 3 */}
-          <aside className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-md)] lg:p-7 lg:sticky lg:top-24 lg:self-start">
-            <div className="mb-4 flex items-start justify-between gap-4">
+          <aside className="rounded-[32px] border border-black/5 bg-white/95 p-6 shadow-[0_14px_40px_rgba(15,23,42,0.24)] lg:sticky lg:top-24 lg:self-start lg:p-7">
+            <div className="mb-4 flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[var(--color-bg)] text-[11px] font-medium text-[var(--color-text)]">
+                <div className="flex h-7 w-7 items-center justify-center rounded-[11px] bg-slate-900 text-[11px] font-semibold text-white">
                   3
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-[var(--color-text)]">
+                  <p className="text-sm font-semibold text-slate-950">
                     Download QR code
                   </p>
-                  <p className="text-[11px] text-[var(--color-subtle)]">
-                    This is exactly what your visitors will scan.
+                  <p className="text-[11px] leading-relaxed text-slate-600">
+                    This is exactly what people will scan from menus, posters
+                    and cards.
                   </p>
                 </div>
               </div>
               {canGenerate && (
-                <span className="rounded-[10px] bg-[var(--color-accent-soft)] px-3 py-1 text-[10px] font-medium text-[var(--color-text)]">
-                  Live preview ·{" "}
-                  {qrQuality === "low"
-                    ? "low-res PNG"
-                    : qrQuality === "medium"
-                    ? "medium PNG"
-                    : "high-res PNG"}
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-medium text-slate-700">
+                  Live preview
                 </span>
               )}
             </div>
 
-            <div className="flex items-center justify-center bg-[var(--color-bg)] p-4">
+            {/* Apple Wallet–style flat preview */}
+            <div className="flex items-center justify-center rounded-[24px] bg-[#f5f3ee] p-6">
               {hasQr ? (
-                <div
-                  className="flex h-56 w-56 items-center justify-center"
-                  style={{
-                    borderRadius: previewBorderRadius,
-                    borderWidth,
-                    borderStyle,
-                    borderColor,
-                  }}
-                >
-                  <img
-                    src={qrDataUrl ?? ""}
-                    alt="Generated QR code"
-                    className="h-full w-full rounded-[24px]"
-                  />
-                </div>
+                <img
+                  src={qrDataUrl ?? ""}
+                  alt="Generated QR code"
+                  className="h-56 w-56 rounded-[24px] object-contain shadow-[0_8px_18px_rgba(15,23,42,0.25)]"
+                />
               ) : (
-                <div
-                  className="flex h-56 w-56 items-center justify-center text-[11px] text-[var(--color-subtle)]"
-                  style={{
-                    borderRadius: previewBorderRadius,
-                    borderWidth,
-                    borderStyle,
-                    borderColor,
-                  }}
-                >
-                  Add content on the left to generate your QR.
+                <div className="flex h-56 w-56 items-center justify-center rounded-[24px] bg-white text-center text-[11px] leading-relaxed text-slate-500">
+                  Add content on the left to generate a live QR preview.
                 </div>
               )}
             </div>
 
             {showFrame && frameText && (
               <div
-                className="mt-3 rounded-[var(--radius-md)] px-4 py-1.5 text-center text-[11px] font-medium"
+                className="mt-3 rounded-full px-4 py-1.5 text-center text-[11px] font-medium"
                 style={{
                   backgroundColor: frameBgColor,
                   color: frameTextColor,
@@ -1348,23 +1366,23 @@ export function QrGenerator() {
               <button
                 onClick={handleDownload}
                 disabled={!hasQr}
-                className="flex-1 rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 font-medium text-[var(--color-text)] shadow-[var(--shadow-sm)] disabled:opacity-40"
+                className="flex-1 rounded-full bg-slate-950 px-4 py-2 font-medium text-slate-50 shadow-[0_2px_0_#000000] transition hover:bg-black disabled:opacity-40 disabled:shadow-none"
               >
                 ⬇️ Download PNG
               </button>
               <button
                 onClick={handleCopyValue}
                 disabled={!canGenerate}
-                className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-transparent px-4 py-2 font-medium text-[var(--color-text)] hover:bg-[var(--color-bg)] disabled:opacity-40"
+                className="flex-1 rounded-full border border-black/10 bg-white px-4 py-2 font-medium text-slate-900 hover:bg-slate-50 disabled:opacity-40"
               >
                 🔗 Copy encoded value
               </button>
             </div>
 
-            <p className="mt-3 text-[11px] text-[var(--color-subtle)]">
-              {canGenerate
-                ? "Static PNG. Your QR will keep working as long as the underlying content is valid."
-                : "Once you add content, we’ll create a static PNG QR code you can use anywhere."}
+            <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+              Static PNG QR codes never expire — they keep working as long as
+              the destination is valid. For editable, trackable QR codes, plug a
+              Kompi short link in behind the scenes.
             </p>
           </aside>
         </div>

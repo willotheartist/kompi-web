@@ -1,6 +1,7 @@
 // src/app/qr-code-generator/page.tsx
 
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import { QrGenerator } from "@/components/qr-code-generator/QrGenerator";
@@ -26,6 +27,23 @@ export const metadata: Metadata = {
       "Create custom QR codes online in seconds. Free generator with advanced options, plus Kompi’s link tracking, bio pages and QR tools when you’re ready.",
   },
 };
+
+// Shared layout shell for cards
+type SectionShellProps = {
+  children: ReactNode;
+  className?: string;
+  id?: string;
+};
+
+const SectionShell = ({ children, className = "", id }: SectionShellProps) => (
+  <section id={id} className={`px-4 py-12 ${className}`}>
+    <div className="mx-auto max-w-6xl">
+      <div className="rounded-3xl border border-black/5 bg-white/80 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.10)] md:p-8">
+        {children}
+      </div>
+    </div>
+  </section>
+);
 
 // --- Sections ---
 
@@ -58,58 +76,62 @@ function QuickTemplatesStrip() {
   ];
 
   return (
-    <section
-      aria-label="Popular QR code templates"
-      className="bg-[#F5F0FF] px-4 py-10"
-    >
-      <div className="mx-auto max-w-6xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">
-              QR code ideas
-            </p>
-            <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-950">
-              Fast templates for popular QR code types
-            </h2>
-          </div>
-          <p className="max-w-xs text-[11px] text-slate-600">
-            Use the free QR code generator above to create any of these in a
-            few seconds — no account needed.
+    <SectionShell className="pt-10">
+      <div className="flex flex-wrap items-start justify-between gap-6">
+        <div className="max-w-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
+            QR code ideas
+          </p>
+          <h2
+            className="mt-2 text-[22px] font-semibold leading-[1.15] tracking-tight text-[#050505] sm:text-[24px]"
+            style={{ letterSpacing: "-0.04em" }}
+          >
+            Fast templates for
+            <br />
+            popular QR code types.
+          </h2>
+          <p className="mt-3 text-[12px] leading-relaxed text-neutral-600">
+            Start with a use case instead of a blank canvas. Pick a template and
+            tweak the content in the generator above.
           </p>
         </div>
-
-        <div className="mt-6 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
-          {cards.map((card) => (
-            <article
-              key={card.label}
-              className="flex flex-col justify-between rounded-2xl border border-violet-100 bg-white px-3 py-3 text-left shadow-[0_10px_30px_rgba(15,23,42,0.06)]"
-            >
-              <h3 className="text-[12px] font-semibold text-slate-950">
-                {card.label}
-              </h3>
-              <p className="mt-2 text-[11px] leading-relaxed text-slate-600">
-                {card.body}
-              </p>
-            </article>
-          ))}
-        </div>
+        <p className="max-w-xs text-[11px] leading-relaxed text-neutral-500">
+          Use the free QR code generator at the top of this page to create any
+          of these in a few seconds — no account needed.
+        </p>
       </div>
-    </section>
+
+      <div className="mt-7 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+        {cards.map((card) => (
+          <article
+            key={card.label}
+            className="flex flex-col justify-between rounded-2xl border border-black/5 bg-[#f5f3ee]/80 px-3 py-3 text-left shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
+          >
+            <h3 className="text-[12px] font-semibold text-[#050505]">
+              {card.label}
+            </h3>
+            <p className="mt-2 text-[11px] leading-relaxed text-neutral-600">
+              {card.body}
+            </p>
+          </article>
+        ))}
+      </div>
+    </SectionShell>
   );
 }
 
 function NewToQrSection() {
   return (
-    <section
-      id="qr-basics"
-      className="bg-[#100921] px-4 py-16 text-slate-50"
-      aria-labelledby="qr-basics-heading"
-    >
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-10 md:flex-row md:items-start">
+    <SectionShell>
+      <div
+        id="qr-basics"
+        className="flex flex-col items-center gap-10 md:flex-row md:items-start"
+        aria-labelledby="qr-basics-heading"
+      >
         {/* Left: image */}
         <div className="relative w-full max-w-md flex-1">
-          <div className="pointer-events-none absolute -inset-6 rounded-[32px] bg-gradient-to-br from-fuchsia-500/20 via-violet-500/10 to-emerald-400/10 blur-2xl" />
-          <div className="relative rounded-[28px] border border-white/10 bg-slate-950/40 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.65)]">
+          <div className="pointer-events-none absolute -inset-5 rounded-[32px] bg-gradient-to-br from-purple-300/30 via-fuchsia-300/20 to-emerald-300/20 blur-2xl" />
+          <div className="relative rounded-[28px] border border-black/5 bg-[#0b0b0b] p-4 shadow-[0_28px_70px_rgba(15,23,42,0.75)]">
             <img
               src="/kompi-analytics.png"
               alt="Kompi dashboard with QR analytics and links"
@@ -120,29 +142,29 @@ function NewToQrSection() {
 
         {/* Right: copy */}
         <div className="flex-1 max-w-xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-violet-200">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
             New to QR codes?
           </p>
           <h2
             id="qr-basics-heading"
-            className="mt-3 text-[26px] font-semibold leading-[1.1] tracking-tight sm:text-[32px]"
+            className="mt-3 text-[26px] font-semibold leading-[1.1] tracking-tight text-[#050505] sm:text-[30px]"
             style={{ letterSpacing: "-0.04em" }}
           >
             Everything you need to know
             <br />
             about{" "}
-            <span className="wf-serif-accent italic text-violet-100">
+            <span className="wf-serif-accent italic text-neutral-800">
               free QR codes
             </span>
             .
           </h2>
-          <p className="mt-4 text-[13px] leading-relaxed text-slate-200">
+          <p className="mt-4 text-[13px] leading-relaxed text-neutral-700">
             A QR code is just a visual way of storing information — usually a
             URL. When someone scans it, their camera opens whatever you&apos;ve
             encoded: a website, menu, Wi-Fi network, contact card and more.
           </p>
 
-          <ul className="mt-5 space-y-2 text-[13px] leading-relaxed text-slate-200">
+          <ul className="mt-5 space-y-2 text-[13px] leading-relaxed text-neutral-700">
             <li>• Kompi&apos;s free generator creates static PNG QR codes.</li>
             <li>
               • Static QR codes never expire — they work as long as the
@@ -150,8 +172,8 @@ function NewToQrSection() {
             </li>
             <li>
               • Free downloads include a tiny{" "}
-              <span className="font-semibold">Kompi</span> logo mark, similar
-              to other QR providers.
+              <span className="font-semibold">Kompi</span> logo mark, similar to
+              other QR providers.
             </li>
             <li>
               • Want editable destinations and scan analytics? Use a{" "}
@@ -159,7 +181,7 @@ function NewToQrSection() {
             </li>
           </ul>
 
-          <p className="mt-4 text-[12px] text-slate-300">
+          <p className="mt-4 text-[12px] text-neutral-600">
             Upgrade to dynamic QR codes in Kompi and change where a QR points
             without reprinting anything.
           </p>
@@ -167,20 +189,20 @@ function NewToQrSection() {
           <div className="mt-7 flex flex-wrap items-center gap-3 text-[12px]">
             <a
               href="/signin"
-              className="inline-flex items-center justify-center rounded-full bg-slate-50 px-7 py-2.5 font-semibold text-slate-950 shadow-lg shadow-violet-500/40 transition hover:bg-white"
+              className="inline-flex items-center justify-center rounded-full bg-[#050505] px-7 py-2.5 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.75)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.9)]"
             >
               Open Kompi dashboard
             </a>
             <a
               href="/pricing"
-              className="text-[12px] font-medium text-violet-100 underline-offset-4 hover:underline"
+              className="text-[12px] font-medium text-neutral-800 underline-offset-4 hover:underline"
             >
               See QR & link plans →
             </a>
           </div>
         </div>
       </div>
-    </section>
+    </SectionShell>
   );
 }
 
@@ -204,28 +226,24 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section
-      id="how-it-works"
-      className="bg-white px-4 py-16"
-      aria-labelledby="qr-how-heading"
-    >
-      <div className="mx-auto max-w-6xl">
+    <SectionShell id="how-it-works">
+      <div aria-labelledby="qr-how-heading">
         <div className="max-w-xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
             How it works
           </p>
           <h2
             id="qr-how-heading"
-            className="mt-2 text-[26px] font-semibold leading-[1.15] tracking-tight text-slate-950 sm:text-[30px]"
+            className="mt-2 text-[24px] font-semibold leading-[1.15] tracking-tight text-[#050505] sm:text-[26px]"
             style={{ letterSpacing: "-0.04em" }}
           >
             Create a free QR code
             <br />
             in three simple steps.
           </h2>
-          <p className="mt-3 text-[13px] leading-relaxed text-slate-600">
-            The generator at the top of this page handles everything. You don&apos;t
-            need an account to create or download a QR code.
+          <p className="mt-3 text-[13px] leading-relaxed text-neutral-700">
+            The generator at the top of this page handles everything. You
+            don&apos;t need an account to create or download a QR code.
           </p>
         </div>
 
@@ -233,24 +251,24 @@ function HowItWorksSection() {
           {steps.map((step) => (
             <article
               key={step.step}
-              className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)]"
+              className="flex flex-col rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-[12px] bg-slate-900 text-[11px] font-semibold text-slate-50">
+                <div className="flex h-7 w-7 items-center justify-center rounded-[12px] bg-[#050505] text-[11px] font-semibold text-white">
                   {step.step}
                 </div>
-                <h3 className="text-sm font-semibold text-slate-950">
+                <h3 className="text-sm font-semibold text-[#050505]">
                   {step.title}
                 </h3>
               </div>
-              <p className="mt-3 text-[12px] leading-relaxed text-slate-600">
+              <p className="mt-3 text-[12px] leading-relaxed text-neutral-700">
                 {step.body}
               </p>
             </article>
           ))}
         </div>
       </div>
-    </section>
+    </SectionShell>
   );
 }
 
@@ -271,22 +289,18 @@ function UseCasesSection() {
   ];
 
   return (
-    <section
-      id="use-cases"
-      className="bg-white px-4 pb-16 pt-10"
-      aria-labelledby="qr-use-cases-heading"
-    >
-      <div className="mx-auto max-w-6xl">
+    <SectionShell id="use-cases">
+      <div aria-labelledby="qr-use-cases-heading">
         <h2
           id="qr-use-cases-heading"
-          className="text-[24px] font-semibold tracking-tight text-slate-950 sm:text-[26px]"
+          className="text-[24px] font-semibold tracking-tight text-[#050505] sm:text-[26px]"
           style={{ letterSpacing: "-0.04em" }}
         >
           Where Kompi QR codes
           <br />
           make the biggest impact.
         </h2>
-        <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-slate-600">
+        <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-neutral-700">
           Turn anything with a surface into a smart link. Kompi QR codes work
           anywhere you can print or display an image — and dynamic QR codes let
           you change destinations later.
@@ -296,19 +310,19 @@ function UseCasesSection() {
           {cards.map((card) => (
             <article
               key={card.title}
-              className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-[0_14px_36px_rgba(15,23,42,0.06)]"
+              className="rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4 shadow-[0_14px_36px_rgba(15,23,42,0.08)]"
             >
-              <h3 className="text-sm font-semibold text-slate-950">
+              <h3 className="text-sm font-semibold text-[#050505]">
                 {card.title}
               </h3>
-              <p className="mt-3 text-[12px] leading-relaxed text-slate-600">
+              <p className="mt-3 text-[12px] leading-relaxed text-neutral-700">
                 {card.body}
               </p>
             </article>
           ))}
         </div>
       </div>
-    </section>
+    </SectionShell>
   );
 }
 
@@ -329,78 +343,75 @@ function PlatformPitchSection() {
   ];
 
   return (
-    <section
-      id="platform"
-      className="bg-[#FFF8EC] px-4 py-16"
-      aria-labelledby="qr-platform-heading"
-    >
-      <div className="mx-auto max-w-6xl">
-        <div className="grid gap-10 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-center">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-700/80">
-              Kompi platform
-            </p>
-            <h2
-              id="qr-platform-heading"
-              className="mt-2 text-[26px] font-semibold leading-[1.15] tracking-tight text-slate-950 sm:text-[30px]"
-              style={{ letterSpacing: "-0.04em" }}
-            >
-              More than a free
-              <br />
-              QR code generator.
-            </h2>
-            <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-slate-800">
-              Behind every QR you create, you can plug into Kompi&apos;s full
-              platform — short links, QR menus, KR Codes, bio pages and rich
-              analytics. One login, one place to see how people actually find
-              you.
-            </p>
+    <SectionShell id="platform">
+      <div
+        className="grid gap-10 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-center"
+        aria-labelledby="qr-platform-heading"
+      >
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
+            Kompi platform
+          </p>
+          <h2
+            id="qr-platform-heading"
+            className="mt-2 text-[24px] font-semibold leading-[1.15] tracking-tight text-[#050505] sm:text-[26px]"
+            style={{ letterSpacing: "-0.04em" }}
+          >
+            More than a free
+            <br />
+            QR code generator.
+          </h2>
+          <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-neutral-700">
+            Behind every QR you create, you can plug into Kompi&apos;s full
+            platform — short links, QR menus, KR Codes, bio pages and rich
+            analytics. One login, one place to see how people actually find
+            you.
+          </p>
 
-            <div className="mt-7 grid gap-4 md:grid-cols-3">
-              {cards.map((card) => (
-                <article
-                  key={card.title}
-                  className="rounded-2xl border border-amber-100 bg-white/80 p-4 text-left shadow-[0_16px_40px_rgba(180,83,9,0.15)]"
-                >
-                  <h3 className="text-[13px] font-semibold text-slate-950">
-                    {card.title}
-                  </h3>
-                  <p className="mt-2 text-[12px] leading-relaxed text-slate-700">
-                    {card.body}
-                  </p>
-                </article>
-              ))}
-            </div>
-
-            <div className="mt-7 flex flex-wrap items-center gap-3 text-[12px]">
-              <a
-                href="/pricing"
-                className="inline-flex items-center justify-center rounded-full bg-slate-950 px-7 py-2.5 font-semibold text-white shadow-lg shadow-slate-900/40 transition hover:bg-black"
+          <div className="mt-7 grid gap-4 md:grid-cols-3">
+            {cards.map((card) => (
+              <article
+                key={card.title}
+                className="rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4 text-left shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
               >
-                See Kompi plans
-              </a>
-              <a
-                href="/signin"
-                className="text-[12px] font-medium text-slate-900 underline-offset-4 hover:underline"
-              >
-                Or create a free account →
-              </a>
-            </div>
+                <h3 className="text-[13px] font-semibold text-[#050505]">
+                  {card.title}
+                </h3>
+                <p className="mt-2 text-[12px] leading-relaxed text-neutral-700">
+                  {card.body}
+                </p>
+              </article>
+            ))}
           </div>
 
-          <div className="relative mx-auto w-full max-w-md">
-            <div className="pointer-events-none absolute -inset-6 rounded-[32px] bg-gradient-to-br from-amber-300/50 via-orange-400/20 to-pink-400/20 blur-2xl" />
-            <div className="relative rounded-[28px] border border-amber-100 bg-white p-4 shadow-[0_26px_70px_rgba(148,64,12,0.35)]">
-              <img
-                src="/kompi-platform.png"
-                alt="Kompi platform with links, QR codes and analytics"
-                className="h-auto w-full rounded-2xl object-cover"
-              />
-            </div>
+          <div className="mt-7 flex flex-wrap items-center gap-3 text-[12px]">
+            <a
+              href="/pricing"
+              className="inline-flex items-center justify-center rounded-full bg-[#050505] px-7 py-2.5 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.75)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.9)]"
+            >
+              See Kompi plans
+            </a>
+            <a
+              href="/signin"
+              className="text-[12px] font-medium text-neutral-800 underline-offset-4 hover:underline"
+            >
+              Or create a free account →
+            </a>
+          </div>
+        </div>
+
+        <div className="relative mx-auto w-full max-w-md">
+          <div className="pointer-events-none absolute -inset-5 rounded-[32px] bg-gradient-to-br from-amber-300/40 via-orange-300/20 to-pink-300/20 blur-2xl" />
+          <div className="relative rounded-[28px] border border-black/5 bg-white p-4 shadow-[0_26px_70px_rgba(148,64,12,0.35)]">
+            <img
+              src="/kompi-platform.png"
+              alt="Kompi platform with links, QR codes and analytics"
+              className="h-auto w-full rounded-2xl object-cover"
+            />
           </div>
         </div>
       </div>
-    </section>
+    </SectionShell>
   );
 }
 
@@ -433,22 +444,18 @@ function TypesGridSection() {
   ];
 
   return (
-    <section
-      id="qr-types"
-      className="bg-white px-4 py-16"
-      aria-labelledby="qr-types-heading"
-    >
-      <div className="mx-auto max-w-6xl">
+    <SectionShell id="qr-types">
+      <div aria-labelledby="qr-types-heading">
         <h2
           id="qr-types-heading"
-          className="text-[24px] font-semibold tracking-tight text-slate-950 sm:text-[26px]"
+          className="text-[24px] font-semibold tracking-tight text-[#050505] sm:text-[26px]"
           style={{ letterSpacing: "-0.04em" }}
         >
           What type of QR codes
           <br />
           can you create for free?
         </h2>
-        <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-slate-600">
+        <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-neutral-700">
           Kompi&apos;s free QR code generator supports the most common QR types
           out of the box. Choose the one you need in the content step above.
         </p>
@@ -457,19 +464,19 @@ function TypesGridSection() {
           {types.map((type) => (
             <article
               key={type.title}
-              className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+              className="rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4"
             >
-              <h3 className="text-[13px] font-semibold text-slate-950">
+              <h3 className="text-[13px] font-semibold text-[#050505]">
                 {type.title}
               </h3>
-              <p className="mt-2 text-[12px] leading-relaxed text-slate-600">
+              <p className="mt-2 text-[12px] leading-relaxed text-neutral-700">
                 {type.body}
               </p>
             </article>
           ))}
         </div>
       </div>
-    </section>
+    </SectionShell>
   );
 }
 
@@ -502,41 +509,42 @@ function FaqSection() {
   ];
 
   return (
-    <section
-      id="faq"
-      className="bg-slate-50 px-4 py-16"
-      aria-labelledby="qr-faq-heading"
-    >
-      <div className="mx-auto max-w-4xl">
+    <SectionShell id="faq" className="pb-14">
+      <div aria-labelledby="qr-faq-heading">
         <h2
           id="qr-faq-heading"
-          className="text-[24px] font-semibold tracking-tight text-slate-950 sm:text-[26px]"
+          className="text-[24px] font-semibold tracking-tight text-[#050505] sm:text-[26px]"
           style={{ letterSpacing: "-0.04em" }}
         >
           Frequently asked questions
           <br />
           about Kompi QR codes.
         </h2>
-        <div className="mt-7 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white/80">
-          {faqs.map((item) => (
-            <details key={item.q} className="group">
-              <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium text-slate-900">
+        <div className="mt-7 rounded-2xl border border-black/5 bg-white/90">
+          {faqs.map((item, index) => (
+            <details
+              key={item.q}
+              className={`group border-b border-black/5 last:border-b-0 ${
+                index === 0 ? "rounded-t-2xl" : ""
+              } ${index === faqs.length - 1 ? "rounded-b-2xl" : ""}`}
+            >
+              <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium text-[#050505]">
                 <span>{item.q}</span>
-                <span className="ml-4 text-xs text-slate-500 group-open:hidden">
+                <span className="ml-4 text-xs text-neutral-500 group-open:hidden">
                   +
                 </span>
-                <span className="ml-4 hidden text-xs text-slate-500 group-open:inline">
+                <span className="ml-4 hidden text-xs text-neutral-500 group-open:inline">
                   −
                 </span>
               </summary>
-              <div className="px-4 pb-4 text-[12px] leading-relaxed text-slate-600">
+              <div className="px-4 pb-4 text-[12px] leading-relaxed text-neutral-700">
                 {item.a}
               </div>
             </details>
           ))}
         </div>
       </div>
-    </section>
+    </SectionShell>
   );
 }
 
@@ -600,7 +608,7 @@ export default function QrCodeGeneratorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f5f3ee] text-[#050505]">
       <Navbar />
       {/* Padding so the fixed header doesn’t overlap */}
       <main className="pt-16 md:pt-20">

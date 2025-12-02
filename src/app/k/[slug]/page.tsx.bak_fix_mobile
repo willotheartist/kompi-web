@@ -185,13 +185,11 @@ export default async function PublicKCardPage(props: {
   const socials = socialsRaw ?? ["Instagram", "YouTube", "Website"];
 
   return (
-    <main
-      className="min-h-screen flex items-center justify-center"
-      style={wallpaperStyle}
-    >
-      <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10">
-        <KCardPreview
-          variant="public"
+    <main className="min-h-screen flex items-center justify-center" style={wallpaperStyle}>
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md origin-top scale-[1.15] sm:scale-100 flex justify-center">
+          <div className="kcard-public-wrapper w-full flex justify-center origin-top scale-[1.4] sm:scale-[1.1]">
+          <KCardPreview
           wallpaperStyle={wallpaperStyle}
           pageBackground={pageBackground}
           previewTitleFont={previewTitleFont}
@@ -204,12 +202,14 @@ export default async function PublicKCardPage(props: {
           profileLayout={profileLayout}
           avatarPreview={avatarDataUrl}
           socials={socials}
+          
           visibleLinks={visibleLinks}
           buttonBaseStyles={buttonBaseStyles}
           avatarSize={avatarSize}
           headerTextSize={headerTextSize}
           avatarShadow={avatarShadow}
-        />
+          />
+        </div>
         <p className="mt-6 text-center text-[10px] text-neutral-500">
           Made with <span className="font-semibold">Kompi</span>
         </p>

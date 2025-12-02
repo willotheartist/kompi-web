@@ -10,6 +10,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import DashboardLayout from "@/components/dashboard/dashboard-layout";
 
 type TimeseriesPoint = {
   date: string;
@@ -98,19 +99,19 @@ export default function KrcodeAnalyticsPage() {
 
   if (!id) {
     return (
-      <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
-        <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8">
+      <DashboardLayout>
+        <section className="mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8">
           <p className="text-sm text-[color:var(--color-subtle)]">
             Missing KR Code id.
           </p>
         </section>
-      </main>
+      </DashboardLayout>
     );
   }
 
   return (
-    <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
-      <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8">
+    <DashboardLayout>
+      <section className="mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--color-text)] md:text-3xl">
@@ -344,6 +345,6 @@ export default function KrcodeAnalyticsPage() {
           </>
         )}
       </section>
-    </main>
+    </DashboardLayout>
   );
 }
