@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useRef } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
+import React, { useMemo } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 
 type KolorCard = {
   id: number;
@@ -90,27 +89,19 @@ const cards: KolorCard[] = [
   },
 ];
 
-const easing: [number, number, number, number] = [0.16, 1, 0.3, 1];
+// ~40s loop for calm marquee
+const SCROLL_DURATION = 40;
 
 export default function KolorKards() {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  const scrollByPage = (dir: "left" | "right") => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const amount = container.clientWidth * 0.9;
-    container.scrollBy({
-      left: dir === "left" ? -amount : amount,
-      behavior: "smooth",
-    });
-  };
+  const shouldReduceMotion = useReducedMotion();
+  const loopCards = useMemo(() => [...cards, ...cards], []);
 
   return (
-    <section className="w-full py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header – same pattern as Why Kompi / Who's Kompi For */}
+    <section className="w-full min-h-[80vh] py-16 bg-[var(--color-bg)]">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="flex flex-col items-center text-center gap-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--color-subtle)]">
             What Kompi Does
           </p>
 
@@ -118,121 +109,84 @@ export default function KolorKards() {
             role="heading"
             aria-level={2}
             style={{ letterSpacing: "-0.04em" }}
-            className="font-semibold text-neutral-900
+            className="font-semibold text-[color:var(--color-text)]
                        text-[32px] leading-[1.05]
                        sm:text-[44px]
-                       md:text-[54px]
-                       lg:text-[60px]"
+                       md:text-[54px]"
           >
             <span>What </span>
             <span className="wf-serif-accent italic">Kompi</span>
             <span> Does</span>
           </div>
 
-          <p className="max-w-2xl text-[15px] leading-[1.7] text-neutral-600">
+          <p className="max-w-2xl text-[15px] leading-[1.7] text-[color:var(--color-subtle)]">
             Your essential toolkit for sharing, tracking, and growing online.
           </p>
-
-          {/* Arrows */}
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => scrollByPage("left")}
-              aria-label="Scroll left"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-neutral-900 ring-1 ring-black/5 transition hover:bg-neutral-900 hover:text-white"
-            >
-              <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
-                <path
-                  d="M12.5 15L7.5 10L12.5 5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollByPage("right")}
-              aria-label="Scroll right"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-neutral-900 text-white ring-1 ring-black/5 transition hover:bg-neutral-800"
-            >
-              <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
-                <path
-                  d="M7.5 5L12.5 10L7.5 15"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Horizontal track – one row of Linktree-style cards */}
-      <div className="mt-14 overflow-hidden">
-        <motion.div
-          ref={scrollRef}
-          className="kolor-kards-scroll mx-auto flex max-w-7xl gap-8 overflow-x-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 no-scrollbar"
-          style={{ scrollSnapType: "x mandatory" }}
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.8, ease: easing }}
-        >
-          {cards.map((card, index) => (
-            <motion.article
-              key={card.id}
-              style={{ backgroundColor: card.bg }}
-              className="flex h-[560px] w-[420px] shrink-0 snap-start flex-col rounded-[40px] px-10 pt-10 pb-9"
-              initial={{ opacity: 0, y: 32 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{
-                duration: 0.75,
-                ease: easing,
-                delay: index * 0.06,
-              }}
-              whileHover={{ y: -8, scale: 1.01 }}
-            >
-              {/* IMAGE AREA – same image for now, you can swap later */}
-              <div className="relative mb-12 h-[210px] rounded-[32px] overflow-hidden bg-white/70">
-                <Image
-                  src="/kompiphoto.png"
-                  alt="Kompi feature"
-                  fill
-                  className="object-cover"
-                  sizes="420px"
-                />
-              </div>
+      {/* Auto-scrolling track */}
+      <div className="mt-10 relative overflow-x-hidden overflow-y-visible">
+        {/* fade edges */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[var(--color-bg)] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[var(--color-bg)] to-transparent" />
 
-              {/* Text block – sits lower in the card like the example */}
-              <div className="mt-4">
-                <h3
-                  className="text-2xl font-semibold tracking-tight"
-                  style={{ color: card.headingColor }}
-                >
-                  {card.title}
-                </h3>
-
-                <p
-                  className="mt-4 text-[15px] leading-relaxed"
-                  style={{ color: card.bodyColor }}
-                >
-                  {card.description}
-                </p>
-              </div>
-
-              {/* Spacer to keep bottom breathing room */}
-              <div className="mt-auto" />
-            </motion.article>
-          ))}
-        </motion.div>
+        {shouldReduceMotion ? (
+          // manual scroll if reduced motion is enabled
+          <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-4 pb-4 sm:px-6 lg:px-8 no-scrollbar">
+            {cards.map((card) => (
+              <KolorCardItem key={card.id} card={card} />
+            ))}
+          </div>
+        ) : (
+          <motion.div
+            className="mx-auto flex max-w-none gap-6 px-4 sm:px-6 lg:px-8"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{
+              duration: SCROLL_DURATION,
+              ease: "linear",
+              repeat: Infinity,
+            }}
+          >
+            {loopCards.map((card, idx) => (
+              <KolorCardItem key={`${card.id}-${idx}`} card={card} />
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
+  );
+}
+
+function KolorCardItem({ card }: { card: KolorCard }) {
+  return (
+    <article
+      className="group flex min-w-[260px] max-w-sm flex-col rounded-[32px] px-6 py-6 sm:px-7 sm:py-7 
+                 shadow-[0_1px_0_rgba(15,15,15,0.08)] border border-black/5
+                 transition-transform duration-300 ease-out hover:-translate-y-1"
+      style={{ backgroundColor: card.bg }}
+    >
+      {/* simple “visual” block instead of image */}
+      <div className="mb-4">
+        <div
+          className="h-9 w-9 rounded-2xl"
+          style={{ backgroundColor: `${card.headingColor}1A` }} // subtle tint
+        />
+      </div>
+
+      <h3
+        className="text-lg sm:text-xl font-semibold tracking-tight"
+        style={{ color: card.headingColor }}
+      >
+        {card.title}
+      </h3>
+
+      <p
+        className="mt-3 text-[14px] leading-relaxed"
+        style={{ color: card.bodyColor }}
+      >
+        {card.description}
+      </p>
+    </article>
   );
 }

@@ -428,3 +428,19 @@ model EngagementEvent {
 
   @@index([workspaceId, type, createdAt])
 }
+
+model KCardLinkClick {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  kcardId   String
+  linkId    String
+  url       String
+
+  referer   String?
+  userAgent String?
+
+  @@index([kcardId, createdAt])
+  @@index([linkId, createdAt])
+}
+

@@ -155,7 +155,11 @@ export default async function PublicKCardPage(props: {
         ? "none"
         : buttonShadow === "soft"
         ? "0 6px 14px rgba(15,23,42,0.35)"
-        : "0 10px 24px rgba(15,23,42,0.6)",
+        : buttonShadow === "hard"
+        ? "0 10px 24px rgba(15,23,42,0.6)"
+        : buttonShadow === "3d"
+        ? "0 6px 0 rgba(0,0,0,0.45), 0 12px 0 rgba(0,0,0,0.3)"
+        : "none",
     border: "1px solid transparent",
   };
 
@@ -192,6 +196,7 @@ export default async function PublicKCardPage(props: {
       <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10">
         <KCardPreview
           variant="public"
+          slug={slug}
           wallpaperStyle={wallpaperStyle}
           pageBackground={pageBackground}
           previewTitleFont={previewTitleFont}

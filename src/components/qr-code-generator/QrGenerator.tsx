@@ -100,8 +100,7 @@ export function QrGenerator() {
   const [bgColor, setBgColor] = useState("#ffffff");
   const [margin, setMargin] = useState(2);
 
-  const [borderRadiusStyle, setBorderRadiusStyle] =
-    useState<"square" | "rounded" | "pill">("rounded");
+  const [cardPadding, setCardPadding] = useState(8);
   const [borderColor, setBorderColor] = useState("#e5e7eb");
   const [borderWidth, setBorderWidth] = useState(8);
   const [borderStyle, setBorderStyle] = useState<"solid" | "dashed">("solid");
@@ -212,12 +211,7 @@ export function QrGenerator() {
     }
   };
 
-  const previewBorderRadius =
-    borderRadiusStyle === "square"
-      ? 24
-      : borderRadiusStyle === "rounded"
-      ? 32
-      : 9999;
+  const cardCornerRadius = 24;
 
   // ---------- live preview using qr-code-styling + canvas ----------
 
@@ -293,7 +287,7 @@ export function QrGenerator() {
 
           const qrSize = img.width; // square
           const hasFrameLabel = showFrame && frameText.trim().length > 0;
-          const padding = qrSize / 16;
+          const padding = (cardPadding / 100) * qrSize;
           const frameBarHeight = hasFrameLabel ? qrSize / 8 : 0;
 
           const cardWidth = qrSize + padding * 2;
@@ -310,38 +304,38 @@ export function QrGenerator() {
           }
 
           const radius = Math.min(
-            previewBorderRadius * (qrSize / 512),
+            cardCornerRadius,
             cardWidth / 2,
             cardHeight / 2
           );
 
           ctx.save();
 
-          // Card background with rounded corners
-          ctx.fillStyle = "#f9fafb";
-          drawRoundedRect(ctx, 0, 0, cardWidth, cardHeight, radius);
-          ctx.fill();
+          // Card background + border as layered rounded rectangles
+          const borderPx = borderWidth > 0 ? borderWidth * (qrSize / 512) : 0;
 
-          // Card border (outer only – QR stays fully square inside)
-          if (borderWidth > 0) {
-            ctx.lineWidth = borderWidth * (qrSize / 512);
-            ctx.strokeStyle = borderColor;
-            if (borderStyle === "dashed") {
-              ctx.setLineDash([12 * (qrSize / 512), 8 * (qrSize / 512)]);
-            } else {
-              ctx.setLineDash([]);
-            }
+          if (borderPx > 0) {
+            // Outer border layer
+            ctx.fillStyle = borderColor;
+            drawRoundedRect(ctx, 0, 0, cardWidth, cardHeight, radius);
+            ctx.fill();
 
+            // Inner card layer (background), inset by border width
+            ctx.fillStyle = "#f9fafb";
             drawRoundedRect(
               ctx,
-              ctx.lineWidth / 2,
-              ctx.lineWidth / 2,
-              cardWidth - ctx.lineWidth,
-              cardHeight - ctx.lineWidth,
-              Math.max(0, radius - ctx.lineWidth / 2)
+              borderPx,
+              borderPx,
+              cardWidth - borderPx * 2,
+              cardHeight - borderPx * 2,
+              Math.max(0, radius - borderPx)
             );
-            ctx.stroke();
-            ctx.setLineDash([]);
+            ctx.fill();
+          } else {
+            // No border – single flat card
+            ctx.fillStyle = "#f9fafb";
+            drawRoundedRect(ctx, 0, 0, cardWidth, cardHeight, radius);
+            ctx.fill();
           }
 
           // QR image (square, untouched by card shape)
@@ -432,7 +426,7 @@ export function QrGenerator() {
     borderWidth,
     borderColor,
     borderStyle,
-    borderRadiusStyle,
+    cardPadding,
     frameText,
     frameBgColor,
     frameTextColor,
@@ -939,60 +933,34 @@ export function QrGenerator() {
                 {/* TAB: FRAME & LABEL */}
                 {activeDesignTab === "frame" && (
                   <div className="space-y-4">
-                    {/* Card shape & border */}
+                    {/* Padding & border */}
                     <section className="space-y-3 rounded-2xl border border-black/5 bg-slate-50/70 p-4">
                       <p className="text-xs font-semibold text-slate-950">
-                        Card shape & border
+                        Padding & border
                       </p>
                       <div className="grid gap-4 text-[11px] md:grid-cols-3">
                         <div className="space-y-2">
-                          <p className="text-slate-500">Card shape</p>
-                          <div className="grid grid-cols-3 gap-2">
-                            {[
-                              { key: "square", label: "Square" },
-                              { key: "rounded", label: "Rounded" },
-                              { key: "pill", label: "Soft" },
-                            ].map((opt) => {
-                              const isActive =
-                                borderRadiusStyle === opt.key;
-                              return (
-                                <button
-                                  key={opt.key}
-                                  type="button"
-                                  onClick={() =>
-                                    setBorderRadiusStyle(
-                                      opt.key as
-                                        | "square"
-                                        | "rounded"
-                                        | "pill"
-                                    )
-                                  }
-                                  className={[
-                                    "flex flex-col items-center gap-1 rounded-2xl border px-2 py-1.5 text-[10px] transition-colors",
-                                    isActive
-                                      ? "border-slate-900 bg-slate-900 text-slate-50"
-                                      : "border-black/10 bg-white text-slate-600 hover:bg-slate-100",
-                                  ].join(" ")}
-                                >
-                                  <div className="flex h-6 w-9 items-center justify-center rounded-xl border border-black/10 bg-slate-100">
-                                    <div
-                                      className={[
-                                        "h-3 w-6 border border-slate-900 bg-white",
-                                        opt.key === "square"
-                                          ? "rounded-[4px]"
-                                          : opt.key === "rounded"
-                                          ? "rounded-[10px]"
-                                          : "rounded-full",
-                                      ].join(" ")}
-                                    />
-                                  </div>
-                                  {opt.label}
-                                </button>
-                              );
-                            })}
+                          <p className="text-slate-500">Padding</p>
+                          <p className="text-[10px] text-slate-500">
+                            Extra space around the QR inside the card.
+                          </p>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="range"
+                              min={0}
+                              max={18}
+                              step={1}
+                              value={cardPadding}
+                              onChange={(e) => setCardPadding(Number(e.target.value))}
+                              className="flex-1"
+                            />
+                            <span className="w-8 text-right text-slate-500">
+                              {cardPadding}
+                            </span>
                           </div>
                         </div>
 
+                        
                         <div className="space-y-2">
                           <p className="text-slate-500">
                             Border & width

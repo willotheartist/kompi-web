@@ -49,6 +49,8 @@ type KCardPreviewProps = {
   avatarShadow: "shadow" | "flat";
   /** builder = small phone preview, public = full-width card */
   variant?: "builder" | "public";
+  /** slug of the public K-Card, used for analytics */
+  slug?: string;
   className?: string;
 };
 
@@ -72,6 +74,7 @@ export function KCardPreview({
   headerTextSize,
   avatarShadow,
   variant = "builder",
+  slug,
   className,
 }: KCardPreviewProps) {
   const effectiveTitleColor = titleColor || "#f9fafb";
@@ -111,6 +114,30 @@ export function KCardPreview({
     : { backgroundColor: pageBackground || "#020617" };
 
   const isPublic = variant === "public";
+
+  function trackKCardLinkClick(linkId: string, url: string) {
+    if (!slug || !url) return;
+
+    const payload = JSON.stringify({ slug, linkId, url });
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: "application/json" });
+        navigator.sendBeacon("/api/k-cards/clicks", blob);
+      } else {
+        fetch("/api/k-cards/clicks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+          keepalive: true,
+        }).catch(() => {
+          // best-effort only
+        });
+      }
+    } catch {
+      // ignore tracking errors
+    }
+  }
 
   return (
     <div
@@ -202,23 +229,59 @@ export function KCardPreview({
                 Add a link below to see it here.
               </div>
             ) : (
-              visibleLinks.slice(0, 5).map((link) => (
-                <button
-                  key={link.id}
-                  type="button"
-                  className="flex w-full items-center justify-center px-4 py-2.5 text-[11px] font-medium transition"
-                  style={{
-                    ...buttonBaseStyles,
-                    transform: buttonBaseStyles?.boxShadow?.includes("0 6px 0")
-                      ? "translateY(-2px)"
-                      : undefined,
-                  }}
-                >
+              visibleLinks.slice(0, 5).map((link) => {
+                const href = (link.url || "").trim();
+                const content = (
                   <span className="truncate">
                     {link.title || "Untitled link"}
                   </span>
-                </button>
-              ))
+                );
+
+                if (isPublic) {
+                  return (
+                    <a
+                      key={link.id}
+                      href={href || "#"}
+                      target={href ? "_blank" : undefined}
+                      rel={href ? "noreferrer" : undefined}
+                      onClick={() => {
+                        if (href) {
+                          trackKCardLinkClick(link.id, href);
+                        }
+                      }}
+                      className="flex w-full items-center justify-center px-4 py-2.5 text-[11px] font-medium transition"
+                      style={{
+                        ...buttonBaseStyles,
+                        transform: buttonBaseStyles?.boxShadow?.includes(
+                          "0 6px 0"
+                        )
+                          ? "translateY(-2px)"
+                          : undefined,
+                      }}
+                    >
+                      {content}
+                    </a>
+                  );
+                }
+
+                return (
+                  <button
+                    key={link.id}
+                    type="button"
+                    className="flex w-full items-center justify-center px-4 py-2.5 text-[11px] font-medium transition"
+                    style={{
+                      ...buttonBaseStyles,
+                      transform: buttonBaseStyles?.boxShadow?.includes(
+                        "0 6px 0"
+                      )
+                        ? "translateY(-2px)"
+                        : undefined,
+                    }}
+                  >
+                    {content}
+                  </button>
+                );
+              })
             )}
           </div>
 

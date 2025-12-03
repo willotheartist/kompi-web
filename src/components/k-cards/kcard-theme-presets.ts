@@ -1,6 +1,12 @@
 // src/components/k-cards/kcard-theme-presets.ts
 
-export type KCardFontToken = "system" | "serif" | "display";
+export type KCardFontToken =
+  | "system"
+  | "serif"
+  | "display"
+  | "retro"
+  | "comic"
+  | "space";
 export type KCardButtonStyle = "solid" | "glass" | "outline";
 export type KCardButtonShadow = "none" | "soft" | "hard" | "3d";
 

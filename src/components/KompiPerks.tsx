@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef } from "react";
-import { motion } from "framer-motion";
+import React, { useMemo } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 
 type PerkCard = {
@@ -62,183 +62,120 @@ const PERKS: PerkCard[] = [
   },
 ];
 
-// bold, tennis-style backgrounds
-const cardPalettes = [
-  { base: "#D8FF43", text: "#111111" }, // Kompi lime
-  { base: "#F3EFE8", text: "#111111" }, // soft cream
-  { base: "#FF4FD8", text: "#111111" }, // pop magenta
-  { base: "#4FD9FF", text: "#111111" }, // cyan
-];
-
 // luxe easing
 const easing: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-export default function KompiPerks() {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+// ~40s loop feels slow & calm. Adjust if you want even slower/faster.
+const SCROLL_DURATION = 40;
 
-  const scrollByPage = (dir: "left" | "right") => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const amount = container.clientWidth * 0.9;
-    container.scrollBy({
-      left: dir === "left" ? -amount : amount,
-      behavior: "smooth",
-    });
-  };
+export default function KompiPerks() {
+  const shouldReduceMotion = useReducedMotion();
+
+  // duplicate the list so we can loop it seamlessly
+  const loopPerks = useMemo(() => [...PERKS, ...PERKS], []);
 
   return (
     <section
-      className="w-full bg-[var(--color-bg)] py-20"
+      className="w-full bg-[var(--color-bg)] py-16"
       aria-label="Kompi features and perks"
     >
       {/* Header */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          className="flex flex-col items-center text-center gap-4"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.9, ease: easing }}
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--color-subtle)]">
+          Kompi perks
+        </p>
+
+        <h2
+          className="mt-3 font-semibold text-[color:var(--color-text)]
+                     text-[30px] leading-[1.05]
+                     sm:text-[40px]
+                     md:text-[48px]"
+          style={{ letterSpacing: "-0.04em" }}
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--color-subtle)]">
-            Kompi perks
-          </p>
+          Simple tools.{" "}
+          <span className="wf-serif-accent italic text-[color:var(--color-accent)]">
+            Real-world
+          </span>{" "}
+          impact.
+        </h2>
 
-          <h2
-            className="font-semibold text-[color:var(--color-text)]
-                       text-[32px] leading-[1.05]
-                       sm:text-[44px]
-                       md:text-[54px]
-                       lg:text-[60px]"
-            style={{ letterSpacing: "-0.04em" }}
-          >
-            Make every{" "}
-            <span className="wf-serif-accent italic text-[color:var(--color-accent)]">
-              touchpoint
-            </span>{" "}
-            feel intentional.
-          </h2>
-
-          <p className="max-w-2xl text-[15px] leading-[1.7] text-[color:var(--color-subtle)]">
-            From first tap to final report, Kompi keeps links, QR codes and bio
-            pages under one roof — so your campaigns feel designed, not duct
-            taped.
-          </p>
-
-          {/* arrows */}
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => scrollByPage("left")}
-              aria-label="Scroll perks left"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-neutral-900 ring-1 ring-black/5 transition hover:bg-neutral-900 hover:text-white"
-            >
-              <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
-                <path
-                  d="M12.5 15L7.5 10L12.5 5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollByPage("right")}
-              aria-label="Scroll perks right"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-neutral-900 text-white ring-1 ring-black/5 transition hover:bg-neutral-800"
-            >
-              <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
-                <path
-                  d="M7.5 5L12.5 10L7.5 15"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        </motion.div>
+        <p className="mt-3 max-w-2xl mx-auto text-[15px] leading-[1.7] text-[color:var(--color-subtle)]">
+          Kompi keeps QR codes, pages and links under one roof — so every scan,
+          tap and click feels like part of a single, intentional experience.
+        </p>
       </div>
 
-      {/* Card rail – tennis-style cards */}
-      <div className="mt-14 overflow-hidden">
-        <motion.div
-          ref={scrollRef}
-          className="kompi-perks-scroll mx-auto flex max-w-7xl gap-6 overflow-x-auto px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 no-scrollbar"
-          style={{ scrollSnapType: "x mandatory" }}
-          initial={{ opacity: 0, y: 32 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.9, ease: easing }}
-        >
-          {PERKS.map((perk, index) => {
-            const palette = cardPalettes[index % cardPalettes.length];
+      {/* Auto-scrolling strip */}
+      <div className="mt-10 relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[var(--color-bg)] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[var(--color-bg)] to-transparent" />
 
-            return (
-              <motion.article
-                key={perk.id}
-                className="relative w-[360px] shrink-0 snap-start overflow-hidden rounded-[40px]"
-                style={{ background: palette.base }}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{
-                  duration: 0.9,
-                  ease: easing,
-                  delay: index * 0.18, // slow stagger
-                }}
-              >
-                <div className="flex min-h-[520px] flex-col">
-                  {/* TOP: label + title + short copy */}
-                  <div className="flex-1 px-8 pt-8 pb-6">
-                    <p
-                      className="text-[10px] font-semibold uppercase tracking-[0.22em]"
-                      style={{ color: `${palette.text}CC` }}
-                    >
-                      {perk.label}
-                    </p>
-
-                    <h3
-                      className="mt-4 text-[26px] font-semibold leading-[1.2]"
-                      style={{ color: palette.text }}
-                    >
-                      {perk.title}{" "}
-                      {perk.accent && (
-                        <span className="wf-serif-accent italic">
-                          {perk.accent}
-                        </span>
-                      )}
-                    </h3>
-
-                    <p
-                      className="mt-4 max-w-xs text-[14px] leading-[1.6]"
-                      style={{ color: `${palette.text}CC` }}
-                    >
-                      {perk.body}
-                    </p>
-                  </div>
-
-                  {/* BOTTOM: big rounded image, full width */}
-                  <div className="relative h-[260px] w-full overflow-hidden rounded-t-[40px] bg-black">
-                    <Image
-                      src={perk.imageSrc}
-                      alt={perk.imageAlt}
-                      fill
-                      className="h-full w-full object-cover"
-                      sizes="360px"
-                    />
-                  </div>
-                </div>
-              </motion.article>
-            );
-          })}
-        </motion.div>
+        {shouldReduceMotion ? (
+          // Fallback: simple horizontal scroll if user prefers reduced motion
+          <div className="mx-auto flex max-w-6xl gap-4 overflow-x-auto px-4 pb-2 sm:px-6 lg:px-8 no-scrollbar">
+            {PERKS.map((perk) => (
+              <PerkItem key={perk.id} perk={perk} />
+            ))}
+          </div>
+        ) : (
+          <motion.div
+            className="mx-auto flex max-w-none gap-4 px-4 sm:px-6 lg:px-8"
+            // Infinite marquee-style scroll
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{
+              duration: SCROLL_DURATION,
+              ease: "linear",
+              repeat: Infinity,
+            }}
+          >
+            {loopPerks.map((perk, idx) => (
+              <PerkItem key={`${perk.id}-${idx}`} perk={perk} />
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
+  );
+}
+
+function PerkItem({ perk }: { perk: PerkCard }) {
+  return (
+    <article
+      className="group flex min-w-[260px] max-w-sm flex-col rounded-3xl border border-black/5 bg-[color:var(--color-surface)]
+                 px-4 py-4 sm:px-5 sm:py-5 shadow-[0_1px_0_rgba(15,15,15,0.06)]
+                 transition-transform duration-300 ease-out hover:-translate-y-1"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--color-subtle)]">
+          {perk.label}
+        </p>
+      </div>
+
+      <div className="mt-3">
+        <h3 className="text-[17px] font-semibold leading-snug text-[color:var(--color-text)]">
+          {perk.title}{" "}
+          {perk.accent && (
+            <span className="wf-serif-accent italic text-[color:var(--color-accent)]">
+              {perk.accent}
+            </span>
+          )}
+        </h3>
+        <p className="mt-2 text-[13px] leading-relaxed text-[color:var(--color-subtle)]">
+          {perk.body}
+        </p>
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-2xl border border-black/5 bg-black/5">
+        <div className="relative h-36 w-full">
+          <Image
+            src={perk.imageSrc}
+            alt={perk.imageAlt}
+            fill
+            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+            sizes="260px"
+          />
+        </div>
+      </div>
+    </article>
   );
 }

@@ -118,10 +118,10 @@ export default function HowItWorksSection() {
             transition={{ duration: 1.1, ease: easing, delay: 0.15 }}
           >
             <Image
-              src="/herowoman.png"
+              src="/kompiboxes.png"
               alt="Kompi in your stack"
-              width={960}
-              height={720}
+              width={420}
+              height={420}
               priority
               className="w-full max-w-[560px] h-auto"
             />

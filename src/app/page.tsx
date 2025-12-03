@@ -7,11 +7,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import KPromo from "@/components/KPromo";
-import SectionOne from "@/components/sections/one/page";
 import "./kompi-marketing.css";
 import KompiPerks from "@/components/KompiPerks";
-import { DoMoreSection } from "@/components/do-more";
-import KRow from "@/components/KRow";
 import KBenefits from "@/components/KBenefits";
 import Hero from "@/components/hero/page";
 import KolorKards from "@/components/KolorKards";
@@ -21,11 +18,11 @@ import InfoScreenthree from "@/components/infoscreens/three";
 import InfoScreenfour from "@/components/infoscreens/four";
 import InfoScreenfive from "@/components/infoscreens/five";
 import InfoScreensix from "@/components/infoscreens/six";
-import ValueGridSection from "@/components/sections/value-grid";
 import PersonasSection from "@/components/sections/personas";
 import HowItWorksSection from "@/components/sections/how-it-works";
 import AnalyticsSection from "@/components/sections/analytics";
 import TestimonialsSection from "@/components/sections/testimonials";
+import Faces from "@/components/sections/faces";
 import Faqs from "@/components/faqs";
 import { ClaimHandleInline } from "@/components/claim/claim-handle-inline";
 
@@ -82,14 +79,10 @@ export default function HomePage() {
         <KPromo />
         <InfoScreenOne />
         <KolorKards />
-
-        {/* ValueGrid – Core benefits + pricing teaser */}
-        <ValueGridSection />
+        <Faces />
 
         {/* HowItWorks – Kompi in your stack */}
         <HowItWorksSection />
-
-        <SectionOne />
 
         {/* KompiPerks – horizontal perks strip */}
         <KompiPerks />
@@ -97,8 +90,6 @@ export default function HomePage() {
         {/* Personas – Who Kompi is for */}
         <PersonasSection />
 
-        {/* KRow – horizontal campaign cards */}
-        <KRow />
 
         {/* KBenefits – case-study style band */}
         <KBenefits />
@@ -112,7 +103,7 @@ export default function HomePage() {
         <InfoScreenfive />
         <InfoScreensix />
 
-        <DoMoreSection />
+      
 
         {/* Testimonials – new Linktree-style band */}
         <TestimonialsSection />

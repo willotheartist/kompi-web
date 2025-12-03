@@ -36,7 +36,8 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({ workspace, links });
-  } catch {
+  } catch (error) {
+    console.error("LINKS_GET_ERROR", error);
     return new NextResponse("Unauthorized", { status: 401 });
   }
 }
@@ -46,13 +47,15 @@ export async function POST(req: Request) {
     const user = await requireUser();
     const body = (await req.json().catch(() => ({}))) as {
       targetUrl?: string;
+      url?: string; // 👈 allow `url` from the new hero form
       code?: string;
       workspaceId?: string;
       title?: string;
       // options?: { withKompiCode?: boolean; qrColor?: string; addToBio?: boolean };
     };
 
-    const rawUrl = (body.targetUrl ?? "").toString();
+    // 👇 read either targetUrl (old callers) or url (new UI)
+    const rawUrl = (body.targetUrl ?? body.url ?? "").toString();
     const targetUrl = normalizeTargetUrl(rawUrl);
 
     if (!targetUrl) {
@@ -125,7 +128,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(link, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("LINKS_POST_ERROR", error);
     return new NextResponse("Unauthorized", { status: 401 });
   }
 }

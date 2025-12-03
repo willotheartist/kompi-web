@@ -14,7 +14,7 @@ type KCardThemeSectionProps = {
   onChange: (theme: KCardThemeState) => void;
 };
 
-type ThemeTab = "random" | "curated";
+type ThemeTab = "random" | "standard" | "pro";
 
 type ThemeOption = {
   id: string;
@@ -131,7 +131,54 @@ const ROSE_CLOUD_THEME: KCardThemeState = {
   buttonTextColor: "#111827",
 };
 
-const CURATED_THEMES: ThemeOption[] = [
+// ---- 90s Pro themes (Win95-ish) ----
+
+const NINETIES_TEAL_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper: "none",
+  pageBackground: "#006b7f",
+  titleColor: "#e1ffe7",
+  pageTextColor: "#e1ffe7",
+  buttonColor: "#ffffff",
+  buttonTextColor: "#000000",
+  buttonRadius: 10,
+  buttonStyle: "solid",
+  buttonShadow: "3d",
+  titleFont: "retro",
+  pageFont: "retro",
+};
+
+const NINETIES_LIGHT_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper: "none",
+  pageBackground: "#ffffff",
+  titleColor: "#111827",
+  pageTextColor: "#111827",
+  buttonColor: "#ffffff",
+  buttonTextColor: "#000000",
+  buttonRadius: 10,
+  buttonStyle: "solid",
+  buttonShadow: "3d",
+  titleFont: "retro",
+  pageFont: "retro",
+};
+
+const NINETIES_MIDNIGHT_THEME: KCardThemeState = {
+  ...DEFAULT_KCARD_THEME,
+  wallpaper: "none",
+  pageBackground: "#003b34",
+  titleColor: "#d7ffe8",
+  pageTextColor: "#d7ffe8",
+  buttonColor: "#c4ffe4",
+  buttonTextColor: "#000000",
+  buttonRadius: 10,
+  buttonStyle: "solid",
+  buttonShadow: "3d",
+  titleFont: "retro",
+  pageFont: "retro",
+};
+
+const STANDARD_THEMES: ThemeOption[] = [
   { id: "blank", name: "Blank", theme: BLANK_THEME },
   { id: "blood-orange", name: "Blood Orange", theme: BLOOD_ORANGE_THEME },
   { id: "sunset-plum", name: "Sunset Plum", theme: SUNSET_PLUM_THEME },
@@ -146,9 +193,16 @@ const CURATED_THEMES: ThemeOption[] = [
   { id: "rose-cloud", name: "Rose Cloud", theme: ROSE_CLOUD_THEME },
 ];
 
+const PRO_THEMES: ThemeOption[] = [
+  { id: "90s-teal", name: "90s Teal", theme: NINETIES_TEAL_THEME },
+  { id: "90s-light", name: "90s Light", theme: NINETIES_LIGHT_THEME },
+  { id: "90s-midnight", name: "90s Midnight", theme: NINETIES_MIDNIGHT_THEME },
+];
+
 const TABS: { id: ThemeTab; label: string }[] = [
   { id: "random", label: "Random" },
-  { id: "curated", label: "Curated" },
+  { id: "standard", label: "Standard" },
+  { id: "pro", label: "Pro Themes" },
 ];
 
 function isSameTheme(a: KCardThemeState, b: KCardThemeState): boolean {
@@ -168,13 +222,18 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
   };
 
   const handleRandomizeTheme = () => {
-    const pool = CURATED_THEMES.filter((t) => t.id !== "blank");
+    const pool = [...STANDARD_THEMES, ...PRO_THEMES].filter(
+      (t) => t.id !== "blank"
+    );
     if (!pool.length) return;
     const idx = Math.floor(Math.random() * pool.length);
     onChange(pool[idx].theme);
   };
 
   const isBlankActive = value.wallpaper === "none";
+
+  const activeThemes =
+    activeTab === "pro" ? PRO_THEMES : STANDARD_THEMES;
 
   return (
     <div className="space-y-6">
@@ -209,7 +268,7 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
 
       {/* Themes grid */}
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {CURATED_THEMES.map((option) => {
+        {activeThemes.map((option) => {
           const isBlank = option.id === "blank";
 
           const selected = isBlank
@@ -222,7 +281,10 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
                   "linear-gradient(135deg,#f7f3eb 0%,#f1ece3 45%,#e9e4db 100%)",
               }
             : {
-                background: option.theme.wallpaper,
+                background:
+                  option.theme.wallpaper === "none"
+                    ? option.theme.pageBackground
+                    : option.theme.wallpaper,
               };
 
           return (

@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 02/12/2025, 12:27:16*
+*Generated on: 03/12/2025, 17:11:14*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 342 |
-| 📁 Total Folders | 154 |
+| 📄 Total Files | 370 |
+| 📁 Total Folders | 161 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,20 +26,20 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 155 files (45.3%)
-- 🔷 **.ts** (TypeScript files): 57 files (16.7%)
-- 🖼️ **.png** (PNG images): 37 files (10.8%)
-- 📄 **.sql** (Other files): 19 files (5.6%)
-- 📄 **.zip** (Other files): 12 files (3.5%)
-- 🎨 **.css** (Stylesheets): 10 files (2.9%)
-- 🎨 **.svg** (SVG images): 7 files (2.0%)
-- 📄 **.mjs** (Other files): 5 files (1.5%)
-- 📄 **.bak** (Other files): 4 files (1.2%)
-- ⚙️ **.json** (JSON files): 3 files (0.9%)
-- 📖 **.md** (Markdown files): 2 files (0.6%)
-- 🖼️ **.ico** (Icon files): 2 files (0.6%)
-- 📄 **.bak-limit** (Other files): 2 files (0.6%)
-- 📄 **.bak2** (Other files): 2 files (0.6%)
+- ⚛️ **.tsx** (React TypeScript files): 161 files (43.5%)
+- 🔷 **.ts** (TypeScript files): 59 files (15.9%)
+- 🖼️ **.png** (PNG images): 48 files (13.0%)
+- 📄 **.sql** (Other files): 20 files (5.4%)
+- 📄 **.zip** (Other files): 12 files (3.2%)
+- 🎨 **.css** (Stylesheets): 10 files (2.7%)
+- 🎨 **.svg** (SVG images): 7 files (1.9%)
+- 📄 **.mjs** (Other files): 5 files (1.4%)
+- 📄 **.bak** (Other files): 4 files (1.1%)
+- ⚙️ **.json** (JSON files): 3 files (0.8%)
+- 📖 **.md** (Markdown files): 2 files (0.5%)
+- 🖼️ **.ico** (Icon files): 2 files (0.5%)
+- 📄 **.bak-limit** (Other files): 2 files (0.5%)
+- 📄 **.bak2** (Other files): 2 files (0.5%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.3%)
 - 🐳 **.dockerfile** (Docker files): 1 files (0.3%)
 - ⚙️ **.yml** (YAML files): 1 files (0.3%)
@@ -52,8 +52,16 @@
 - 📄 **.sh** (Other files): 1 files (0.3%)
 - 📄 **.gz** (Other files): 1 files (0.3%)
 - 📄 **.bak-plan** (Other files): 1 files (0.3%)
+- 📄 **.bak_fix_mobile** (Other files): 1 files (0.3%)
+- 📄 **.bak_k_public** (Other files): 1 files (0.3%)
+- 📄 **.bak_k_slug_layout** (Other files): 1 files (0.3%)
+- 📄 **.bak_mobile** (Other files): 1 files (0.3%)
+- 📄 **.bak_mobile_size** (Other files): 1 files (0.3%)
+- 📄 **.bak_scale_tweak** (Other files): 1 files (0.3%)
+- 📄 **.bak_slug_layout** (Other files): 1 files (0.3%)
 - 📜 **.js** (JavaScript files): 1 files (0.3%)
 - 📄 **.bak-console** (Other files): 1 files (0.3%)
+- 📄 **.bak_variant** (Other files): 1 files (0.3%)
 - 📄 **.bak_from_py** (Other files): 1 files (0.3%)
 - 📄 **.bak_kcards_fix** (Other files): 1 files (0.3%)
 - 📄 **.fix-onavatarclear** (Other files): 1 files (0.3%)
@@ -68,23 +76,23 @@
 
 ### By Category
 
-- **React**: 155 files (45.3%)
-- **Other**: 62 files (18.1%)
-- **TypeScript**: 57 files (16.7%)
-- **Assets**: 47 files (13.7%)
-- **Styles**: 10 files (2.9%)
-- **Config**: 6 files (1.8%)
-- **DevOps**: 2 files (0.6%)
-- **Docs**: 2 files (0.6%)
+- **React**: 161 files (43.5%)
+- **Other**: 71 files (19.2%)
+- **TypeScript**: 59 files (15.9%)
+- **Assets**: 58 files (15.7%)
+- **Styles**: 10 files (2.7%)
+- **Config**: 6 files (1.6%)
+- **DevOps**: 2 files (0.5%)
+- **Docs**: 2 files (0.5%)
 - **JavaScript**: 1 files (0.3%)
 
 ### 📁 Largest Directories
 
-- **root**: 342 files
-- **src**: 241 files
-- **src/components**: 117 files
-- **src/app**: 116 files
-- **public**: 46 files
+- **root**: 370 files
+- **src**: 257 files
+- **src/app**: 126 files
+- **src/components**: 122 files
+- **public**: 57 files
 
 ## 🌳 Directory Structure
 
@@ -153,10 +161,15 @@ kompi-web/
 │   │   │   └── 📄 migration.sql
 │   │   ├── 📂 20251130205515_init_auth_features/
 │   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251202195231_add_kcard_link_clicks/
+│   │   │   └── 📄 migration.sql
 │   │   └── ⚙️ migration_lock.toml
 │   └── 📄 schema.prisma
 ├── 📖 project_structure.md
 ├── 🌐 public/
+│   ├── 🖼️ cards48.png
+│   ├── 🖼️ cards49.png
+│   ├── 🖼️ cards50.png
 │   ├── 🖼️ favicon.ico
 │   ├── 🎨 file.svg
 │   ├── 🎨 globe.svg
@@ -200,6 +213,15 @@ kompi-web/
 │   ├── 🎨 next.svg
 │   ├── 🖼️ pexels-dom-j-7304-45982.jpg
 │   ├── 🖼️ rosadjkompi.png
+│   ├── 📂 solutions/
+│   │   ├── 🖼️ solutions19.png
+│   │   ├── 🖼️ solutions20.png
+│   │   ├── 🖼️ solutions21.png
+│   │   ├── 🖼️ solutions22.png
+│   │   ├── 🖼️ solutions23.png
+│   │   ├── 🖼️ solutions24.png
+│   │   ├── 🖼️ solutions25.png
+│   │   └── 🖼️ solutions26.png
 │   ├── 📂 uploads/
 │   │   └── 📂 krcodes/
 │   │   │   └── 🖼️ cmiadm2e00003js049itq83xr.png
@@ -259,6 +281,8 @@ kompi-web/
 │   │   │   ├── 📂 health/
 │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 k-cards/
+│   │   │   │   ├── 📂 clicks/
+│   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   ├── 🔷 route.ts
 │   │   │   │   └── 📂 share/
 │   │   │   │   │   └── 🔷 route.ts
@@ -271,7 +295,6 @@ kompi-web/
 │   │   │   │   │   ├── 📂 png/
 │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   ├── 🔷 qr-helpers.ts
-│   │   │   │   │   ├── 🔷 route.route.bak.ts
 │   │   │   │   │   ├── 🔷 route.ts
 │   │   │   │   │   ├── 📂 style/
 │   │   │   │   │   │   └── 🔷 route.ts
@@ -373,7 +396,14 @@ kompi-web/
 │   │   ├── ⚛️ head.tsx
 │   │   ├── 📂 k/
 │   │   │   └── 📂 [slug]/
-│   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   ├── 📄 page.tsx.bak_fix_mobile
+│   │   │   │   ├── 📄 page.tsx.bak_k_public
+│   │   │   │   ├── 📄 page.tsx.bak_k_slug_layout
+│   │   │   │   ├── 📄 page.tsx.bak_mobile
+│   │   │   │   ├── 📄 page.tsx.bak_mobile_size
+│   │   │   │   ├── 📄 page.tsx.bak_scale_tweak
+│   │   │   │   └── 📄 page.tsx.bak_slug_layout
 │   │   ├── 📂 k-cards/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🎨 kompi-marketing.css
@@ -433,7 +463,13 @@ kompi-web/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 signup/
 │   │   │   └── ⚛️ page.tsx
-│   │   └── 🔷 sitemap.ts
+│   │   ├── 🔷 sitemap.ts
+│   │   └── 📂 solutions/
+│   │   │   ├── 📂 industry/
+│   │   │   │   ├── 📂 [slug]/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   └── ⚛️ layout.tsx
+│   │   │   └── ⚛️ layout.tsx
 │   ├── 🧩 components/
 │   │   ├── 📂 analytics/
 │   │   │   └── ⚛️ analytics-overview.tsx
@@ -491,8 +527,10 @@ kompi-web/
 │   │   │   ├── ⚛️ three.tsx
 │   │   │   └── ⚛️ two.tsx
 │   │   ├── 📂 k-cards/
+│   │   │   ├── 🔷 kcard-style.ts
 │   │   │   ├── 🔷 kcard-theme-presets.ts
 │   │   │   ├── ⚛️ KCardPreview.tsx
+│   │   │   ├── 📄 KCardPreview.tsx.bak_variant
 │   │   │   ├── ⚛️ KCardsPage.tsx
 │   │   │   ├── 📄 KCardsPage.tsx.bak_from_py
 │   │   │   ├── 📄 KCardsPage.tsx.bak_kcards_fix
@@ -554,6 +592,10 @@ kompi-web/
 │   │   │   └── ⚛️ value-grid.tsx
 │   │   ├── 📂 settings/
 │   │   │   └── ⚛️ profile-settings-client.tsx
+│   │   ├── 📂 solutions/
+│   │   │   ├── ⚛️ KompiAudienceStrip.tsx
+│   │   │   ├── ⚛️ sellcards.tsx
+│   │   │   └── ⚛️ SolutionsToolsStrip.tsx
 │   │   ├── 📂 subscribers/
 │   │   │   ├── ⚛️ subscribe-inline-form.tsx
 │   │   │   ├── ⚛️ subscribe-inline.tsx
@@ -582,6 +624,7 @@ kompi-web/
 │   │   ├── 🔷 fonts.ts
 │   │   ├── 🔷 plan-limits.ts
 │   │   ├── 🔷 prisma.ts
+│   │   ├── 🔷 solutions.ts
 │   │   ├── 🔷 stripe.ts
 │   │   └── 🔷 utils.ts
 ├── 🟡 🔷 **tsconfig.json**
@@ -601,8 +644,8 @@ kompi-web/
 - ⚙️ Config: YAML files
 - ⚙️ Config: TOML files
 - 🎨 Assets: SVG images
-- 🖼️ Assets: Icon files
 - 🖼️ Assets: PNG images
+- 🖼️ Assets: Icon files
 - 🖼️ Assets: JPEG images
 - 🎨 Styles: Stylesheets
 - ⚛️ React: React TypeScript files

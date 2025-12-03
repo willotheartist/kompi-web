@@ -9,6 +9,8 @@ import {
   ChangeEvent,
 } from "react";
 
+import { getKCardFontClass } from "@/lib/fonts";
+
 import {
   Card,
   CardHeader,
@@ -56,6 +58,7 @@ import {
   Image as ImageIcon,
   Video,
   Sparkles,
+  BarChart3,
   Trash2,
   Plus,
   Search,
@@ -452,27 +455,15 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
     buttonShadow,
   } = theme;
 
-  const previewTitleFont = useMemo(() => {
-    switch (titleFont) {
-      case "serif":
-        return "font-serif";
-      case "display":
-        return "font-semibold tracking-tight";
-      default:
-        return "font-sans";
-    }
-  }, [titleFont]);
+  const previewTitleFont = useMemo(
+    () => getKCardFontClass(titleFont),
+    [titleFont]
+  );
 
-  const previewBodyFont = useMemo(() => {
-    switch (pageFont) {
-      case "serif":
-        return "font-serif";
-      case "display":
-        return "font-semibold tracking-tight";
-      default:
-        return "font-sans";
-    }
-  }, [pageFont]);
+  const previewBodyFont = useMemo(
+    () => getKCardFontClass(pageFont),
+    [pageFont]
+  );
 
   
 const buttonBaseStyles = useMemo(() => {
@@ -1028,68 +1019,82 @@ const buttonBaseStyles = useMemo(() => {
                       onDragOver={handleLinkDragOver}
                       onDrop={(e) => handleLinkDrop(e, link.id)}
                       className={cn(
-                        "flex items-center gap-5 rounded-[26px] px-5 py-8 min-h-[120px] transition",
+                        "rounded-[26px] px-5 py-5 min-h-[120px] transition space-y-3",
                         draggingLinkId === link.id ? "opacity-70" : "opacity-100",
                       )}
                       style={{ backgroundColor: "var(--color-bg)" }}
                     >
-                      <button
-                        type="button"
-                        className="flex h-10 w-6 items-center justify-center cursor-grab text-[var(--color-subtle)] active:cursor-grabbing"
-                        aria-label="Reorder link"
-                      >
-                        <GripVertical className="h-4 w-4" />
-                      </button>
-                      <div className="flex-1 space-y-2">
-                        <Input
-                          value={link.title}
-                          onChange={(e) =>
-                            updateLink(link.id, {
-                              title: e.target.value,
-                            })
-                          }
-                          className="h-9 border-0 bg-transparent px-0 text-sm font-semibold focus-visible:outline-none focus-visible:ring-0"
-                          style={{
-                            color: "var(--color-text)",
-                          }}
-                          placeholder="Title"
-                        />
-                        <Input
-                          value={link.url}
-                          onChange={(e) =>
-                            updateLink(link.id, { url: e.target.value })
-                          }
-                          className="h-8 border-0 bg-transparent px-0 text-xs focus-visible:outline-none focus-visible:ring-0"
-                          style={{
-                            color: "var(--color-subtle)",
-                          }}
-                          placeholder="Link · URL"
-                        />
-                      </div>
-                      <div className="flex h-full flex-col items-end justify-between py-1">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateLink(link.id, {
-                              enabled: !link.enabled,
-                            })
-                          }
-                          className={cn(
-                            "relative inline-flex h-6 w-11 items-center rounded-full border transition-all",
-                            link.enabled ? "bg-[#050505]" : "bg-[#e4e2dd]",
-                          )}
-                          style={{
-                            borderColor: link.enabled ? "#050505" : "transparent",
-                          }}
-                          aria-pressed={link.enabled}
-                        >
-                          <span
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                          <button
+                            type="button"
+                            className="flex h-10 w-6 items-center justify-center cursor-grab text-[var(--color-subtle)] active:cursor-grabbing"
+                            aria-label="Reorder link"
+                          >
+                            <GripVertical className="h-4 w-4" />
+                          </button>
+                          <div className="flex-1 space-y-2">
+                            <Input
+                              value={link.title}
+                              onChange={(e) =>
+                                updateLink(link.id, {
+                                  title: e.target.value,
+                                })
+                              }
+                              className="h-9 border-0 bg-transparent px-0 text-sm font-semibold focus-visible:outline-none focus-visible:ring-0"
+                              style={{
+                                color: "var(--color-text)",
+                              }}
+                              placeholder="Title"
+                            />
+                            <Input
+                              value={link.url}
+                              onChange={(e) =>
+                                updateLink(link.id, { url: e.target.value })
+                              }
+                              className="h-8 border-0 bg-transparent px-0 text-xs focus-visible:outline-none focus-visible:ring-0"
+                              style={{
+                                color: "var(--color-subtle)",
+                              }}
+                              placeholder="Link · URL"
+                            />
+                          </div>
+                        </div>
+                        <div className="pt-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateLink(link.id, {
+                                enabled: !link.enabled,
+                              })
+                            }
                             className={cn(
-                              "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-150",
-                              link.enabled ? "translate-x-5" : "translate-x-1",
+                              "relative inline-flex h-6 w-11 items-center rounded-full border transition-all",
+                              link.enabled ? "bg-[#050505]" : "bg-[#e4e2dd]",
                             )}
-                          />
-                        </button>
+                            style={{
+                              borderColor: link.enabled ? "#050505" : "transparent",
+                            }}
+                            aria-pressed={link.enabled}
+                          >
+                            <span
+                              className={cn(
+                                "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-150",
+                                link.enabled ? "translate-x-5" : "translate-x-1",
+                              )}
+                            />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <div
+                          className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px]"
+                          style={{ color: "var(--color-subtle)" }}
+                        >
+                          <BarChart3 className="h-4 w-4" />
+                          <span>0 clicks</span>
+                        </div>
                         <button
                           type="button"
                           onClick={() =>
@@ -1097,7 +1102,7 @@ const buttonBaseStyles = useMemo(() => {
                               prev.filter((l) => l.id !== link.id),
                             )
                           }
-                          className="mt-3 inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--color-subtle)] hover:bg-[#f3eee7]"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--color-subtle)] hover:bg-[#f3eee7]"
                           aria-label="Delete link"
                         >
                           <Trash2 className="h-4 w-4" />
