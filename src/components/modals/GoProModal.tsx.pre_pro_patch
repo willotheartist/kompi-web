@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
@@ -12,46 +10,6 @@ interface GoProModalProps {
 }
 
 export default function GoProModal({ open, onClose }: GoProModalProps) {
-  const [loading, setLoading] = useState(false);
-
-  const handleStartPro = async () => {
-    try {
-      setLoading(true);
-
-      const res = await fetch("/api/billing/create-checkout-session", {
-        method: "POST",
-      });
-
-      if (!res.ok) {
-        let message = "Could not start checkout";
-        try {
-          const data = await res.json();
-          if (data?.error && typeof data.error === "string") {
-            message = data.error;
-          }
-        } catch {
-          // ignore JSON parse errors
-        }
-        toast.error(message);
-        return;
-      }
-
-      const data: { url?: string } = await res.json();
-
-      if (!data.url) {
-        toast.error("Stripe checkout URL is missing");
-        return;
-      }
-
-      window.location.href = data.url;
-    } catch (err) {
-      console.error("GoProModal handleStartPro error:", err);
-      toast.error("Something went wrong starting checkout");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <AnimatePresence>
       {open && (
@@ -123,14 +81,11 @@ export default function GoProModal({ open, onClose }: GoProModalProps) {
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Button
-                  type="button"
-                  onClick={handleStartPro}
-                  disabled={loading}
                   className="bg-[var(--color-accent)] text-[var(--color-text)]
                              rounded-full px-7 py-3 text-sm font-medium shadow-sm
                              hover:bg-[var(--color-accent)]"
                 >
-                  {loading ? "Redirecting…" : "Upgrade to Creator"}
+                  Start your Pro trial
                 </Button>
 
                 <button

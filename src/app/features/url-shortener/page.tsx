@@ -11,9 +11,10 @@ import { instrumentSerif } from "@/lib/fonts";
 import { KCardPromoHero } from "@/components/solutions/KCardPromoHero1";
 import { KCardPromoHero2 } from "@/components/solutions/KCardPromoHero2";
 import { KCardPromoHero3 } from "@/components/solutions/KCardPromoHero3";
-
+import Faqs from "@/components/faqs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FooterCTA } from "@/components/footer-cta";
 import {
   Link2,
   QrCode,
@@ -244,7 +245,7 @@ export default function UrlShortenerPage() {
   const isAuthenticated = Boolean(session);
 
   return (
-    <div className="w-full bg-[var(--color-bg)]">
+    <div className="w-full bg-[var(--color-bg)] pt-20 sm:pt-24 overflow-x-hidden">
       <main className="mx-auto max-w-6xl space-y-24 px-4 py-16 sm:px-6 sm:py-24 lg:max-w-6xl lg:px-8">
         {/* HERO — matches marketing mock */}
         <section className="space-y-12 text-center">
@@ -297,11 +298,13 @@ export default function UrlShortenerPage() {
           </div>
         </section>
 
-        {/* Rest of the page stays the same */}
-        <KompiAudienceStrip />
-        <KCardPromoHero />
-        <KCardPromoHero2 />
-        <KCardPromoHero3 />
+        {/* FULL-BLEED MARKETING STRIPS */}
+        <div className="-mx-4 sm:-mx-6 lg:-mx-8 space-y-16">
+          <KompiAudienceStrip />
+          <KCardPromoHero />
+          <KCardPromoHero2 />
+          <KCardPromoHero3 />
+        </div>
 
         {/* PLATFORM SECTION */}
         <section className="space-y-8">
@@ -434,6 +437,7 @@ export default function UrlShortenerPage() {
         <section className="space-y-8">
           <SolutionsToolsStrip />
         </section>
+        <Faqs />
 
         {/* USE CASES */}
         <section className="space-y-8">
@@ -525,6 +529,12 @@ export default function UrlShortenerPage() {
           </div>
         </section>
       </main>
+
+
+
+      
+  
+      <FooterCTA />
     </div>
   );
 }

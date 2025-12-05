@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -23,10 +24,29 @@ import {
   Rocket,
   Globe2,
   ChevronDown,
+  Wrench,
 } from "lucide-react";
+import { getToolById } from "@/lib/tools-config";
 import { CreateWorkspaceModal } from "@/components/workspaces/create-workspace-modal";
 
-const navGroups = [
+type NavChild = {
+  href: string;
+  label: string;
+};
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  children?: NavChild[];
+};
+
+type NavGroup = {
+  section: string;
+  items: NavItem[];
+};
+
+const baseNavGroups: NavGroup[] = [
   {
     section: "My Kompi",
     items: [
@@ -119,6 +139,50 @@ function Sidebar({
   setCollapsed: (v: boolean) => void;
 }) {
   const pathname = usePathname() ?? "/";
+  const searchParams = useSearchParams();
+  const [toolIds, setToolIds] = useState<Parameters<typeof getToolById>[0][]>([]);
+
+  // Load enabled tools for the current workspace to build Tools nav group
+  useEffect(() => {
+    async function loadTools() {
+      try {
+        const params = new URLSearchParams(searchParams?.toString() ?? "");
+        const qs = params.toString();
+        const url = qs ? `/api/tools?${qs}` : "/api/tools";
+
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return;
+
+        const json = await res.json();
+        setToolIds(json.toolIds ?? []);
+      } catch (error) {
+        console.error("TOOLS_NAV_LOAD_ERROR", error);
+      }
+    }
+    loadTools();
+  }, [searchParams]);
+
+  const toolsItems: NavItem[] = [
+    { href: "/dashboard/tools", label: "Tools marketplace", icon: Wrench },
+    ...toolIds
+      .map((id) => getToolById(id))
+      .filter(Boolean)
+      .map((tool) => ({
+        href: tool!.dashboardPath,
+        label: tool!.name,
+        icon: Wrench, // could later be per-tool icons
+      })),
+  ];
+
+  const navGroups: NavGroup[] = [
+    baseNavGroups[0],
+    baseNavGroups[1],
+    {
+      section: "Tools",
+      items: toolsItems,
+    },
+    baseNavGroups[2],
+  ];
 
   return (
     <motion.aside
@@ -182,7 +246,7 @@ function Sidebar({
               <div className="flex flex-col gap-1">
                 {group.items.map(({ href, label, icon: Icon, children }) => {
                   const childActive =
-                    (children ?? []).some((child) =>
+                    (children ?? []).some((child: NavChild) =>
                       pathname.startsWith(child.href)
                     );
 
@@ -236,7 +300,7 @@ function Sidebar({
                           className="ml-6 flex flex-col gap-1 border-l pl-3"
                           style={{ borderColor: "var(--color-border)" }}
                         >
-                          {children.map((child) => {
+                          {children.map((child: NavChild) => {
                             const childIsActive = pathname.startsWith(child.href);
                             return (
                               <Link

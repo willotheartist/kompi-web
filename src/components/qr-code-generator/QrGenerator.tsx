@@ -1,3 +1,5 @@
+//src/components/qr-code-generator/QrGenerator.tsx
+
 "use client";
 
 import { useEffect, useRef, useState, ChangeEvent } from "react";

@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-const FREE_LINK_LIMIT = 20; // Free plan link limit; Creator plan has higher limits.
+const FREE_LINK_LIMIT = 20;
 
 export type LinkListItem = {
   id: string;
@@ -54,15 +54,19 @@ export function LinksListClient({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">(
-    "all"
+    "all",
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+
     let out = links;
 
-    if (statusFilter === "active") out = out.filter((l) => l.isActive);
-    if (statusFilter === "inactive") out = out.filter((l) => !l.isActive);
+    if (statusFilter === "active") {
+      out = out.filter((link) => link.isActive);
+    } else if (statusFilter === "inactive") {
+      out = out.filter((link) => !link.isActive);
+    }
 
     if (!q) return out;
 
@@ -72,7 +76,7 @@ export function LinksListClient({
         link.targetUrl.toLowerCase().includes(q) ||
         (link.code && link.code.toLowerCase().includes(q)) ||
         (link.shortUrl && link.shortUrl.toLowerCase().includes(q)) ||
-        title.includes(q)
+        (title && title.includes(q))
       );
     });
   }, [links, query, statusFilter]);
@@ -87,12 +91,16 @@ export function LinksListClient({
     );
   }
 
+  const noLinksAtAll = links.length === 0;
   const usedLinks = links.length;
+  const remainingLinks = Math.max(FREE_LINK_LIMIT - usedLinks, 0);
   const isAtLimit = usedLinks >= FREE_LINK_LIMIT;
-  const noLinksAtAll = usedLinks === 0;
 
   const handleToggleActive = (linkId: string, nextActive: boolean) => {
-    if (onToggleActive) return onToggleActive(linkId, nextActive);
+    if (onToggleActive) {
+      onToggleActive(linkId, nextActive);
+      return;
+    }
 
     startTransition(async () => {
       try {
@@ -120,18 +128,18 @@ export function LinksListClient({
   return (
     <div className={cn("wf-dashboard-main space-y-6")}>
       {/* -------------------------------------------------- */}
-      {/* HERO HEADER */}
+      {/* HERO HEADER – matches Kompilink banner            */}
       {/* -------------------------------------------------- */}
       <header className="wf-dashboard-header">
         <div className="w-full rounded-[32px] bg-[#006476] px-6 py-6 sm:px-10 sm:py-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            {/* Left content */}
+            {/* Left: image + title + controls */}
             <div className="flex flex-1 flex-col gap-5 lg:flex-row lg:items-center">
-              {/* Image */}
+              {/* Stacked image card */}
               <div className="flex justify-start lg:items-center lg:justify-center">
-                <div className="relative h-20 w-20 sm:h-24 sm:w-24">
+                <div className="relative h-20 w-20 shrink-0 sm:h-24 sm:w-24">
                   <div className="absolute -left-4 top-3 h-16 w-14 rounded-2xl bg-[#F5FF47]" />
-                  <div className="relative h-full w-full rounded-2xl overflow-hidden bg-[#FF5A4A]">
+                  <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#FF5A4A]">
                     <img
                       src="/kompi-business.png"
                       alt="Kompi hero"
@@ -142,14 +150,15 @@ export function LinksListClient({
                 </div>
               </div>
 
-              {/* Title + filters */}
               <div className="flex-1 space-y-3">
+                {/* Title + subtitle */}
                 <div className="space-y-1">
                   <p
                     className="text-[32px] sm:text-[40px]"
                     style={{
-                      fontFamily: '"Instrument Serif", serif',
+                      fontFamily: '"Instrument Serif", Georgia, serif',
                       fontWeight: 400,
+                      fontStyle: "normal",
                       color: "#F4FBFF",
                     }}
                   >
@@ -158,7 +167,8 @@ export function LinksListClient({
                   <p
                     className="text-sm sm:text-base"
                     style={{
-                      fontFamily: '"Inter Tight", sans-serif',
+                      fontFamily:
+                        '"Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                       color: "rgba(244,251,255,0.9)",
                     }}
                   >
@@ -168,26 +178,47 @@ export function LinksListClient({
 
                 {/* Filters + search + create button */}
                 <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center">
-                  {/* Status Filter */}
+                  {/* Status pill */}
                   <div className="inline-flex w-full max-w-xs items-center rounded-full bg-white p-1 text-sm lg:max-w-[320px]">
-                    {["all", "active", "inactive"].map((v) => (
-                      <button
-                        key={v}
-                        type="button"
-                        onClick={() => setStatusFilter(v as "all" | "active" | "inactive")}
-                        className={cn(
-                          "flex-1 rounded-full px-4 py-2 transition",
-                          statusFilter === v
-                            ? "bg-[#006476] text-white"
-                            : "text-[#006476]"
-                        )}
-                      >
-                        {v[0].toUpperCase() + v.slice(1)}
-                      </button>
-                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter("all")}
+                      className={cn(
+                        "flex-1 rounded-full px-4 py-2 transition",
+                        statusFilter === "all"
+                          ? "bg-[#006476] text-white"
+                          : "text-[#006476]"
+                      )}
+                    >
+                      All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter("active")}
+                      className={cn(
+                        "flex-1 rounded-full px-4 py-2 transition",
+                        statusFilter === "active"
+                          ? "bg-[#006476] text-white"
+                          : "text-[#006476]"
+                      )}
+                    >
+                      Active
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter("inactive")}
+                      className={cn(
+                        "flex-1 rounded-full px-4 py-2 transition",
+                        statusFilter === "inactive"
+                          ? "bg-[#006476] text-white"
+                          : "text-[#006476]"
+                      )}
+                    >
+                      Inactive
+                    </button>
                   </div>
 
-                  {/* Search + Create */}
+                  {/* Search + create */}
                   <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
                     <Input
                       value={query}
@@ -208,7 +239,8 @@ export function LinksListClient({
                       style={{
                         backgroundColor: "#D8FF3B",
                         color: "#003426",
-                        fontFamily: '"Inter Tight", sans-serif',
+                        fontFamily:
+                          '"Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                       }}
                     >
                       <Link href="/links/new">Create link</Link>
@@ -218,29 +250,28 @@ export function LinksListClient({
               </div>
             </div>
 
-            {/* Usage text */}
+            {/* Right: usage text */}
             <div className="mt-2 text-right lg:mt-0">
               <p
                 className="text-xs sm:text-sm"
                 style={{
-                  fontFamily: '"Instrument Serif", serif',
+                  fontFamily:
+                    '"Instrument Serif", Georgia, serif',
                   fontWeight: 400,
                   color: "#F4FBFF",
                 }}
               >
                 {usedLinks}/{FREE_LINK_LIMIT} links used on the Free plan
                 {isAtLimit
-                  ? " - you've hit your Free limit. Upgrade to Creator for more links."
-                  : " - upgrade to Creator for higher limits."}
+                  ? " - delete a link to create more."
+                  : " - delete a link to create more."}
               </p>
             </div>
           </div>
         </div>
       </header>
 
-      {/* -------------------------------------------------- */}
-      {/* EMPTY STATE */}
-      {/* -------------------------------------------------- */}
+      {/* Empty state */}
       {noLinksAtAll ? (
         <section className="wf-dashboard-content flex min-h-[48vh] items-center justify-center">
           <Card className="wf-dashboard-empty-state mx-auto w-full max-w-lg rounded-3xl bg-white px-6 py-8 text-center">
@@ -271,9 +302,7 @@ export function LinksListClient({
           </Card>
         </section>
       ) : (
-        /* -------------------------------------------------- */
-        /* LIST                                                 */
-        /* -------------------------------------------------- */
+        // List / Dashboard/ListWithMeta
         <section className="wf-dashboard-content space-y-4">
           {filtered.length === 0 ? (
             <Card className="wf-dashboard-inline-notice rounded-2xl bg-white p-4 text-sm text-[color:var(--color-subtle)]">
@@ -306,7 +335,7 @@ export function LinksListClient({
                   : host || link.code || "untitled");
 
               const faviconStyle =
-                host
+                host != null
                   ? {
                       backgroundImage: `url(https://${host}/favicon.ico)`,
                       backgroundSize: "cover",
@@ -319,11 +348,11 @@ export function LinksListClient({
                   key={link.id}
                   className={cn(
                     "wf-dashboard-table-card group rounded-3xl border border-[color:var(--color-border)] bg-white",
-                    "transition-colors hover:bg-[color:var(--color-bg)]"
+                    "transition-colors hover:bg-[color:var(--color-bg)]",
                   )}
                 >
                   <div className="flex items-stretch gap-4 px-5 py-4 md:px-6">
-                    {/* Left icon */}
+                    {/* Left favicon column */}
                     <div className="flex items-center justify-center">
                       <div
                         className="flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
@@ -337,7 +366,7 @@ export function LinksListClient({
                       </div>
                     </div>
 
-                    {/* Middle content */}
+                    {/* Middle content column */}
                     <div className="min-w-0 flex-1 space-y-1.5">
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="truncate text-[15px] font-semibold text-[color:var(--color-text)]">
@@ -349,7 +378,7 @@ export function LinksListClient({
                             "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide border",
                             link.isActive
                               ? "border-[color:var(--color-accent)] bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
-                              : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-subtle)]"
+                              : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-subtle)]",
                           )}
                         >
                           {link.isActive ? "ACTIVE" : "INACTIVE"}
@@ -370,13 +399,13 @@ export function LinksListClient({
                       )}
 
                       <div className="flex items-start gap-1.5 text-[13px] text-[color:var(--color-subtle)]">
-                        <CornerDownRight className="mt-[2px] h-[14px] w-[14px]" />
+                        <CornerDownRight className="mt-[2px] h-[14px] w-[14px] text-[color:var(--color-subtle)] opacity-80" />
                         <span className="truncate">{link.targetUrl}</span>
                       </div>
 
                       <div className="mt-1.5 flex flex-wrap gap-4 text-[12px] text-[color:var(--color-subtle)]">
                         <span className="inline-flex items-center gap-1">
-                          <MousePointer2 className="h-[14px] w-[14px]" />
+                          <MousePointer2 className="h-[14px] w-[14px] text-[color:var(--color-subtle)] opacity-80" />
                           <span className="font-medium text-[color:var(--color-text)]">
                             {link.clicks ?? 0}
                           </span>
@@ -384,55 +413,56 @@ export function LinksListClient({
                         </span>
 
                         <span className="inline-flex items-center gap-1">
-                          <CalendarDays className="h-[14px] w-[14px]" />
-                          <span className="opacity-80">{link.createdLabel}</span>
+                          <CalendarDays className="h-[14px] w-[14px] text-[color:var(--color-subtle)] opacity-80" />
+                          <span className="opacity-80">
+                            {link.createdLabel}
+                          </span>
                         </span>
                       </div>
                     </div>
 
-                    {/* Right actions */}
+                    {/* Right actions column */}
                     <div className="flex items-center gap-2 pt-1">
-                      {/* Toggle */}
                       <button
                         type="button"
                         role="switch"
                         aria-checked={link.isActive}
+                        onClick={() => handleToggleActive(link.id, !link.isActive)}
                         disabled={isPending}
-                        onClick={() =>
-                          handleToggleActive(link.id, !link.isActive)
-                        }
                         className={cn(
                           "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors",
                           link.isActive
                             ? "border-transparent bg-[color:var(--color-accent)]"
                             : "border-[color:var(--color-border)] bg-[color:var(--color-bg)]",
-                          isPending && "cursor-not-allowed opacity-60"
+                          isPending && "cursor-not-allowed opacity-60",
                         )}
                       >
                         <span
                           className={cn(
                             "inline-block h-4 w-4 rounded-full bg-[color:var(--color-surface)] transition-transform",
-                            link.isActive ? "translate-x-4" : "translate-x-1"
+                            link.isActive ? "translate-x-4" : "translate-x-1",
                           )}
                         />
                       </button>
 
-                      {/* Copy */}
                       <button
                         type="button"
                         onClick={() => {
                           if (!composedShortUrl) return;
+                          if (typeof navigator === "undefined") return;
+
                           navigator.clipboard
-                            ?.writeText(composedShortUrl)
+                            .writeText(composedShortUrl)
                             .then(() => {
                               setCopiedId(link.id);
                               setTimeout(() => setCopiedId(null), 1200);
-                            });
+                            })
+                            .catch(() => {});
                         }}
                         className={cn(
                           "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
                           "border-[color:var(--color-border)] bg-[color:var(--color-surface)]",
-                          "transition-colors hover:bg-[color:var(--color-bg)]"
+                          "transition-colors hover:bg-[color:var(--color-bg)]",
                         )}
                         aria-label={isCopied ? "Copied" : "Copy short link"}
                       >
@@ -443,25 +473,25 @@ export function LinksListClient({
                         )}
                       </button>
 
-                      {/* Analytics */}
                       <Link
                         href={`/links/${link.id}`}
                         className={cn(
-                          "inline-flex h-8 w-8 items-center justify-center rounded-full border",
-                          "border-[color:var(--color-accent)] bg-[color:var(--color-accent-soft)] transition-colors hover:bg-[color:var(--color-accent)]"
+                          "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
+                          "border-[color:var(--color-accent)] bg-[color:var(--color-accent-soft)]",
+                          "transition-colors hover:bg-[color:var(--color-accent)]",
                         )}
-                        aria-label="View analytics"
+                        aria-label="View link analytics"
                       >
                         <Eye className="h-4 w-4" />
                       </Link>
 
-                      {/* More actions */}
                       <LinkActionsMenu
                         id={link.id}
                         shortUrl={composedShortUrl}
                         className={cn(
                           "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
-                          "border-[color:var(--color-border)] bg-[color:var(--color-surface)] transition-colors hover:bg-[color:var(--color-bg)]"
+                          "border-[color:var(--color-border)] bg-[color:var(--color-surface)]",
+                          "transition-colors hover:bg-[color:var(--color-bg)]",
                         )}
                       />
                     </div>

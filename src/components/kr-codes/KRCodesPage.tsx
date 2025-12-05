@@ -1016,7 +1016,7 @@ export default function KRCodesPage() {
   return (
     <main className="wf-dashboard-main w-full bg-[var(--color-bg)]">
       <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-6 md:gap-8 md:pb-12">
-                <header className="flex flex-col gap-5 rounded-3xl bg-[#020617] px-4 py-4 md:flex-row md:items-stretch md:justify-between md:px-7 md:py-6">
+                <header className="flex flex-col gap-5 rounded-3xl bg-[#1E2330] px-4 py-4 md:flex-row md:items-stretch md:justify-between md:px-7 md:py-6">
           {/* LEFT: static hero image + copy */}
           <div className="flex flex-1 flex-col gap-4 md:flex-row md:items-center">
             <div className="md:w-[120px]">

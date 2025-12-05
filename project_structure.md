@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 03/12/2025, 17:11:14*
+*Generated on: 05/12/2025, 13:33:24*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 370 |
-| 📁 Total Folders | 161 |
+| 📄 Total Files | 382 |
+| 📁 Total Folders | 168 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,15 +26,14 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 161 files (43.5%)
-- 🔷 **.ts** (TypeScript files): 59 files (15.9%)
-- 🖼️ **.png** (PNG images): 48 files (13.0%)
-- 📄 **.sql** (Other files): 20 files (5.4%)
-- 📄 **.zip** (Other files): 12 files (3.2%)
-- 🎨 **.css** (Stylesheets): 10 files (2.7%)
-- 🎨 **.svg** (SVG images): 7 files (1.9%)
-- 📄 **.mjs** (Other files): 5 files (1.4%)
-- 📄 **.bak** (Other files): 4 files (1.1%)
+- ⚛️ **.tsx** (React TypeScript files): 174 files (45.5%)
+- 🔷 **.ts** (TypeScript files): 59 files (15.4%)
+- 🖼️ **.png** (PNG images): 59 files (15.4%)
+- 📄 **.sql** (Other files): 20 files (5.2%)
+- 🎨 **.css** (Stylesheets): 9 files (2.4%)
+- 🎨 **.svg** (SVG images): 7 files (1.8%)
+- 📄 **.mjs** (Other files): 5 files (1.3%)
+- 📄 **.bak** (Other files): 4 files (1.0%)
 - ⚙️ **.json** (JSON files): 3 files (0.8%)
 - 📖 **.md** (Markdown files): 2 files (0.5%)
 - 🖼️ **.ico** (Icon files): 2 files (0.5%)
@@ -42,6 +41,7 @@
 - 📄 **.bak2** (Other files): 2 files (0.5%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.3%)
 - 🐳 **.dockerfile** (Docker files): 1 files (0.3%)
+- 📄 **.zip** (Other files): 1 files (0.3%)
 - ⚙️ **.yml** (YAML files): 1 files (0.3%)
 - 📄 **.patch** (Other files): 1 files (0.3%)
 - ⚙️ **.yaml** (YAML files): 1 files (0.3%)
@@ -76,11 +76,11 @@
 
 ### By Category
 
-- **React**: 161 files (43.5%)
-- **Other**: 71 files (19.2%)
-- **TypeScript**: 59 files (15.9%)
-- **Assets**: 58 files (15.7%)
-- **Styles**: 10 files (2.7%)
+- **React**: 174 files (45.5%)
+- **Assets**: 69 files (18.1%)
+- **Other**: 60 files (15.7%)
+- **TypeScript**: 59 files (15.4%)
+- **Styles**: 9 files (2.4%)
 - **Config**: 6 files (1.6%)
 - **DevOps**: 2 files (0.5%)
 - **Docs**: 2 files (0.5%)
@@ -88,11 +88,11 @@
 
 ### 📁 Largest Directories
 
-- **root**: 370 files
-- **src**: 257 files
-- **src/app**: 126 files
-- **src/components**: 122 files
-- **public**: 57 files
+- **root**: 382 files
+- **src**: 269 files
+- **src/app**: 139 files
+- **src/components**: 121 files
+- **public**: 68 files
 
 ## 🌳 Directory Structure
 
@@ -104,17 +104,6 @@ kompi-web/
 ├── 🟡 🐳 **docker-compose.yml**
 ├── 🟡 🐳 **Dockerfile**
 ├── 🔵 🔍 **eslint.config.mjs**
-├── 📄 k-cards-dashboard.zip
-├── 📄 kompi-analytics-debug.zip
-├── 📄 kompi-kcards-context.zip
-├── 📄 kompi-kr-codes-api.zip
-├── 📄 kompi-kr-codes-button.zip
-├── 📄 kompi-kr-codes-support.zip
-├── 📄 kompi-kr-codes-ui.zip
-├── 📄 kompi-web-upload.zip
-├── 📄 link-analytics-debug.zip
-├── 📄 link-routing-check.zip
-├── 📄 links-grid-with-dashboard.zip
 ├── 📄 make-qr-sticky.patch
 ├── 🔷 next-env.d.ts
 ├── 🟡 ▲ **next.config.ts**
@@ -170,6 +159,16 @@ kompi-web/
 │   ├── 🖼️ cards48.png
 │   ├── 🖼️ cards49.png
 │   ├── 🖼️ cards50.png
+│   ├── 📂 faces/
+│   │   ├── 🖼️ face77.png
+│   │   ├── 🖼️ face78.png
+│   │   ├── 🖼️ face79.png
+│   │   ├── 🖼️ face80.png
+│   │   ├── 🖼️ face81.png
+│   │   ├── 🖼️ face82.png
+│   │   ├── 🖼️ face83.png
+│   │   ├── 🖼️ face84.png
+│   │   └── 🖼️ face85.png
 │   ├── 🖼️ favicon.ico
 │   ├── 🎨 file.svg
 │   ├── 🎨 globe.svg
@@ -188,6 +187,7 @@ kompi-web/
 │   ├── 🖼️ kompi-business.png
 │   ├── 🖼️ kompi-platform.png
 │   ├── 🎨 Kompi..svg
+│   ├── 🖼️ kompiboxes.png
 │   ├── 🖼️ kompicollage.png
 │   ├── 🖼️ kompifive.png
 │   ├── 🖼️ kompifour.png
@@ -214,6 +214,7 @@ kompi-web/
 │   ├── 🖼️ pexels-dom-j-7304-45982.jpg
 │   ├── 🖼️ rosadjkompi.png
 │   ├── 📂 solutions/
+│   │   ├── 🖼️ kards1.png
 │   │   ├── 🖼️ solutions19.png
 │   │   ├── 🖼️ solutions20.png
 │   │   ├── 🖼️ solutions21.png
@@ -329,6 +330,26 @@ kompi-web/
 │   │   │   │   └── 🔷 route.ts
 │   │   │   └── 📂 workspaces/
 │   │   │   │   └── 🔷 route.ts
+│   │   ├── 📂 customers/
+│   │   │   ├── 📂 agencies/
+│   │   │   │   ├── ⚛️ AgenciesCustomersClient.tsx
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 brands/
+│   │   │   │   ├── ⚛️ BrandsCustomersClient.tsx
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 communities/
+│   │   │   │   ├── ⚛️ CommunitiesCustomersClient.tsx
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 creators/
+│   │   │   │   ├── ⚛️ CreatorsCustomersClient.tsx
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 events/
+│   │   │   │   ├── ⚛️ EventsCustomersClient.tsx
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── ⚛️ page.tsx
+│   │   │   └── 📂 small-business/
+│   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   └── ⚛️ SmallBusinessCustomersClient.tsx
 │   │   ├── 📂 dashboard/
 │   │   │   ├── 📂 contact-forms/
 │   │   │   │   ├── 📂 [id]/
@@ -509,7 +530,6 @@ kompi-web/
 │   │   ├── 📂 discounts/
 │   │   │   ├── ⚛️ discount-codes-table.tsx
 │   │   │   └── ⚛️ discount-pill.tsx
-│   │   ├── ⚛️ do-more.tsx
 │   │   ├── 📂 engagement/
 │   │   │   └── ⚛️ locked-content.tsx
 │   │   ├── ⚛️ faqs.tsx
@@ -552,8 +572,6 @@ kompi-web/
 │   │   │   ├── 📄 KRCodesPage.tsx.bak2
 │   │   │   ├── 📄 KRCodesPage.tsx.orig
 │   │   │   └── 📄 KRCodesPage.tsx.rej
-│   │   ├── 🎨 krow.css
-│   │   ├── ⚛️ KRow.tsx
 │   │   ├── 📂 layout/
 │   │   │   └── ⚛️ side-nav.tsx
 │   │   ├── 📂 links/
@@ -584,15 +602,16 @@ kompi-web/
 │   │   │   └── ⚛️ menu-qr-preview.tsx
 │   │   ├── 📂 sections/
 │   │   │   ├── ⚛️ analytics.tsx
+│   │   │   ├── ⚛️ faces.tsx
 │   │   │   ├── ⚛️ how-it-works.tsx
-│   │   │   ├── 📂 one/
-│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── ⚛️ personas.tsx
-│   │   │   ├── ⚛️ testimonials.tsx
-│   │   │   └── ⚛️ value-grid.tsx
+│   │   │   └── ⚛️ testimonials.tsx
 │   │   ├── 📂 settings/
 │   │   │   └── ⚛️ profile-settings-client.tsx
 │   │   ├── 📂 solutions/
+│   │   │   ├── ⚛️ KCardPromoHero1.tsx
+│   │   │   ├── ⚛️ KCardPromoHero2.tsx
+│   │   │   ├── ⚛️ KCardPromoHero3.tsx
 │   │   │   ├── ⚛️ KompiAudienceStrip.tsx
 │   │   │   ├── ⚛️ sellcards.tsx
 │   │   │   └── ⚛️ SolutionsToolsStrip.tsx

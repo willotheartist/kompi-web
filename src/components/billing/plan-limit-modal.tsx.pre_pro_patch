@@ -38,11 +38,11 @@ export function PlanLimitModal({
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-2xl bg-[color:var(--color-accent-soft)]">
               <Link2 className="h-4 w-4 text-[color:var(--color-text)]" />
             </span>
-            You’ve reached your plan limit
+            You’ve reached the Free plan limit
           </DialogTitle>
           <DialogDescription className="text-sm text-[color:var(--color-subtle)]">
             You’ve created {usedSafe} / {limit} {featureLabel} in this workspace.
-            Upgrade to the Creator plan (£9.99/mo) to keep creating new {featureLabel} and unlock more analytics.
+            Upgrade Kompi to keep creating new {featureLabel} and unlock more analytics.
           </DialogDescription>
         </DialogHeader>
 
@@ -76,7 +76,7 @@ export function PlanLimitModal({
               className="h-9 rounded-full bg-[color:var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] shadow-sm hover:shadow-md"
               onClick={handleUpgrade}
             >
-              Upgrade to Creator
+              Upgrade Kompi
             </Button>
           </div>
         </div>

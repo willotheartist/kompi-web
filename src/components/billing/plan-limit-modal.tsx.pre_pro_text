@@ -76,7 +76,7 @@ export function PlanLimitModal({
               className="h-9 rounded-full bg-[color:var(--color-accent)] px-5 text-sm font-semibold text-[color:var(--color-text)] shadow-sm hover:shadow-md"
               onClick={handleUpgrade}
             >
-              Upgrade to Creator
+              Upgrade Kompi
             </Button>
           </div>
         </div>
