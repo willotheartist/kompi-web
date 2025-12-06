@@ -80,8 +80,11 @@ export async function POST(req: Request) {
     });
 
     if (count >= limit) {
+      const isCreator = workspace.plan === "CREATOR";
+      const prefix = isCreator ? "Creator plan limit" : "Free plan limit";
+
       return new NextResponse(
-        `You’ve reached your limit on the Free plan. You can create up to ${limit} links per workspace on the Free plan. Upgrade to the Creator plan (£9.99/mo) to create more links and unlock full access to Kompi tools.`,
+        `${prefix} reached: you can create up to ${limit} links in this workspace.`,
         { status: 402 },
       );
     }

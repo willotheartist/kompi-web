@@ -25,10 +25,6 @@ import {
   Globe2,
   ChevronDown,
   Wrench,
-  IdCard,
-  UtensilsCrossed,
-  Hammer,
-  KeyRound,
 } from "lucide-react";
 import { getToolById } from "@/lib/tools-config";
 import { CreateWorkspaceModal } from "@/components/workspaces/create-workspace-modal";
@@ -56,12 +52,8 @@ const baseNavGroups: NavGroup[] = [
     items: [
       { href: "/dashboard", label: "Overview", icon: Home },
       { href: "/links", label: "Links", icon: Link2 },
-      { href: "/k-cards", label: "K-Cards", icon: IdCard },
-      {
-        href: "/dashboard/qr-menus",
-        label: "QR Menus",
-        icon: UtensilsCrossed,
-      },
+      { href: "/k-cards", label: "K-Cards", icon: LayoutGrid },
+      { href: "/dashboard/qr-menus", label: "QR Menus", icon: LayoutGrid },
       {
         href: "/kr-codes",
         label: "Kompi Codes™ (KR)",
@@ -99,31 +91,8 @@ const baseNavGroups: NavGroup[] = [
   },
 ];
 
-/* ---------------- Animated sidebar icon ---------------- */
-
-function AnimatedIcon({
-  Icon,
-  active,
-}: {
-  Icon: ComponentType<SVGProps<SVGSVGElement>>;
-  active: boolean;
-}) {
-  return (
-    <motion.div
-      initial={{ rotate: 0, scale: 1 }}
-      whileHover={{ rotate: -8, scale: 1.08 }}
-      whileTap={{ rotate: 0, scale: 0.95 }}
-      animate={{ scale: active ? 1.06 : 1 }}
-      transition={{ type: "spring", stiffness: 260, damping: 18 }}
-      className="flex items-center justify-center"
-    >
-      <Icon className="h-5 w-5 shrink-0" />
-    </motion.div>
-  );
-}
-
 // Pattern: Shell/DashboardShell
-export function DashboardLayout({ children, pageTitle }: { children: React.ReactNode; pageTitle?: string }) {
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState<boolean>(false);
 
   return (
@@ -148,7 +117,7 @@ export function DashboardLayout({ children, pageTitle }: { children: React.React
           }}
         >
           <div className="wf-dashboard-container mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <Topbar pageTitle={pageTitle} />
+            <Topbar />
           </div>
         </div>
 
@@ -194,24 +163,15 @@ function Sidebar({
   }, [searchParams]);
 
   const toolsItems: NavItem[] = [
-    {
-      href: "/dashboard/tools",
-      label: "Tools marketplace",
-      icon: Hammer,
-    },
+    { href: "/dashboard/tools", label: "Tools marketplace", icon: Wrench },
     ...toolIds
       .map((id) => getToolById(id))
       .filter(Boolean)
-      .map((tool) => {
-        // simple special-case: password generator gets a key icon, others get wrench
-        const icon =
-          tool!.id === "password-generator" ? KeyRound : Wrench;
-        return {
-          href: tool!.dashboardPath,
-          label: tool!.name,
-          icon,
-        };
-      }),
+      .map((tool) => ({
+        href: tool!.dashboardPath,
+        label: tool!.name,
+        icon: Wrench, // could later be per-tool icons
+      })),
   ];
 
   const navGroups: NavGroup[] = [
@@ -226,7 +186,7 @@ function Sidebar({
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 80 : 240 }}
+      animate={{ width: collapsed ? 80 : 260 }}
       transition={{ duration: 0.22, ease: "easeInOut" }}
       className={cn(
         "wf-dashboard-sidebar",
@@ -237,7 +197,7 @@ function Sidebar({
         borderRight: "1px solid var(--color-border)",
       }}
     >
-      <div className="flex flex-col gap-4 px-3 py-4">
+      <div className="flex flex-col gap-5 px-3 py-6">
         {/* Brand */}
         <Link
           href="/dashboard"
@@ -274,11 +234,11 @@ function Sidebar({
         </Link>
 
         {/* Grouped nav */}
-        <nav className="wf-dashboard-nav mt-2 flex flex-col gap-3 text-sm">
+        <nav className="wf-dashboard-nav mt-2 flex flex-col gap-4 text-sm">
           {navGroups.map((group) => (
             <div key={group.section} className="flex flex-col gap-1.5">
               {!collapsed && (
-                <h2 className="px-2.5 text-[11px] font-medium text-[color:var(--color-subtle)]">
+                <h2 className="px-3 text-xs font-semibold text-[color:var(--color-subtle)]">
                   {group.section}
                 </h2>
               )}
@@ -296,25 +256,23 @@ function Sidebar({
                       : pathname.startsWith(href) || childActive;
 
                   return (
-                    <div key={href} className="flex flex-col gap-0.5">
+                    <div key={href} className="flex flex-col gap-1">
                       <Link
                         href={href}
                         className={cn(
-                          "wf-dashboard-nav-item group flex items-center rounded-xl px-2.5 py-1 text-sm font-medium transition",
-                          collapsed ? "justify-center" : "gap-1.5"
+                          "wf-dashboard-nav-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
+                          collapsed && "justify-center"
                         )}
                         style={{
                           backgroundColor: active
                             ? "var(--color-accent-soft)"
                             : "transparent",
-                          color: active
-                            ? "var(--color-text)"
-                            : "var(--color-subtle)",
+                          color: "var(--color-text)",
                         }}
                       >
                         {!collapsed && (
                           <span
-                            className="wf-dashboard-nav-accent mr-1 h-5 w-[2px] rounded-full"
+                            className="wf-dashboard-nav-accent h-6 w-1 rounded-full"
                             style={{
                               backgroundColor: active
                                 ? "var(--color-accent)"
@@ -324,7 +282,13 @@ function Sidebar({
                           />
                         )}
 
-                        <AnimatedIcon Icon={Icon} active={active} />
+                        <Icon
+                          className={cn(
+                            "h-5 w-5 shrink-0",
+                            !collapsed &&
+                              "group-hover:translate-x-0.5 transition-transform"
+                          )}
+                        />
 
                         {!collapsed && (
                           <span className="truncate">{label}</span>
@@ -333,24 +297,21 @@ function Sidebar({
 
                       {children && !collapsed && (
                         <div
-                          className="ml-5 flex flex-col gap-0.5 border-l pl-3"
+                          className="ml-6 flex flex-col gap-1 border-l pl-3"
                           style={{ borderColor: "var(--color-border)" }}
                         >
                           {children.map((child: NavChild) => {
-                            const childIsActive = pathname.startsWith(
-                              child.href
-                            );
+                            const childIsActive = pathname.startsWith(child.href);
                             return (
                               <Link
                                 key={child.href}
                                 href={child.href}
                                 className={cn(
-                                  "wf-dashboard-nav-subitem flex items-center rounded-xl px-2.5 py-1 text-sm font-medium transition"
+                                  "wf-dashboard-nav-subitem flex items-center rounded-xl px-3 py-2 text-sm transition",
+                                  childIsActive && "font-medium"
                                 )}
                                 style={{
-                                  color: childIsActive
-                                    ? "var(--color-text)"
-                                    : "var(--color-subtle)",
+                                  color: "var(--color-text)",
                                   backgroundColor: childIsActive
                                     ? "var(--color-accent-soft)"
                                     : "transparent",
@@ -371,7 +332,7 @@ function Sidebar({
         </nav>
       </div>
 
-      {/* Collapse toggle – circular button with animation */}
+      {/* Collapse toggle – simple circular icon button, no text */}
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="wf-dashboard-sidebar-toggle flex w-full items-center justify-center border-t"
@@ -381,29 +342,18 @@ function Sidebar({
         }}
       >
         <div className="py-3">
-          <motion.div
-            whileHover={{
-              scale: 1.06,
-              rotate: collapsed ? 6 : -6,
-            }}
-            whileTap={{ scale: 0.94, rotate: 0 }}
+          <div
             className="flex h-8 w-8 items-center justify-center rounded-full"
             style={{
               backgroundColor: "#123932", // deep teal
             }}
           >
             {collapsed ? (
-              <ChevronRight
-                className="h-4 w-4"
-                style={{ color: "#F5FF7A" }}
-              />
+              <ChevronRight className="h-4 w-4" style={{ color: "#F5FF7A" }} />
             ) : (
-              <ChevronLeft
-                className="h-4 w-4"
-                style={{ color: "#F5FF7A" }}
-              />
+              <ChevronLeft className="h-4 w-4" style={{ color: "#F5FF7A" }} />
             )}
-          </motion.div>
+          </div>
         </div>
       </button>
     </motion.aside>
@@ -417,7 +367,7 @@ type Workspace = {
   name: string;
 };
 
-function Topbar({ pageTitle }: { pageTitle?: string }) {
+function Topbar() {
   const { data } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -498,18 +448,15 @@ function Topbar({ pageTitle }: { pageTitle?: string }) {
 
   return (
     <div className="flex h-16 items-center justify-between gap-4">
-      {/* Left: page title only */}
+      {/* Left: simple dashboard label */}
       <div className="flex min-w-0 flex-col">
-        <h1
-          className="truncate text-xl font-semibold leading-tight sm:text-2xl"
-          style={{
-            letterSpacing: "-0.04em",
-            fontFamily:
-              '"Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-          }}
+        <span
+          className="text-[11px] uppercase tracking-[0.16em]"
+          style={{ color: "var(--color-subtle)" }}
         >
-          {pageTitle ?? "Overview"}
-        </h1>
+          Dashboard
+        </span>
+        <span className="text-sm font-medium">Overview</span>
       </div>
 
       {/* Right: compact account + workspace control */}

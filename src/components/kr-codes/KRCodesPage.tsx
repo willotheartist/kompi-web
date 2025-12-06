@@ -1097,33 +1097,47 @@ export default function KRCodesPage() {
 
 
         {qrLimitError && (
-          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-xs md:flex-row md:items-center md:justify-between md:text-sm">
-            <div>
-              <p className="font-medium text-[color:var(--color-text)]">
-                {qrLimitError}
-              </p>
-              <p className="mt-1 text-[color:var(--color-subtle)]">
-                Upgrade to the Creator plan to unlock more Kompi Codes in
-                this workspace.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                asChild
-                className="rounded-full px-4 py-1.5 text-xs font-semibold"
-              >
-                <Link href="/dashboard/settings/billing">
-                  Upgrade to Creator
+          <div className="mt-4 rounded-[32px] bg-white px-6 py-5 shadow-sm ring-1 ring-[var(--color-border)]">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-1">
+                <p
+                  className="text-lg font-semibold leading-snug text-[#013425]"
+                  style={{
+                    fontFamily:
+                      '"Instrument Serif", system-ui, serif',
+                  }}
+                >
+                  You’ve reached your limit on the Free plan.
+                </p>
+                <p className="text-xs md:text-sm text-[color:var(--color-subtle)]">
+                  {qrLimitError}
+                </p>
+              </div>
+
+              <div className="flex flex-col items-stretch gap-2 text-xs md:text-sm md:flex-row md:items-center">
+                <Link
+                  href="/dashboard/settings/billing"
+                  className="inline-flex items-center justify-center rounded-full px-6 py-2 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(15,23,42,0.35)] bg-gradient-to-r from-[#7B8CFF] via-[#A5B0FF] to-[#D8FF3B] hover:brightness-105 transition"
+                >
+                  <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/20">
+                    <span className="text-base">⚡</span>
+                  </span>
+                  <span className="flex flex-col leading-tight text-left">
+                    <span>Upgrade to Kompi PRO</span>
+                    <span className="text-[10px] font-normal opacity-80">
+                      Unlock new features now.
+                    </span>
+                  </span>
                 </Link>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="rounded-full px-4 py-1.5 text-xs"
-                onClick={() => setQrLimitError(null)}
-              >
-                Not now
-              </Button>
+
+                <button
+                  type="button"
+                  onClick={() => setQrLimitError(null)}
+                  className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] px-4 py-2 text-xs font-medium text-[color:var(--color-subtle)] hover:bg-[var(--color-bg)]"
+                >
+                  Not now
+                </button>
+              </div>
             </div>
           </div>
         )}

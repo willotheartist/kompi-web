@@ -6,12 +6,12 @@ import { requireUser, getActiveWorkspace } from "@/lib/auth";
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-const FREE_QR_LIMIT = 5;
+const FREE_QR_LIMIT = 20;
 
 
 
 
-const CREATOR_QR_LIMIT = 1000000; // effectively unlimited for Creator
+const CREATOR_QR_LIMIT = 100;
 
 const BodySchema = z.object({
   destination: z.string().min(1),
@@ -162,13 +162,15 @@ export async function POST(req: Request) {
     });
 
     if (qrCount >= qrLimit) {
+      const isCreator = workspace.plan === "CREATOR";
+      const prefix = isCreator ? "Creator plan limit" : "Free plan limit";
+
       return new NextResponse(
-        "You’ve reached your limit on the Free plan. You can create up to 5 Kompi Codes™ per workspace on the Free plan. Upgrade to the Creator plan (£9.99/mo) to create more codes and unlock full access to Kompi tools.",
+        `${prefix} reached: you can create up to ${qrLimit} KR / QR codes in this workspace.`,
         { status: 402 },
       );
     }
     // ----------------------------------
-// ----------------------------------
 
     let shortLinkId: string | null = null;
     let qrDestination = finalUrl;

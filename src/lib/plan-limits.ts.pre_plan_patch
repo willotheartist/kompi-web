@@ -11,13 +11,13 @@ export type PlanLimits = {
 export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
   FREE: {
     links: 20,
-    krCodes: 5,
+    krCodes: 20,
     kCards: 1,
   },
   CREATOR: {
-    links: 1000000,
-    krCodes: 1000000,
-    kCards: 1000000,
+    links: 100,
+    krCodes: 100,
+    kCards: 3,
   },
 };
 

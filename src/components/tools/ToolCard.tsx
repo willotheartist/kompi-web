@@ -1,9 +1,24 @@
+// src/components/tools/ToolCard.tsx
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import type { ToolDefinition } from "@/lib/tools-config";
+import { Button } from "@/components/ui/button";
+import type { LucideIcon } from "lucide-react";
+import {
+  Shield,
+  Sparkles,
+  FileText,
+  FileIcon,
+  Image as ImageIcon,
+  Type,
+  Hash,
+  User,
+  Braces,
+  ReceiptText,
+  PlayCircle,
+  MessageCircle,
+} from "lucide-react";
 
 interface ToolCardProps {
   tool: ToolDefinition;
@@ -11,72 +26,82 @@ interface ToolCardProps {
   onToggle?: () => void;
 }
 
+const ICON_COMPONENTS: Record<ToolDefinition["icon"], LucideIcon> = {
+  shield: Shield,
+  sparkles: Sparkles,
+  "file-text": FileText,
+  file: FileIcon,
+  image: ImageIcon,
+  type: Type,
+  hash: Hash,
+  user: User,
+  json: Braces,
+  invoice: ReceiptText,
+  play: PlayCircle,
+  whatsapp: MessageCircle,
+};
+
 export function ToolCard({ tool, enabled = false, onToggle }: ToolCardProps) {
   const isComingSoon = tool.status === "coming-soon";
+  const Icon = ICON_COMPONENTS[tool.icon] ?? Sparkles;
 
-  const buttonLabel = isComingSoon ? "Soon" : enabled ? "Added" : "Add";
+  const buttonLabel = isComingSoon ? "Coming soon" : enabled ? "Added" : "Add";
+
+  const handleClick = () => {
+    if (isComingSoon || !onToggle) return;
+    onToggle();
+  };
 
   return (
     <div
-      className="flex h-full flex-col rounded-[32px] border bg-card p-4 sm:p-5 shadow-sm"
+      className="group flex h-full min-h-[230px] flex-col rounded-[32px] border bg-card/80 px-5 py-5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-1.5 hover:bg-card hover:shadow-xl hover:backdrop-blur-lg"
       style={{
         borderColor: enabled ? "#111111" : "var(--color-border)",
-        boxShadow: enabled ? "0 0 0 2px #111111" : "0 10px 40px rgba(0,0,0,0.04)",
+        boxShadow: enabled
+          ? "0 0 0 2px #111111"
+          : "0 16px 40px rgba(0,0,0,0.04)",
       }}
     >
-      {/* Top image / illustration area */}
-      <div className="mb-4 rounded-3xl overflow-hidden">
-        <div
-          className="h-32 w-full"
-          style={{
-            background:
-              "linear-gradient(135deg, #FFF1BF 0%, #FF98D4 35%, #B782FF 70%, #111111 100%)",
-          }}
-        />
+      {/* Top content */}
+      <div className="flex items-start gap-4 pr-6 sm:pr-10">
+        {/* Icon + pill */}
+        <div className="flex flex-col items-start gap-2">
+          <div
+            className="flex h-14 w-14 items-center justify-center rounded-3xl transition-transform duration-200 group-hover:scale-105"
+            style={{ backgroundColor: tool.accentColor }}
+          >
+            <Icon className="h-8 w-8" strokeWidth={2.1} />
+          </div>
+          <div
+            className="rounded-full px-3 py-1 text-[11px] font-medium leading-none"
+            style={{ backgroundColor: tool.accentColor }}
+          >
+            {tool.category}
+          </div>
+        </div>
+
+        {/* Title + description */}
+        <div className="flex-1 space-y-2">
+          <h3 className="text-2xl font-semibold leading-tight tracking-tight">
+            {tool.name}
+          </h3>
+          <p className="text-m text-muted-foreground pr-6 sm:pr-10">
+            {tool.shortDescription}
+          </p>
+        </div>
       </div>
 
-      {/* Title & description */}
-      <div className="flex-1 space-y-1">
-        <h3 className="text-lg font-semibold leading-tight">
-          {tool.name}
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {tool.shortDescription}
-        </p>
-      </div>
-
-      {/* Bottom bar */}
-      <div className="mt-4 flex items-center justify-between gap-3">
-        {!isComingSoon && (
-          <div className="hidden text-[11px] text-muted-foreground sm:block">
-            <span>Public page:&nbsp;</span>
-            <Link
-              href={tool.publicPath}
-              className="underline underline-offset-2 hover:text-foreground"
-            >
-              {tool.publicPath}
-            </Link>
-          </div>
-        )}
-        {isComingSoon && (
-          <div className="text-[11px] text-muted-foreground">
-            We&apos;re putting the finishing touches on this tool.
-          </div>
-        )}
-
+      {/* Bottom bar – anchored to bottom for uniform button position */}
+      <div className="mt-auto pt-5">
         <Button
           type="button"
           size="lg"
           disabled={isComingSoon}
-          onClick={onToggle}
-          className="ml-auto w-28 rounded-full text-sm font-medium"
+          onClick={handleClick}
+          className="h-10 w-full rounded-full text-sm font-medium transition-transform duration-150 group-hover:translate-y-[1px]"
           style={{
-            backgroundColor: isComingSoon
-              ? "#F3F3F3"
-              : enabled
-              ? "#F5FF7A"
-              : "#222222",
-            color: isComingSoon ? "#999999" : enabled ? "#111111" : "#FFFFFF",
+            backgroundColor: isComingSoon ? "#F3F3F3" : "#111111",
+            color: isComingSoon ? "#999999" : "#FFFFFF",
           }}
         >
           {buttonLabel}

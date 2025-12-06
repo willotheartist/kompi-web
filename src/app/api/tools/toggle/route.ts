@@ -2,11 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
 
+function isRedirectError(error: unknown): boolean {
+  return (
+    !!error &&
+    typeof error === "object" &&
+    "digest" in error &&
+    typeof (error as { digest: string }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+  );
+}
+
 // POST /api/tools/toggle
 // Body: { toolId: string; enabled?: boolean; workspaceId?: string }
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
+
     const body = (await req.json().catch(() => ({}))) as {
       toolId?: string;
       enabled?: boolean;
@@ -18,9 +29,15 @@ export async function POST(req: Request) {
       return new NextResponse("toolId is required", { status: 400 });
     }
 
-    const workspace = await getActiveWorkspace(user.id, body.workspaceId ?? null);
+    const workspace = await getActiveWorkspace(
+      user.id,
+      body.workspaceId ?? null,
+    );
     if (!workspace) {
-      return new NextResponse("Workspace not found", { status: 404 });
+      return NextResponse.json(
+        { error: "WORKSPACE_NOT_FOUND", message: "Workspace not found" },
+        { status: 404 },
+      );
     }
 
     const desiredEnabled =
@@ -45,12 +62,16 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ workspace, tool: record });
   } catch (error: unknown) {
+    // ⬇️ this is the important part
+    if (isRedirectError(error)) {
+      throw error; // let Next.js handle /signin redirect properly
+    }
+
     console.error("TOOLS_TOGGLE_POST_ERROR", error);
 
-    // Return a 500 with the error message so you can see it in the Network tab
     const message =
       error && typeof error === "object" && "message" in error
-        ? String(error.message)
+        ? String((error as { message: unknown }).message)
         : "Unknown error";
 
     return NextResponse.json(

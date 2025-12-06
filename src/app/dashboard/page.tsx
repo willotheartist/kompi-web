@@ -1,3 +1,5 @@
+// src/app/dashboard/page.tsx
+
 import { prisma } from "@/lib/prisma";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
@@ -7,6 +9,7 @@ import {
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
 import { CreateWorkspaceEmpty } from "@/components/dashboard/create-workspace-empty";
 import PasswordGeneratorWidget from "@/components/dashboard/password-generator-widget";
+import ContactLinksWidget from "@/components/dashboard/contact-links-widget"; // 👈 NEW
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +27,10 @@ export default async function DashboardPage(props: PageProps) {
   const searchParams = await props.searchParams;
 
   const user = await requireUser();
-  const workspace = await getActiveWorkspace(user.id, searchParams?.workspaceId);
+  const workspace = await getActiveWorkspace(
+    user.id,
+    searchParams?.workspaceId
+  );
 
   if (!workspace) {
     return (
@@ -60,7 +66,12 @@ export default async function DashboardPage(props: PageProps) {
   return (
     <DashboardLayout>
       <DashboardShell links={links} />
-      <PasswordGeneratorWidget />
+
+      {/* Widgets under the main shell */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <PasswordGeneratorWidget />
+        <ContactLinksWidget />
+      </div>
     </DashboardLayout>
   );
 }

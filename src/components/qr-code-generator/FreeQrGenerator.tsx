@@ -89,7 +89,7 @@ export function FreeQrGenerator() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // visual size of preview square in the UI (download is still state.size)
-  const previewSize = 220;
+  const previewSize = 260;
 
   /* ---------- helpers ---------- */
 
@@ -378,7 +378,7 @@ export function FreeQrGenerator() {
         ctx.fill();
 
         // Text
-        ctx.fillStyle = "#f5f3ee";
+        ctx.fillStyle = "#f1f1f1";
         ctx.fillText(
           labelText,
           size / 2,
@@ -454,7 +454,7 @@ export function FreeQrGenerator() {
         }
         className={cn(
           "flex w-full items-center justify-between rounded-[18px] border px-4 py-2 text-[13px] font-medium tracking-[0.06em]",
-          "bg-[#f5f3ee] hover:bg-[#ece7dd] text-[#444036]"
+          "bg-[#f1f1f1] hover:bg-[#ece7dd] text-[#444036]"
         )}
       >
         <span>{title}</span>
@@ -466,10 +466,11 @@ export function FreeQrGenerator() {
   /* ---------- layout ---------- */
 
   return (
-    <section className="min-h-[640px] bg-[#050816] py-10">
-      <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:px-8">
+    <section className="min-h-[640px]">
+      <div className="grid w-full gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+
         {/* LEFT: controls */}
-        <Card className="space-y-6 rounded-[28px] border border-black/10 bg-[#f5f3ee] p-5 shadow-none">
+        <Card className="space-y-6 rounded-[28px] border border-black/10 bg-[#f1f1f1] p-5 shadow-none">
           {/* Mode tabs */}
           <div className="flex flex-wrap gap-2">
             {(["url", "text", "email", "phone", "wifi", "sms"] as QrMode[]).map(
@@ -1025,7 +1026,7 @@ export function FreeQrGenerator() {
         </Card>
 
         {/* RIGHT: preview */}
-        <Card className="flex flex-col rounded-[28px] border border-black/10 bg-[#f5f3ee] p-5 shadow-none">
+        <Card className="flex flex-col rounded-[28px] border border-black/10 bg-[#f1f1f1] p-5 shadow-none">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-[11px] font-semibold tracking-[0.16em] text-[#77725f]">
               PREVIEW
@@ -1068,7 +1069,7 @@ export function FreeQrGenerator() {
 
                 {/* Frame label */}
                 {state.frameStyle === "label" && (
-                  <div className="rounded-full bg-[#050505] px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f5f3ee]">
+                  <div className="rounded-full bg-[#050505] px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f1f1f1]">
                     {state.frameText || "Scan me"}
                   </div>
                 )}
@@ -1139,7 +1140,7 @@ export function FreeQrGenerator() {
                 className={cn(
                   "inline-flex items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.06em] transition",
                   hasGenerated
-                    ? "border-black bg-[#050505] text-[#f5f3ee] hover:bg-black"
+                    ? "border-black bg-[#050505] text-[#f1f1f1] hover:bg-white"
                     : "cursor-not-allowed border-[#c9c6bf] bg-[#e5e2dc] text-[#9d988c]"
                 )}
               >
@@ -1170,7 +1171,7 @@ function ColorSwatch({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="mx-auto max-w-4xl rounded-[32px] bg-transparent">
       <div className="relative h-8 w-8 rounded-full border border-black/10 bg-white">
         <div
           className="absolute inset-[4px] rounded-full border border-black/10"

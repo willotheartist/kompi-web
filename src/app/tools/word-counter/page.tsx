@@ -1,71 +1,72 @@
+// src/app/tools/word-counter/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import PasswordGenerator from "@/components/tools/PasswordGenerator";
+import { WordCounter } from "@/components/tools/WordCounter";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
   title:
-    "Free Online Password Generator | Create Strong Passwords | Kompi Tools",
+    "Free Online Word Counter | Count Words & Characters | Kompi Tools",
   description:
-    "Create strong, random passwords in seconds with Kompi's free password generator. Choose length, symbols, numbers and more to keep your online accounts safer.",
+    "Use Kompi's free online word counter to count words, characters, lines and reading time. Perfect for social posts, blog articles, SEO copy, emails, and more.",
 };
 
 const faqs = [
   {
-    question: "Is the Kompi password generator free to use?",
+    question: "Is the Kompi word counter free to use?",
     answer:
-      "Yes. You can use this password generator as many times as you like for free. No account, no signup, and no email required.",
+      "Yes. The Kompi word counter is completely free. You can paste or type as much text as you like, with no signup, no account, and no email required.",
   },
   {
-    question: "Are the passwords stored anywhere?",
+    question: "What does this word counter measure?",
     answer:
-      "No. The passwords are generated in your browser and are not stored or logged by Kompi. Once you close the page or copy a new password, the old one is gone.",
+      "Kompi shows total words, total characters, characters without spaces, number of lines, and a simple reading time estimate based on an average reading speed.",
   },
   {
-    question: "How long should my password be?",
+    question: "Is my text stored or logged anywhere?",
     answer:
-      "For most accounts, 12–16 characters is a good starting point. For more sensitive accounts, such as banking or email, many people prefer 20+ characters.",
+      "No. Your text stays in your browser and is not stored or logged by Kompi. When you close or refresh the page, your content disappears.",
   },
   {
-    question: "Which character options should I pick?",
+    question: "Who is this word counter for?",
     answer:
-      "For a stronger password, keep uppercase, lowercase, numbers, and symbols enabled. If a website does not allow symbols, you can disable them here and still keep a long password.",
+      "Creators, copywriters, social media managers, founders, and anyone who writes for the web. It works great for social posts, ads, emails, landing pages, and blog content.",
   },
   {
-    question: "Can I use the same password on more than one site?",
+    question: "Can I use it for SEO meta titles and descriptions?",
     answer:
-      "It is much safer to use a different password for every site. That way, if one site is ever breached, your other accounts are still protected.",
+      "Yes. Many people use word and character counters to fit within recommended limits for SEO titles and meta descriptions. Kompi shows characters with and without spaces so you can fine-tune length.",
   },
   {
-    question: "How does Kompi generate my passwords?",
+    question: "Does the reading time estimate work for every language?",
     answer:
-      "Kompi uses randomness from your browser to build a password from the character types you choose. Each time you change the length or options, a new password is created instantly.",
+      "Reading time is an estimate based on a typical reading speed of around 200 words per minute. It works best as a guideline rather than an exact value, and can vary by language and audience.",
   },
   {
-    question: "Do I need a password manager as well?",
+    question: "Can I use the word counter on mobile?",
     answer:
-      "A password generator helps you create strong passwords. A password manager helps you store them. Many people use both: Kompi for simple generation and a dedicated manager for long-term storage.",
+      "Yes. This page is built to work smoothly on phones, tablets, and desktop browsers, so you can check word counts wherever you write.",
   },
   {
-    question: "Can I generate passwords on mobile?",
+    question: "How does this fit into the rest of Kompi?",
     answer:
-      "Yes. This page is designed to work on phones, tablets, and desktop browsers, so you can generate secure passwords wherever you are.",
+      "Kompi focuses on links, QR codes, and tools that help you promote what you create. The word counter is one of several simple utilities you can pin to your Kompi dashboard for everyday writing.",
   },
   {
-    question: "Does Kompi offer other security tools?",
+    question: "Can I add this tool to my Kompi workspace?",
     answer:
-      "Kompi focuses on safer links, QR codes, and digital experiences. Over time, we are adding more simple tools like this password generator to help you stay secure online.",
+      "Yes. Create a free Kompi account and add the word counter to your dashboard so it’s always one click away while you work on links, QR menus, and more.",
   },
 ];
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "Kompi Password Generator",
-  url: "https://kompi.app/tools/password-generator",
+  name: "Kompi Word Counter",
+  url: "https://kompi.app/tools/word-counter",
   applicationCategory: "UtilitiesApplication",
   description:
-    "Create strong, random passwords in seconds with Kompi's free password generator.",
+    "Count words, characters, lines and reading time with Kompi's free online word counter.",
   operatingSystem: "Any",
   offers: {
     "@type": "Offer",
@@ -74,7 +75,7 @@ const jsonLd = {
   },
 };
 
-export default function PublicPasswordGeneratorPage() {
+export default function PublicWordCounterPage() {
   return (
     <main className="min-h-screen bg-[#F7F7F3] text-foreground">
       {/* HERO – text only, centred, tall & airy */}
@@ -88,31 +89,30 @@ export default function PublicPasswordGeneratorPage() {
             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#006B81] text-[10px] font-semibold text-white">
               K
             </span>
-            <span>Kompi Tools · Password generator</span>
+            <span>Kompi Tools · Word counter</span>
           </div>
 
           <div className="space-y-7">
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
-              The first{" "}
+              The free{" "}
               <span className="bg-[#E8F739] px-2 text-[#1E2330]">
-                free strong password
+                online word counter
               </span>{" "}
-              generator that feels like a product, not a form.
+              that actually feels nice to write in.
             </h1>
 
             <p className="mx-auto max-w-3xl text-base leading-relaxed text-[#4B5563] sm:text-lg">
-              Slide, click, copy. Kompi creates long, random, unique passwords
-              in seconds — right in your browser. No accounts, no ads, no
-              dark-pattern popups. Just safer passwords for everything you log
-              into.
+              Paste or type your content and instantly see words, characters,
+              lines, and reading time. Built for creators, marketers, and small
+              teams who care about clean copy and staying within limits.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               <a
-                href="#password-tool"
+                href="#word-counter-tool"
                 className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-7 py-3 text-sm font-medium text-[#F7F7F3] shadow-md shadow-[#1E2330]/30 transition hover:bg-black"
               >
-                Generate a password
+                Start counting words
               </a>
               <Link
                 href="/signup"
@@ -136,12 +136,12 @@ export default function PublicPasswordGeneratorPage() {
 
       {/* TOOL SECTION – directly under hero, tight spacing */}
       <section
-        id="password-tool"
+        id="word-counter-tool"
         className="bg-[#F7F7F3] px-4 pb-20 pt-0 sm:px-6 lg:px-8 -mt-10"
       >
         <div className="mx-auto max-w-3xl rounded-[2rem] bg-[#1E2330] p-[1px] shadow-xl shadow-[#1E2330]/30">
           <div className="rounded-[1.9rem] bg-[#FFFFFF] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-            <PasswordGenerator variant="public" />
+            <WordCounter />
           </div>
         </div>
       </section>
@@ -151,14 +151,15 @@ export default function PublicPasswordGeneratorPage() {
         <div className="mx-auto max-w-5xl space-y-12">
           <div className="space-y-4 text-center">
             <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-[#1E2330] sm:text-sm">
-              CHOOSE YOUR PASSWORD STYLE
+              CHECK YOUR WRITING AT A GLANCE
             </h2>
             <p className="text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
-              One tool, three ways to lock things down.
+              One word counter, three everyday use cases.
             </p>
             <p className="mx-auto max-w-2xl text-sm leading-relaxed text-[#4B5563] sm:text-base">
-              Use Kompi as a quick helper, a security upgrade, or the starting
-              point for a more disciplined password habit.
+              Whether you&apos;re writing fast social posts, longer blog
+              articles, or polished landing pages, Kompi keeps your content the
+              right length for the job.
             </p>
           </div>
 
@@ -167,23 +168,23 @@ export default function PublicPasswordGeneratorPage() {
             <div className="flex flex-col justify-between rounded-3xl bg-[#F7F7F3] p-7 shadow-sm ring-1 ring-[#E3F2FF]">
               <div className="space-y-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-                  QUICK UPGRADE
+                  SOCIAL & SHORT FORM
                 </p>
                 <h3 className="text-xl font-semibold text-[#1E2330] sm:text-2xl">
-                  Everyday strong
+                  Social-ready copy
                 </h3>
                 <p className="text-sm text-[#4B5563] sm:text-base">
-                  12–16 character passwords for email, socials, and everything
-                  you log into daily.
+                  Make sure tweets, captions, and hooks stay punchy without
+                  getting cut off by character limits.
                 </p>
                 <ul className="mt-2 space-y-1.5 text-sm text-[#374151]">
-                  <li>• Fast, one-click generation</li>
-                  <li>• Great for new signups</li>
-                  <li>• Easy to paste anywhere</li>
+                  <li>• Perfect for X, LinkedIn & IG</li>
+                  <li>• See characters with & without spaces</li>
+                  <li>• Quickly test multiple variations</li>
                 </ul>
               </div>
               <button className="mt-7 inline-flex w-full items-center justify-center rounded-full border border-[#1E2330] bg-white px-4 py-2.5 text-xs font-medium text-[#1E2330] hover:bg-[#F7F7F3]">
-                Generate an everyday password
+                Draft a social post
               </button>
             </div>
 
@@ -195,20 +196,20 @@ export default function PublicPasswordGeneratorPage() {
                   Recommended
                 </div>
                 <h3 className="text-xl font-semibold text-[#1E2330] sm:text-2xl">
-                  Extra strong
+                  Blog & long-form
                 </h3>
                 <p className="text-sm text-[#111827] sm:text-base">
-                  18–24 character passwords with mixed symbols for your most
-                  important accounts.
+                  Shape blog posts, articles, and scripts with a clear sense of
+                  length and reading time.
                 </p>
                 <ul className="mt-2 space-y-1.5 text-sm text-[#111827]">
-                  <li>• Ideal for banking & work logins</li>
-                  <li>• Balanced security & usability</li>
-                  <li>• Works perfectly with password managers</li>
+                  <li>• Track word count as you write</li>
+                  <li>• Estimate reading time for your audience</li>
+                  <li>• Great for newsletters & essays</li>
                 </ul>
               </div>
               <button className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-[#1E2330] px-4 py-2.5 text-xs font-semibold text-[#F7F7F3] hover:bg-black">
-                Generate an extra-strong password
+                Draft a blog section
               </button>
             </div>
 
@@ -216,23 +217,23 @@ export default function PublicPasswordGeneratorPage() {
             <div className="flex flex-col justify-between rounded-3xl bg-[#E3F2FF] p-7 shadow-sm ring-1 ring-[#9BDFD1]">
               <div className="space-y-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#006B81]">
-                  MAX SECURITY
+                  SEO & LANDING PAGES
                 </p>
                 <h3 className="text-xl font-semibold text-[#1E2330] sm:text-2xl">
-                  Paranoid mode
+                  SEO-friendly content
                 </h3>
                 <p className="text-sm text-[#4B5563] sm:text-base">
-                  24+ characters, full character set. For admin panels, cloud
-                  access, and anything you&apos;d really hate to lose.
+                  Keep titles, meta descriptions, and hero copy within
+                  best-practice ranges for search and UX.
                 </p>
                 <ul className="mt-2 space-y-1.5 text-sm text-[#374151]">
-                  <li>• Long, high-entropy strings</li>
-                  <li>• Built for password managers</li>
-                  <li>• Perfect for devs & power users</li>
+                  <li>• Check character limits for meta</li>
+                  <li>• Balance short, scannable sections</li>
+                  <li>• Pair with Kompi links & QR tools</li>
                 </ul>
               </div>
               <button className="mt-7 inline-flex w-full items-center justify-center rounded-full border border-[#006B81] bg-[#006B81] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#034557]">
-                Generate a max-security password
+                Optimise an SEO snippet
               </button>
             </div>
           </div>
@@ -244,18 +245,19 @@ export default function PublicPasswordGeneratorPage() {
         <div className="mx-auto max-w-5xl">
           <div className="overflow-hidden rounded-[999px] bg-[#E8F739] px-8 py-10 text-center shadow-md sm:px-12">
             <h2 className="text-xl font-semibold text-[#1E2330] sm:text-2xl md:text-3xl">
-              Ready to lock down your next login?
+              Ready to sanity-check your next piece of writing?
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-sm text-[#111827] sm:text-base">
-              Use Kompi&apos;s free password generator now, then pin it to your
-              Kompi dashboard so it&apos;s always one click away.
+              Use Kompi&apos;s free word counter now, then pin it to your Kompi
+              dashboard so it&apos;s always one click away when you&apos;re
+              drafting links, menus, and campaigns.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
-                href="#password-tool"
-                className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-6 py-2.5 text-xs font-semibold text-[#F7F7F3] shadow hover:bg-black"
+                href="#word-counter-tool"
+                className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-6 py-2.5 text-xs font-semibold text-[#F7F7F3] shadow hover:bg:black hover:bg-black"
               >
-                Generate a password
+                Open the word counter
               </a>
               <Link
                 href="/signup"
@@ -268,38 +270,34 @@ export default function PublicPasswordGeneratorPage() {
         </div>
       </section>
 
-      {/* FEATURE PANELS – BIGGER CARDS + VIDEOS */}
+      {/* FEATURE PANELS – narrative use cases */}
       <section className="bg-[#FFFFFF] px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl space-y-12">
           <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
-            Staying secure online, made easy
+            Writing for the web, without second guessing length.
           </h2>
 
           {/* Panel 1 */}
           <div className="grid gap-10 rounded-3xl bg-[#E3F2FF] p-10 sm:grid-cols-2 sm:p-16">
             <div className="space-y-5">
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1E2330] sm:text-sm">
-                FOR EVERYDAY LIFE
+                FOR EVERYDAY WRITING
               </p>
               <h3 className="text-2xl font-semibold text-[#1E2330] sm:text-3xl">
-                Fast, safe passwords for the accounts you use every day.
+                Keep your copy clear, concise, and to the point.
               </h3>
               <p className="text-sm leading-relaxed text-[#374151] sm:text-base">
-                Email, socials, cloud storage, streaming — Kompi makes it easy
-                to upgrade old weak passwords and set better ones for new
-                accounts from day one.
+                Emails, intros, announcements — Kompi gives you a quick sense of
+                how long something feels before you hit send. No more guessing
+                whether that paragraph is too heavy.
               </p>
             </div>
             <div className="flex items-center justify-center">
               <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#F7F7F3] shadow-md sm:h-80 sm:w-80">
-                <video
-                  src="/videos/passgen/password-generator-with-kompi.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="h-full w-full object-cover"
-                />
+                {/* You can later swap this for a word-counter demo video if you add one */}
+                <div className="flex h-full w-full items-center justify-center text-xs text-[#6B7280]">
+                  Word counter preview
+                </div>
               </div>
             </div>
           </div>
@@ -308,57 +306,47 @@ export default function PublicPasswordGeneratorPage() {
           <div className="grid gap-10 rounded-3xl bg-[#9BDFD1] p-10 sm:grid-cols-2 sm:p-16">
             <div className="order-2 flex items-center justify-center sm:order-1">
               <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#F7F7F3] shadow-md sm:h-80 sm:w-80">
-                <video
-                  src="/videos/passgen/password-gen-kompi.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="h-full w-full object-cover"
-                />
+                <div className="flex h-full w-full items-center justify-center text-xs text-[#0F172A]">
+                  Great for teams & client work
+                </div>
               </div>
             </div>
             <div className="order-1 space-y-5 sm:order-2">
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1E2330] sm:text-sm">
-                FOR TEAMS & CLIENT WORK
+                FOR TEAMS & CLIENT CONTENT
               </p>
               <h3 className="text-2xl font-semibold text-[#1E2330] sm:text-3xl">
-                One generator, countless safer client accounts.
+                Align writers, editors, and stakeholders on length.
               </h3>
               <p className="text-sm leading-relaxed text-[#111827] sm:text-base">
-                Agencies, studios, and small teams can use Kompi while setting
-                up new tools, campaigns, and logins — then store the credentials
-                wherever your team prefers.
+                Agencies, studios, and in-house teams can use Kompi to quickly
+                check copy length against briefs and content guidelines before
+                pushing anything live.
               </p>
             </div>
           </div>
 
-          {/* Panel 3 – can swap src when you add a 3rd video */}
+          {/* Panel 3 */}
           <div className="grid gap-10 rounded-3xl bg-[#006B81] p-10 sm:grid-cols-2 sm:p-16">
             <div className="space-y-5">
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#E3F2FF] sm:text-sm">
-                FOR BUILDERS & ADMINS
+                FOR CREATORS & BUILDERS
               </p>
               <h3 className="text-2xl font-semibold text-[#E3F2FF] sm:text-3xl">
-                Lock down admin areas and internal tools.
+                Pair clear copy with smarter links and QR codes.
               </h3>
               <p className="text-sm leading-relaxed text-[#E3F2FF] sm:text-base">
-                Generate extra-long, high-entropy passwords for dashboards,
-                servers, databases, and anything else you don&apos;t want
-                exposed. Pair it with your favourite password manager for a
-                rock-solid setup.
+                Kompi isn&apos;t just a word counter. It&apos;s part of a
+                toolkit for creators and small businesses — from link tracking
+                to QR menus — so your words and destinations always work
+                together.
               </p>
             </div>
             <div className="flex items-center justify-center">
               <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#0B1220] shadow-md sm:h-80 sm:w-80">
-                <video
-                  src="/videos/passgen/password-generator-with-kompi.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="h-full w-full object-cover"
-                />
+                <div className="flex h-full w-full items-center justify-center text-xs text-[#E5E7EB]">
+                  Kompi tools ecosystem
+                </div>
               </div>
             </div>
           </div>
@@ -370,10 +358,10 @@ export default function PublicPasswordGeneratorPage() {
         <div className="mx-auto max-w-5xl space-y-10">
           <div className="space-y-3 text-center">
             <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-[#6B7280] sm:text-sm">
-              ANYWAY, PEOPLE SEEM TO LIKE IT
+              SMALL TOOL, BIG WRITING UPGRADE
             </h2>
             <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Tiny tool, big quality-of-life upgrade.
+              Less guessing, more confident publishing.
             </p>
           </div>
 
@@ -381,32 +369,31 @@ export default function PublicPasswordGeneratorPage() {
             <div className="rounded-3xl bg-[#FFFFFF] p-5 shadow-sm ring-1 ring-[#E3F2FF]">
               <p className="mb-2 text-xs text-[#FBBF24]">★★★★★</p>
               <p className="text-sm font-semibold text-[#1E2330]">
-                “My new tab for every signup”
+                “My tab for every caption”
               </p>
               <p className="mt-2 text-xs text-[#4B5563]">
-                “I keep this open next to my email and use it any time I need a
-                new password. It&apos;s faster than my browser&apos;s built-in
-                generator.”
+                “I write all my Instagram and LinkedIn posts here now. Super
+                easy to see if something&apos;s too long before I copy it over.”
               </p>
             </div>
             <div className="rounded-3xl bg-[#FFFFFF] p-5 shadow-sm ring-1 ring-[#E3F2FF]">
               <p className="mb-2 text-xs text-[#FBBF24]">★★★★★</p>
               <p className="text-sm font-semibold text-[#1E2330]">
-                “Great for client setups”
+                “Helpful for client blogs”
               </p>
               <p className="mt-2 text-xs text-[#4B5563]">
-                “We use Kompi while onboarding new SaaS tools for clients. Strong
-                passwords, then straight into our password manager.”
+                “We have rough word targets in our briefs. Kompi makes it easy
+                to check where we are without opening a full document tool.”
               </p>
             </div>
             <div className="rounded-3xl bg-[#FFFFFF] p-5 shadow-sm ring-1 ring-[#E3F2FF]">
               <p className="mb-2 text-xs text-[#FBBF24]">★★★★★</p>
               <p className="text-sm font-semibold text-[#1E2330]">
-                “Clean, no-nonsense design”
+                “Clean, focused, no fluff”
               </p>
               <p className="mt-2 text-xs text-[#4B5563]">
-                “Love that it doesn&apos;t try to upsell me on a random app. It
-                just does the job really well.”
+                “It does one job really well. No random distractions, no heavy
+                interface. Just a nice space to paste and check my writing.”
               </p>
             </div>
           </div>
@@ -418,11 +405,11 @@ export default function PublicPasswordGeneratorPage() {
         <div className="mx-auto max-w-5xl gap-14 space-y-10 lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)] lg:space-y-0">
           <div className="space-y-3">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Questions? We&apos;ve got you.
+              Questions about the Kompi word counter?
             </h2>
             <p className="text-sm leading-relaxed text-[#4B5563] sm:text-base">
-              Here&apos;s what people usually want to know about the Kompi
-              password generator. No marketing speak — just straight answers.
+              Here&apos;s what people usually ask before they start using this
+              page every day. Straight answers, no jargon.
             </p>
           </div>
 

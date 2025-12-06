@@ -124,7 +124,7 @@ function ToolsContent() {
 export default function DashboardToolsPage() {
   return (
     <Suspense fallback={null}>
-      <DashboardLayout>
+      <DashboardLayout pageTitle="Tools marketplace">
         <ToolsContent />
       </DashboardLayout>
     </Suspense>

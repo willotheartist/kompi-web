@@ -123,7 +123,7 @@ function AnimatedIcon({
 }
 
 // Pattern: Shell/DashboardShell
-export function DashboardLayout({ children, pageTitle }: { children: React.ReactNode; pageTitle?: string }) {
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState<boolean>(false);
 
   return (
@@ -148,7 +148,7 @@ export function DashboardLayout({ children, pageTitle }: { children: React.React
           }}
         >
           <div className="wf-dashboard-container mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <Topbar pageTitle={pageTitle} />
+            <Topbar />
           </div>
         </div>
 
@@ -226,7 +226,7 @@ function Sidebar({
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 80 : 240 }}
+      animate={{ width: collapsed ? 80 : 220 }}
       transition={{ duration: 0.22, ease: "easeInOut" }}
       className={cn(
         "wf-dashboard-sidebar",
@@ -307,9 +307,7 @@ function Sidebar({
                           backgroundColor: active
                             ? "var(--color-accent-soft)"
                             : "transparent",
-                          color: active
-                            ? "var(--color-text)"
-                            : "var(--color-subtle)",
+                          color: "var(--color-text)",
                         }}
                       >
                         {!collapsed && (
@@ -345,12 +343,10 @@ function Sidebar({
                                 key={child.href}
                                 href={child.href}
                                 className={cn(
-                                  "wf-dashboard-nav-subitem flex items-center rounded-xl px-2.5 py-1 text-sm font-medium transition"
+                                  "wf-dashboard-nav-subitem flex items-center rounded-xl px-2.5 py-1 text-sm transition"
                                 )}
                                 style={{
-                                  color: childIsActive
-                                    ? "var(--color-text)"
-                                    : "var(--color-subtle)",
+                                  color: "var(--color-text)",
                                   backgroundColor: childIsActive
                                     ? "var(--color-accent-soft)"
                                     : "transparent",
@@ -417,7 +413,7 @@ type Workspace = {
   name: string;
 };
 
-function Topbar({ pageTitle }: { pageTitle?: string }) {
+function Topbar() {
   const { data } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -498,18 +494,15 @@ function Topbar({ pageTitle }: { pageTitle?: string }) {
 
   return (
     <div className="flex h-16 items-center justify-between gap-4">
-      {/* Left: page title only */}
+      {/* Left: simple dashboard label */}
       <div className="flex min-w-0 flex-col">
-        <h1
-          className="truncate text-xl font-semibold leading-tight sm:text-2xl"
-          style={{
-            letterSpacing: "-0.04em",
-            fontFamily:
-              '"Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-          }}
+        <span
+          className="text-[11px] uppercase tracking-[0.16em]"
+          style={{ color: "var(--color-subtle)" }}
         >
-          {pageTitle ?? "Overview"}
-        </h1>
+          Dashboard
+        </span>
+        <span className="text-sm font-medium">Overview</span>
       </div>
 
       {/* Right: compact account + workspace control */}
