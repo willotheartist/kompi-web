@@ -1,11 +1,13 @@
 // src/app/sitemap.ts
 import type { MetadataRoute } from "next";
+import { TOOL_DEFINITIONS } from "@/lib/tools-config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://kompi.app";
   const now = new Date();
 
-  return [
+  // Existing static routes
+  const staticEntries: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/`,
       lastModified: now,
@@ -46,7 +48,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/signin`,
       lastModified: now,
     },
+    {
+      url: `${baseUrl}/tools`,
+      lastModified: now,
+    },
     // NOTE: dynamic routes like /p/[slug], /menu/[slug], /m/[slug], /k/[slug]
     // can be added later by querying the DB for slugs and pushing them into this array.
   ];
+
+  // All currently AVAILABLE tools
+  const toolEntries: MetadataRoute.Sitemap = TOOL_DEFINITIONS
+    .filter((tool) => tool.status === "available")
+    .map((tool) => ({
+      url: `${baseUrl}${tool.publicPath}`,
+      lastModified: now,
+    }));
+
+  return [...staticEntries, ...toolEntries];
 }

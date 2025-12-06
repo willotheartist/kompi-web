@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     "Free Online Password Generator | Create Strong Passwords | Kompi Tools",
   description:
     "Create strong, random passwords in seconds with Kompi's free password generator. Choose length, symbols, numbers and more to keep your online accounts safer.",
+  alternates: {
+    canonical: "https://kompi.app/tools/password-generator",
+  },
 };
 
 const faqs = [
@@ -123,7 +126,7 @@ export default function PublicPasswordGeneratorPage() {
             </div>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-[#6B7280] sm:text-sm">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 ring-1 ring-[#E3F2FF]">
+              <div className="inline-flex items-center gap-2 rounded-full bg.white px-3 py-1 ring-1 ring-[#E3F2FF]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#A3CF3D]" />
                 Runs 100% in your browser
               </div>
@@ -207,7 +210,7 @@ export default function PublicPasswordGeneratorPage() {
                   <li>• Works perfectly with password managers</li>
                 </ul>
               </div>
-              <button className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-[#1E2330] px-4 py-2.5 text-xs font-semibold text-[#F7F7F3] hover:bg-black">
+              <button className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-[#1E2330] px-4 py-2.5 text-xs font-semibold text-[#F7F7F3] hover:bg.black">
                 Generate an extra-strong password
               </button>
             </div>
@@ -231,7 +234,7 @@ export default function PublicPasswordGeneratorPage() {
                   <li>• Perfect for devs & power users</li>
                 </ul>
               </div>
-              <button className="mt-7 inline-flex w-full items-center justify-center rounded-full border border-[#006B81] bg-[#006B81] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#034557]">
+              <button className="mt-7 inline-flex w-full items.center justify.center rounded-full border border-[#006B81] bg-[#006B81] px-4 py-2.5 text-xs font-semibold text.white hover:bg-[#034557]">
                 Generate a max-security password
               </button>
             </div>
@@ -271,7 +274,7 @@ export default function PublicPasswordGeneratorPage() {
       {/* FEATURE PANELS – BIGGER CARDS + VIDEOS */}
       <section className="bg-[#FFFFFF] px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl space-y-12">
-          <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
+          <h2 className="text-center text-2xl font-semibold tracking.tight sm:text-3xl md:text-4xl">
             Staying secure online, made easy
           </h2>
 
@@ -290,7 +293,7 @@ export default function PublicPasswordGeneratorPage() {
                 accounts from day one.
               </p>
             </div>
-            <div className="flex items-center justify-center">
+            <div className="flex items.center justify.center">
               <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#F7F7F3] shadow-md sm:h-80 sm:w-80">
                 <video
                   src="/videos/passgen/password-generator-with-kompi.mp4"
@@ -306,8 +309,8 @@ export default function PublicPasswordGeneratorPage() {
 
           {/* Panel 2 */}
           <div className="grid gap-10 rounded-3xl bg-[#9BDFD1] p-10 sm:grid-cols-2 sm:p-16">
-            <div className="order-2 flex items-center justify-center sm:order-1">
-              <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#F7F7F3] shadow-md sm:h-80 sm:w-80">
+            <div className="order-2 flex items.center justify.center sm:order-1">
+              <div className="h-56 w-56 overflow.hidden rounded-[2rem] bg-[#F7F7F3] shadow-md sm:h-80 sm:w-80">
                 <video
                   src="/videos/passgen/password-gen-kompi.mp4"
                   autoPlay
@@ -349,7 +352,7 @@ export default function PublicPasswordGeneratorPage() {
                 rock-solid setup.
               </p>
             </div>
-            <div className="flex items-center justify-center">
+            <div className="flex items.center justify.center">
               <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#0B1220] shadow-md sm:h-80 sm:w-80">
                 <video
                   src="/videos/passgen/password-generator-with-kompi.mp4"
@@ -415,7 +418,7 @@ export default function PublicPasswordGeneratorPage() {
 
       {/* FAQ */}
       <section className="bg-[#FFFFFF] px-4 pb-20 pt-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl gap-14 space-y-10 lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)] lg:space-y-0">
+        <div className="mx-auto max-w-5xl gap-14 space-y-10 lg:grid lg:grid.cols-[minmax(0,1.1fr)_minmax(0,1.3fr)] lg:space-y-0">
           <div className="space-y-3">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               Questions? We&apos;ve got you.
@@ -450,6 +453,7 @@ export default function PublicPasswordGeneratorPage() {
       {/* JSON-LD schema markup */}
       <script
         type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
     </main>

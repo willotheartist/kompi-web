@@ -1,75 +1,59 @@
-// src/app/tools/case-converter/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CaseConverter } from "@/components/tools/CaseConverter";
+import { HashtagGenerator } from "@/components/tools/HashtagGenerator";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
   title:
-    "Free Online Case Converter | Uppercase, Lowercase & Title Case | Kompi Tools",
+    "Free Hashtag Generator | Instagram, TikTok & YouTube Tags | Kompi Tools",
   description:
-    "Convert text to uppercase, lowercase, sentence case, and title case with Kompi's free online case converter. Perfect for social posts, headlines, emails and SEO-friendly copy.",
+    "Generate balanced hashtag sets for Instagram, TikTok, and YouTube. Mix niche, reach, and branded tags in a few clicks. Free, no login.",
   alternates: {
-    canonical: "https://kompi.app/tools/case-converter",
+    canonical: "https://kompi.app/tools/hashtag-generator",
   },
 };
 
 const faqs = [
   {
-    question: "Is the Kompi case converter free to use?",
+    question: "Is the Kompi hashtag generator free?",
     answer:
-      "Yes. You can use this case converter as often as you like for free. No account, no signup, and no email required.",
+      "Yes. The hashtag generator is free to use as many times as you’d like. No account, no email, and no download required.",
   },
   {
-    question: "What case styles can I convert to?",
+    question: "Which platforms does this hashtag generator work for?",
     answer:
-      "Kompi supports uppercase, lowercase, sentence case, title case, and capitalized words. That covers most everyday writing tasks for the web.",
+      "You can generate hashtag sets for Instagram, TikTok, YouTube, or generic content. Each platform uses slightly different base tags.",
   },
   {
-    question: "Is my text stored anywhere?",
+    question: "Can I control how many hashtags I get?",
     answer:
-      "No. Your text stays in your browser and is not stored or logged by Kompi. When you close or refresh the page, the content disappears.",
+      "Yes. You can pick roughly how many tags you want in each set (around 12, 18, or 24).",
   },
   {
-    question: "Who is this case converter for?",
+    question: "Does this guarantee reach or virality?",
     answer:
-      "Creators, marketers, writers, developers, and anyone who needs clean, consistently formatted text. It works well for headlines, captions, UI copy, and more.",
+      "No hashtag tool can guarantee results. Kompi focuses on giving you clean, sensible tag sets so you can show up consistently without spamming.",
   },
   {
-    question: "Can I use this for email subjects and headlines?",
+    question: "Can I add my brand or handle?",
     answer:
-      "Yes. Many people use case converters to standardize email subjects, blog titles, and landing page headings so everything follows the same style.",
+      "Yes. Add your brand or handle and Kompi will generate light branded tags you can keep using across posts.",
   },
   {
-    question: "Does this change punctuation or only letters?",
+    question: "Can I add this hashtag generator to my Kompi dashboard?",
     answer:
-      "The Kompi case converter focuses on changing the letter case while preserving punctuation, numbers, emojis, and spacing as much as possible.",
-  },
-  {
-    question: "Can I use the case converter on mobile?",
-    answer:
-      "Yes. This page is built to work smoothly on phones, tablets, and desktop browsers, so you can format text wherever you write.",
-  },
-  {
-    question: "How does this fit into the rest of Kompi?",
-    answer:
-      "Kompi focuses on tools that help you share and promote your work. The case converter is one of several simple utilities you can pin to your dashboard alongside links and QR tools.",
-  },
-  {
-    question: "Can I add this tool to my Kompi workspace?",
-    answer:
-      "Yes. Create a free Kompi account and add the case converter to your dashboard so it’s always one click away while you’re working on copy.",
+      "Yes. With a free Kompi account you can pin the hashtag generator as a tool inside your dashboard so it’s always one click away.",
   },
 ];
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "Kompi Case Converter",
-  url: "https://kompi.app/tools/case-converter",
+  name: "Kompi Hashtag Generator",
+  url: "https://kompi.app/tools/hashtag-generator",
   applicationCategory: "UtilitiesApplication",
   description:
-    "Convert text to uppercase, lowercase, sentence case, and title case with Kompi's free online case converter.",
+    "Generate balanced hashtag sets for Instagram, TikTok, and YouTube in a few clicks.",
   operatingSystem: "Any",
   offers: {
     "@type": "Offer",
@@ -78,44 +62,44 @@ const jsonLd = {
   },
 };
 
-export default function PublicCaseConverterPage() {
+export default function PublicHashtagGeneratorPage() {
   return (
     <main className="min-h-screen bg-[#F7F7F3] text-foreground">
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 top-[-8rem] -z-10 transform-gpu blur-3xl">
-          <div className="mx-auto h-64 max-w-3xl bg-gradient-to-r from-[#F4C6FF] via-[#A3CF3D] to-[#9BDFD1] opacity-60" />
+          <div className="mx-auto h-64 max-w-3xl bg-gradient-to-r from-[#F4C6FF] via-[#E8F739] to-[#9BDFD1] opacity-70" />
         </div>
 
         <div className="mx-auto flex min-h-[90vh] max-w-5xl flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-xs font-medium text-[#1E2330] shadow-sm ring-1 ring-[#E3F2FF]">
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#006B81] text-[10px] font-semibold text-white">
-              K
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#1E2330] text-[10px] font-semibold text-[#F7F7F3]">
+              #
             </span>
-            <span>Kompi Tools · Case converter</span>
+            <span>Kompi Tools · Hashtag generator</span>
           </div>
 
           <div className="space-y-7">
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
-              The{" "}
+              Build{" "}
               <span className="bg-[#E8F739] px-2 text-[#1E2330]">
-                free online case converter
+                clean hashtag sets
               </span>{" "}
-              that tidies your text in one click.
+              without scrolling endless lists.
             </h1>
 
             <p className="mx-auto max-w-3xl text-base leading-relaxed text-[#4B5563] sm:text-lg">
-              Paste your text once, then flip between uppercase, lowercase,
-              sentence case, and title case. Ideal for headlines, captions, UI
-              copy, and everything you publish on the internet.
+              Pick a platform, goal, and content type, then describe your post.
+              Kompi generates niche, balanced, and reach-focused hashtag sets in
+              one place — no spreadsheets or random generators needed.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               <a
-                href="#case-converter-tool"
+                href="#hashtag-generator-tool"
                 className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-7 py-3 text-sm font-medium text-[#F7F7F3] shadow-md shadow-[#1E2330]/30 transition hover:bg-black"
               >
-                Open the case converter
+                Generate hashtag sets
               </a>
               <Link
                 href="/signup"
@@ -131,7 +115,7 @@ export default function PublicCaseConverterPage() {
                 Runs 100% in your browser
               </div>
               <span>• No login or email required</span>
-              <span>• Works on desktop, tablet & mobile</span>
+              <span>• Works for Instagram, TikTok & YouTube</span>
             </div>
           </div>
         </div>
@@ -139,12 +123,12 @@ export default function PublicCaseConverterPage() {
 
       {/* TOOL SECTION */}
       <section
-        id="case-converter-tool"
-        className="bg-[#F7F7F3] px-4 pb-20 pt-0 sm:px-6 lg:px-8 -mt-10"
+        id="hashtag-generator-tool"
+        className="-mt-10 bg-[#F7F7F3] px-4 pb-20 pt-0 sm:px-6 lg:px-8"
       >
-        <div className="mx-auto max-w-3xl rounded-[2rem] bg-[#1E2330] p-[1px] shadow-xl shadow-[#1E2330]/30">
+        <div className="mx-auto max-w-3xl rounded-[2rem] bg-[#1E2330] p-[1px] shadow-xl shadow-[#1E2330]/20">
           <div className="rounded-[1.9rem] bg-[#FFFFFF] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-            <CaseConverter />
+            <HashtagGenerator variant="public" />
           </div>
         </div>
       </section>
@@ -154,14 +138,15 @@ export default function PublicCaseConverterPage() {
         <div className="mx-auto max-w-5xl space-y-12">
           <div className="space-y-4 text-center">
             <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-[#1E2330] sm:text-sm">
-              CLEAN UP YOUR TEXT IN SECONDS
+              TAGS THAT MATCH HOW YOU POST
             </h2>
             <p className="text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
-              One tool, multiple ways to format your copy.
+              One hashtag generator, three common posting modes.
             </p>
             <p className="mx-auto max-w-2xl text-sm leading-relaxed text-[#4B5563] sm:text-base">
-              Use Kompi as a quick fix for messy text, a way to standardize
-              headings and UI copy, or your daily helper for social content.
+              Whether you&apos;re posting daily, batching content for launches,
+              or managing client accounts, Kompi gives you sensible starting
+              points instead of guesswork.
             </p>
           </div>
 
@@ -170,23 +155,23 @@ export default function PublicCaseConverterPage() {
             <div className="flex flex-col justify-between rounded-3xl bg-[#F7F7F3] p-7 shadow-sm ring-1 ring-[#E3F2FF]">
               <div className="space-y-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-                  SOCIAL & EMAIL
+                  DAILY POSTING
                 </p>
                 <h3 className="text-xl font-semibold text-[#1E2330] sm:text-2xl">
-                  Fix quick one-liners
+                  For your everyday posts
                 </h3>
                 <p className="text-sm text-[#4B5563] sm:text-base">
-                  Turn all caps into sentence case, or tidy up subject lines and
-                  short hooks before you hit send.
+                  Create a few go-to sets you can reuse across photo posts,
+                  carousels, and quick updates.
                 </p>
                 <ul className="mt-2 space-y-1.5 text-sm text-[#374151]">
-                  <li>• Clean up ALL CAPS text</li>
-                  <li>• Standardize email subjects</li>
-                  <li>• Make captions feel natural</li>
+                  <li>• Keep tags consistent without overthinking</li>
+                  <li>• Mix niche and general tags</li>
+                  <li>• Save your favorite combos in Kompi</li>
                 </ul>
               </div>
               <button className="mt-7 inline-flex w-full items-center justify-center rounded-full border border-[#1E2330] bg-white px-4 py-2.5 text-xs font-medium text-[#1E2330] hover:bg-[#F7F7F3]">
-                Tidy a subject line
+                Build a daily set
               </button>
             </div>
 
@@ -198,20 +183,20 @@ export default function PublicCaseConverterPage() {
                   Recommended
                 </div>
                 <h3 className="text-xl font-semibold text-[#1E2330] sm:text-2xl">
-                  Headlines & titles
+                  For Reels, Shorts & TikToks
                 </h3>
                 <p className="text-sm text-[#111827] sm:text-base">
-                  Quickly switch between Title Case and sentence case to match
-                  your brand or editorial style.
+                  Generate sets tuned for short-form posts with a mix of reach
+                  and relevance.
                 </p>
                 <ul className="mt-2 space-y-1.5 text-sm text-[#111827]">
-                  <li>• Consistent blog titles</li>
-                  <li>• On-brand headings across pages</li>
-                  <li>• Great for CMS and no-code tools</li>
+                  <li>• Pick the platform and goal</li>
+                  <li>• Add a topic once, reuse the sets</li>
+                  <li>• Quickly swap between reach and niche modes</li>
                 </ul>
               </div>
               <button className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-[#1E2330] px-4 py-2.5 text-xs font-semibold text-[#F7F7F3] hover:bg-black">
-                Format a headline
+                Make tags for my Reels
               </button>
             </div>
 
@@ -219,23 +204,23 @@ export default function PublicCaseConverterPage() {
             <div className="flex flex-col justify-between rounded-3xl bg-[#E3F2FF] p-7 shadow-sm ring-1 ring-[#9BDFD1]">
               <div className="space-y-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#006B81]">
-                  UX & DEVELOPMENT
+                  CLIENT & CAMPAIGN WORK
                 </p>
                 <h3 className="text-xl font-semibold text-[#1E2330] sm:text-2xl">
-                  UI copy that matches
+                  For brands & launches
                 </h3>
                 <p className="text-sm text-[#4B5563] sm:text-base">
-                  Keep button labels, error messages, and interface text aligned
-                  with your product&apos;s tone.
+                  Build a few sets per client or campaign and keep them handy
+                  while you schedule content.
                 </p>
                 <ul className="mt-2 space-y-1.5 text-sm text-[#374151]">
-                  <li>• Standardize microcopy</li>
-                  <li>• Help devs and designers sync</li>
-                  <li>• Quickly test alternative styles</li>
+                  <li>• Add brand handles for consistent tags</li>
+                  <li>• Create dedicated sets per offer</li>
+                  <li>• Use niche-focused groups for loyal audiences</li>
                 </ul>
               </div>
               <button className="mt-7 inline-flex w-full items-center justify-center rounded-full border border-[#006B81] bg-[#006B81] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#034557]">
-                Clean up UI text
+                Plan campaign hashtags
               </button>
             </div>
           </div>
@@ -247,19 +232,18 @@ export default function PublicCaseConverterPage() {
         <div className="mx-auto max-w-5xl">
           <div className="overflow-hidden rounded-[999px] bg-[#E8F739] px-8 py-10 text-center shadow-md sm:px-12">
             <h2 className="text-xl font-semibold text-[#1E2330] sm:text-2xl md:text-3xl">
-              Ready to give your text a quick glow-up?
+              Your content system is allowed to be simple.
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-sm text-[#111827] sm:text-base">
-              Use Kompi&apos;s free case converter now, then pin it to your
-              Kompi dashboard so it&apos;s always one click away when you&apos;re
-              drafting copy.
+              Use Kompi to build a few reusable hashtag sets per format. Then
+              spend your energy on ideas, not tag spreadsheets.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
-                href="#case-converter-tool"
+                href="#hashtag-generator-tool"
                 className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-6 py-2.5 text-xs font-semibold text-[#F7F7F3] shadow hover:bg-black"
               >
-                Open the case converter
+                Generate hashtag sets
               </a>
               <Link
                 href="/signup"
@@ -276,53 +260,55 @@ export default function PublicCaseConverterPage() {
       <section className="bg-[#FFFFFF] px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl space-y-12">
           <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
-            Make everything you publish feel intentional.
+            Hashtags that plug into the rest of your Kompi workflow.
           </h2>
 
           {/* Panel 1 */}
           <div className="grid gap-10 rounded-3xl bg-[#E3F2FF] p-10 sm:grid-cols-2 sm:p-16">
             <div className="space-y-5">
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1E2330] sm:text-sm">
-                FOR EVERYDAY CREATORS
+                FOR CREATORS & SOLO FOUNDERS
               </p>
               <h3 className="text-2xl font-semibold text-[#1E2330] sm:text-3xl">
-                Stop fighting with caps-lock and manual fixes.
+                Keep your bios, links, and tags aligned.
               </h3>
               <p className="text-sm leading-relaxed text-[#374151] sm:text-base">
-                Captions, hooks, and quotes—Kompi gives you a calm space to
-                paste messy text and clean it up without opening a full document
-                tool.
+                Use Kompi to pair clean hashtag sets with your Instagram bios,
+                link-in-bio pages, QR menus, and branded short links — so every
+                post points in the same direction.
               </p>
             </div>
             <div className="flex items-center justify-center">
               <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#F7F7F3] shadow-md sm:h-80 sm:w-80">
-                <div className="flex h-full w-full items-center justify-center text-xs text-[#6B7280]">
-                  Case converter preview
+                <div className="flex h-full w-full items-center justify-center px-6 text-center text-xs text-[#6B7280]">
+                  Bios, hashtags, link pages, and QR codes — all living inside
+                  one Kompi workspace.
                 </div>
               </div>
             </div>
           </div>
 
           {/* Panel 2 */}
-          <div className="grid gap-10 rounded-3xl bg-[#9BDFD1] p-10 sm:grid-cols-2 sm:p-16">
+          <div className="grid gap-10 rounded-3xl bg-[#FEF3C7] p-10 sm:grid-cols-2 sm:p-16">
             <div className="order-2 flex items-center justify-center sm:order-1">
-              <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#F7F7F3] shadow-md sm:h-80 sm:w-80">
-                <div className="flex h-full w-full items-center justify-center text-xs text-[#0F172A]">
-                  Great for teams & client content
+              <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#FFFBEB] shadow-md sm:h-80 sm:w-80">
+                <div className="flex h-full w-full items-center justify-center px-6 text-center text-xs text-[#4B5563]">
+                  Use it live during content planning, launch mapping, and
+                  client strategy calls.
                 </div>
               </div>
             </div>
             <div className="order-1 space-y-5 sm:order-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1E2330] sm:text-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1F2937] sm:text-sm">
                 FOR TEAMS & CLIENT WORK
               </p>
               <h3 className="text-2xl font-semibold text-[#1E2330] sm:text-3xl">
-                Keep every line of copy on-brand.
+                Make tags part of a repeatable content system.
               </h3>
               <p className="text-sm leading-relaxed text-[#111827] sm:text-base">
-                Use Kompi while reviewing pages, proposals, and social content
-                so every heading, button, and snippet follows the same style
-                rules—no matter who wrote it.
+                Generate a few trusted sets per client, then reuse them across
+                posts instead of reinventing tags for every upload. Edit as you
+                learn what actually performs.
               </p>
             </div>
           </div>
@@ -331,21 +317,22 @@ export default function PublicCaseConverterPage() {
           <div className="grid gap-10 rounded-3xl bg-[#006B81] p-10 sm:grid-cols-2 sm:p-16">
             <div className="space-y-5">
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#E3F2FF] sm:text-sm">
-                FOR PRODUCT & MARKETING
+                FOR ANYONE WHO&apos;S TIRED OF GUESSING
               </p>
               <h3 className="text-2xl font-semibold text-[#E3F2FF] sm:text-3xl">
-                Pair tidy text with smarter link journeys.
+                Less random lists, more “this actually fits my niche”.
               </h3>
               <p className="text-sm leading-relaxed text-[#E3F2FF] sm:text-base">
-                Kompi is more than a case converter. It ties into your links,
-                QR codes, and menus so every campaign feels sharp—from the first
-                word to the final click.
+                You&apos;re closer than you think. A few consistent, intentional
+                hashtag sets beat constantly chasing whatever looks “viral”
+                today.
               </p>
             </div>
             <div className="flex items-center justify-center">
               <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#0B1220] shadow-md sm:h-80 sm:w-80">
-                <div className="flex h-full w-full items-center justify-center text-xs text-[#E5E7EB]">
-                  Kompi tools ecosystem
+                <div className="flex h-full w-full items-center justify-center px-6 text-center text-xs text-[#E5E7EB]">
+                  Kompi is built to support calm, repeatable content habits —
+                  not just spikes.
                 </div>
               </div>
             </div>
@@ -358,10 +345,10 @@ export default function PublicCaseConverterPage() {
         <div className="mx-auto max-w-5xl space-y-10">
           <div className="space-y-3 text-center">
             <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-[#6B7280] sm:text-sm">
-              SMALL TOOL, BIG CONSISTENCY BOOST
+              LESS TAG SPAM, MORE INTENTION
             </h2>
             <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              One less thing to fix by hand.
+              Less “copy paste random tags”, more “this feels like my corner of the internet”.
             </p>
           </div>
 
@@ -369,32 +356,31 @@ export default function PublicCaseConverterPage() {
             <div className="rounded-3xl bg-[#FFFFFF] p-5 shadow-sm ring-1 ring-[#E3F2FF]">
               <p className="mb-2 text-xs text-[#FBBF24]">★★★★★</p>
               <p className="text-sm font-semibold text-[#1E2330]">
-                “Perfect for headlines”
+                “Stopped using giant copy-paste lists”
               </p>
               <p className="mt-2 text-xs text-[#4B5563]">
-                “I draft titles in here and flip between sentence case and Title
-                Case until one feels right. It&apos;s a tiny but very useful
-                ritual.”
+                “Now I have 3–4 sets I swap between instead of 30 random tags
+                under every post.”
               </p>
             </div>
             <div className="rounded-3xl bg-[#FFFFFF] p-5 shadow-sm ring-1 ring-[#E3F2FF]">
               <p className="mb-2 text-xs text-[#FBBF24]">★★★★★</p>
               <p className="text-sm font-semibold text-[#1E2330]">
-                “Great for client decks”
+                “Great for client accounts”
               </p>
               <p className="mt-2 text-xs text-[#4B5563]">
-                “We keep Kompi open while building slides. Button labels and
-                headings stay consistent, even with multiple people editing.”
+                “We build hashtag presets per client and reuse them in our
+                scheduler. Way calmer.”
               </p>
             </div>
             <div className="rounded-3xl bg-[#FFFFFF] p-5 shadow-sm ring-1 ring-[#E3F2FF]">
               <p className="mb-2 text-xs text-[#FBBF24]">★★★★★</p>
               <p className="text-sm font-semibold text-[#1E2330]">
-                “Saves me from caps-lock chaos”
+                “Feels like it understands the niche”
               </p>
               <p className="mt-2 text-xs text-[#4B5563]">
-                “Whenever a client sends all-caps copy, I run it through this
-                once and we&apos;re back to normal English.”
+                “The sets actually sound like my corner of the internet instead
+                of generic ‘#hustle’ tags.”
               </p>
             </div>
           </div>
@@ -406,11 +392,11 @@ export default function PublicCaseConverterPage() {
         <div className="mx-auto max-w-5xl gap-14 space-y-10 lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)] lg:space-y-0">
           <div className="space-y-3">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Questions about the Kompi case converter?
+              Questions about the Kompi hashtag generator?
             </h2>
             <p className="text-sm leading-relaxed text-[#4B5563] sm:text-base">
-              Here&apos;s what people usually ask before they add this page to
-              their writing workflow.
+              Here&apos;s what people usually ask before they plug this into
+              their content system.
             </p>
           </div>
 
@@ -438,6 +424,7 @@ export default function PublicCaseConverterPage() {
       {/* JSON-LD schema markup */}
       <script
         type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
     </main>
