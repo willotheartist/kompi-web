@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 06/12/2025, 21:16:04*
+*Generated on: 07/12/2025, 21:41:01*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 488 |
-| 📁 Total Folders | 208 |
+| 📄 Total Files | 515 |
+| 📁 Total Folders | 228 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,24 +26,18 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 250 files (51.2%)
-- 🔷 **.ts** (TypeScript files): 64 files (13.1%)
-- 🖼️ **.png** (PNG images): 59 files (12.1%)
-- 📄 **.sql** (Other files): 21 files (4.3%)
-- 🎨 **.css** (Stylesheets): 9 files (1.8%)
+- ⚛️ **.tsx** (React TypeScript files): 289 files (56.1%)
+- 🖼️ **.png** (PNG images): 69 files (13.4%)
+- 🔷 **.ts** (TypeScript files): 64 files (12.4%)
+- 📄 **.sql** (Other files): 21 files (4.1%)
+- 🎨 **.css** (Stylesheets): 9 files (1.7%)
 - 🎨 **.svg** (SVG images): 7 files (1.4%)
 - 📄 **.zip** (Other files): 5 files (1.0%)
 - 📄 **.mjs** (Other files): 5 files (1.0%)
-- 📄 **.bak** (Other files): 4 files (0.8%)
 - ⚙️ **.json** (JSON files): 3 files (0.6%)
-- 📄 **.pre_plan_patch** (Other files): 3 files (0.6%)
-- 📄 **.pre_pro_patch** (Other files): 3 files (0.6%)
 - 📖 **.md** (Markdown files): 2 files (0.4%)
 - 🖼️ **.ico** (Icon files): 2 files (0.4%)
 - 📄 **.mp4** (Other files): 2 files (0.4%)
-- 📄 **.pre_limit_message** (Other files): 2 files (0.4%)
-- 📄 **.bak-limit** (Other files): 2 files (0.4%)
-- 📄 **.bak2** (Other files): 2 files (0.4%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.2%)
 - 📄 **.** (Other files): 1 files (0.2%)
 - 🐳 **.dockerfile** (Docker files): 1 files (0.2%)
@@ -56,8 +50,6 @@
 - 📄 **.py** (Other files): 1 files (0.2%)
 - 📄 **.sh** (Other files): 1 files (0.2%)
 - 📄 **.gz** (Other files): 1 files (0.2%)
-- 📄 **.bak-plan** (Other files): 1 files (0.2%)
-- 📄 **.limit_copy_backup** (Other files): 1 files (0.2%)
 - 📄 **.bak_fix_mobile** (Other files): 1 files (0.2%)
 - 📄 **.bak_k_public** (Other files): 1 files (0.2%)
 - 📄 **.bak_k_slug_layout** (Other files): 1 files (0.2%)
@@ -66,11 +58,11 @@
 - 📄 **.bak_scale_tweak** (Other files): 1 files (0.2%)
 - 📄 **.bak_slug_layout** (Other files): 1 files (0.2%)
 - 📜 **.js** (JavaScript files): 1 files (0.2%)
+- 📄 **.bak_py** (Other files): 1 files (0.2%)
 - 📄 **.pre_pro_text** (Other files): 1 files (0.2%)
 - 📄 **.bak_sidebar_modern** (Other files): 1 files (0.2%)
 - 📄 **.bak_sidebar_typo2** (Other files): 1 files (0.2%)
 - 📄 **.bak_sidebar_typography** (Other files): 1 files (0.2%)
-- 📄 **.bak-console** (Other files): 1 files (0.2%)
 - 📄 **.bak_variant** (Other files): 1 files (0.2%)
 - 📄 **.bak_from_py** (Other files): 1 files (0.2%)
 - 📄 **.bak_kcards_fix** (Other files): 1 files (0.2%)
@@ -78,10 +70,6 @@
 - 📄 **.header-social** (Other files): 1 files (0.2%)
 - 📄 **.header-v2** (Other files): 1 files (0.2%)
 - 📄 **.pre-kcards-modal** (Other files): 1 files (0.2%)
-- 📄 **.bak_edit_route** (Other files): 1 files (0.2%)
-- 📄 **.orig** (Other files): 1 files (0.2%)
-- 📄 **.rej** (Other files): 1 files (0.2%)
-- 📄 **.bak-upgrade** (Other files): 1 files (0.2%)
 - 📄 **.fix_button_block** (Other files): 1 files (0.2%)
 - 📄 **.fix_limit_block** (Other files): 1 files (0.2%)
 - 📄 **.fix_links_copy2** (Other files): 1 files (0.2%)
@@ -90,11 +78,11 @@
 
 ### By Category
 
-- **React**: 250 files (51.2%)
-- **Other**: 85 files (17.4%)
-- **Assets**: 69 files (14.1%)
-- **TypeScript**: 64 files (13.1%)
-- **Styles**: 9 files (1.8%)
+- **React**: 289 files (56.1%)
+- **Assets**: 79 files (15.3%)
+- **TypeScript**: 64 files (12.4%)
+- **Other**: 63 files (12.2%)
+- **Styles**: 9 files (1.7%)
 - **Config**: 6 files (1.2%)
 - **DevOps**: 2 files (0.4%)
 - **Docs**: 2 files (0.4%)
@@ -102,11 +90,11 @@
 
 ### 📁 Largest Directories
 
-- **root**: 488 files
-- **src**: 366 files
-- **src/app**: 192 files
+- **root**: 515 files
+- **src**: 383 files
+- **src/app**: 210 files
 - **src/components**: 163 files
-- **public**: 70 files
+- **public**: 80 files
 
 ## 🌳 Directory Structure
 
@@ -231,6 +219,17 @@ kompi-web/
 │   ├── 🖼️ kompitwo.png
 │   ├── 🎨 Kompiwhite.svg
 │   ├── 🖼️ kr-dashboard-card.png
+│   ├── 📂 kroptions/
+│   │   ├── 🖼️ classic.png
+│   │   ├── 🖼️ corner dot d.png
+│   │   ├── 🖼️ corner dot s.png
+│   │   ├── 🖼️ corner r.png
+│   │   ├── 🖼️ corner s.png
+│   │   ├── 🖼️ diamond.png
+│   │   ├── 🖼️ dots.png
+│   │   ├── 🖼️ rounded.png
+│   │   ├── 🖼️ soft.png
+│   │   └── 🖼️ star.png
 │   ├── 🖼️ links-dashboard-card.png
 │   ├── 🎨 next.svg
 │   ├── 🖼️ pexels-dom-j-7304-45982.jpg
@@ -327,11 +326,7 @@ kompi-web/
 │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   └── 📂 svg/
 │   │   │   │   │   │   └── 🔷 route.ts
-│   │   │   │   ├── 🔷 route.ts
-│   │   │   │   ├── 📄 route.ts.bak-plan
-│   │   │   │   ├── 📄 route.ts.limit_copy_backup
-│   │   │   │   ├── 📄 route.ts.pre_limit_message
-│   │   │   │   └── 📄 route.ts.pre_plan_patch
+│   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 links/
 │   │   │   │   ├── 📂 [id]/
 │   │   │   │   │   ├── 📂 analytics/
@@ -339,10 +334,7 @@ kompi-web/
 │   │   │   │   │   ├── 📂 qr/
 │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   └── 🔷 route.ts
-│   │   │   │   ├── 🔷 route.ts
-│   │   │   │   ├── 📄 route.ts.bak
-│   │   │   │   ├── 📄 route.ts.pre_limit_message
-│   │   │   │   └── 📄 route.ts.pre_plan_patch
+│   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 qr-menus/
 │   │   │   │   ├── 📂 [id]/
 │   │   │   │   │   ├── 📂 create-krcode/
@@ -451,6 +443,12 @@ kompi-web/
 │   │   │   │   ├── 📂 hashtag-generator/
 │   │   │   │   │   ├── ⚛️ HashtagGeneratorClient.tsx
 │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 hourly-rate-calculator/
+│   │   │   │   │   ├── ⚛️ HourlyRateCalculatorClient.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 image-to-pdf/
+│   │   │   │   │   ├── ⚛️ ImageToPdfClient.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 instagram-bio-generator/
 │   │   │   │   │   ├── ⚛️ InstagramBioGeneratorClient.tsx
 │   │   │   │   │   └── ⚛️ page.tsx
@@ -464,6 +462,12 @@ kompi-web/
 │   │   │   │   ├── 📂 password-generator/
 │   │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   │   └── ⚛️ PasswordGeneratorClient.tsx
+│   │   │   │   ├── 📂 pdf-converter/
+│   │   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   │   └── ⚛️ PdfConverterClient.tsx
+│   │   │   │   ├── 📂 pdf-to-image/
+│   │   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   │   └── ⚛️ PdfToImageClient.tsx
 │   │   │   │   ├── 📂 profit-margin-calculator/
 │   │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   │   └── ⚛️ ProfitMarginCalculatorClient.tsx
@@ -479,12 +483,18 @@ kompi-web/
 │   │   │   │   ├── 📂 username-generator/
 │   │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   │   └── ⚛️ UsernameGeneratorClient.tsx
+│   │   │   │   ├── 📂 utm-builder/
+│   │   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   │   └── ⚛️ UtmBuilderClient.tsx
 │   │   │   │   ├── 📂 whatsapp-link-generator/
 │   │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   │   └── ⚛️ WhatsappLinkGeneratorClient.tsx
-│   │   │   │   └── 📂 word-counter/
+│   │   │   │   ├── 📂 word-counter/
 │   │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   │   └── ⚛️ WordCounterClient.tsx
+│   │   │   │   └── 📂 youtube-title-generator/
+│   │   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   │   └── ⚛️ YoutubeTitleGeneratorClient.tsx
 │   │   ├── 🖼️ favicon.ico
 │   │   ├── 📂 features/
 │   │   │   └── 📂 url-shortener/
@@ -524,6 +534,8 @@ kompi-web/
 │   │   ├── 📂 KR-Codes-QR-Code-Generator/
 │   │   │   ├── 🎨 kr-codes.css
 │   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 krcode2/
+│   │   │   └── ⚛️ page.tsx
 │   │   ├── ⚛️ layout.tsx
 │   │   ├── 📂 links/
 │   │   │   ├── 📂 [id]/
@@ -548,8 +560,20 @@ kompi-web/
 │   │   │   ├── ⚛️ layout.tsx
 │   │   │   ├── ⚛️ page.tsx
 │   │   │   └── 🎨 pricing.css
+│   │   ├── 📂 qr-code/
+│   │   │   ├── 📂 dynamic/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 email/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 for-restaurant/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 static/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── 📂 with-logo/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 qr-code-generator/
-│   │   │   └── ⚛️ page.tsx
+│   │   │   ├── ⚛️ page.tsx
+│   │   │   └── 📄 page.tsx.bak_py
 │   │   ├── 📂 qr-menus/
 │   │   │   ├── 📂 [id]/
 │   │   │   │   ├── ⚛️ page.tsx
@@ -583,6 +607,10 @@ kompi-web/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 hashtag-generator/
 │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 hourly-rate-calculator/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 image-to-pdf/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 instagram-bio-generator/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 instagram-caption-generator/
@@ -590,6 +618,10 @@ kompi-web/
 │   │   │   ├── 📂 json-formatter/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 password-generator/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 pdf-converter/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 pdf-to-image/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 profit-margin-calculator/
 │   │   │   │   └── ⚛️ page.tsx
@@ -601,9 +633,13 @@ kompi-web/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 username-generator/
 │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 utm-builder/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 whatsapp-link-generator/
 │   │   │   │   └── ⚛️ page.tsx
-│   │   │   └── 📂 word-counter/
+│   │   │   ├── 📂 word-counter/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── 📂 youtube-title-generator/
 │   │   │   │   └── ⚛️ page.tsx
 │   ├── 🧩 components/
 │   │   ├── 📂 analytics/
@@ -612,7 +648,6 @@ kompi-web/
 │   │   │   ├── ⚛️ downgrade-button.tsx
 │   │   │   ├── ⚛️ manage-billing-button.tsx
 │   │   │   ├── ⚛️ plan-limit-modal.tsx
-│   │   │   ├── 📄 plan-limit-modal.tsx.pre_pro_patch
 │   │   │   ├── 📄 plan-limit-modal.tsx.pre_pro_text
 │   │   │   └── ⚛️ upgrade-button.tsx
 │   │   ├── 📂 bio/
@@ -642,22 +677,26 @@ kompi-web/
 │   │   │   ├── ⚛️ dashboard-recent-links.tsx
 │   │   │   ├── 🎨 dashboard-shell.css
 │   │   │   ├── ⚛️ dashboard-shell.tsx
-│   │   │   ├── 📄 dashboard-shell.tsx.bak-console
-│   │   │   ├── 📄 dashboard-shell.tsx.bak-limit
 │   │   │   ├── ⚛️ dashboard-tips-card.tsx
 │   │   │   ├── ⚛️ dashboard-topbar.tsx
 │   │   │   ├── 🔷 dashboard-types.ts
 │   │   │   ├── ⚛️ glass-card.tsx
 │   │   │   ├── ⚛️ hashtag-generator-widget.tsx
+│   │   │   ├── ⚛️ hourly-rate-calculator-widget.tsx
+│   │   │   ├── ⚛️ image-to-pdf-widget.tsx
 │   │   │   ├── ⚛️ instagram-bio-generator-widget.tsx
 │   │   │   ├── ⚛️ instagram-caption-generator-widget.tsx
 │   │   │   ├── ⚛️ json-formatter-widget.tsx
 │   │   │   ├── ⚛️ password-generator-widget.tsx
+│   │   │   ├── ⚛️ pdf-converter-widget.tsx
+│   │   │   ├── ⚛️ pdf-to-image-widget.tsx
 │   │   │   ├── ⚛️ profit-margin-calculator-widget.tsx
 │   │   │   ├── ⚛️ random-number-generator-widget.tsx
 │   │   │   ├── ⚛️ tiktok-bio-generator-widget.tsx
 │   │   │   ├── ⚛️ tiktok-caption-generator-widget.tsx
-│   │   │   └── ⚛️ username-generator-widget.tsx
+│   │   │   ├── ⚛️ username-generator-widget.tsx
+│   │   │   ├── ⚛️ utm-builder-widget.tsx
+│   │   │   └── ⚛️ youtube-title-generator-widget.tsx
 │   │   ├── 📂 discounts/
 │   │   │   ├── ⚛️ discount-codes-table.tsx
 │   │   │   └── ⚛️ discount-pill.tsx
@@ -668,7 +707,6 @@ kompi-web/
 │   │   ├── 🎨 footer-cta.css
 │   │   ├── ⚛️ footer-cta.tsx
 │   │   ├── ⚛️ GoProBanner.tsx
-│   │   ├── 📄 GoProBanner.tsx.pre_pro_patch
 │   │   ├── 📂 hero/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 infoscreens/
@@ -698,35 +736,26 @@ kompi-web/
 │   │   ├── ⚛️ KompiPerks.tsx
 │   │   ├── ⚛️ KPromo.tsx
 │   │   ├── 📂 kr-codes/
-│   │   │   ├── ⚛️ KRCodesPage.tsx
-│   │   │   ├── 📄 KRCodesPage.tsx.bak
-│   │   │   ├── 📄 KRCodesPage.tsx.bak_edit_route
-│   │   │   ├── 📄 KRCodesPage.tsx.bak2
-│   │   │   ├── 📄 KRCodesPage.tsx.orig
-│   │   │   └── 📄 KRCodesPage.tsx.rej
+│   │   │   ├── ⚛️ KRCode2.tsx
+│   │   │   └── ⚛️ KRCodesPage.tsx
 │   │   ├── 📂 layout/
 │   │   │   └── ⚛️ side-nav.tsx
 │   │   ├── 📂 links/
 │   │   │   ├── ⚛️ create-link-form.tsx
 │   │   │   ├── ⚛️ create-link-page.tsx
-│   │   │   ├── 📄 create-link-page.tsx.bak
-│   │   │   ├── 📄 create-link-page.tsx.bak-upgrade
-│   │   │   ├── 📄 create-link-page.tsx.bak2
 │   │   │   ├── ⚛️ edit-link-form.tsx
 │   │   │   ├── ⚛️ link-actions-menu.tsx
 │   │   │   ├── ⚛️ link-analytics-chart.tsx
 │   │   │   ├── ⚛️ link-analytics-client.tsx
 │   │   │   ├── ⚛️ links-empty-state.tsx
 │   │   │   ├── ⚛️ links-list-client.tsx
-│   │   │   ├── 📄 links-list-client.tsx.bak-limit
 │   │   │   ├── 📄 links-list-client.tsx.fix_button_block
 │   │   │   ├── 📄 links-list-client.tsx.fix_limit_block
 │   │   │   ├── 📄 links-list-client.tsx.fix_links_copy2
 │   │   │   ├── 📄 links-list-client.tsx.pre_pro_copy
 │   │   │   └── ⚛️ links-table.tsx
 │   │   ├── 📂 modals/
-│   │   │   ├── ⚛️ GoProModal.tsx
-│   │   │   └── 📄 GoProModal.tsx.pre_pro_patch
+│   │   │   └── ⚛️ GoProModal.tsx
 │   │   ├── ⚛️ navbar-gate.tsx
 │   │   ├── 🎨 navbar.css
 │   │   ├── ⚛️ navbar.tsx
@@ -736,8 +765,7 @@ kompi-web/
 │   │   ├── ⚛️ providers.tsx
 │   │   ├── 📂 qr-code-generator/
 │   │   │   ├── ⚛️ FreeQrGenerator.tsx
-│   │   │   ├── ⚛️ QrGenerator.tsx
-│   │   │   └── 📄 QrGenerator.tsx.bak
+│   │   │   └── ⚛️ QrGenerator.tsx
 │   │   ├── 📂 qr-menus/
 │   │   │   ├── ⚛️ create-krcode-button.tsx
 │   │   │   └── ⚛️ menu-qr-preview.tsx
@@ -765,17 +793,25 @@ kompi-web/
 │   │   │   ├── ⚛️ CharacterCounter.tsx
 │   │   │   ├── ⚛️ ContactLinkGenerator.tsx
 │   │   │   ├── ⚛️ HashtagGenerator.tsx
+│   │   │   ├── ⚛️ HourlyRateCalculator.tsx
+│   │   │   ├── ⚛️ ImageToPdf.tsx
 │   │   │   ├── ⚛️ InstagramBioGenerator.tsx
 │   │   │   ├── ⚛️ InstagramCaptionGenerator.tsx
 │   │   │   ├── ⚛️ JsonFormatter.tsx
 │   │   │   ├── ⚛️ PasswordGenerator.tsx
+│   │   │   ├── ⚛️ PdfConverter.tsx
+│   │   │   ├── ⚛️ PdfMerge.tsx
+│   │   │   ├── ⚛️ PdfSplit.tsx
+│   │   │   ├── ⚛️ PdfToImage.tsx
 │   │   │   ├── ⚛️ ProfitMarginCalculator.tsx
 │   │   │   ├── ⚛️ RandomNumberGenerator.tsx
 │   │   │   ├── ⚛️ TikTokBioGenerator.tsx
 │   │   │   ├── ⚛️ TikTokCaptionGenerator.tsx
 │   │   │   ├── ⚛️ ToolCard.tsx
 │   │   │   ├── ⚛️ UsernameGenerator.tsx
-│   │   │   └── ⚛️ WordCounter.tsx
+│   │   │   ├── ⚛️ UtmBuilder.tsx
+│   │   │   ├── ⚛️ WordCounter.tsx
+│   │   │   └── ⚛️ YoutubeTitleGenerator.tsx
 │   │   ├── 🎨 ui/
 │   │   │   ├── ⚛️ button.tsx
 │   │   │   ├── ⚛️ card.tsx
@@ -800,7 +836,6 @@ kompi-web/
 │   │   ├── 🔷 email.ts
 │   │   ├── 🔷 fonts.ts
 │   │   ├── 🔷 plan-limits.ts
-│   │   ├── 📄 plan-limits.ts.pre_plan_patch
 │   │   ├── 🔷 prisma.ts
 │   │   ├── 🔷 solutions.ts
 │   │   ├── 🔷 stripe.ts

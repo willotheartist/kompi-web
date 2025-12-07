@@ -24,6 +24,10 @@ import {
   PlayCircle,
   MessageCircle,
 } from "lucide-react";
+import  FKSuite1  from "@/components/ksuite/ksuite1";
+import  FKSuite2  from "@/components/ksuite/ksuite2";
+import  FKSuite3  from "@/components/ksuite/ksuite3";
+import Faqs from "@/components/faqs";
 
 export const metadata: Metadata = {
   title:
@@ -232,6 +236,10 @@ export default function KompiSuitePage() {
         <SuitePricingTable />
       </section>
 
+      <FKSuite1 />
+      <FKSuite2 />
+      <FKSuite3 />
+
       {/* ======================= FEATURE COMPARISON ======================= */}
       <section className="bg-[#F7F7F3] px-4 py-20 sm:px-6 lg:px-8">
         <FeatureComparisonGrid />
@@ -265,7 +273,10 @@ export default function KompiSuitePage() {
         </div>
       </section>
 
+      <Faqs />
+
       <FooterCTA />
+    
 
       <script
         type="application/ld+json"

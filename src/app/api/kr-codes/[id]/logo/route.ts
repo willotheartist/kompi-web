@@ -1,3 +1,4 @@
+//src/app/api/kr-codes/[id]/logo/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";

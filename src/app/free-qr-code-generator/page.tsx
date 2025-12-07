@@ -1,3 +1,4 @@
+//src/app/free-qr-code-generator/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FooterCTA } from "@/components/footer-cta";

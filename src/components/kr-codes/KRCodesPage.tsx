@@ -1,3 +1,5 @@
+//src/components/kr-codes/KRCodesPage.tsx
+
 "use client";
 
 import {

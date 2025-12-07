@@ -480,6 +480,63 @@ function TypesGridSection() {
   );
 }
 
+
+function RelatedQrToolsSection() {
+  const links = [
+    {
+      href: "/qr-code/dynamic",
+      label: "Dynamic QR codes",
+      body: "Create QR codes you can update later without reprinting.",
+    },
+    {
+      href: "/qr-code/static",
+      label: "Static QR codes",
+      body: "Simple QR codes that point straight to a URL or text.",
+    },
+    {
+      href: "/qr-code/with-logo",
+      label: "QR codes with logo",
+      body: "Add your brand mark in the middle of a scannable QR.",
+    },
+    {
+      href: "/qr-code/for-restaurant",
+      label: "QR codes for restaurants",
+      body: "Menu QR codes for tables, windows and takeaway packaging.",
+    },
+  ];
+
+  return (
+    <SectionShell id="more-qr-tools">
+      <div aria-labelledby="more-qr-tools-heading">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
+          More QR tools
+        </p>
+        <h2
+          id="more-qr-tools-heading"
+          className="mt-2 text-[24px] font-semibold tracking-tight text-[#050505]"
+          style={{ letterSpacing: "-0.04em" }}
+        >
+          Explore more free QR code tools.
+        </h2>
+
+        <div className="mt-7 grid gap-4 md:grid-cols-2">
+          {links.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="group block rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4"
+            >
+              <h3 className="text-[13px] font-semibold text-[#050505]">{item.label}</h3>
+              <p className="mt-2 text-[12px] leading-relaxed text-neutral-700">{item.body}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </SectionShell>
+  );
+}
+
+
 function FaqSection() {
   const faqs = [
     {
@@ -622,6 +679,7 @@ export default function QrCodeGeneratorPage() {
         <UseCasesSection />
         <PlatformPitchSection />
         <TypesGridSection />
+        <RelatedQrToolsSection />
         <FaqSection />
 
         <FooterCTA />

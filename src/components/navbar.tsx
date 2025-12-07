@@ -4,8 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ChevronDown, User, Store, Users, Megaphone, Briefcase, Calendar } from "lucide-react";
+import {
+  ChevronDown,
+  User,
+  Store,
+  Users,
+  Megaphone,
+  Briefcase,
+  Calendar,
+} from "lucide-react";
 import { FeaturesMegaMenu } from "@/components/features-megamenu";
+import { ToolsMegaMenu } from "@/components/tools-megamenu";
 import "./navbar.css";
 
 const ACTIVE_BLUE_CLASS = "wf-nav-link-active";
@@ -91,6 +100,10 @@ export function Navbar() {
         <nav className="hidden md:flex items-center gap-6 lg:gap-8">
           <div className="wf-nav-link-wrap">
             <FeaturesMegaMenu />
+          </div>
+
+          <div className="wf-nav-link-wrap">
+            <ToolsMegaMenu />
           </div>
 
           <CustomersMegaMenu />
