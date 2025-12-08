@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 07/12/2025, 21:41:01*
+*Generated on: 07/12/2025, 23:48:28*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 515 |
-| 📁 Total Folders | 228 |
+| 📄 Total Files | 520 |
+| 📁 Total Folders | 230 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,12 +26,12 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 289 files (56.1%)
-- 🖼️ **.png** (PNG images): 69 files (13.4%)
-- 🔷 **.ts** (TypeScript files): 64 files (12.4%)
-- 📄 **.sql** (Other files): 21 files (4.1%)
+- ⚛️ **.tsx** (React TypeScript files): 293 files (56.3%)
+- 🖼️ **.png** (PNG images): 69 files (13.3%)
+- 🔷 **.ts** (TypeScript files): 65 files (12.5%)
+- 📄 **.sql** (Other files): 21 files (4.0%)
 - 🎨 **.css** (Stylesheets): 9 files (1.7%)
-- 🎨 **.svg** (SVG images): 7 files (1.4%)
+- 🎨 **.svg** (SVG images): 7 files (1.3%)
 - 📄 **.zip** (Other files): 5 files (1.0%)
 - 📄 **.mjs** (Other files): 5 files (1.0%)
 - ⚙️ **.json** (JSON files): 3 files (0.6%)
@@ -78,10 +78,10 @@
 
 ### By Category
 
-- **React**: 289 files (56.1%)
-- **Assets**: 79 files (15.3%)
-- **TypeScript**: 64 files (12.4%)
-- **Other**: 63 files (12.2%)
+- **React**: 293 files (56.3%)
+- **Assets**: 79 files (15.2%)
+- **TypeScript**: 65 files (12.5%)
+- **Other**: 63 files (12.1%)
 - **Styles**: 9 files (1.7%)
 - **Config**: 6 files (1.2%)
 - **DevOps**: 2 files (0.4%)
@@ -90,10 +90,10 @@
 
 ### 📁 Largest Directories
 
-- **root**: 515 files
-- **src**: 383 files
+- **root**: 520 files
+- **src**: 388 files
 - **src/app**: 210 files
-- **src/components**: 163 files
+- **src/components**: 167 files
 - **public**: 80 files
 
 ## 🌳 Directory Structure
@@ -738,6 +738,10 @@ kompi-web/
 │   │   ├── 📂 kr-codes/
 │   │   │   ├── ⚛️ KRCode2.tsx
 │   │   │   └── ⚛️ KRCodesPage.tsx
+│   │   ├── 📂 ksuite/
+│   │   │   ├── ⚛️ ksuite1.tsx
+│   │   │   ├── ⚛️ ksuite2.tsx
+│   │   │   └── ⚛️ ksuite3.tsx
 │   │   ├── 📂 layout/
 │   │   │   └── ⚛️ side-nav.tsx
 │   │   ├── 📂 links/
@@ -812,6 +816,7 @@ kompi-web/
 │   │   │   ├── ⚛️ UtmBuilder.tsx
 │   │   │   ├── ⚛️ WordCounter.tsx
 │   │   │   └── ⚛️ YoutubeTitleGenerator.tsx
+│   │   ├── ⚛️ tools-megamenu.tsx
 │   │   ├── 🎨 ui/
 │   │   │   ├── ⚛️ button.tsx
 │   │   │   ├── ⚛️ card.tsx
@@ -830,7 +835,7 @@ kompi-web/
 │   │   │   ├── ⚛️ workspace-switcher-dialog.tsx
 │   │   │   ├── ⚛️ workspace-switcher.tsx
 │   │   │   └── ⚛️ workspace-topbar-switcher.tsx
-│   └── 📚 lib/
+│   ├── 📚 lib/
 │   │   ├── 🔷 analytics-overview.ts
 │   │   ├── 🔷 auth.ts
 │   │   ├── 🔷 email.ts
@@ -841,6 +846,8 @@ kompi-web/
 │   │   ├── 🔷 stripe.ts
 │   │   ├── 🔷 tools-config.ts
 │   │   └── 🔷 utils.ts
+│   └── 📂 types/
+│   │   └── 🔷 pdfjs-webpack.d.ts
 ├── 🟡 🔷 **tsconfig.json**
 └── 📄 tsconfig.tsbuildinfo
 ```

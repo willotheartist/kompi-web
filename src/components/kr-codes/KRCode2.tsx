@@ -104,13 +104,13 @@ const CONTENT_TABS: Array<{
   },
   {
     id: "instagram",
-    label: "Social Media · Instagram",
+    label: "Instagram",
     helper: "Send people to your Instagram profile.",
     icon: Instagram,
   },
   {
     id: "facebook",
-    label: "Social Media · Facebook",
+    label: "Facebook",
     helper: "Send people to your Facebook page or profile.",
     icon: Facebook,
   },

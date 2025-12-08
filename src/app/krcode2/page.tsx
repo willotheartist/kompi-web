@@ -4,6 +4,12 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import { KRCode2 } from "@/components/kr-codes/KRCode2";
+import KRCodeTypes from "@/components/kr-codes/krcodetypes";
+import KRCodeFAQ from "@/components/kr-codes/krcodefaq";
+import WhyKompi from "@/components/kr-codes/why-kompi";
+
+
+
 
 export const metadata: Metadata = {
   title: "Kompi Codes v2 Layout Playground | Kompi",
@@ -13,12 +19,17 @@ export const metadata: Metadata = {
 
 export default function KRCode2PlaygroundPage() {
   return (
-    <div className="min-h-screen bg-[#f5f3ee] text-[#050505]">
+    <div className="min-h-screen bg-[#f7f7f4] text-[#050505]">
       <Navbar />
       <main className="pt-16 md:pt-20 pb-16">
         <KRCode2 />
       </main>
+      <KRCodeTypes />
+      <WhyKompi />
+      <KRCodeFAQ />
       <FooterCTA />
+      
     </div>
+    
   );
 }

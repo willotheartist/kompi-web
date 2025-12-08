@@ -64,7 +64,7 @@ const baseNavGroups: NavGroup[] = [
       },
       {
         href: "/kr-codes",
-        label: "Kompi Codes™ (KR)",
+        label: "KR Codes",
         icon: QrCode,
         children: [
           {
@@ -196,7 +196,7 @@ function Sidebar({
   const toolsItems: NavItem[] = [
     {
       href: "/dashboard/tools",
-      label: "Tools marketplace",
+      label: "Tools",
       icon: Hammer,
     },
     ...toolIds
@@ -298,23 +298,18 @@ function Sidebar({
                   return (
                     <div key={href} className="flex flex-col gap-0.5">
                       <Link
-                        href={href}
-                        className={cn(
-                          "wf-dashboard-nav-item group flex items-center rounded-xl px-2.5 py-1 text-sm font-medium transition",
-                          collapsed ? "justify-center" : "gap-1.5"
-                        )}
-                        style={{
-                          backgroundColor: active
-                            ? "var(--color-accent-soft)"
-                            : "transparent",
-                          color: active
-                            ? "var(--color-text)"
-                            : "var(--color-subtle)",
-                        }}
-                      >
+  href={href}
+  className={cn(
+    "wf-dashboard-nav-item group flex items-center rounded-lg px-2.5 py-1 text-sm font-medium transition",
+    collapsed ? "justify-center" : "gap-1.5",
+    active
+      ? "bg-[#f6f6f6] text-[color:var(--color-text)]"
+      : "text-[color:var(--color-subtle)] hover:bg-[#f6f6f6]"
+  )}
+>
                         {!collapsed && (
                           <span
-                            className="wf-dashboard-nav-accent mr-1 h-5 w-[2px] rounded-full"
+                            className="wf-dashboard-nav-accent mr-1 h-5 w-[2px] rounded-1px"
                             style={{
                               backgroundColor: active
                                 ? "var(--color-accent)"
