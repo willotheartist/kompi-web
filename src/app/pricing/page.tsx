@@ -1,7 +1,9 @@
+//src/app/pricing/page.tsx
 "use client";
 
 import { useState, Fragment } from "react";
 import Link from "next/link";
+import AutoLinkedContent from "@/components/seo/AutoLinkedContent";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FooterCTA } from "@/components/footer-cta";
@@ -219,11 +221,11 @@ export default function PricingPage() {
                 <h1 className="wf-pricing-hero-heading">
                   Membership pricing for growing brands.
                 </h1>
-                <p className="wf-pricing-hero-body">
-                  Start free. When you’re ready, unlock K-Cards, link
-                  shortener, QR code generator and studio-grade analytics in
-                  one place.
-                </p>
+<AutoLinkedContent
+                text="Start free. When you're ready, unlock K-Cards, link shortener, QR code generator and studio-grade analytics in one place."
+                currentUrl="/pricing"
+                className="wf-pricing-hero-body"
+/>
 
                 <div className="wf-billing-toggle">
                   <button

@@ -1,0 +1,26 @@
+[
+  {
+    "url": "/qr-code-generator",
+    "title": "Free QR Code Generator",
+    "keywords": ["QR code", "QR codes", "QR code generator", "QR menus"],
+    "topic": "qr"
+  },
+  {
+    "url": "/features/url-shortener",
+    "title": "URL Shortener",
+    "keywords": ["short links", "URL shortener", "track links"],
+    "topic": "links"
+  },
+  {
+    "url": "/k-cards",
+    "title": "Kompi Pages",
+    "keywords": ["mini landing pages", "bio link", "landing page"],
+    "topic": "pages"
+  },
+  {
+    "url": "/pricing",
+    "title": "Kompi Pricing & Plans",
+    "keywords": ["pricing", "plans", "creator plan"],
+    "topic": "pricing"
+  }
+]

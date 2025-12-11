@@ -1,4 +1,4 @@
 declare module "pdfjs-dist/webpack" {
-  const pdfjs: any;
+  const pdfjs: unknown;
   export default pdfjs;
 }

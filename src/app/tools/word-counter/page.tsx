@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { WordCounter } from "@/components/tools/WordCounter";
+import AutoLinkedContent from "@/components/seo/AutoLinkedContent";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
@@ -101,11 +102,11 @@ export default function PublicWordCounterPage() {
               that actually feels nice to write in.
             </h1>
 
-            <p className="mx-auto max-w-3xl text-base leading-relaxed text-[#4B5563] sm:text-lg">
-              Paste or type your content and instantly see words, characters,
-              lines, and reading time. Built for creators, marketers, and small
-              teams who care about clean copy and staying within limits.
-            </p>
+            <AutoLinkedContent
+              text="Kompi gives you more than a free word counter. Create QR codes, short links and landing pages from one dashboard, then choose the pricing and plan that fit how you work as a creator."
+              currentUrl="/tools/word-counter"
+              className="mx-auto max-w-3xl text-base leading-relaxed text-[#4B5563] sm:text-lg"
+            />
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               <a

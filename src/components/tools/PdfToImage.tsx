@@ -25,12 +25,29 @@ type ExportedImage = {
 };
 
 // lazy, browser-only pdf.js import using the webpack bundle
-type PdfJsModule = any;
+type PdfJsModule = {
+  getDocument: (options: { data: ArrayBuffer }) => {
+    promise: Promise<{
+      numPages: number;
+      getPage: (pageNumber: number) => Promise<{
+        getViewport: (options: { scale: number }) => {
+          width: number;
+          height: number;
+        };
+        render: (options: {
+          canvasContext: CanvasRenderingContext2D;
+          viewport: { width: number; height: number };
+        }) => { promise: Promise<unknown> };
+      }>;
+    }>;
+  };
+};
+
 let pdfjsPromise: Promise<PdfJsModule> | null = null;
 
 async function getPdfJs(): Promise<PdfJsModule> {
   if (!pdfjsPromise) {
-    pdfjsPromise = import("pdfjs-dist/webpack");
+    pdfjsPromise = import("pdfjs-dist/webpack") as unknown as Promise<PdfJsModule>;
   }
   return pdfjsPromise;
 }
@@ -143,8 +160,7 @@ export function PdfToImage({ variant = "public" }: PdfToImageProps) {
 
         await page.render({ canvasContext: context, viewport }).promise;
 
-        const mimeType =
-          format === "png" ? "image/png" : "image/jpeg";
+        const mimeType = format === "png" ? "image/png" : "image/jpeg";
         const quality = format === "jpg" ? 0.92 : undefined;
 
         const dataUrl = canvas.toDataURL(mimeType, quality);

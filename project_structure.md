@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 07/12/2025, 23:48:28*
+*Generated on: 11/12/2025, 20:26:38*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 520 |
-| 📁 Total Folders | 230 |
+| 📄 Total Files | 541 |
+| 📁 Total Folders | 240 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,18 +26,18 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 293 files (56.3%)
-- 🖼️ **.png** (PNG images): 69 files (13.3%)
-- 🔷 **.ts** (TypeScript files): 65 files (12.5%)
-- 📄 **.sql** (Other files): 21 files (4.0%)
+- ⚛️ **.tsx** (React TypeScript files): 310 files (57.3%)
+- 🖼️ **.png** (PNG images): 69 files (12.8%)
+- 🔷 **.ts** (TypeScript files): 67 files (12.4%)
+- 📄 **.sql** (Other files): 21 files (3.9%)
 - 🎨 **.css** (Stylesheets): 9 files (1.7%)
 - 🎨 **.svg** (SVG images): 7 files (1.3%)
-- 📄 **.zip** (Other files): 5 files (1.0%)
-- 📄 **.mjs** (Other files): 5 files (1.0%)
-- ⚙️ **.json** (JSON files): 3 files (0.6%)
+- 📄 **.zip** (Other files): 5 files (0.9%)
+- 📄 **.mjs** (Other files): 5 files (0.9%)
+- ⚙️ **.json** (JSON files): 4 files (0.7%)
+- 📄 **.mp4** (Other files): 3 files (0.6%)
 - 📖 **.md** (Markdown files): 2 files (0.4%)
 - 🖼️ **.ico** (Icon files): 2 files (0.4%)
-- 📄 **.mp4** (Other files): 2 files (0.4%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.2%)
 - 📄 **.** (Other files): 1 files (0.2%)
 - 🐳 **.dockerfile** (Docker files): 1 files (0.2%)
@@ -78,23 +78,23 @@
 
 ### By Category
 
-- **React**: 293 files (56.3%)
-- **Assets**: 79 files (15.2%)
-- **TypeScript**: 65 files (12.5%)
-- **Other**: 63 files (12.1%)
+- **React**: 310 files (57.3%)
+- **Assets**: 79 files (14.6%)
+- **TypeScript**: 67 files (12.4%)
+- **Other**: 64 files (11.8%)
 - **Styles**: 9 files (1.7%)
-- **Config**: 6 files (1.2%)
+- **Config**: 7 files (1.3%)
 - **DevOps**: 2 files (0.4%)
 - **Docs**: 2 files (0.4%)
 - **JavaScript**: 1 files (0.2%)
 
 ### 📁 Largest Directories
 
-- **root**: 520 files
-- **src**: 388 files
-- **src/app**: 210 files
-- **src/components**: 167 files
-- **public**: 80 files
+- **root**: 541 files
+- **src**: 408 files
+- **src/app**: 218 files
+- **src/components**: 176 files
+- **public**: 81 files
 
 ## 🌳 Directory Structure
 
@@ -234,6 +234,8 @@ kompi-web/
 │   ├── 🎨 next.svg
 │   ├── 🖼️ pexels-dom-j-7304-45982.jpg
 │   ├── 🖼️ rosadjkompi.png
+│   ├── 📂 seo/
+│   │   └── 📄 qr-gen-online.mp4
 │   ├── 📂 solutions/
 │   │   ├── 🖼️ kards1.png
 │   │   ├── 🖼️ solutions19.png
@@ -266,6 +268,11 @@ kompi-web/
 ├── 📄 settings.tar.gz
 ├── 📁 src/
 │   ├── 🚀 app/
+│   │   ├── 📂 (seo)/
+│   │   │   ├── 📂 barcode-generator/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── 📂 qr-gen-online/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 analytics/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🔌 api/
@@ -434,11 +441,17 @@ kompi-web/
 │   │   │   │   ├── ⚛️ layout.tsx
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   └── 📂 tools/
+│   │   │   │   ├── 📂 barcode-generator/
+│   │   │   │   │   ├── ⚛️ BarcodeGeneratorClient.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 case-converter/
 │   │   │   │   │   ├── ⚛️ CaseConverterClient.tsx
 │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 character-counter/
 │   │   │   │   │   ├── ⚛️ CharacterCounterClient.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 color-palette-generator/
+│   │   │   │   │   ├── ⚛️ ColorPaletteGeneratorClient.tsx
 │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 hashtag-generator/
 │   │   │   │   │   ├── ⚛️ HashtagGeneratorClient.tsx
@@ -601,9 +614,13 @@ kompi-web/
 │   │   │   │   └── ⚛️ layout.tsx
 │   │   │   └── ⚛️ layout.tsx
 │   │   └── 📂 tools/
+│   │   │   ├── 📂 barcode-generator/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 case-converter/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 character-counter/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 color-palette-generator/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 hashtag-generator/
 │   │   │   │   └── ⚛️ page.tsx
@@ -660,6 +677,7 @@ kompi-web/
 │   │   │   └── ⚛️ contact-form-inline.tsx
 │   │   ├── 📂 dashboard/
 │   │   │   ├── ⚛️ character-counter-widget.tsx
+│   │   │   ├── ⚛️ color-palette-generator-widget.tsx
 │   │   │   ├── ⚛️ contact-links-widget.tsx
 │   │   │   ├── ⚛️ create-modal.tsx
 │   │   │   ├── ⚛️ create-workspace-empty.tsx
@@ -728,6 +746,7 @@ kompi-web/
 │   │   │   ├── 📄 KCardsPage.tsx.header-social
 │   │   │   ├── 📄 KCardsPage.tsx.header-v2
 │   │   │   ├── 📄 KCardsPage.tsx.pre-kcards-modal
+│   │   │   ├── ⚛️ KCardsPaywall.tsx
 │   │   │   ├── ⚛️ KCardSubscribeBlock.tsx
 │   │   │   └── ⚛️ KCardThemeSection.tsx
 │   │   ├── ⚛️ KBenefits.tsx
@@ -737,7 +756,10 @@ kompi-web/
 │   │   ├── ⚛️ KPromo.tsx
 │   │   ├── 📂 kr-codes/
 │   │   │   ├── ⚛️ KRCode2.tsx
-│   │   │   └── ⚛️ KRCodesPage.tsx
+│   │   │   ├── ⚛️ krcodefaq.tsx
+│   │   │   ├── ⚛️ KRCodesPage.tsx
+│   │   │   ├── ⚛️ krcodetypes.tsx
+│   │   │   └── ⚛️ why-kompi.tsx
 │   │   ├── 📂 ksuite/
 │   │   │   ├── ⚛️ ksuite1.tsx
 │   │   │   ├── ⚛️ ksuite2.tsx
@@ -759,7 +781,8 @@ kompi-web/
 │   │   │   ├── 📄 links-list-client.tsx.pre_pro_copy
 │   │   │   └── ⚛️ links-table.tsx
 │   │   ├── 📂 modals/
-│   │   │   └── ⚛️ GoProModal.tsx
+│   │   │   ├── ⚛️ GoProModal.tsx
+│   │   │   └── ⚛️ KompiSuiteModal.tsx
 │   │   ├── ⚛️ navbar-gate.tsx
 │   │   ├── 🎨 navbar.css
 │   │   ├── ⚛️ navbar.tsx
@@ -779,6 +802,8 @@ kompi-web/
 │   │   │   ├── ⚛️ how-it-works.tsx
 │   │   │   ├── ⚛️ personas.tsx
 │   │   │   └── ⚛️ testimonials.tsx
+│   │   ├── 📂 seo/
+│   │   │   └── ⚛️ AutoLinkedContent.tsx
 │   │   ├── 📂 settings/
 │   │   │   └── ⚛️ profile-settings-client.tsx
 │   │   ├── 📂 solutions/
@@ -793,8 +818,10 @@ kompi-web/
 │   │   │   ├── ⚛️ subscribe-inline.tsx
 │   │   │   └── ⚛️ subscribers-table.tsx
 │   │   ├── 📂 tools/
+│   │   │   ├── ⚛️ BarcodeGenerator.tsx
 │   │   │   ├── ⚛️ CaseConverter.tsx
 │   │   │   ├── ⚛️ CharacterCounter.tsx
+│   │   │   ├── ⚛️ ColorPaletteGenerator.tsx
 │   │   │   ├── ⚛️ ContactLinkGenerator.tsx
 │   │   │   ├── ⚛️ HashtagGenerator.tsx
 │   │   │   ├── ⚛️ HourlyRateCalculator.tsx
@@ -842,6 +869,10 @@ kompi-web/
 │   │   ├── 🔷 fonts.ts
 │   │   ├── 🔷 plan-limits.ts
 │   │   ├── 🔷 prisma.ts
+│   │   ├── 📂 seo/
+│   │   │   ├── 🔷 auto-link.ts
+│   │   │   ├── 🔷 inline-link-engine.ts
+│   │   │   └── ⚙️ static-pages.json
 │   │   ├── 🔷 solutions.ts
 │   │   ├── 🔷 stripe.ts
 │   │   ├── 🔷 tools-config.ts
@@ -868,8 +899,8 @@ kompi-web/
 - 🖼️ Assets: PNG images
 - 🖼️ Assets: Icon files
 - 🖼️ Assets: JPEG images
-- 🎨 Styles: Stylesheets
 - ⚛️ React: React TypeScript files
+- 🎨 Styles: Stylesheets
 - 📜 JavaScript: JavaScript files
 
 ### Importance Levels
