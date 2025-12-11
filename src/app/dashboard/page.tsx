@@ -8,8 +8,6 @@ import {
 } from "@/components/dashboard/dashboard-shell";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
 import { CreateWorkspaceEmpty } from "@/components/dashboard/create-workspace-empty";
-import PasswordGeneratorWidget from "@/components/dashboard/password-generator-widget";
-import ContactLinksWidget from "@/components/dashboard/contact-links-widget"; // 👈 NEW
 
 export const dynamic = "force-dynamic";
 
@@ -67,11 +65,6 @@ export default async function DashboardPage(props: PageProps) {
     <DashboardLayout>
       <DashboardShell links={links} />
 
-      {/* Widgets under the main shell */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <PasswordGeneratorWidget />
-        <ContactLinksWidget />
-      </div>
     </DashboardLayout>
   );
 }
