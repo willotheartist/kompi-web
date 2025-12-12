@@ -1,4 +1,6 @@
+//src/app/qr-code/with-logo/page.tsx
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 
@@ -91,12 +93,11 @@ export default function QrWithLogoPage() {
             <ol className="mt-3 space-y-2 text-[13px] leading-relaxed text-neutral-700">
               <li>
                 <span className="font-semibold">1.</span> Open the{" "}
-                <a
-                  href="/qr-code-generator"
+                <Link href="/qr-code-generator"
                   className="font-medium text-neutral-900 underline-offset-4 hover:underline"
                 >
                   free QR code generator
-                </a>{" "}
+                </Link>{" "}
                 and choose the type of content you want to encode.
               </li>
               <li>
@@ -119,18 +120,16 @@ export default function QrWithLogoPage() {
 
           {/* CTA */}
           <section className="mt-8 flex flex-wrap items-center gap-3 text-[12px]">
-            <a
-              href="/qr-code-generator"
+            <Link href="/qr-code-generator"
               className="inline-flex items-center justify-center rounded-full bg-[#050505] px-7 py-2.5 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.75)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.9)]"
             >
               Create a QR code with logo
-            </a>
-            <a
-              href="/qr-code/dynamic"
+            </Link>
+            <Link href="/qr-code/dynamic"
               className="text-[12px] font-medium text-neutral-800 underline-offset-4 hover:underline"
             >
               Make it dynamic and trackable →
-            </a>
+            </Link>
           </section>
         </div>
       </main>

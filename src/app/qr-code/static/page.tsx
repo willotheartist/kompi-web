@@ -1,4 +1,6 @@
+//src/app/qr-code/static/page.tsx
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 
@@ -69,12 +71,11 @@ export default function StaticQrCodesPage() {
               </h2>
               <p className="mt-2">
                 Use Kompi&apos;s free{" "}
-                <a
-                  href="/qr-code-generator"
+                <Link href="/qr-code-generator"
                   className="font-medium text-neutral-900 underline-offset-4 hover:underline"
                 >
                   QR code generator
-                </a>{" "}
+                </Link>{" "}
                 to create static QR codes without signing up.
               </p>
             </article>
@@ -98,30 +99,27 @@ export default function StaticQrCodesPage() {
               Choose a static QR code when you&apos;re happy with a fixed
               destination and don&apos;t need scan tracking. If you want to
               change where a QR points later or see analytics,{" "}
-              <a
-                href="/qr-code/dynamic"
+              <Link href="/qr-code/dynamic"
                 className="font-medium text-neutral-900 underline-offset-4 hover:underline"
               >
                 switch to dynamic QR codes
-              </a>{" "}
+              </Link>{" "}
               powered by Kompi short links.
             </p>
           </section>
 
           {/* CTA */}
           <section className="mt-8 flex flex-wrap items-center gap-3 text-[12px]">
-            <a
-              href="/qr-code-generator"
+            <Link href="/qr-code-generator"
               className="inline-flex items-center justify-center rounded-full bg-[#050505] px-7 py-2.5 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.75)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.9)]"
             >
               Open free static QR generator
-            </a>
-            <a
-              href="/qr-code/dynamic"
+            </Link>
+            <Link href="/qr-code/dynamic"
               className="text-[12px] font-medium text-neutral-800 underline-offset-4 hover:underline"
             >
               Learn about dynamic QR codes →
-            </a>
+            </Link>
           </section>
         </div>
       </main>

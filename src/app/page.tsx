@@ -24,23 +24,32 @@ import Faces from "@/components/sections/faces";
 import Faqs from "@/components/faqs";
 import { ClaimHandleInline } from "@/components/claim/claim-handle-inline";
 
-
 export const dynamic = "force-static";
 
 export default function HomePage() {
   const organizationJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": "https://kompi.app/#organization",
     name: "Kompi",
     url: "https://kompi.app",
     logo: "https://kompi.app/Kompiwhite.svg",
+    // Add your real profiles here (remove any you don’t have)
+    sameAs: [
+      // "https://www.instagram.com/yourhandle",
+      // "https://www.linkedin.com/company/yourhandle",
+      // "https://x.com/yourhandle",
+      // "https://www.youtube.com/@yourhandle",
+    ],
   };
 
   const webSiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": "https://kompi.app/#website",
     name: "Kompi",
     url: "https://kompi.app",
+    publisher: { "@id": "https://kompi.app/#organization" },
   };
 
   return (
@@ -57,14 +66,12 @@ export default function HomePage() {
         {/* SEO structured data for Google */}
         <script
           type="application/ld+json"
-           
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationJsonLd),
           }}
         />
         <script
           type="application/ld+json"
-           
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(webSiteJsonLd),
           }}
@@ -72,6 +79,18 @@ export default function HomePage() {
 
         {/* HeroA – Calm Product Hero */}
         <Hero />
+
+        {/* NEW: Explicit definition block (Pillar 1: brand clarity for Google + humans) */}
+        <section className="wf-section">
+          <div className="wf-container">
+            <p className="text-sm text-[var(--color-subtle)] max-w-3xl">
+              <strong>Kompi</strong> is a web app for smart links, QR codes, and
+              share pages. Create short links, build bio pages, generate QR
+              experiences, and track what works with real-time analytics — all
+              from one dashboard.
+            </p>
+          </div>
+        </section>
 
         {/* KPromo – Clickable world carousel */}
         <KPromo />
@@ -88,7 +107,6 @@ export default function HomePage() {
         {/* Personas – Who Kompi is for */}
         <PersonasSection />
 
-
         {/* KBenefits – case-study style band */}
         <KBenefits />
 
@@ -101,13 +119,12 @@ export default function HomePage() {
         <InfoScreenfive />
         <InfoScreensix />
 
-      
-
         {/* Testimonials – new Linktree-style band */}
         <TestimonialsSection />
       </motion.main>
+
       <Faqs />
-    <ClaimHandleInline />
+      <ClaimHandleInline />
 
       {/* CTA_Footer – handled by shared component */}
       <FooterCTA />

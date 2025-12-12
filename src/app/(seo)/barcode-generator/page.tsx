@@ -3,6 +3,16 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import Link from "next/link";
+import Image from "next/image";
+import {
+Barcode,
+  Boxes,
+  Download,
+    Layers,
+    Truck,
+  Zap,
+  ShieldCheck,
+} from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import { BarcodeGenerator } from "@/components/tools/BarcodeGenerator";
@@ -116,9 +126,7 @@ export const metadata: Metadata = {
     "barcode and QR code platform",
     "Kompi barcode tool",
   ],
-  alternates: {
-    canonical: "/barcode-generator",
-  },
+  alternates: { canonical: "/barcode-generator" },
   openGraph: {
     title: "Free Online Barcode Generator | Create Barcodes Fast with Kompi",
     description:
@@ -132,783 +140,841 @@ export const metadata: Metadata = {
     description:
       "Generate Code 128, EAN-13, UPC and more with Kompi’s barcode generator. Download high-quality barcode images and connect them with QR codes and smart links.",
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
 };
 
 /* -------------------------------------------------------------------------- */
-/*  HERO – barcode-focused intro                                             */
+/*  SMALL UI PRIMITIVES (same vibe as /qr-gen-online)                          */
 /* -------------------------------------------------------------------------- */
 
-function BarcodeHeroSection() {
+function Container({ children }: { children: React.ReactNode }) {
+  return <div className="mx-auto w-full max-w-5xl px-4">{children}</div>;
+}
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <section className="relative overflow-hidden">
+    <p className="text-center text-xs md:text-sm font-semibold uppercase tracking-[0.34em] text-[#5177e1]">
+      {children}
+    </p>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-center text-4xl md:text-5xl font-bold tracking-tight text-[#0B0F1A]">
+      {children}
+    </h2>
+  );
+}
+
+function SectionSub({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mx-auto max-w-2xl text-center text-base md:text-lg leading-relaxed text-neutral-600">
+      {children}
+    </p>
+  );
+}
+
+function Card({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={`rounded-3xl border border-neutral-200 bg-white shadow-sm ${className}`}>
+      {children}
+    </section>
+  );
+}
+
+function CardBody({ children }: { children: React.ReactNode }) {
+  return <div className="px-6 py-10 sm:px-10 sm:py-12">{children}</div>;
+}
+
+function Figure({
+  src,
+  alt,
+  aspect = "aspect-[16/10]",
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  aspect?: string;
+  priority?: boolean;
+}) {
+  return (
+    <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white">
+      <div className={`relative w-full ${aspect}`}>
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          priority={priority}
+          sizes="(max-width: 768px) 100vw, 700px"
+          className="object-cover"
+        />
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  HERO                                                                      */
+/* -------------------------------------------------------------------------- */
+
+function BarcodeIntroSection() {
+  return (
+    <div className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-x-0 -top-24 -z-10 transform-gpu blur-3xl">
-        <div className="mx-auto h-48 max-w-3xl bg-gradient-to-r from-[#f97316]/15 via-[#4b5563]/10 to-[#22c55e]/20 opacity-80" />
+        <div className="mx-auto h-56 max-w-3xl bg-gradient-to-r from-[#FDBA74] via-[#9BDFD1] to-[#4B9FFF] opacity-70" />
       </div>
 
-      <div className="mx-auto flex max-w-5xl flex-col items-center justify-center px-4 pb-10 pt-12 text-center sm:px-6 md:pb-14 md:pt-16">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-xs font-medium text-[#111827] shadow-sm ring-1 ring-neutral-200">
-          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#111827] text-[10px] font-semibold text-white">
+      <div className="mx-auto flex flex-col items-center justify-center py-14 md:py-20 text-center">
+        <div className="mb-7 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-xs font-medium text-[#1E2330] shadow-sm ring-1 ring-neutral-200">
+          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#1E2330] text-[10px] font-semibold text-white">
             K
           </span>
           <span>Kompi Tools · Free online barcode generator</span>
         </div>
 
-        <div className="space-y-6 sm:space-y-7">
-          <h1 className="text-3xl font-semibold tracking-tight text-[#050505] sm:text-4xl md:text-5xl">
+        <div className="space-y-7 md:space-y-9">
+          <h1 className="text-center text-5xl md:text-6xl font-extrabold tracking-tight text-[#0B0F1A]">
             Free{" "}
-            <span className="bg-[linear-gradient(120deg,#0f172a,#4b5563,#111827)] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#FDBA74] to-[#4B9FFF] bg-clip-text text-transparent">
               barcode generator
             </span>{" "}
-            to turn product codes into scan-ready barcodes.
+            for products, shelves and inventory.
           </h1>
 
-          <p className="mx-auto max-w-3xl text-base leading-relaxed text-[#4B5563] sm:text-lg">
-            Use Kompi&apos;s fast online barcode generator to create barcodes for products, shelves
-            and inventory. Choose your format, paste your code and download crisp PNG or SVG
-            barcodes ready for print and scanning.
+          <p className="mx-auto max-w-3xl text-lg md:text-xl leading-relaxed text-neutral-700">
+            Generate Code 128, EAN, UPC and more in seconds. Paste your data, preview instantly,
+            then download crisp PNG or SVG barcodes ready for labels, packaging and documents.
           </p>
 
-          <p className="mx-auto max-w-xl text-xs leading-relaxed text-[#6B7280] sm:text-sm">
-            No clunky desktop software — just clean, reliable barcodes that work with POS systems,
-            warehouse scanners and ecommerce workflows. Perfect for small brands, warehouses,
-            agencies and creators.
+          <p className="mx-auto max-w-xl text-sm md:text-base leading-relaxed text-neutral-600">
+            No desktop software. Runs fully in your browser. Built to feel like a modern tool — not a legacy barcode site.
           </p>
 
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <a
               href="#barcode-generator-tool"
-              className="inline-flex items-center justify-center rounded-full bg-[#111827] px-7 py-3 text-sm font-medium text-[#F9FAFB] shadow-md shadow-[#111827]/25 transition hover:bg-black"
+              className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-8 py-3.5 text-sm font-semibold text-[#F7F7F3] shadow-md shadow-[#1E2330]/25 transition hover:bg-black"
             >
               Generate barcodes
             </a>
             <Link
               href="/signup"
-              className="inline-flex items-center justify-center rounded-full border border-[#111827] bg-[#FFFFFF] px-7 py-3 text-sm font-medium text-[#111827] shadow-sm hover:bg-[#F7F7F3]"
+              className="inline-flex items-center justify-center rounded-full border border-[#1E2330] bg-white px-8 py-3.5 text-sm font-semibold text-[#1E2330] shadow-sm hover:bg-[#F7F7F3]"
             >
               Save barcodes in my Kompi workspace
             </Link>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-[#6B7280] sm:text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-6 text-sm font-medium text-neutral-600">
             <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 ring-1 ring-neutral-200">
               <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
-              <span>Code 128, EAN, UPC & more</span>
+              <span>Code 128, EAN, UPC &amp; more</span>
             </div>
-            <span>• High-res PNG & SVG outputs</span>
-            <span>• Works with POS & warehouse scanners</span>
+            <span>• Print-ready PNG &amp; SVG</span>
+            <span>• Works with POS &amp; scanners</span>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  TOOL SECTION – render BarcodeGenerator directly                          */
+/*  TOOL                                                                      */
 /* -------------------------------------------------------------------------- */
 
 function BarcodeToolSection() {
   return (
-    <section
-      id="barcode-generator-tool"
-      className="px-4 pt-2 md:pt-4"
-      aria-label="Kompi barcode generator tool"
-    >
-      <div className="mx-auto max-w-5xl space-y-4">
-        <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1.5 text-left">
-            <h2 className="text-lg font-semibold tracking-tight text-neutral-900 sm:text-xl">
-              Try the Kompi barcode generator
-            </h2>
-            <p className="max-w-2xl text-xs text-neutral-600 sm:text-sm">
-              Choose your barcode type, paste your product or inventory code, and export a crisp,
-              scan-ready barcode image. Perfect for retail labels, warehouse bins, packaging and
-              documentation.
-            </p>
-          </div>
-          <p className="text-xs text-neutral-500">
-            Looking for QR codes instead?{" "}
-            <Link
-              href="/qr-code-generator"
-              className="font-medium text-neutral-900 underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-            >
-              Open the QR code generator
-            </Link>
-            .
-          </p>
-        </header>
+    <section id="barcode-generator-tool" className="scroll-mt-28">
+      <Container>
+        <Card className="bg-white">
+          <CardBody>
+            <Eyebrow>TRY IT NOW</Eyebrow>
+            <SectionTitle>Generate your barcode</SectionTitle>
+            <SectionSub>
+              Choose a barcode type, paste your value, preview instantly — then download a crisp barcode file.
+              Looking for QR codes?{" "}
+              <Link
+                href="/qr-code-generator"
+                className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
+              >
+                Open the QR code generator
+              </Link>
+              .
+            </SectionSub>
 
-        {/* Unwrapped tool component so we don't pull in dashboard UI */}
-        <div className="rounded-[2rem] bg-white border border-neutral-200 shadow-sm p-3 sm:p-4 md:p-5">
-          <BarcodeGenerator />
-        </div>
+            <div className="mt-10 rounded-3xl border border-neutral-200 bg-white p-3 sm:p-4 md:p-6 shadow-sm">
+              <BarcodeGenerator />
+            </div>
 
-        <div className="grid gap-4 pt-1 text-xs text-neutral-600 sm:grid-cols-3 sm:text-sm">
-          <div>
-            <h3 className="font-semibold text-neutral-900">Barcode + QR in one place</h3>
-            <p>
-              Use this barcode generator alongside{" "}
-              <Link
-                href="/kr-codes"
-                className="font-medium text-neutral-900 underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-              >
-                Kompi KR Codes
-              </Link>{" "}
-              to manage both QR codes and barcodes inside one workspace.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold text-neutral-900">Connect to smarter links</h3>
-            <p>
-              Point offline materials to branded short URLs using{" "}
-              <Link
-                href="/links"
-                className="font-medium text-neutral-900 underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-              >
-                Kompi Links
-              </Link>{" "}
-              and keep full control of destinations.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold text-neutral-900">Campaign tracking ready</h3>
-            <p>
-              Combine barcodes with QR codes that include UTM parameters from the{" "}
-              <Link
-                href="/tools/utm-builder"
-                className="font-medium text-neutral-900 underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-              >
-                UTM builder
-              </Link>{" "}
-              for end-to-end attribution.
-            </p>
-          </div>
-        </div>
-      </div>
+            <div className="mt-10 grid gap-6 md:grid-cols-3 text-sm md:text-base text-neutral-600">
+              <div className="space-y-2">
+                <h3 className="font-semibold text-neutral-900">Barcode + QR in one place</h3>
+                <p>
+                  Use barcodes alongside{" "}
+                  <Link
+                    href="/kr-codes"
+                    className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
+                  >
+                    KR Codes
+                  </Link>{" "}
+                  to keep everything organised inside one workspace.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold text-neutral-900">Connect to smarter links</h3>
+                <p>
+                  Pair offline materials with branded URLs via{" "}
+                  <Link
+                    href="/links"
+                    className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
+                  >
+                    Kompi Links
+                  </Link>{" "}
+                  for clean destinations and full control.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold text-neutral-900">Campaign tracking ready</h3>
+                <p>
+                  Add UTMs with the{" "}
+                  <Link
+                    href="/tools/utm-builder"
+                    className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
+                  >
+                    UTM builder
+                  </Link>{" "}
+                  to connect offline placements to analytics.
+                </p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      </Container>
     </section>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  VIDEO SECTION                                                            */
+/*  ICON FEATURES                                                             */
+/* -------------------------------------------------------------------------- */
+
+function IconFeature({
+  icon,
+  bg,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  bg: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ backgroundColor: bg }}>
+        <div className="h-5 w-5 text-[#0B0F1A]">{icon}</div>
+      </div>
+      <h3 className="text-lg font-semibold text-[#0B0F1A]">{title}</h3>
+      <p className="text-sm leading-relaxed text-neutral-600">{children}</p>
+    </div>
+  );
+}
+
+function BarcodeFeatureIcons() {
+  return (
+    <section className="py-20 md:py-28 bg-white border-t border-neutral-200">
+      <Container>
+        <div className="space-y-12">
+          <div className="space-y-4 text-center">
+            <Eyebrow>FEATURES</Eyebrow>
+            <SectionTitle>Everything you expect from a modern barcode generator</SectionTitle>
+            <SectionSub>
+              Fast previews, clean downloads, and formats that work with retail, warehousing and internal ops.
+            </SectionSub>
+          </div>
+
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            <IconFeature icon={<Zap className="h-5 w-5" />} bg="#E0F2FE" title="Instant preview">
+              Paste your code and see the barcode update immediately — no slow refresh loops.
+            </IconFeature>
+
+            <IconFeature icon={<Barcode className="h-5 w-5" />} bg="#DCFCE7" title="Popular formats">
+              Generate Code 128, EAN-13/8, UPC-A/E, Code 39 and more — depending on your workflow.
+            </IconFeature>
+
+            <IconFeature icon={<Download className="h-5 w-5" />} bg="#FEF3C7" title="Crisp exports">
+              Download high-quality PNG for everyday print, or SVG when you need sharp scaling.
+            </IconFeature>
+
+            <IconFeature icon={<ShieldCheck className="h-5 w-5" />} bg="#EDE9FE" title="Scanner-friendly">
+              Designed for readability and quiet space so scanners and POS systems pick it up reliably.
+            </IconFeature>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  VIDEO                                                                      */
 /* -------------------------------------------------------------------------- */
 
 function BarcodeVideoSection() {
   return (
-    <section className="px-4 mt-12 md:mt-14">
-      <div className="mx-auto max-w-5xl space-y-6 text-center">
-        <div className="space-y-3">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Watch how to generate barcodes with Kompi
-          </h2>
-          <p className="mx-auto max-w-2xl text-sm leading-relaxed text-[#4B5563] sm:text-base">
-            See the barcode generator in action — from choosing the right format to downloading
-            print-ready barcodes you can drop into labels, packaging and documentation.
-          </p>
-        </div>
-
-        <div className="mx-auto max-w-4xl rounded-[2rem] bg-white border border-neutral-200 shadow-sm p-3 sm:p-4 md:p-5">
-          <div className="aspect-video w-full overflow-hidden rounded-2xl bg-neutral-900/80 flex items-center justify-center">
-            <video
-              className="h-full w-full"
-              src={SEO_VIDEO_SRC}
-              controls
-              preload="metadata"
-              poster="/kompi-platform.png"
-            >
-              Sorry, your browser doesn&apos;t support embedded videos. You can watch it directly
-              at <a href={SEO_VIDEO_SRC}>this link</a>.
-            </video>
+    <section className="py-20 md:py-28 bg-[#f7f7f4] border-t border-neutral-200">
+      <Container>
+        <div className="space-y-10 md:space-y-12">
+          <div className="space-y-4 md:space-y-5">
+            <Eyebrow>60-SECOND DEMO</Eyebrow>
+            <SectionTitle>Watch how the barcode generator works</SectionTitle>
+            <SectionSub>
+              Choose a format, paste your code, preview instantly — then download a print-ready barcode file.
+            </SectionSub>
           </div>
+
+          <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border border-neutral-200 bg-black shadow-sm">
+            <video className="aspect-video w-full object-cover" src={SEO_VIDEO_SRC} autoPlay muted loop playsInline preload="metadata" />
+          </div>
+
+          <p className="text-center text-sm text-neutral-600">
+            Want QR codes too?{" "}
+            <Link href="/qr-gen-online" className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700">
+              Try the free QR gen online
+            </Link>
+            .
+          </p>
         </div>
-
-        <p className="text-xs text-neutral-600 sm:text-sm">
-          Follow along in your own browser and use the live generator above to create your first
-          barcodes in under a minute.
-        </p>
-      </div>
+      </Container>
     </section>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  LONG-FORM ARTICLE                                                        */
+/*  LONG-FORM (BROKEN INTO CARDS)                                              */
 /* -------------------------------------------------------------------------- */
 
-function BarcodeLongFormArticleSection() {
+function BarcodeLongFormArticle() {
   return (
-    <section
-      className="px-4 mt-14 md:mt-16"
-      aria-labelledby="barcode-guide-heading"
-    >
-      <div className="mx-auto max-w-5xl rounded-[2rem] bg-white border border-neutral-200 shadow-sm p-6 md:p-8 lg:p-10 space-y-8 text-neutral-800 text-sm md:text-base leading-relaxed">
-        <header className="space-y-3">
-          <h2
-            id="barcode-guide-heading"
-            className="text-2xl md:text-3xl font-semibold tracking-tight"
-          >
-            How to generate barcodes online for products, shelves and inventory
-          </h2>
-          <p>
-            Barcodes might feel old-school compared to QR codes, but they’re still the backbone of
-            retail, ecommerce and logistics. They make scanners fast, databases reliable and
-            inventory much easier to control. The problem is that many barcode tools still feel
-            like they were built a decade ago. Kompi’s{" "}
-            <strong>online barcode generator</strong> brings barcodes into the same clean, modern
-            toolkit you already use for QR codes, links and menus.
-          </p>
-        </header>
+    <section className="py-20 md:py-28 bg-[#f7f7f4]" aria-labelledby="barcode-guide-heading">
+      <Container>
+        <div className="space-y-10 md:space-y-12">
+          <Card>
+            <CardBody>
+              <Eyebrow>BARCODE GUIDE</Eyebrow>
+              <h2 id="barcode-guide-heading" className="mt-4 text-center text-4xl md:text-5xl font-bold tracking-tight text-[#0B0F1A]">
+                What is a barcode generator, and when should you use one?
+              </h2>
 
-        <section className="space-y-3">
-          <h3 className="text-xl md:text-2xl font-semibold">
-            Why teams still rely on 1D barcodes in a QR-first world
-          </h3>
-          <p>
-            QR codes have become the default for customer-facing experiences. They&apos;re perfect
-            for menus, campaigns, subscriptions and everything where you want people to scan and
-            land on a URL. But behind the scenes — inside warehouses, stockrooms and supply chains —
-            one-dimensional barcodes remain king.
-          </p>
-          <p>
-            They&apos;re simple, fast and deeply integrated into POS systems, scanners and ERPs all
-            over the world. When a cashier scans an item, when a picker scans a bin location, or
-            when a warehouse records a pallet, they&apos;re almost always working with traditional
-            barcodes. Kompi lets you generate those same barcodes online, while still giving you
-            access to tools like the{" "}
-            <Link
-              href="/qr-code-generator"
-              className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-            >
-              QR code generator
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/qr-code/with-logo"
-              className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-            >
-              QR code with logo
-            </Link>{" "}
-            for richer customer journeys.
-          </p>
-        </section>
+              <p className="mt-6 mx-auto max-w-3xl text-center text-base md:text-lg leading-relaxed text-neutral-700">
+                Barcodes are still the backbone of retail, inventory and logistics. They’re fast for scanners, reliable for systems,
+                and universally supported by POS setups. Kompi’s <strong>online barcode generator</strong> keeps the workflow clean:
+                pick a format, encode your value, then export a crisp asset you can print anywhere.
+              </p>
 
-        <section className="space-y-3">
-          <h3 className="text-xl md:text-2xl font-semibold">
-            Picking the right barcode type for your workflow
-          </h3>
-          <p>
-            Different barcode formats solve different problems. The Kompi barcode generator lets
-            you choose the type that matches your hardware and standards:
-          </p>
-          <ul className="list-disc list-inside space-y-2">
-            <li>
-              <strong>Code 128:</strong> high-density, flexible and supports a wide range of
-              characters. It&apos;s ideal for logistics labels, internal codes and custom
-              workflows where you control the data.
-            </li>
-            <li>
-              <strong>EAN-13 / EAN-8:</strong> standard retail barcodes across much of the world.
-              If you&apos;re selling in supermarkets or major retailers, this is often what they
-              expect on your packaging.
-            </li>
-            <li>
-              <strong>UPC-A / UPC-E:</strong> similar to EAN but more common in North America.
-              These are widely used on consumer goods and everyday items in stores.
-            </li>
-            <li>
-              <strong>Code 39:</strong> simple, robust and perfect for internal asset labels,
-              equipment tags, ID badges and documents where you need basic alphanumeric codes.
-            </li>
-          </ul>
-          <p>
-            When in doubt, check what your scanner or POS system expects. Many devices support
-            multiple formats, but marketplaces and large retailers often specify exactly which type
-            and structure you should use. Kompi gives you the flexibility to experiment, then lock
-            in a standard once you know what works best.
-          </p>
-        </section>
+              <div className="mt-10 grid gap-6 sm:grid-cols-2">
+                <Figure src="/kompi-platform.png" alt="Kompi platform UI" aspect="aspect-[16/10]" priority />
+                <Figure src="/kompi-analytics.png" alt="Kompi analytics UI" aspect="aspect-[16/10]" />
+              </div>
+            </CardBody>
+          </Card>
 
-        <section className="space-y-3">
-          <h3 className="text-xl md:text-2xl font-semibold">
-            From code to label: best practices for scannable barcodes
-          </h3>
-          <p>
-            Even the best barcode generator can’t rescue bad data. Good barcoding starts with
-            clear, consistent identifiers. For products, this usually means officially issued GTIN
-            or EAN codes. For internal use, it means defined naming conventions: product-SKU,
-            aisle-row-bin, asset-category-ID and so on.
-          </p>
-          <p>
-            Once your data is in a good place, Kompi makes it straightforward to turn those values
-            into barcodes:
-          </p>
-          <ol className="list-decimal list-inside space-y-2">
-            <li>Choose the barcode format your scanner or POS supports.</li>
-            <li>Paste or type the exact code you want to encode, without extra spaces.</li>
-            <li>Decide whether to show a human-readable label below the bars.</li>
-            <li>Generate the barcode and test it with your scanner or a phone app.</li>
-          </ol>
-          <p>
-            If a barcode doesn’t scan reliably, check that it’s large enough, printed sharply and
-            has enough quiet space (blank margin) around it. The barcodes from Kompi are optimised
-            for clarity, but low-quality printers or smudged labels can still cause problems —
-            especially on very small stickers.
-          </p>
-        </section>
+          <Card>
+            <CardBody>
+              <Eyebrow>CHOOSING FORMATS</Eyebrow>
+              <h3 className="mt-4 text-center text-4xl md:text-5xl font-bold tracking-tight text-[#0B0F1A]">
+                Picking the right barcode type
+              </h3>
 
-        <section className="space-y-3">
-          <h3 className="text-xl md:text-2xl font-semibold">
-            Using barcodes alongside QR codes and smart links
-          </h3>
-          <p>
-            Barcodes are great for machines. QR codes are great for people. With Kompi, they don’t
-            have to live in separate universes. You can use barcodes wherever scanners are
-            involved, then layer QR codes on top for human journeys.
-          </p>
-          <p>
-            For example, you could:
-          </p>
-          <ul className="list-disc list-inside space-y-2">
-            <li>
-              Put a barcode and QR code side-by-side on packaging so staff can scan barcodes into
-              stock systems while customers scan QR codes to view product pages.
-            </li>
-            <li>
-              Use barcodes to label shelf locations, and add QR codes that open a{" "}
-              <Link
-                href="/qr-menus"
-                className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-              >
-                QR menu
-              </Link>{" "}
-              or SOP for that area.
-            </li>
-            <li>
-              Combine barcodes with a digital business card powered by{" "}
-              <Link
-                href="/k-cards"
-                className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-              >
-                K-Cards
-              </Link>{" "}
-              for staff or field reps — barcodes for internal ID, QR codes for contact details.
-            </li>
-          </ul>
-          <p>
-            Behind the scenes, you can route QR codes and links through{" "}
-            <Link
-              href="/links"
-              className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-            >
-              Kompi Links
-            </Link>{" "}
-            and the{" "}
-            <Link
-              href="/tools/utm-builder"
-              className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700"
-            >
-              UTM builder
-            </Link>{" "}
-            to track engagement and understand which placements perform best.
-          </p>
-        </section>
+              <p className="mt-6 mx-auto max-w-3xl text-center text-base md:text-lg leading-relaxed text-neutral-700">
+                Different barcode standards exist for different environments. Here’s a simple mental model:
+              </p>
 
-        <section className="space-y-3">
-          <h3 className="text-xl md:text-2xl font-semibold">
-            Scaling from a handful of SKUs to thousands
-          </h3>
-          <p>
-            Many teams start by creating just a few barcodes for a pilot project or a handful of
-            products. Over time, those needs grow: more SKUs, more shelves, more locations and more
-            people who all need access to the same barcodes and QR codes.
-          </p>
-          <p>
-            Kompi is built to handle that journey. You can begin with simple free usage of the{" "}
-            <strong>barcode generator</strong>, then move into workspaces where you manage QR
-            codes, links and creator tools for your whole team. Because everything lives inside one
-            interface, you don’t end up with different teams using different random generators and
-            file naming conventions.
-          </p>
-          <p>
-            In short: you get the simplicity of a single-purpose barcode maker, plus the
-            flexibility of a broader growth stack when you’re ready for it.
-          </p>
-        </section>
-      </div>
+              <ul className="mt-8 mx-auto max-w-3xl space-y-4 text-left text-base md:text-lg leading-relaxed text-neutral-700 list-disc list-inside">
+                <li>
+                  <strong>Code 128:</strong> flexible and high-density — great for logistics, internal labels and alphanumeric IDs.
+                </li>
+                <li>
+                  <strong>EAN-13 / EAN-8:</strong> common retail barcodes across many regions — often required for packaged goods.
+                </li>
+                <li>
+                  <strong>UPC-A / UPC-E:</strong> widely used in North America for consumer products.
+                </li>
+                <li>
+                  <strong>Code 39:</strong> simple and robust — good for assets, documents, badges and internal tracking.
+                </li>
+              </ul>
+
+              <p className="mt-10 mx-auto max-w-3xl text-center text-base md:text-lg leading-relaxed text-neutral-700">
+                If your retailer, marketplace, or scanner vendor specifies a format — follow that spec. Otherwise, Code 128 is a strong default for internal workflows.
+              </p>
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardBody>
+              <Eyebrow>BEST PRACTICES</Eyebrow>
+              <h3 className="mt-4 text-center text-4xl md:text-5xl font-bold tracking-tight text-[#0B0F1A]">
+                Print, size and scan reliability
+              </h3>
+
+              <p className="mt-6 mx-auto max-w-3xl text-center text-base md:text-lg leading-relaxed text-neutral-700">
+                A good barcode is mostly about clarity: sharp edges, enough quiet space (blank margin), and printing at a sensible size for the scan distance.
+                Always print a sample and test it with your actual scanner before rolling out at scale.
+              </p>
+
+              <div className="mt-10 grid gap-6 md:grid-cols-3">
+                <div className="rounded-3xl border border-neutral-200 bg-white p-7 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-2xl bg-[#E0F2FE] flex items-center justify-center">
+                      <Boxes className="h-5 w-5 text-[#0B0F1A]" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-[#0B0F1A]">Labels & bins</h4>
+                  </div>
+                  <p className="text-sm text-neutral-600 leading-relaxed">
+                    For shelves and bins, prioritize readability over compactness. A slightly larger barcode prevents mis-scans.
+                  </p>
+                </div>
+
+                <div className="rounded-3xl border border-neutral-200 bg-white p-7 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-2xl bg-[#DCFCE7] flex items-center justify-center">
+                      <Truck className="h-5 w-5 text-[#0B0F1A]" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-[#0B0F1A]">Packaging</h4>
+                  </div>
+                  <p className="text-sm text-neutral-600 leading-relaxed">
+                    Avoid curved or glossy areas when possible. Test under real lighting and handling.
+                  </p>
+                </div>
+
+                <div className="rounded-3xl border border-neutral-200 bg-white p-7 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-2xl bg-[#EDE9FE] flex items-center justify-center">
+                      <Layers className="h-5 w-5 text-[#0B0F1A]" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-[#0B0F1A]">Documents</h4>
+                  </div>
+                  <p className="text-sm text-neutral-600 leading-relaxed">
+                    PNG works well for docs and quick prints; use SVG if your designer will scale it significantly.
+                  </p>
+                </div>
+              </div>
+
+              <p className="mt-10 mx-auto max-w-3xl text-center text-base md:text-lg leading-relaxed text-neutral-700">
+                For customer-facing experiences, pair barcodes with{" "}
+                <Link href="/qr-code-generator" className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700">
+                  QR codes
+                </Link>{" "}
+                so machines and people both have a clean path.
+              </p>
+            </CardBody>
+          </Card>
+        </div>
+      </Container>
     </section>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  USE CASE / TYPES SECTION                                                 */
+/*  USE CASE CARDS                                                            */
 /* -------------------------------------------------------------------------- */
 
 function BarcodeUseCasesSection() {
   return (
-    <section className="bg-[#FFFFFF] border-top border-neutral-200 mt-16 md:mt-20">
-      <div className="mx-auto max-w-5xl px-4 py-12 md:py-16 space-y-10">
-        <header className="mx-auto max-w-3xl space-y-3 text-center">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-[#111827] sm:text-sm">
-            BARCODES FOR EVERYDAY OPERATIONS
-          </h2>
-          <p className="text-2xl md:text-3xl font-semibold tracking-tight">
-            One barcode generator, many very normal use cases.
-          </p>
-          <p className="text-sm md:text-base text-[#4B5563]">
-            Kompi&apos;s <strong>free online barcode generator</strong> works across retail,
-            ecommerce, warehouses and events. Start small or roll it out across your whole workspace
-            — without changing tools later.
-          </p>
-        </header>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="flex flex-col justify-between rounded-3xl bg-[#F7F7F3] p-6 ring-1 ring-[#E5E7EB]">
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-                RETAIL & ECOMMERCE
-              </p>
-              <h3 className="text-lg md:text-xl font-semibold text-[#111827]">
-                Product & shelf labels
-              </h3>
-              <p className="text-sm text-[#4B5563]">
-                Give every SKU and shelf location a scan-ready barcode your staff can rely on at
-                checkout and in stock counts.
-              </p>
-              <ul className="mt-2 space-y-1.5 text-sm text-[#374151]">
-                <li>• Turn SKUs and GTINs into labels</li>
-                <li>• Use EAN or UPC formats for retail</li>
-                <li>• Pair with QR codes for customers</li>
-              </ul>
-            </div>
+    <section className="py-20 md:py-28 bg-white border-t border-neutral-200">
+      <Container>
+        <div className="space-y-12 md:space-y-14">
+          <div className="space-y-4 md:space-y-5">
+            <Eyebrow>BARCODES FOR EVERYDAY OPERATIONS</Eyebrow>
+            <SectionTitle>One barcode generator, three very normal use cases.</SectionTitle>
+            <SectionSub>
+              Retail, warehousing, internal labels — generate barcodes that scan reliably and download assets that print clean.
+            </SectionSub>
           </div>
 
-          <div className="flex flex-col justify-between rounded-3xl bg-[#DBEAFE] p-6 ring-2 ring-[#1D4ED8]">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#1D4ED8] px-3 py-1 text-[11px] font-semibold text-[#EFF6FF]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
-                Recommended
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="flex flex-col justify-between rounded-3xl bg-[#F7F7F3] p-7 ring-1 ring-[#E5E7EB]">
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">RETAIL & ECOMMERCE</p>
+                <h3 className="text-xl font-bold text-[#0B0F1A]">Product & shelf labels</h3>
+                <p className="text-base text-neutral-700">
+                  Turn SKUs, GTINs and product IDs into scan-ready barcodes for checkout and stock counts.
+                </p>
+                <ul className="mt-3 space-y-2 text-base text-neutral-700">
+                  <li>• EAN / UPC formats for retail</li>
+                  <li>• Print clean labels fast</li>
+                  <li>• Pair with QR for customers</li>
+                </ul>
               </div>
-              <h3 className="text-lg md:text-xl font-semibold text-[#111827]">
-                Warehousing & logistics
-              </h3>
-              <p className="text-sm text-[#111827]">
-                Use Code 128 and similar formats to mark locations, totes, pallets and manifests in
-                fast-moving environments.
-              </p>
-              <ul className="mt-2 space-y-1.5 text-sm text-[#111827]">
-                <li>• Label aisle / rack / bin locations</li>
-                <li>• Speed up picking and put-away</li>
-                <li>• Reduce mis-scans and manual entry</li>
-              </ul>
             </div>
-          </div>
 
-          <div className="flex flex-col justify-between rounded-3xl bg-[#ECFDF5] p-6 ring-1 ring-[#A7F3D0]">
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#047857]">
-                INTERNAL & EVENTS
-              </p>
-              <h3 className="text-lg md:text-xl font-semibold text-[#111827]">
-                Assets, passes & docs
-              </h3>
-              <p className="text-sm text-[#4B5563]">
-                Attach barcodes to devices, badges and files so you always have a scannable
-                identifier, no matter where it goes.
-              </p>
-              <ul className="mt-2 space-y-1.5 text-sm text-[#374151]">
-                <li>• Track laptops, cameras and gear</li>
-                <li>• Add barcodes to ID cards & passes</li>
-                <li>• Combine with QR codes for extra info</li>
-              </ul>
+            <div className="flex flex-col justify-between rounded-3xl bg-[#DBEAFE] p-7 ring-2 ring-[#1E2330]">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#1E2330] px-3 py-1 text-[11px] font-semibold text-[#F7F7F3]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
+                  Recommended
+                </div>
+                <h3 className="text-xl font-bold text-[#0B0F1A]">Warehousing & logistics</h3>
+                <p className="text-base text-neutral-800">
+                  Use Code 128 for locations, totes, pallets and manifests in fast-moving environments.
+                </p>
+                <ul className="mt-3 space-y-2 text-base text-neutral-800">
+                  <li>• Label aisle / rack / bin</li>
+                  <li>• Speed up picking</li>
+                  <li>• Reduce manual entry</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between rounded-3xl bg-[#ECFDF5] p-7 ring-1 ring-[#A7F3D0]">
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#047857]">INTERNAL & EVENTS</p>
+                <h3 className="text-xl font-bold text-[#0B0F1A]">Assets, passes & docs</h3>
+                <p className="text-base text-neutral-700">
+                  Add scannable IDs to devices, badges and files so everything stays trackable.
+                </p>
+                <ul className="mt-3 space-y-2 text-base text-neutral-700">
+                  <li>• Track gear and equipment</li>
+                  <li>• Add IDs to paperwork</li>
+                  <li>• Combine with QR for info</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  WHY KOMPI                                                                */
+/*  STRIP (rectangular, breathing room)                                       */
+/* -------------------------------------------------------------------------- */
+
+function BarcodeStripSection() {
+  return (
+    <section className="py-20 md:py-28 bg-[#f7f7f4] border-t border-neutral-200">
+      <Container>
+        <div className="rounded-3xl bg-[#1E2330] px-8 py-14 text-center text-[#E5F9F0] sm:px-12 md:px-16 md:py-20">
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+            Your barcodes shouldn&apos;t live in a totally separate system.
+          </h2>
+          <p className="mx-auto mt-6 max-w-2xl text-base md:text-lg text-[#E5E7EB] leading-relaxed">
+            Generate barcodes that sit alongside QR codes, links, menus and analytics. One workspace, one workflow — not five random tools.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+            <a
+              href="#barcode-generator-tool"
+              className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-[#111827] hover:bg-[#F7F7F3]"
+            >
+              Generate barcodes
+            </a>
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center rounded-full border border-white/30 bg-transparent px-8 py-3.5 text-sm font-semibold text-white hover:bg-white/10"
+            >
+              Create free Kompi account
+            </Link>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  WHY KOMPI                                                                 */
 /* -------------------------------------------------------------------------- */
 
 function BarcodeWhyKompiSection() {
   return (
-    <section className="bg-[#F7F7F3] border-t border-neutral-200">
-      <div className="mx-auto max-w-5xl px-4 py-12 md:py-16 space-y-8">
-        <header className="space-y-3 text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">
-            Why use Kompi as your barcode generator?
-          </h2>
-          <p className="mx-auto max-w-2xl text-sm md:text-base text-neutral-600">
-            Instead of a one-off barcode site, you get a clean{" "}
-            <strong>online barcode generator</strong> plus a full Kompi toolkit for QR codes, links,
-            menus and growth workflows.
-          </p>
-        </header>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl bg-white border border-neutral-200 p-5 space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
-              MODERN INTERFACE
-            </p>
-            <h3 className="text-sm font-semibold text-neutral-900">
-              No outdated desktop software
-            </h3>
-            <p className="text-xs md:text-sm text-neutral-600">
-              Generate barcodes from your browser, share them with your team and reuse them across
-              labels and documents — without installing anything.
-            </p>
+    <section className="py-20 md:py-28 bg-[#f7f7f4] border-t border-neutral-200">
+      <Container>
+        <div className="space-y-12 md:space-y-14">
+          <div className="space-y-4 md:space-y-5">
+            <Eyebrow>WHY KOMPI</Eyebrow>
+            <SectionTitle>Why use Kompi as your barcode generator?</SectionTitle>
+            <SectionSub>
+              You get a clean barcode tool plus a broader Kompi toolkit for QR codes, links, menus and workspaces.
+            </SectionSub>
           </div>
 
-          <div className="rounded-2xl bg-white border border-emerald-200 p-5 space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">
-              ONE TOOLKIT
-            </p>
-            <h3 className="text-sm font-semibold text-neutral-900">
-              Barcodes, QR and links together
-            </h3>
-            <p className="text-xs md:text-sm text-neutral-600">
-              Use barcodes for systems and QR codes for people. Everything routes through the same
-              Kompi workspace for a consistent stack.
-            </p>
-          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-3xl bg-white border border-neutral-200 p-7 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">MODERN UI</p>
+              <h3 className="text-xl font-bold text-[#0B0F1A]">No legacy barcode websites</h3>
+              <p className="text-base text-neutral-600">
+                Generate barcodes fast, preview instantly, and download files that print clean.
+              </p>
+            </div>
 
-          <div className="rounded-2xl bg-white border border-neutral-200 p-5 space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600">
-              READY TO SCALE
-            </p>
-            <h3 className="text-sm font-semibold text-neutral-900">
-              Built for teams & agencies
-            </h3>
-            <p className="text-xs md:text-sm text-neutral-600">
-              Start as a solo user, then add teammates, clients and brands. Kompi workspaces keep
-              everything organised as you grow.
-            </p>
+            <div className="rounded-3xl bg-white border border-emerald-200 p-7 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">ONE TOOLKIT</p>
+              <h3 className="text-xl font-bold text-[#0B0F1A]">Barcodes + QR + links</h3>
+              <p className="text-base text-neutral-600">
+                Keep systems scanning barcodes while people scan QR codes — all inside Kompi.
+              </p>
+            </div>
+
+            <div className="rounded-3xl bg-white border border-neutral-200 p-7 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600">READY TO SCALE</p>
+              <h3 className="text-xl font-bold text-[#0B0F1A]">Built for teams</h3>
+              <p className="text-base text-neutral-600">
+                Use workspaces to organise assets across brands, projects, locations and clients.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  COMPARISON TABLE                                                         */
+/*  COMPARISON                                                                */
 /* -------------------------------------------------------------------------- */
 
 function BarcodeComparisonSection() {
   return (
-    <section className="bg-[#f7f7f4] border-t border-neutral-200">
-      <div className="mx-auto max-w-5xl px-4 py-12 md:py-16 space-y-6">
-        <header className="space-y-3 max-w-3xl">
-          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">
-            Kompi barcode generator vs typical barcode tools
-          </h2>
-          <p className="text-sm md:text-base text-neutral-700">
-            Many barcode tools were designed around desktop print workflows. Kompi is built around
-            modern teams who also use QR codes, links and analytics — all in one place.
-          </p>
-        </header>
+    <section className="py-20 md:py-28 bg-[#f7f7f4] border-t border-neutral-200">
+      <Container>
+        <div className="space-y-10 md:space-y-12">
+          <div className="space-y-4 md:space-y-5">
+            <Eyebrow>COMPARISON</Eyebrow>
+            <SectionTitle>Kompi vs typical barcode tools</SectionTitle>
+            <SectionSub>
+              Traditional barcode tools are often clunky, desktop-first, and disconnected. Kompi is clean, web-based, and part of a bigger workflow.
+            </SectionSub>
+          </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-xs md:text-sm">
-            <thead>
-              <tr className="border-b border-neutral-300 bg-white">
-                <th className="py-3 pr-4 font-semibold">Feature</th>
-                <th className="py-3 px-4 font-semibold">Kompi barcode generator</th>
-                <th className="py-3 px-4 font-semibold">Traditional tools</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-neutral-200">
-                <td className="py-3 pr-4">Access</td>
-                <td className="py-3 px-4">Web-based, works in any modern browser.</td>
-                <td className="py-3 px-4">Often Windows-only desktop apps.</td>
-              </tr>
-              <tr className="border-b border-neutral-200">
-                <td className="py-3 pr-4">Integration with QR codes</td>
-                <td className="py-3 px-4">
-                  Deeply integrated with{" "}
-                  <Link
-                    href="/kr-codes"
-                    className="underline underline-offset-2 decoration-neutral-300 hover:decoration-neutral-700"
-                  >
-                    KR Codes
-                  </Link>{" "}
-                  and QR tools.
-                </td>
-                <td className="py-3 px-4">Usually barcode-only, no QR features.</td>
-              </tr>
-              <tr className="border-b border-neutral-200">
-                <td className="py-3 pr-4">Output formats</td>
-                <td className="py-3 px-4">High-res PNG and vector-friendly SVG.</td>
-                <td className="py-3 px-4">PNG, sometimes limited vector support.</td>
-              </tr>
-              <tr className="border-b border-neutral-200">
-                <td className="py-3 pr-4">Team & workspace support</td>
-                <td className="py-3 px-4">
-                  Workspaces for brands, teams and agencies with shared tools.
-                </td>
-                <td className="py-3 px-4">Single-user licences on individual machines.</td>
-              </tr>
-              <tr className="border-b border-neutral-200">
-                <td className="py-3 pr-4">Part of a growth stack</td>
-                <td className="py-3 px-4">
-                  Connects to links, QR menus,{" "}
-                  <Link
-                    href="/k-cards"
-                    className="underline underline-offset-2 decoration-neutral-300 hover:decoration-neutral-700"
-                  >
-                    K-Cards
-                  </Link>{" "}
-                  and more.
-                </td>
-                <td className="py-3 px-4">Rarely integrated with broader tools.</td>
-              </tr>
-              <tr>
-                <td className="py-3 pr-4">Onboarding & learning curve</td>
-                <td className="py-3 px-4">Clean UI, quick to learn for non-technical users.</td>
-                <td className="py-3 px-4">Complex UIs, manual templates & setup.</td>
-              </tr>
-            </tbody>
-          </table>
+          <Card>
+            <CardBody>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm md:text-base border-collapse">
+                  <thead>
+                    <tr className="border-b border-neutral-200">
+                      <th className="py-4 pr-4 font-bold text-neutral-900">Feature</th>
+                      <th className="py-4 px-4 font-bold text-neutral-900">Kompi Barcode Generator</th>
+                      <th className="py-4 px-4 font-bold text-neutral-900">Typical tools</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-neutral-700">
+                    <tr className="border-b border-neutral-100">
+                      <td className="py-4 pr-4">Access</td>
+                      <td className="py-4 px-4">Runs in your browser, no installs.</td>
+                      <td className="py-4 px-4">Often desktop apps or dated sites.</td>
+                    </tr>
+                    <tr className="border-b border-neutral-100">
+                      <td className="py-4 pr-4">Formats</td>
+                      <td className="py-4 px-4">Common retail + ops formats (EAN/UPC/128).</td>
+                      <td className="py-4 px-4">Limited formats or confusing controls.</td>
+                    </tr>
+                    <tr className="border-b border-neutral-100">
+                      <td className="py-4 pr-4">Export quality</td>
+                      <td className="py-4 px-4">Crisp PNG + scalable SVG.</td>
+                      <td className="py-4 px-4">Often PNG-only or low-res.</td>
+                    </tr>
+                    <tr className="border-b border-neutral-100">
+                      <td className="py-4 pr-4">Connected workflow</td>
+                      <td className="py-4 px-4">Integrates with QR codes, links and workspaces.</td>
+                      <td className="py-4 px-4">Barcode-only, disconnected tools.</td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 pr-4">Team friendly</td>
+                      <td className="py-4 px-4">Built for creators, brands and agencies.</td>
+                      <td className="py-4 px-4">Single-use downloads.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="mt-8 text-center text-base md:text-lg text-neutral-600">
+                Want QR journeys as well? Pair barcodes with Kompi&apos;s{" "}
+                <Link href="/qr-gen-online" className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700">
+                  QR gen online
+                </Link>{" "}
+                and routes through{" "}
+                <Link href="/links" className="underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-700">
+                  Kompi Links
+                </Link>
+                .
+              </p>
+            </CardBody>
+          </Card>
         </div>
-
-        <p className="text-xs md:text-sm text-neutral-600">
-          Already using Kompi for QR codes or menus? Adding the{" "}
-          <strong>barcode generator</strong> is a natural extension — no new logins, no extra
-          systems and no extra training for your team.
-        </p>
-      </div>
+      </Container>
     </section>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  FAQ / TRUST / RELATED LINKS                                              */
+/*  TESTIMONIALS                                                              */
+/* -------------------------------------------------------------------------- */
+
+function BarcodeTestimonialSection() {
+  return (
+    <section className="py-20 md:py-28 bg-[#f7f7f4] border-t border-neutral-200">
+      <Container>
+        <div className="space-y-12 md:space-y-14">
+          <div className="space-y-4 md:space-y-5">
+            <Eyebrow>LESS FRICTION</Eyebrow>
+            <SectionTitle>More “scan, done”. Less “where’s that barcode file?”</SectionTitle>
+            <SectionSub>Clean generation, clean exports, and a workflow that plays nice with your existing stack.</SectionSub>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-3xl bg-white p-7 ring-1 ring-[#E5E7EB]">
+              <p className="mb-3 text-sm text-[#FBBF24]">★★★★★</p>
+              <p className="text-lg font-bold text-[#0B0F1A]">“Finally not a 2009 barcode site”</p>
+              <p className="mt-3 text-base text-neutral-600">“We generated labels in minutes and the scans were instantly reliable.”</p>
+            </div>
+
+            <div className="rounded-3xl bg-white p-7 ring-1 ring-[#E5E7EB]">
+              <p className="mb-3 text-sm text-[#FBBF24]">★★★★★</p>
+              <p className="text-lg font-bold text-[#0B0F1A]">“Exports are crisp”</p>
+              <p className="mt-3 text-base text-neutral-600">“PNG for quick prints, SVG for packaging — both looked sharp.”</p>
+            </div>
+
+            <div className="rounded-3xl bg-white p-7 ring-1 ring-[#E5E7EB]">
+              <p className="mb-3 text-sm text-[#FBBF24]">★★★★★</p>
+              <p className="text-lg font-bold text-[#0B0F1A]">“One place with QR + links”</p>
+              <p className="mt-3 text-base text-neutral-600">“Barcodes for ops, QR codes for customers. Same toolkit.”</p>
+            </div>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  FAQ                                                                       */
 /* -------------------------------------------------------------------------- */
 
 function BarcodeFaqSection() {
   return (
-    <section className="bg-[#f7f7f4] border-t border-neutral-200">
-      <div className="mx-auto max-w-4xl px-4 py-12 md:py-16">
-        <header className="mb-6 space-y-3">
-          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">
-            Barcode generator FAQs
-          </h2>
-          <p className="text-sm md:text-base text-neutral-700">
-            Everything you need to know about using Kompi as your online barcode generator for
-            products, shelves and internal workflows.
-          </p>
-        </header>
+    <section className="py-20 md:py-28 bg-[#f7f7f4] border-t border-neutral-200">
+      <Container>
+        <div className="space-y-10 md:space-y-12">
+          <div className="space-y-4 md:space-y-5">
+            <Eyebrow>FAQ</Eyebrow>
+            <SectionTitle>Barcode generator FAQs</SectionTitle>
+            <SectionSub>Everything you need to know about using Kompi as your online barcode generator.</SectionSub>
+          </div>
 
-        <div className="space-y-4">
-          {faqs.map((faq) => (
-            <details
-              key={faq.question}
-              className="group rounded-2xl border border-neutral-200 bg-white p-4 md:p-5"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
-                <span className="text-sm md:text-base font-medium">{faq.question}</span>
-                <span className="hidden text-xs text-neutral-500 group-open:inline">−</span>
-                <span className="inline text-xs text-neutral-500 group-open:hidden">+</span>
-              </summary>
-              <p className="mt-3 text-xs md:text-sm text-neutral-700">{faq.answer}</p>
-            </details>
-          ))}
+          <Card>
+            <CardBody>
+              <div className="space-y-4">
+                {faqs.map((faq) => (
+                  <details key={faq.question} className="group rounded-2xl border border-neutral-200 bg-white p-5 md:p-6">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                      <span className="text-base md:text-lg font-semibold text-neutral-900">{faq.question}</span>
+                      <span className="text-sm text-neutral-500 group-open:hidden">+</span>
+                      <span className="text-sm text-neutral-500 hidden group-open:inline">−</span>
+                    </summary>
+                    <p className="mt-4 text-base md:text-lg leading-relaxed text-neutral-700">{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function BarcodeTrustSection() {
-  return (
-    <section className="bg-white border-t border-neutral-200">
-      <div className="mx-auto max-w-4xl px-4 py-10 md:py-12 space-y-4 text-xs md:text-sm text-neutral-700">
-        <h2 className="text-base md:text-lg font-semibold tracking-tight">
-          Reliability, privacy and responsible barcode use
-        </h2>
-        <p>
-          Kompi provides tools to help you generate and manage barcodes and QR codes. As with any
-          code, the quality of the experience depends on the data behind it and how you print and
-          share it. Use clear, consistent identifiers, print at appropriate sizes and always test
-          your barcodes before rolling them out at scale.
-        </p>
-        <p>
-          For QR codes and smart links, Kompi lets you keep control over destinations and campaigns.
-          You can update or pause links without reprinting when you use dynamic setups, and keep
-          everything connected to a single workspace for your team.
-        </p>
-        <p>
-          By combining barcodes, QR codes and links under one roof, Kompi helps you build workflows
-          that feel reliable for staff and safe for customers — across packaging, menus, assets and
-          more.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function BarcodeRelatedLinksSection() {
-  return (
-    <section className="bg-[#f7f7f4] border-t border-neutral-200">
-      <div className="mx-auto max-w-4xl px-4 py-10 md:py-12 space-y-4">
-        <h2 className="text-base md:text-lg font-semibold tracking-tight">
-          Related Kompi tools & pages
-        </h2>
-        <p className="text-xs md:text-sm text-neutral-700">
-          Explore more Kompi tools that pair perfectly with your barcodes:
-        </p>
-        <ul className="grid gap-3 md:grid-cols-2 text-xs md:text-sm">
-          <li>
-            <Link
-              href="/qr-code-generator"
-              className="inline-flex w-full items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 hover:border-neutral-400 transition-colors"
-            >
-              <span>QR code generator</span>
-              <span>↗</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/qr-code/with-logo"
-              className="inline-flex w-full items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 hover:border-neutral-400 transition-colors"
-            >
-              <span>QR code generator with logo</span>
-              <span>↗</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/qr-menus"
-              className="inline-flex w-full items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 hover:border-neutral-400 transition-colors"
-            >
-              <span>QR menus for restaurants</span>
-              <span>↗</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/k-cards"
-              className="inline-flex w-full items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 hover:border-neutral-400 transition-colors"
-            >
-              <span>Kompi Cards – digital business cards</span>
-              <span>↗</span>
-            </Link>
-          </li>
-        </ul>
-      </div>
+      </Container>
     </section>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  JSON-LD                                                                  */
+/*  TRUST                                                                     */
+/* -------------------------------------------------------------------------- */
+
+function BarcodeTrustSection() {
+  return (
+    <section className="py-20 md:py-28 bg-white border-t border-neutral-200">
+      <Container>
+        <div className="space-y-10 md:space-y-12">
+          <div className="space-y-4 md:space-y-5">
+            <Eyebrow>TRUST</Eyebrow>
+            <SectionTitle>Reliability, privacy and responsible barcode use</SectionTitle>
+            <SectionSub>
+              Barcodes are only as good as the data and printing behind them. Keep identifiers clean, prints sharp, and scans tested.
+            </SectionSub>
+          </div>
+
+          <Card>
+            <CardBody>
+              <div className="mx-auto max-w-3xl space-y-6 text-center text-base md:text-lg leading-relaxed text-neutral-700">
+                <p>
+                  Use consistent identifiers (GTIN/EAN where required, or clean internal conventions for locations and assets).
+                  Print at sensible sizes and test with your actual scanner hardware before rolling out at scale.
+                </p>
+                <p>
+                  For customer-facing journeys, pair barcodes with QR codes that route through destinations you control.
+                  Use Kompi workspaces to keep everything organised across teams, brands and campaigns.
+                </p>
+                <p>
+                  If you’re combining barcodes with trackable links, keep destinations branded and trustworthy — the experience depends on where people end up.
+                </p>
+              </div>
+            </CardBody>
+          </Card>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  RELATED LINKS                                                             */
+/* -------------------------------------------------------------------------- */
+
+function BarcodeRelatedLinksSection() {
+  const links = [
+    { href: "/qr-code-generator", label: "QR code generator" },
+    { href: "/qr-code/with-logo", label: "QR code generator with logo" },
+    { href: "/links", label: "Kompi Links — branded short links" },
+    { href: "/k-cards", label: "Kompi Cards — digital business cards" },
+  ];
+
+  return (
+    <section className="py-20 md:py-28 bg-[#f7f7f4] border-t border-neutral-200">
+      <Container>
+        <div className="space-y-10 md:space-y-12">
+          <div className="space-y-4 md:space-y-5">
+            <Eyebrow>EXPLORE MORE</Eyebrow>
+            <SectionTitle>Related Kompi tools & pages</SectionTitle>
+            <SectionSub>Build a complete offline-to-online workflow with QR codes, links and workspaces.</SectionSub>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {links.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="group inline-flex items-center justify-between rounded-3xl bg-white border border-neutral-200 px-6 py-5 text-base md:text-lg font-semibold text-neutral-900 shadow-sm hover:border-neutral-400 transition-colors"
+              >
+                <span>{item.label}</span>
+                <span className="opacity-60 group-hover:opacity-100 transition-opacity">↗</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  JSON-LD                                                                   */
 /* -------------------------------------------------------------------------- */
 
 function getWebAppSchema() {
@@ -931,10 +997,7 @@ function getFaqSchema() {
     mainEntity: faqs.map((faq) => ({
       "@type": "Question",
       name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
     })),
   };
 }
@@ -944,8 +1007,7 @@ function getHowToSchema() {
     "@context": "https://schema.org",
     "@type": "HowTo",
     name: "How to generate a barcode with Kompi",
-    description:
-      "Simple steps for creating a barcode using Kompi's free online barcode generator tool.",
+    description: "Simple steps for creating a barcode using Kompi's free online barcode generator tool.",
     step: howToSteps.map((step) => ({
       "@type": "HowToStep",
       position: step.position,
@@ -970,46 +1032,43 @@ function getVideoSchema() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  PAGE                                                                     */
+/*  PAGE                                                                      */
 /* -------------------------------------------------------------------------- */
 
 export default function BarcodeGeneratorSeoPage() {
-  const webAppSchema = getWebAppSchema();
-  const faqSchema = getFaqSchema();
-  const howToSchema = getHowToSchema();
-  const videoSchema = getVideoSchema();
-
-  const jsonLd = [webAppSchema, faqSchema, howToSchema, videoSchema];
+  const jsonLd = [getWebAppSchema(), getFaqSchema(), getHowToSchema(), getVideoSchema()];
 
   return (
     <>
-      <Script
-        id="barcode-generator-jsonld"
-        type="application/ld+json"
-        strategy="afterInteractive"
-      >
+      <Script id="barcode-generator-jsonld" type="application/ld+json" strategy="afterInteractive">
         {JSON.stringify(jsonLd)}
       </Script>
 
       <div className="min-h-screen bg-[#f7f7f4] text-[#050505]">
         <Navbar />
-        <main className="pt-16 md:pt-20 pb-20 space-y-16 md:space-y-20">
-          <section className="px-4">
-            <div className="mx-auto max-w-5xl">
-              <BarcodeHeroSection />
-            </div>
+
+        {/* Match /qr-gen-online rhythm */}
+        <main className="pt-20 md:pt-28 pb-24 space-y-24 md:space-y-32">
+          <section>
+            <Container>
+              <BarcodeIntroSection />
+            </Container>
           </section>
 
           <BarcodeToolSection />
+          <BarcodeFeatureIcons />
           <BarcodeVideoSection />
-          <BarcodeLongFormArticleSection />
+          <BarcodeLongFormArticle />
           <BarcodeUseCasesSection />
+          <BarcodeStripSection />
           <BarcodeWhyKompiSection />
           <BarcodeComparisonSection />
+          <BarcodeTestimonialSection />
           <BarcodeFaqSection />
           <BarcodeTrustSection />
           <BarcodeRelatedLinksSection />
         </main>
+
         <FooterCTA />
       </div>
     </>

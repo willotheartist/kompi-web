@@ -1,3 +1,4 @@
+//src/components/k-cards/KCardPreview.tsx
 "use client";
 
 import type React from "react";

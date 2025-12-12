@@ -504,7 +504,7 @@ export default function KRCodesPage() {
   const isEditing = !!editingCode;
 
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const _router = useRouter();
 const krcodeIdFromQuery = searchParams.get("krcodeId");
 
   const form = useForm<FormValues>({

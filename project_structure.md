@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 12/12/2025, 11:53:17*
+*Generated on: 12/12/2025, 16:10:49*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
 | 📄 Total Files | 548 |
-| 📁 Total Folders | 243 |
+| 📁 Total Folders | 251 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,8 +26,8 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 315 files (57.5%)
-- 🖼️ **.png** (PNG images): 69 files (12.6%)
+- ⚛️ **.tsx** (React TypeScript files): 324 files (59.1%)
+- 🖼️ **.png** (PNG images): 71 files (13.0%)
 - 🔷 **.ts** (TypeScript files): 67 files (12.2%)
 - 📄 **.sql** (Other files): 21 files (3.8%)
 - 🎨 **.css** (Stylesheets): 9 files (1.6%)
@@ -37,7 +37,6 @@
 - 📄 **.bak_lintfix** (Other files): 4 files (0.7%)
 - 📄 **.mp4** (Other files): 3 files (0.5%)
 - 📖 **.md** (Markdown files): 2 files (0.4%)
-- 📄 **.zip** (Other files): 2 files (0.4%)
 - 🖼️ **.ico** (Icon files): 2 files (0.4%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.2%)
 - 📄 **.** (Other files): 1 files (0.2%)
@@ -51,13 +50,6 @@
 - 📄 **.py** (Other files): 1 files (0.2%)
 - 📄 **.sh** (Other files): 1 files (0.2%)
 - 📄 **.gz** (Other files): 1 files (0.2%)
-- 📄 **.bak_fix_mobile** (Other files): 1 files (0.2%)
-- 📄 **.bak_k_public** (Other files): 1 files (0.2%)
-- 📄 **.bak_k_slug_layout** (Other files): 1 files (0.2%)
-- 📄 **.bak_mobile** (Other files): 1 files (0.2%)
-- 📄 **.bak_mobile_size** (Other files): 1 files (0.2%)
-- 📄 **.bak_scale_tweak** (Other files): 1 files (0.2%)
-- 📄 **.bak_slug_layout** (Other files): 1 files (0.2%)
 - 📜 **.js** (JavaScript files): 1 files (0.2%)
 - 📄 **.bak_py** (Other files): 1 files (0.2%)
 - 📄 **.pre_pro_text** (Other files): 1 files (0.2%)
@@ -65,8 +57,6 @@
 - 📄 **.bak_sidebar_typo2** (Other files): 1 files (0.2%)
 - 📄 **.bak_sidebar_typography** (Other files): 1 files (0.2%)
 - 📄 **.bak_variant** (Other files): 1 files (0.2%)
-- 📄 **.bak_from_py** (Other files): 1 files (0.2%)
-- 📄 **.bak_kcards_fix** (Other files): 1 files (0.2%)
 - 📄 **.fix-onavatarclear** (Other files): 1 files (0.2%)
 - 📄 **.header-social** (Other files): 1 files (0.2%)
 - 📄 **.header-v2** (Other files): 1 files (0.2%)
@@ -80,10 +70,10 @@
 
 ### By Category
 
-- **React**: 315 files (57.5%)
-- **Assets**: 79 files (14.4%)
+- **React**: 324 files (59.1%)
+- **Assets**: 81 files (14.8%)
 - **TypeScript**: 67 files (12.2%)
-- **Other**: 66 files (12.0%)
+- **Other**: 55 files (10.0%)
 - **Styles**: 9 files (1.6%)
 - **Config**: 7 files (1.3%)
 - **DevOps**: 2 files (0.4%)
@@ -93,9 +83,9 @@
 ### 📁 Largest Directories
 
 - **root**: 548 files
-- **src**: 418 files
-- **src/app**: 222 files
-- **src/components**: 181 files
+- **src**: 420 files
+- **src/app**: 225 files
+- **src/components**: 180 files
 - **public**: 81 files
 
 ## 🌳 Directory Structure
@@ -104,8 +94,6 @@
 kompi-web/
 ├── 🟡 🚫 **.gitignore**
 ├── 📄 =
-├── 📄 api-plan-files.zip
-├── 📄 auth-bundle.zip
 ├── ⚙️ components.json
 ├── 🟡 🐳 **docker-compose.yml**
 ├── 🟡 🐳 **Dockerfile**
@@ -270,10 +258,23 @@ kompi-web/
 │   │   ├── 📂 (seo)/
 │   │   │   ├── 📂 barcode-generator/
 │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 case-converter-online/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 creator-studio/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 creator-tools/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 free-qr-code/
+│   │   │   │   └── 📂 with-logo/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 landing-page-creator/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 qr-gen-online/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   └── 📂 whatsapp-link-generator/
 │   │   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 [handle]/
+│   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 analytics/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🔌 api/
@@ -367,6 +368,9 @@ kompi-web/
 │   │   │   │   │   └── 🔷 route.ts
 │   │   │   └── 📂 workspaces/
 │   │   │   │   └── 🔷 route.ts
+│   │   ├── 🖼️ apple-icon.png
+│   │   ├── 📂 claim/
+│   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 customers/
 │   │   │   ├── 📂 agencies/
 │   │   │   │   ├── ⚛️ AgenciesCustomersClient.tsx
@@ -525,16 +529,10 @@ kompi-web/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🎨 globals.css
 │   │   ├── ⚛️ head.tsx
+│   │   ├── 🖼️ icon.png
 │   │   ├── 📂 k/
 │   │   │   └── 📂 [slug]/
-│   │   │   │   ├── ⚛️ page.tsx
-│   │   │   │   ├── 📄 page.tsx.bak_fix_mobile
-│   │   │   │   ├── 📄 page.tsx.bak_k_public
-│   │   │   │   ├── 📄 page.tsx.bak_k_slug_layout
-│   │   │   │   ├── 📄 page.tsx.bak_mobile
-│   │   │   │   ├── 📄 page.tsx.bak_mobile_size
-│   │   │   │   ├── 📄 page.tsx.bak_scale_tweak
-│   │   │   │   └── 📄 page.tsx.bak_slug_layout
+│   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 k-cards/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🎨 kompi-marketing.css
@@ -574,6 +572,7 @@ kompi-web/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── ⚛️ page.tsx
 │   │   ├── 📂 pricing/
+│   │   │   ├── ⚛️ head.tsx
 │   │   │   ├── ⚛️ layout.tsx
 │   │   │   ├── ⚛️ page.tsx
 │   │   │   └── 🎨 pricing.css
@@ -741,13 +740,12 @@ kompi-web/
 │   │   │   ├── ⚛️ three.tsx
 │   │   │   └── ⚛️ two.tsx
 │   │   ├── 📂 k-cards/
+│   │   │   ├── ⚛️ ClaimHandleCTA.tsx
 │   │   │   ├── 🔷 kcard-style.ts
 │   │   │   ├── 🔷 kcard-theme-presets.ts
 │   │   │   ├── ⚛️ KCardPreview.tsx
 │   │   │   ├── 📄 KCardPreview.tsx.bak_variant
 │   │   │   ├── ⚛️ KCardsPage.tsx
-│   │   │   ├── 📄 KCardsPage.tsx.bak_from_py
-│   │   │   ├── 📄 KCardsPage.tsx.bak_kcards_fix
 │   │   │   ├── 📄 KCardsPage.tsx.fix-onAvatarClear
 │   │   │   ├── 📄 KCardsPage.tsx.header-social
 │   │   │   ├── 📄 KCardsPage.tsx.header-v2

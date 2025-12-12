@@ -1,5 +1,4 @@
-/* eslint-disable react/no-unescaped-entities */
-
+//src/components/settings/profile-settings-client.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -66,7 +65,7 @@ export function ProfileSettingsClient() {
           setAvatarPreview(data.image);
         }
         // setPhone(data.phone ?? "");
-      } catch (err) {
+      } catch (_err) {
         if (!cancelled) {
           setError("Could not load profile. Please try again.");
         }
@@ -110,7 +109,7 @@ export function ProfileSettingsClient() {
 
       // 🔁 Refresh NextAuth session so Topbar shows the new name immediately
       await refreshSession?.();
-    } catch (err) {
+    } catch (_err) {
       setError("Could not save changes. Please try again.");
     } finally {
       setSaving(false);
@@ -383,7 +382,7 @@ export function ProfileSettingsClient() {
                 className="text-xs"
                 style={{ color: "var(--color-subtle)" }}
               >
-                We'll use this for analytics and reporting later.
+                We&apos;ll use this for analytics and reporting later.
               </p>
             </div>
           </div>

@@ -1,3 +1,4 @@
+//src/components/tools/PdfConverter.tsx
 "use client";
 
 import * as React from "react";
@@ -13,6 +14,18 @@ type PdfSelection = {
   id: string;
   file: File;
   url: string;
+};
+
+type PdfjsViewport = { width: number; height: number };
+type PdfjsPage = {
+  getViewport: (opts: { scale: number }) => PdfjsViewport;
+  render: (opts: { canvasContext: CanvasRenderingContext2D; viewport: PdfjsViewport }) => { promise: Promise<void> };
+};
+type PdfjsDocument = { getPage: (n: number) => Promise<PdfjsPage> };
+type PdfjsLoadingTask = { promise: Promise<PdfjsDocument> };
+type PdfjsLib = {
+  GlobalWorkerOptions: { workerSrc: string };
+  getDocument: (src: { data: ArrayBuffer }) => PdfjsLoadingTask;
 };
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -75,9 +88,10 @@ export function PdfConverter({ variant = "public" }: PdfConverterProps) {
 
       const arrayBuffer = await pdf.file.arrayBuffer();
 
-      const pdfjsLib = (await import("pdfjs-dist/build/pdf")) as any;
+      const pdfjsLibMod = (await import("pdfjs-dist/build/pdf")) as unknown;
+      const pdfjsLib = pdfjsLibMod as PdfjsLib;
       const workerSrc = (await import("pdfjs-dist/build/pdf.worker?url")).default;
-      (pdfjsLib as { GlobalWorkerOptions: { workerSrc: string } }).GlobalWorkerOptions.workerSrc = workerSrc;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       const doc = await loadingTask.promise;

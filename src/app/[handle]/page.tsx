@@ -1,95 +1,69 @@
-// src/app/k/[slug]/page.tsx
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
+// src/app/[handle]/page.tsx
+export const revalidate = 60; // public page cache (tune: 30/60/300)
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import type React from "react";
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { KCardPreview } from "@/components/k-cards/KCardPreview";
+import { ClaimHandleCTA } from "@/components/k-cards/ClaimHandleCTA";
 import {
   DEFAULT_KCARD_THEME,
   type KCardThemeState,
 } from "@/components/k-cards/kcard-theme-presets";
 import type { KCardsInitialData } from "@/components/k-cards/KCardsPage";
-import {
-  Instagram,
-  Youtube,
-  Music2,
-  Facebook,
-  Linkedin,
-  MessageCircle,
-  Mail,
-  Globe2,
-} from "lucide-react";
 
-type Params = { slug: string } | Promise<{ slug: string }>;
-
-async function resolveParams(params: Params): Promise<{ slug: string }> {
+type Params = { handle: string } | Promise<{ handle: string }>;
+async function resolveParams(params: Params): Promise<{ handle: string }> {
   return params instanceof Promise ? await params : params;
 }
 
-const SOCIAL_ICON_MAP: Record<
-  string,
-  React.ComponentType<React.SVGProps<SVGSVGElement>>
-> = {
-  Instagram,
-  YouTube: Youtube,
-  TikTok: Music2,
-  Twitter: Facebook, // placeholder
-  LinkedIn: Linkedin,
-  WhatsApp: MessageCircle,
-  Email: Mail,
-  Website: Globe2,
-};
+const getPublicKCard = cache(async (handle: string) => {
+  if (!handle) return null;
+
+  return prisma.kCard.findUnique({
+    where: { slug: handle },
+    select: { slug: true, isPublic: true, data: true },
+  });
+});
 
 export async function generateMetadata(props: {
   params: Params;
 }): Promise<Metadata> {
-  const { slug } = await resolveParams(props.params);
+  const { handle } = await resolveParams(props.params);
+  const kcard = await getPublicKCard(handle);
 
-  const kcard = await prisma.kCard.findFirst({
-    where: { slug, isPublic: true },
-  });
-
-  if (!kcard) {
+  if (!kcard || !kcard.isPublic) {
     return {
-      title: "K-Card not found",
-      description: "This K-Card is not available.",
+      title: "Kompi page not found",
+      description: "This page is not available.",
+      robots: { index: false, follow: false },
     };
   }
 
   const data = (kcard.data ?? {}) as KCardsInitialData;
   const title = data.title || "@yourname";
-  const description =
-    data.subtitle || "All your important links in one K-Card.";
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const description = data.subtitle || "All your important links in one Kompi.";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   return {
     title,
     description,
+    alternates: { canonical: `${baseUrl}/${handle}` },
     openGraph: {
       title,
       description,
-      url: `${baseUrl}/k/${slug}`,
+      url: `${baseUrl}/${handle}`,
       type: "website",
     },
   };
 }
 
-export default async function PublicKCardPage(props: {
-  params: Params;
-}) {
-  const { slug } = await resolveParams(props.params);
+export default async function PublicHandlePage(props: { params: Params }) {
+  const { handle } = await resolveParams(props.params);
 
-  const kcard = await prisma.kCard.findFirst({
-    where: { slug, isPublic: true },
-  });
-
-  if (!kcard) {
-    notFound();
-  }
+  const kcard = await getPublicKCard(handle);
+  if (!kcard || !kcard.isPublic) notFound();
 
   const data = (kcard.data ?? {}) as KCardsInitialData;
 
@@ -126,27 +100,19 @@ export default async function PublicKCardPage(props: {
     buttonShadow,
   } = theme;
 
-  const previewTitleFont = (() => {
-    switch (titleFont) {
-      case "serif":
-        return "font-serif";
-      case "display":
-        return "font-semibold tracking-tight";
-      default:
-        return "font-sans";
-    }
-  })();
+  const previewTitleFont =
+    titleFont === "serif"
+      ? "font-serif"
+      : titleFont === "display"
+        ? "font-semibold tracking-tight"
+        : "font-sans";
 
-  const previewBodyFont = (() => {
-    switch (pageFont) {
-      case "serif":
-        return "font-serif";
-      case "display":
-        return "font-semibold tracking-tight";
-      default:
-        return "font-sans";
-    }
-  })();
+  const previewBodyFont =
+    pageFont === "serif"
+      ? "font-serif"
+      : pageFont === "display"
+        ? "font-semibold tracking-tight"
+        : "font-sans";
 
   const buttonBaseStyles: React.CSSProperties = {
     borderRadius: buttonRadius,
@@ -154,8 +120,12 @@ export default async function PublicKCardPage(props: {
       buttonShadow === "none"
         ? "none"
         : buttonShadow === "soft"
-        ? "0 6px 14px rgba(15,23,42,0.35)"
-        : "0 10px 24px rgba(15,23,42,0.6)",
+          ? "0 6px 14px rgba(15,23,42,0.35)"
+          : buttonShadow === "hard"
+            ? "0 10px 24px rgba(15,23,42,0.6)"
+            : buttonShadow === "3d"
+              ? "0 6px 0 rgba(0,0,0,0.45), 0 12px 0 rgba(0,0,0,0.3)"
+              : "none",
     border: "1px solid transparent",
   };
 
@@ -175,23 +145,26 @@ export default async function PublicKCardPage(props: {
     buttonBaseStyles.boxShadow = "none";
   }
 
-  const wallpaperStyle: React.CSSProperties = {
-    background: wallpaper,
-  };
+  const wallpaperStyle: React.CSSProperties = { background: wallpaper };
 
   const visibleLinks =
     (linksRaw ?? []).filter((l) => l && l.enabled !== false) ?? [];
-
   const socials = socialsRaw ?? ["Instagram", "YouTube", "Website"];
+
+  const claimHref = `/claim?handle=${encodeURIComponent(
+    handle
+  )}&callbackUrl=${encodeURIComponent(`/${handle}`)}`;
 
   return (
     <main
       className="min-h-screen flex items-center justify-center"
       style={wallpaperStyle}
     >
-      <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-8">
-        <div className="kcard-public-wrapper w-full flex justify-center origin-top scale-[1.3] sm:scale-[1.05]">
+      <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10">
+        <div className="relative w-full">
           <KCardPreview
+            variant="public"
+            slug={handle}
             wallpaperStyle={wallpaperStyle}
             pageBackground={pageBackground}
             previewTitleFont={previewTitleFont}
@@ -201,7 +174,7 @@ export default async function PublicKCardPage(props: {
             titleColor={titleColor}
             pageTextColor={pageTextColor}
             titleSize={titleSize}
-            profileLayout={profileLayout}
+            _profileLayout={profileLayout}
             avatarPreview={avatarDataUrl}
             socials={socials}
             visibleLinks={visibleLinks}
@@ -210,7 +183,22 @@ export default async function PublicKCardPage(props: {
             headerTextSize={headerTextSize}
             avatarShadow={avatarShadow}
           />
+
+          <div
+            className="pointer-events-none absolute inset-x-0 flex justify-center"
+            style={{ bottom: 78 }}
+          >
+            <div className="pointer-events-auto">
+              <ClaimHandleCTA
+                href={claimHref}
+                label="Claim your handle"
+                className="w-[320px] max-w-[86vw]"
+                size="embedded"
+              />
+            </div>
+          </div>
         </div>
+
         <p className="mt-6 text-center text-[10px] text-neutral-500">
           Made with <span className="font-semibold">Kompi</span>
         </p>
@@ -218,4 +206,3 @@ export default async function PublicKCardPage(props: {
     </main>
   );
 }
-

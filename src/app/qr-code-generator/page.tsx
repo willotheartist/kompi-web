@@ -1,6 +1,7 @@
 // src/app/qr-code-generator/page.tsx
 
 import type { Metadata } from "next";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
@@ -187,18 +188,16 @@ function NewToQrSection() {
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3 text-[12px]">
-            <a
-              href="/signin"
+            <Link href="/signin"
               className="inline-flex items-center justify-center rounded-full bg-[#050505] px-7 py-2.5 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.75)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.9)]"
             >
               Open Kompi dashboard
-            </a>
-            <a
-              href="/pricing"
+            </Link>
+            <Link href="/pricing"
               className="text-[12px] font-medium text-neutral-800 underline-offset-4 hover:underline"
             >
               See QR & link plans →
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -385,18 +384,16 @@ function PlatformPitchSection() {
           </div>
 
           <div className="mt-7 flex flex-wrap items-center gap-3 text-[12px]">
-            <a
-              href="/pricing"
+            <Link href="/pricing"
               className="inline-flex items-center justify-center rounded-full bg-[#050505] px-7 py-2.5 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.75)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.9)]"
             >
               See Kompi plans
-            </a>
-            <a
-              href="/signin"
+            </Link>
+            <Link href="/signin"
               className="text-[12px] font-medium text-neutral-800 underline-offset-4 hover:underline"
             >
               Or create a free account →
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -521,14 +518,14 @@ function RelatedQrToolsSection() {
 
         <div className="mt-7 grid gap-4 md:grid-cols-2">
           {links.map((item) => (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               className="group block rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4"
             >
               <h3 className="text-[13px] font-semibold text-[#050505]">{item.label}</h3>
               <p className="mt-2 text-[12px] leading-relaxed text-neutral-700">{item.body}</p>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

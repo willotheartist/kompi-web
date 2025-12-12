@@ -1,10 +1,11 @@
+//src/types/pdfjs-webpack.d.ts
 declare module "pdfjs-dist/webpack" {
   const pdfjs: unknown;
   export default pdfjs;
 }
 
 declare module "pdfjs-dist/build/pdf" {
-  const pdfjsLib: any;
+  const pdfjsLib: unknown;
   export = pdfjsLib;
 }
 

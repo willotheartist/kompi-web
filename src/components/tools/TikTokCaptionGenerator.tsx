@@ -196,8 +196,8 @@ function buildCaption(opts: {
       customCta.trim()
         ? customCta.trim()
         : offer.trim()
-        ? `link in bio for the ${offer.trim()}`
-        : `comment “link” and I&apos;ll drop the details`,
+          ? `link in bio for the ${offer.trim()}`
+          : `comment “link” and I&apos;ll drop the details`,
       `save this so you remember when you&apos;re ready`,
       `send this to the friend who needs this exact thing`,
     ],
@@ -311,9 +311,7 @@ function Field({
         <p className="text-[13px] font-medium tracking-[0.02em] text-[#0B0F1A]">
           {label}
         </p>
-        {hint ? (
-          <p className="text-[11px] text-[#6B7280]">{hint}</p>
-        ) : null}
+        {hint ? <p className="text-[11px] text-[#6B7280]">{hint}</p> : null}
       </div>
       {children}
     </div>
@@ -338,6 +336,8 @@ function TextLineInput(props: {
   );
 }
 
+/* ------------------------------ UPDATED DROPDOWN ------------------------------ */
+
 function Dropdown<T extends string>(props: {
   label: string;
   value: T;
@@ -359,13 +359,12 @@ function Dropdown<T extends string>(props: {
     props.toneChip === "orange"
       ? "bg-[#FF4D2E]"
       : props.toneChip === "paper"
-      ? "bg-[#FFFDF7]"
-      : "bg-[#3A61FF]";
+        ? "bg-[#FFFDF7]"
+        : "bg-[#3A61FF]";
 
   function choose(v: T) {
     props.onChange(v);
     setOpen(false);
-    // keep focus civilized
     requestAnimationFrame(() => btnRef.current?.focus());
   }
 
@@ -402,8 +401,12 @@ function Dropdown<T extends string>(props: {
       return;
     }
   }
+
   return (
-    <div ref={wrapRef} className="relative">
+    <div
+      ref={wrapRef}
+      className={["relative", open ? "z-[60]" : "z-auto"].join(" ")}
+    >
       <p className="mb-2 text-[13px] font-medium tracking-[0.02em] text-[#0B0F1A]">
         {props.label}
       </p>
@@ -427,15 +430,25 @@ function Dropdown<T extends string>(props: {
         className={[
           "w-full rounded-2xl border border-[#0B0F1A] bg-[#FFFDF7]",
           "px-4 py-3 text-left",
-          "flex items-center justify-between gap-4",
+          "flex items-center justify-between gap-3",
           "focus:outline-none",
         ].join(" ")}
       >
-        <span className="flex items-center gap-3">
-          <span className={["h-2.5 w-2.5 rounded-full", chipClass].join(" ")} />
-          <span className="text-[15px] text-[#0B0F1A]">{props.value}</span>
+        <span className="flex min-w-0 items-center gap-3">
+          <span
+            className={["h-2.5 w-2.5 shrink-0 rounded-full", chipClass].join(
+              " "
+            )}
+          />
+          {/* keeps “High energy” on one line */}
+          <span className="min-w-0 truncate whitespace-nowrap text-[15px] text-[#0B0F1A]">
+            {props.value}
+          </span>
         </span>
-        <Chevron open={open} />
+
+        <span className="shrink-0">
+          <Chevron open={open} />
+        </span>
       </button>
 
       {open ? (
@@ -445,15 +458,17 @@ function Dropdown<T extends string>(props: {
           tabIndex={-1}
           onKeyDown={onKeyDown}
           className={[
-            "absolute z-50 mt-2 w-full overflow-hidden rounded-2xl",
+            "absolute left-0 right-0 z-[70] mt-2 overflow-hidden rounded-2xl",
             "border border-[#0B0F1A] bg-[#FFFDF7]",
-            "shadow-[0_10px_0_0_#0B0F1A]",
+            // more visible open state
+            "shadow-[0_14px_0_0_#0B0F1A]",
           ].join(" ")}
         >
           <div className="max-h-64 overflow-auto p-2">
             {props.options.map((opt, idx) => {
               const selected = opt === props.value;
               const active = idx === activeIndex;
+
               return (
                 <button
                   key={opt}
@@ -469,16 +484,25 @@ function Dropdown<T extends string>(props: {
                     selected && !active ? "bg-[#E9EEFF]" : "",
                   ].join(" ")}
                 >
-                  <span className="truncate">{opt}</span>
+                  <span className="min-w-0 truncate whitespace-nowrap">
+                    {opt}
+                  </span>
+
+                  {/* remove PICK; show a clean check for selected */}
                   {selected ? (
-                    <span className="text-[11px] font-semibold tracking-[0.18em] uppercase opacity-90">
-                      Selected
+                    <span
+                      aria-hidden
+                      className={[
+                        "ml-3 inline-flex h-5 w-5 items-center justify-center rounded-full",
+                        "border border-[#0B0F1A]",
+                        active
+                          ? "bg-white text-[#0B0F1A]"
+                          : "bg-[#FFFDF7] text-[#0B0F1A]",
+                      ].join(" ")}
+                    >
+                      ✓
                     </span>
-                  ) : (
-                    <span className="text-[11px] tracking-[0.18em] uppercase opacity-50">
-                      Pick
-                    </span>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
@@ -489,11 +513,7 @@ function Dropdown<T extends string>(props: {
   );
 }
 
-function TogglePill(props: {
-  on: boolean;
-  label: string;
-  onClick: () => void;
-}) {
+function TogglePill(props: { on: boolean; label: string; onClick: () => void }) {
   return (
     <button
       type="button"

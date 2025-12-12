@@ -1,6 +1,8 @@
+//src/components/dashboard/dashboard-tips-card.tsx
 "use client";
 
 import { BookOpen, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 type TipItemProps = {
@@ -25,7 +27,7 @@ function TipItem({ label, title, href }: TipItemProps) {
       }}
       className="h-full"
     >
-      <a
+      <Link
         href={href}
         className="group flex h-full items-center justify-between rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-bg)]"
       >
@@ -38,7 +40,7 @@ function TipItem({ label, title, href }: TipItemProps) {
           </p>
         </div>
         <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[color:var(--color-subtle)] transition-transform group-hover:translate-x-0.5" />
-      </a>
+      </Link>
     </motion.li>
   );
 }
@@ -56,12 +58,11 @@ export function DashboardTipsCard() {
           <span>Tips &amp; playbooks</span>
         </h2>
 
-        <a
-          href="/growth"
+        <Link href="/growth"
           className="text-sm font-medium text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
         >
           View all
-        </a>
+        </Link>
       </div>
 
       <motion.ul

@@ -1,4 +1,6 @@
+//src/app/qr-code/dynamic/page.tsx
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 
@@ -114,12 +116,11 @@ export default function DynamicQrCodesPage() {
               <p className="mt-4 text-[12px] text-neutral-600">
                 Want to start with a simple static QR code instead? You can always
                 begin on the{" "}
-                <a
-                  href="/qr-code-generator"
+                <Link href="/qr-code-generator"
                   className="font-medium text-neutral-900 underline-offset-4 hover:underline"
                 >
                   free QR code generator
-                </a>{" "}
+                </Link>{" "}
                 and upgrade to dynamic links later.
               </p>
             </div>
@@ -148,18 +149,16 @@ export default function DynamicQrCodesPage() {
 
           {/* CTA row */}
           <section className="mt-8 flex flex-wrap items-center gap-3 text-[12px]">
-            <a
-              href="/signin"
+            <Link href="/signin"
               className="inline-flex items-center justify-center rounded-full bg-[#050505] px-7 py-2.5 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.75)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.9)]"
             >
               Start using dynamic QR codes
-            </a>
-            <a
-              href="/qr-code-generator"
+            </Link>
+            <Link href="/qr-code-generator"
               className="text-[12px] font-medium text-neutral-800 underline-offset-4 hover:underline"
             >
               Or create a free static QR code →
-            </a>
+            </Link>
           </section>
         </div>
       </main>

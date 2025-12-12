@@ -5,6 +5,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type React from "react";
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { KCardPreview } from "@/components/k-cards/KCardPreview";
 import {
@@ -22,6 +23,7 @@ import {
   Mail,
   Globe2,
 } from "lucide-react";
+import { ClaimHandleCTA } from "@/components/k-cards/ClaimHandleCTA";
 
 type Params = { slug: string } | Promise<{ slug: string }>;
 
@@ -29,6 +31,14 @@ async function resolveParams(params: Params): Promise<{ slug: string }> {
   return params instanceof Promise ? await params : params;
 }
 
+// ✅ Dedupes DB reads between generateMetadata() and the page render (per request)
+const getPublicKCardBySlug = cache(async (slug: string) => {
+  return prisma.kCard.findFirst({
+    where: { slug, isPublic: true },
+  });
+});
+
+// (kept as-is; currently unused in this file, but harmless)
 const _SOCIAL_ICON_MAP: Record<
   string,
   React.ComponentType<React.SVGProps<SVGSVGElement>>
@@ -48,9 +58,7 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { slug } = await resolveParams(props.params);
 
-  const kcard = await prisma.kCard.findFirst({
-    where: { slug, isPublic: true },
-  });
+  const kcard = await getPublicKCardBySlug(slug);
 
   if (!kcard) {
     return {
@@ -63,33 +71,28 @@ export async function generateMetadata(props: {
   const title = data.title || "@yourname";
   const description =
     data.subtitle || "All your important links in one K-Card.";
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
+  // keep /k/ working, but canonicalize to clean /{slug}
   return {
     title,
     description,
+    alternates: { canonical: `${baseUrl}/${slug}` },
     openGraph: {
       title,
       description,
-      url: `${baseUrl}/k/${slug}`,
+      url: `${baseUrl}/${slug}`,
       type: "website",
     },
   };
 }
 
-export default async function PublicKCardPage(props: {
-  params: Params;
-}) {
+export default async function PublicKCardPage(props: { params: Params }) {
   const { slug } = await resolveParams(props.params);
 
-  const kcard = await prisma.kCard.findFirst({
-    where: { slug, isPublic: true },
-  });
+  const kcard = await getPublicKCardBySlug(slug);
 
-  if (!kcard) {
-    notFound();
-  }
+  if (!kcard) notFound();
 
   const data = (kcard.data ?? {}) as KCardsInitialData;
 
@@ -154,12 +157,12 @@ export default async function PublicKCardPage(props: {
       buttonShadow === "none"
         ? "none"
         : buttonShadow === "soft"
-        ? "0 6px 14px rgba(15,23,42,0.35)"
-        : buttonShadow === "hard"
-        ? "0 10px 24px rgba(15,23,42,0.6)"
-        : buttonShadow === "3d"
-        ? "0 6px 0 rgba(0,0,0,0.45), 0 12px 0 rgba(0,0,0,0.3)"
-        : "none",
+          ? "0 6px 14px rgba(15,23,42,0.35)"
+          : buttonShadow === "hard"
+            ? "0 10px 24px rgba(15,23,42,0.6)"
+            : buttonShadow === "3d"
+              ? "0 6px 0 rgba(0,0,0,0.45), 0 12px 0 rgba(0,0,0,0.3)"
+              : "none",
     border: "1px solid transparent",
   };
 
@@ -179,14 +182,17 @@ export default async function PublicKCardPage(props: {
     buttonBaseStyles.boxShadow = "none";
   }
 
-  const wallpaperStyle: React.CSSProperties = {
-    background: wallpaper,
-  };
+  const wallpaperStyle: React.CSSProperties = { background: wallpaper };
 
   const visibleLinks =
     (linksRaw ?? []).filter((l) => l && l.enabled !== false) ?? [];
 
   const socials = socialsRaw ?? ["Instagram", "YouTube", "Website"];
+
+  // send to claim page with suggested handle + destination back to clean URL
+  const claimHref = `/claim?handle=${encodeURIComponent(
+    slug
+  )}&callbackUrl=${encodeURIComponent(`/${slug}`)}`;
 
   return (
     <main
@@ -194,27 +200,48 @@ export default async function PublicKCardPage(props: {
       style={wallpaperStyle}
     >
       <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10">
-        <KCardPreview
-          variant="public"
-          slug={slug}
-          wallpaperStyle={wallpaperStyle}
-          pageBackground={pageBackground}
-          previewTitleFont={previewTitleFont}
-          previewBodyFont={previewBodyFont}
-          title={title}
-          subtitle={subtitle}
-          titleColor={titleColor}
-          pageTextColor={pageTextColor}
-          titleSize={titleSize}
-          profileLayout={profileLayout}
-          avatarPreview={avatarDataUrl}
-          socials={socials}
-          visibleLinks={visibleLinks}
-          buttonBaseStyles={buttonBaseStyles}
-          avatarSize={avatarSize}
-          headerTextSize={headerTextSize}
-          avatarShadow={avatarShadow}
-        />
+        {/* Wrap preview so we can overlay CTA "on the card" without editing KCardPreview */}
+        <div className="relative w-full">
+          <KCardPreview
+            variant="public"
+            slug={slug}
+            wallpaperStyle={wallpaperStyle}
+            pageBackground={pageBackground}
+            previewTitleFont={previewTitleFont}
+            previewBodyFont={previewBodyFont}
+            title={title}
+            subtitle={subtitle}
+            titleColor={titleColor}
+            pageTextColor={pageTextColor}
+            titleSize={titleSize}
+            profileLayout={profileLayout}
+            avatarPreview={avatarDataUrl}
+            socials={socials}
+            visibleLinks={visibleLinks}
+            buttonBaseStyles={buttonBaseStyles}
+            avatarSize={avatarSize}
+            headerTextSize={headerTextSize}
+            avatarShadow={avatarShadow}
+          />
+
+          {/* CTA overlay (positioned "on the card") */}
+          <div
+            className="pointer-events-none absolute inset-x-0 flex justify-center"
+            style={{
+              bottom: 78, // tuned to sit above the card's footer area (adjust if needed)
+            }}
+          >
+            <div className="pointer-events-auto">
+              <ClaimHandleCTA
+                href={claimHref}
+                label="Claim your handle"
+                className="w-[320px] max-w-[86vw]"
+                size="embedded"
+              />
+            </div>
+          </div>
+        </div>
+
         <p className="mt-6 text-center text-[10px] text-neutral-500">
           Made with <span className="font-semibold">Kompi</span>
         </p>

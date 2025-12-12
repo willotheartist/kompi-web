@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState, ChangeEvent } from "react";
 import QRCodeStyling from "qr-code-styling";
+import Link from "next/link";
 
 type QrType = "url" | "text" | "email" | "phone" | "sms" | "wifi";
 type LogoScale = "small" | "medium" | "large";
@@ -1269,12 +1270,12 @@ export function QrGenerator() {
                 </span>
                 <span>
                   Want dynamic QR codes you can edit later and track?{" "}
-                  <a
+                  <Link
                     href="/signin"
                     className="font-medium underline underline-offset-2"
                   >
                     Create a free Kompi account
-                  </a>
+                  </Link>
                   .
                 </span>
               </div>
