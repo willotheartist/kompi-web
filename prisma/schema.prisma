@@ -458,3 +458,31 @@ model WorkspaceTool {
   @@unique([workspaceId, toolId])
   @@index([workspaceId])
 }
+
+model KCardMessage {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Routing
+  kcardId String
+  ownerId String // the KCard owner's userId
+
+  // Intent / options
+  intentKey   String? // e.g. "hire_me"
+  intentLabel String? // e.g. "We want to hire you"
+
+  // Visitor fields
+  name    String?
+  email   String?
+  phone   String?
+  message String?
+
+  // Anti-spam / meta
+  isSpam    Boolean @default(false)
+  ipHash    String?
+  userAgent String?
+  meta      Json?
+
+  @@index([kcardId, createdAt])
+  @@index([ownerId, createdAt])
+}

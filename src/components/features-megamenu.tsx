@@ -1,19 +1,19 @@
+//src/components/features-megamenu.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   ChevronDown,
   Link2,
   QrCode,
   BarChart3,
   LayoutGrid,
-  Globe,
-  Shuffle,
   Users,
-  ShieldCheck,
-  FileDown,
   Sparkles,
+  Tag,
 } from "lucide-react";
 
 type Item = {
@@ -31,86 +31,98 @@ type Category = {
 
 const CATEGORIES: Category[] = [
   {
-    id: "create",
-    label: "Create",
+    id: "suite",
+    label: "Kompi Suite",
     items: [
       {
+        title: "Kompi Suite",
+        desc: "All Kompi tools, one workspace.",
+        href: "/kompi-suite",
+        icon: Sparkles,
+      },
+      {
         title: "Short links",
-        desc: "Memorable, trackable links with neat slugs.",
+        desc: "Branded slugs + clean tracking.",
         href: "/features/url-shortener",
         icon: Link2,
       },
       {
         title: "KR Codes",
-        desc: "Generate Kompi KR Codes for print, events and packaging.",
-        href: "/KR-Codes-QR-Code-Generator",
-        icon: LayoutGrid,
-      },
-      {
-        title: "Kompi Codes™ (QR)",
-        desc: "On-brand QR codes for campaigns and offline journeys.",
+        desc: "QR codes built for real-world use.",
         href: "/KR-Codes-QR-Code-Generator",
         icon: QrCode,
+      },
+      {
+        title: "K-Cards",
+        desc: "A premium alternative to link-in-bio.",
+        href: "/k-cards",
+        icon: LayoutGrid,
       },
     ],
   },
   {
-    id: "brand",
-    label: "Brand & Publish",
+    id: "share",
+    label: "Share & Publish",
     items: [
       {
-        title: "Custom domains",
-        desc: "Keep every click on your brand.",
-        href: "#",
-        icon: Globe,
+        title: "Link in bio",
+        desc: "Your handle, your homepage.",
+        href: "/creator-studio",
+        icon: Users,
       },
       {
-        title: "Smart routing",
-        desc: "Send visitors by device, geo or campaign.",
-        href: "#",
-        icon: Shuffle,
+        title: "QR Menus",
+        desc: "Restaurant menus you can update anytime.",
+        href: "/qr-menus",
+        icon: QrCode,
       },
       {
-        title: "Link presets",
-        desc: "Reusable UTM + branding defaults for teams.",
-        href: "#",
+        title: "Free QR code",
+        desc: "Fast QR codes — no login needed.",
+        href: "/free-qr-code-generator",
+        icon: QrCode,
+      },
+      {
+        title: "Claim your handle",
+        desc: "Reserve your Kompi name.",
+        href: "/claim",
         icon: Sparkles,
       },
     ],
   },
   {
-    id: "measure",
-    label: "Measure",
+    id: "grow",
+    label: "Grow & Engage",
     items: [
       {
-        title: "Analytics",
-        desc: "Clicks, referrers, locations and devices.",
-        href: "#",
-        icon: BarChart3,
+        title: "Customers",
+        desc: "See use-cases by persona.",
+        href: "/customers",
+        icon: Users,
       },
       {
-        title: "Reports & export",
-        desc: "Share clean numbers or export to CSV.",
-        href: "#",
-        icon: FileDown,
+        title: "Pricing",
+        desc: "Plans for creators, teams & agencies.",
+        href: "/pricing",
+        icon: Sparkles,
+      },
+      {
+        title: "UTM builder",
+        desc: "Campaign tags in seconds.",
+        href: "/tools/utm-builder",
+        icon: Tag,
       },
     ],
   },
   {
-    id: "collab",
-    label: "Collaborate",
+    id: "insights",
+    label: "Measure & Optimize",
     items: [
       {
-        title: "Workspaces & roles",
-        desc: "Multi-brand, client-ready spaces with permissions.",
-        href: "#",
-        icon: Users,
-      },
-      {
-        title: "Approvals",
-        desc: "Optional reviews before links go live.",
-        href: "#",
-        icon: ShieldCheck,
+        title: "Analytics",
+        desc: "Clicks, devices, referrers — explained.",
+        href: "/kompi-suite",
+        icon: BarChart3,
       },
     ],
   },
@@ -121,6 +133,7 @@ export function FeaturesMegaMenu() {
   const [active, setActive] = useState<string>(CATEGORIES[0].id);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pathname = usePathname();
 
   const clearCloseTimer = () => {
     if (closeTimer.current) {
@@ -128,14 +141,23 @@ export function FeaturesMegaMenu() {
       closeTimer.current = null;
     }
   };
+
   const openNow = () => {
     clearCloseTimer();
     setOpen(true);
   };
+
   const scheduleClose = () => {
     clearCloseTimer();
-    closeTimer.current = setTimeout(() => setOpen(false), 150); // small grace period
+    closeTimer.current = setTimeout(() => setOpen(false), 250);
   };
+
+  // Tell Navbar "a megamenu is open" so it doesn't scroll-hide
+  useEffect(() => {
+    if (open) document.documentElement.setAttribute("data-megamenu-open", "1");
+    else document.documentElement.removeAttribute("data-megamenu-open");
+    return () => document.documentElement.removeAttribute("data-megamenu-open");
+  }, [open]);
 
   // Close on click-outside / Esc
   useEffect(() => {
@@ -157,20 +179,29 @@ export function FeaturesMegaMenu() {
     };
   }, [open]);
 
-  const activeCat =
-    CATEGORIES.find((c) => c.id === active) ?? CATEGORIES[0];
+  // Close whenever the route changes
+  useEffect(() => {
+    clearCloseTimer();
+    setOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const activeCat = CATEGORIES.find((c) => c.id === active) ?? CATEGORIES[0];
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div
+      ref={wrapRef}
+      className="relative"
+      onMouseEnter={openNow}
+      onMouseLeave={scheduleClose}
+    >
       {/* Trigger */}
       <button
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
-        onMouseEnter={openNow}
-        onMouseLeave={scheduleClose}
-        onClick={() => (open ? setOpen(false) : setOpen(true))}
-        className="inline-flex items-center gap-1 px-1 py-1 text-sm font-medium text-[color:var(--color-text)] transition-colors hover:text-[color:var(--color-accent)]"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1 px-1 py-1 text-sm font-medium text-[color:var(--color-text)] transition-colors hover:text-[color:#C4C8FF]"
       >
         <span>Features</span>
         <ChevronDown
@@ -178,7 +209,7 @@ export function FeaturesMegaMenu() {
         />
       </button>
 
-      {/* Panel — centered to viewport */}
+      {/* Panel — centered to viewport (stable positioning) */}
       {open && (
         <div
           role="dialog"
@@ -186,12 +217,12 @@ export function FeaturesMegaMenu() {
           onMouseLeave={scheduleClose}
           className="
             fixed left-1/2 top-24 z-[60] grid
-            w-[min(1120px,100vw-40px)]
+            w-[min(1360px,100vw-40px)]
             -translate-x-1/2
             overflow-hidden rounded-3xl
             border border-[color:var(--color-border)]
             bg-[color:var(--color-surface)] text-[color:var(--color-text)]
-            [grid-template-columns:260px_1fr_340px]
+            [grid-template-columns:280px_1fr_420px]
           "
         >
           {/* Left rail */}
@@ -211,14 +242,14 @@ export function FeaturesMegaMenu() {
                       className={[
                         "w-full rounded-2xl px-4 py-3 text-left text-[15px] transition-colors",
                         isActive
-                          ? "bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
+                          ? "bg-[color:#C4C8FF] text-[color:var(--color-text)]"
                           : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-surface)]",
                       ].join(" ")}
                     >
                       <span className="inline-flex items-center gap-2">
                         <span>{c.label}</span>
                         {isActive && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--color-accent)]" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-[color:#C4C8FF]" />
                         )}
                       </span>
                     </button>
@@ -232,12 +263,13 @@ export function FeaturesMegaMenu() {
           <div className="p-4">
             <div className="flex items-center justify-between pb-2">
               <div className="flex items-center gap-2 px-1">
-                <span className="h-4 w-0.5 rounded-full bg-[color:var(--color-accent)]" />
+                <span className="h-4 w-0.5 rounded-full bg-[color:#C4C8FF]" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
                   {activeCat.label}
                 </span>
               </div>
             </div>
+
             <div className="grid gap-2">
               {activeCat.items.map((it) => {
                 const Icon = it.icon ?? Sparkles;
@@ -246,12 +278,16 @@ export function FeaturesMegaMenu() {
                     key={it.title}
                     href={it.href}
                     className="group flex items-start gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-[color:var(--color-bg)]"
+                    onClick={() => {
+                      clearCloseTimer();
+                      setOpen(false);
+                    }}
                   >
-                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]">
+                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[color:#C4C8FF] text-[color:var(--color-text)]">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="leading-tight">
-                      <div className="text-[15px] font-semibold text-[color:var(--color-text)] group-hover:text-[color:var(--color-accent)]">
+                      <div className="text-[15px] font-semibold text-[color:var(--color-text)] group-hover:text-[color:#C4C8FF]">
                         {it.title}
                       </div>
                       <div className="text-[13px] text-[color:var(--color-subtle)]">
@@ -264,38 +300,59 @@ export function FeaturesMegaMenu() {
             </div>
           </div>
 
-          {/* Right featured */}
+          {/* Right featured — VISUAL (Linktree-style) */}
           <div className="p-4">
-            <div className="flex h-full flex-col justify-between rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)] p-5">
-              <div className="space-y-3">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
-                  Featured
-                </div>
-
-                <div className="space-y-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]">
-                      <Link2 className="h-4 w-4" />
-                    </div>
-                    <div className="leading-tight">
-                      <div className="text-[15px] font-semibold text-[color:var(--color-text)]">
-                        One workspace, everything tracked
-                      </div>
-                      <div className="text-[13px] text-[color:var(--color-subtle)]">
-                        Ship short links, KR Codes and Kompi Codes™ — then
-                        report in minutes.
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)]">
+              {/* Visual */}
+              <div className="relative aspect-[4/3] w-full">
+                <Image
+                  src="/kompi-branding.png"
+                  alt="Kompi Suite preview"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
 
-              <Link
-                href="/signin"
-                className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--color-accent)] px-5 py-2.5 text-[14px] font-semibold text-[color:var(--color-text)] transition-colors hover:brightness-105"
-              >
-                Try Kompi free
-              </Link>
+              {/* Copy + CTAs */}
+              <div className="flex flex-1 flex-col justify-between p-5">
+                <div className="space-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+                    Featured
+                  </p>
+                  <h3 className="text-[18px] font-semibold leading-snug text-[color:var(--color-text)]">
+                    Meet Kompi Suite
+                  </h3>
+                  <p className="text-[13px] text-[color:var(--color-subtle)]">
+                    Links, KR Codes, K-Cards and QR menus — with analytics that
+                    show what actually works.
+                  </p>
+                </div>
+
+                <div className="mt-4 grid gap-2">
+                  <Link
+                    href="/kompi-suite"
+                    onClick={() => {
+                      clearCloseTimer();
+                      setOpen(false);
+                    }}
+                    className="inline-flex w-full items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-2.5 text-[14px] font-semibold text-[color:var(--color-text)] transition-colors hover:bg-[color:var(--color-bg)]"
+                  >
+                    Explore Kompi Suite
+                  </Link>
+
+                  <Link
+                    href="/signin"
+                    onClick={() => {
+                      clearCloseTimer();
+                      setOpen(false);
+                    }}
+                    className="inline-flex w-full items-center justify-center rounded-full bg-[color:#C4C8FF] px-5 py-2.5 text-[14px] font-semibold text-[color:var(--color-text)] transition-colors hover:brightness-105"
+                  >
+                    Sign up free
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -548,3 +548,86 @@
 .wf-compare-section-row {
   background-color: #f0ebdf;
 }
+
+/* pricing.css additions (append to bottom) */
+
+/* Coming soon CTA styling */
+.wf-plan-cta-disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  filter: grayscale(0.15);
+}
+
+/* --- Tools included section (inside the green frame) --- */
+
+.wf-tools-shell {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  row-gap: 14px;
+}
+
+.wf-tools-header {
+  text-align: center;
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+.wf-tools-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.wf-tools-sub {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #374151;
+  opacity: 0.9;
+}
+
+.wf-tools-grid {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .wf-tools-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.wf-tools-card {
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 14px 14px 12px;
+}
+
+.wf-tools-card-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #111827;
+  opacity: 0.85;
+}
+
+.wf-tools-pills {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wf-tool-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #111827;
+  white-space: nowrap;
+}

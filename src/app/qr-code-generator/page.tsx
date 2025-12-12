@@ -1,8 +1,25 @@
 // src/app/qr-code-generator/page.tsx
 
 import type { Metadata } from "next";
+import Script from "next/script";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import {
+  Globe,
+  Utensils,
+  Wifi,
+  Contact,
+  Ticket,
+  Type,
+  MousePointerClick,
+  Palette,
+  Download,
+  Link2,
+  Mail,
+  MessageSquareText,
+  FileText,
+} from "lucide-react";
+
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import { QrGenerator } from "@/components/qr-code-generator/QrGenerator";
@@ -11,9 +28,7 @@ export const metadata: Metadata = {
   title: "Free QR Code Generator | Create Custom QR Codes Online | Kompi",
   description:
     "Create free QR codes in seconds. Paste a link, text or Wi-Fi details, customise the QR style and download a scan-ready PNG. Upgrade with Kompi for analytics, dynamic QR codes and brand presets.",
-  alternates: {
-    canonical: "/qr-code-generator",
-  },
+  alternates: { canonical: "/qr-code-generator" },
   openGraph: {
     title: "Free QR Code Generator – Custom QR Codes that Just Work | Kompi",
     description:
@@ -29,93 +44,127 @@ export const metadata: Metadata = {
   },
 };
 
-// Shared layout shell for cards
-type SectionShellProps = {
+/* -------------------------------------------------------------------------- */
+/*  SMALL UI PRIMITIVES (flat + /with-logo vibe)                              */
+/* -------------------------------------------------------------------------- */
+
+function Container({ children }: { children: ReactNode }) {
+  return <div className="mx-auto w-full max-w-5xl px-4">{children}</div>;
+}
+
+function Eyebrow({ children }: { children: ReactNode }) {
+  return (
+    <p className="text-center text-xs md:text-sm font-semibold uppercase tracking-[0.34em] text-[#5177e1]">
+      {children}
+    </p>
+  );
+}
+
+function SectionTitle({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="text-center text-3xl md:text-5xl font-bold tracking-tight text-[#0B0F1A]">
+      {children}
+    </h2>
+  );
+}
+
+function SectionSub({ children }: { children: ReactNode }) {
+  return (
+    <p className="mx-auto max-w-2xl text-center text-base md:text-lg leading-relaxed text-neutral-600">
+      {children}
+    </p>
+  );
+}
+
+function Card({
+  children,
+  className = "",
+}: {
   children: ReactNode;
   className?: string;
+}) {
+  return (
+    <section className={`rounded-3xl border border-neutral-200 bg-white ${className}`}>
+      {children}
+    </section>
+  );
+}
+
+function CardBody({ children }: { children: ReactNode }) {
+  return <div className="px-6 py-10 sm:px-10 sm:py-12">{children}</div>;
+}
+
+type SectionShellProps = {
+  children: ReactNode;
   id?: string;
+  tone?: "white" | "soft";
 };
 
-const SectionShell = ({ children, className = "", id }: SectionShellProps) => (
-  <section id={id} className={`px-4 py-12 ${className}`}>
-    <div className="mx-auto max-w-6xl">
-      <div className="rounded-3xl border border-black/5 bg-white/80 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.10)] md:p-8">
-        {children}
-      </div>
-    </div>
-  </section>
-);
+function SectionShell({ children, id, tone = "soft" }: SectionShellProps) {
+  const toneClass = tone === "white" ? "bg-white" : "bg-[#f7f7f4]";
+  return (
+    <section id={id} className={`${toneClass} border-t border-neutral-200 py-20 md:py-28`}>
+      <Container>{children}</Container>
+    </section>
+  );
+}
 
-// --- Sections ---
+function IconBadge({
+  icon,
+  bg = "bg-neutral-100",
+}: {
+  icon: ReactNode;
+  bg?: string;
+}) {
+  return (
+    <div className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ${bg}`}>
+      <div className="h-5 w-5 text-[#0B0F1A]">{icon}</div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  SECTIONS                                                                  */
+/* -------------------------------------------------------------------------- */
 
 function QuickTemplatesStrip() {
   const cards = [
-    {
-      label: "Website link",
-      body: "Send people straight to a landing page, store or booking link.",
-    },
-    {
-      label: "Restaurant menu",
-      body: "Put QR menus on tables, windows and takeaway packaging.",
-    },
-    {
-      label: "Wi-Fi QR code",
-      body: "Let guests join your Wi-Fi without typing a password.",
-    },
-    {
-      label: "vCard / contact",
-      body: "Share your contact details from a business card or flyer.",
-    },
-    {
-      label: "Event or ticket",
-      body: "Link to RSVPs, ticket pages or event info in one scan.",
-    },
-    {
-      label: "Plain text",
-      body: "Show instructions, discount codes or short messages.",
-    },
+    { label: "Website link", body: "Send people straight to a landing page, store or booking link.", icon: <Globe className="h-5 w-5" /> },
+    { label: "Restaurant menu", body: "Put QR menus on tables, windows and takeaway packaging.", icon: <Utensils className="h-5 w-5" /> },
+    { label: "Wi-Fi QR code", body: "Let guests join your Wi-Fi without typing a password.", icon: <Wifi className="h-5 w-5" /> },
+    { label: "vCard / contact", body: "Share your contact details from a business card or flyer.", icon: <Contact className="h-5 w-5" /> },
+    { label: "Event or ticket", body: "Link to RSVPs, ticket pages or event info in one scan.", icon: <Ticket className="h-5 w-5" /> },
+    { label: "Plain text", body: "Show instructions, discount codes or short messages.", icon: <Type className="h-5 w-5" /> },
   ];
 
   return (
-    <SectionShell className="pt-10">
-      <div className="flex flex-wrap items-start justify-between gap-6">
-        <div className="max-w-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
-            QR code ideas
-          </p>
-          <h2
-            className="mt-2 text-[22px] font-semibold leading-[1.15] tracking-tight text-[#050505] sm:text-[24px]"
-            style={{ letterSpacing: "-0.04em" }}
-          >
+    <SectionShell tone="white" id="ideas">
+      <div className="space-y-12">
+        <div className="space-y-4">
+          <Eyebrow>QR CODE IDEAS</Eyebrow>
+          <SectionTitle>
             Fast templates for
             <br />
             popular QR code types.
-          </h2>
-          <p className="mt-3 text-[12px] leading-relaxed text-neutral-600">
-            Start with a use case instead of a blank canvas. Pick a template and
-            tweak the content in the generator above.
-          </p>
+          </SectionTitle>
+          <SectionSub>
+            Start with a use case instead of a blank canvas. Pick a template and tweak the content in the generator above.
+          </SectionSub>
         </div>
-        <p className="max-w-xs text-[11px] leading-relaxed text-neutral-500">
-          Use the free QR code generator at the top of this page to create any
-          of these in a few seconds — no account needed.
-        </p>
-      </div>
 
-      <div className="mt-7 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
-        {cards.map((card) => (
-          <article
-            key={card.label}
-            className="flex flex-col justify-between rounded-2xl border border-black/5 bg-[#f5f3ee]/80 px-3 py-3 text-left shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
-          >
-            <h3 className="text-[12px] font-semibold text-[#050505]">
-              {card.label}
-            </h3>
-            <p className="mt-2 text-[11px] leading-relaxed text-neutral-600">
-              {card.body}
-            </p>
-          </article>
-        ))}
+        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+          {cards.map((card) => (
+            <div key={card.label} className="rounded-3xl bg-[#F7F7F3] p-6 ring-1 ring-[#E5E7EB]">
+              <IconBadge icon={card.icon} bg="bg-white" />
+              <h3 className="mt-4 text-sm font-semibold text-[#0B0F1A]">{card.label}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">{card.body}</p>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-center text-sm text-neutral-600">
+          Use the free QR code generator at the top of this page to create any of these in a few seconds — no account needed.
+        </p>
       </div>
     </SectionShell>
   );
@@ -123,147 +172,107 @@ function QuickTemplatesStrip() {
 
 function NewToQrSection() {
   return (
-    <SectionShell>
-      <div
-        id="qr-basics"
-        className="flex flex-col items-center gap-10 md:flex-row md:items-start"
-        aria-labelledby="qr-basics-heading"
-      >
-        {/* Left: image */}
-        <div className="relative w-full max-w-md flex-1">
-          <div className="pointer-events-none absolute -inset-5 rounded-[32px] bg-gradient-to-br from-purple-300/30 via-fuchsia-300/20 to-emerald-300/20 blur-2xl" />
-          <div className="relative rounded-[28px] border border-black/5 bg-[#0b0b0b] p-4 shadow-[0_28px_70px_rgba(15,23,42,0.75)]">
-            <img
-              src="/kompi-analytics.png"
-              alt="Kompi dashboard with QR analytics and links"
-              className="h-auto w-full rounded-2xl object-cover"
-            />
+    <SectionShell id="qr-basics" tone="soft">
+      <Card>
+        <CardBody>
+          <div className="space-y-10">
+            <div className="space-y-4">
+              <Eyebrow>NEW TO QR CODES?</Eyebrow>
+              <SectionTitle>
+                Everything you need to know
+                <br />
+                about <span className="wf-serif-accent italic text-neutral-800">free QR codes</span>.
+              </SectionTitle>
+              <SectionSub>
+                A QR code is just a visual way of storing information — usually a URL. When someone scans it, their camera opens
+                whatever you&apos;ve encoded: a website, menu, Wi-Fi network, contact card and more.
+              </SectionSub>
+            </div>
+
+            <div className="grid gap-10 md:grid-cols-2 md:items-start">
+              {/* Image (no frame, no glow, no shadow) */}
+              <div className="overflow-hidden rounded-3xl bg-neutral-900">
+                <img
+                  src="/kompi-analytics.png"
+                  alt="Kompi dashboard with QR analytics and links"
+                  className="h-auto w-full object-cover"
+                />
+              </div>
+
+              {/* Copy */}
+              <div className="space-y-5">
+                <ul className="space-y-2 text-base leading-relaxed text-neutral-700">
+                  <li>• Kompi&apos;s free generator creates static PNG QR codes.</li>
+                  <li>• Static QR codes never expire — they work as long as the destination is valid.</li>
+                  <li>
+                    • Free downloads include a tiny <span className="font-semibold">Kompi</span> logo mark, similar to other QR providers.
+                  </li>
+                  <li>
+                    • Want editable destinations and scan analytics? Use a <span className="font-semibold">Kompi link</span> behind your QR.
+                  </li>
+                </ul>
+
+                <p className="text-sm text-neutral-600">
+                  Upgrade to dynamic QR codes in Kompi and change where a QR points without reprinting anything.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    href="/signin"
+                    className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-8 py-3.5 text-sm font-semibold text-[#F7F7F3] transition hover:bg-black"
+                  >
+                    Open Kompi dashboard
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center justify-center rounded-full border border-[#1E2330] bg-white px-8 py-3.5 text-sm font-semibold text-[#1E2330] hover:bg-[#F7F7F3]"
+                  >
+                    See QR &amp; link plans →
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Right: copy */}
-        <div className="flex-1 max-w-xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
-            New to QR codes?
-          </p>
-          <h2
-            id="qr-basics-heading"
-            className="mt-3 text-[26px] font-semibold leading-[1.1] tracking-tight text-[#050505] sm:text-[30px]"
-            style={{ letterSpacing: "-0.04em" }}
-          >
-            Everything you need to know
-            <br />
-            about{" "}
-            <span className="wf-serif-accent italic text-neutral-800">
-              free QR codes
-            </span>
-            .
-          </h2>
-          <p className="mt-4 text-[13px] leading-relaxed text-neutral-700">
-            A QR code is just a visual way of storing information — usually a
-            URL. When someone scans it, their camera opens whatever you&apos;ve
-            encoded: a website, menu, Wi-Fi network, contact card and more.
-          </p>
-
-          <ul className="mt-5 space-y-2 text-[13px] leading-relaxed text-neutral-700">
-            <li>• Kompi&apos;s free generator creates static PNG QR codes.</li>
-            <li>
-              • Static QR codes never expire — they work as long as the
-              destination is valid.
-            </li>
-            <li>
-              • Free downloads include a tiny{" "}
-              <span className="font-semibold">Kompi</span> logo mark, similar to
-              other QR providers.
-            </li>
-            <li>
-              • Want editable destinations and scan analytics? Use a{" "}
-              <span className="font-semibold">Kompi link</span> behind your QR.
-            </li>
-          </ul>
-
-          <p className="mt-4 text-[12px] text-neutral-600">
-            Upgrade to dynamic QR codes in Kompi and change where a QR points
-            without reprinting anything.
-          </p>
-
-          <div className="mt-7 flex flex-wrap items-center gap-3 text-[12px]">
-            <Link href="/signin"
-              className="inline-flex items-center justify-center rounded-full bg-[#050505] px-7 py-2.5 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.75)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.9)]"
-            >
-              Open Kompi dashboard
-            </Link>
-            <Link href="/pricing"
-              className="text-[12px] font-medium text-neutral-800 underline-offset-4 hover:underline"
-            >
-              See QR & link plans →
-            </Link>
-          </div>
-        </div>
-      </div>
+        </CardBody>
+      </Card>
     </SectionShell>
   );
 }
 
 function HowItWorksSection() {
   const steps = [
-    {
-      step: "1",
-      title: "Choose what your QR does",
-      body: "Select a QR type and add a URL, Wi-Fi details, contact info, SMS or plain text.",
-    },
-    {
-      step: "2",
-      title: "Design the QR code card",
-      body: "Pick dot style, colours, borders and optional logo so it feels on-brand but still scannable.",
-    },
-    {
-      step: "3",
-      title: "Download a high-quality PNG",
-      body: "Export a crisp PNG up to 2048px. Print it on menus, flyers, posters, packaging and more.",
-    },
+    { step: "1", title: "Choose what your QR does", body: "Select a QR type and add a URL, Wi-Fi details, contact info, SMS or plain text.", icon: <MousePointerClick className="h-5 w-5" /> },
+    { step: "2", title: "Design the QR code card", body: "Pick dot style, colours, borders and optional logo so it feels on-brand but still scannable.", icon: <Palette className="h-5 w-5" /> },
+    { step: "3", title: "Download a high-quality PNG", body: "Export a crisp PNG up to 2048px. Print it on menus, flyers, posters, packaging and more.", icon: <Download className="h-5 w-5" /> },
   ];
 
   return (
-    <SectionShell id="how-it-works">
-      <div aria-labelledby="qr-how-heading">
-        <div className="max-w-xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
-            How it works
-          </p>
-          <h2
-            id="qr-how-heading"
-            className="mt-2 text-[24px] font-semibold leading-[1.15] tracking-tight text-[#050505] sm:text-[26px]"
-            style={{ letterSpacing: "-0.04em" }}
-          >
+    <SectionShell id="how-it-works" tone="white">
+      <div className="space-y-12">
+        <div className="space-y-4">
+          <Eyebrow>HOW IT WORKS</Eyebrow>
+          <SectionTitle>
             Create a free QR code
             <br />
             in three simple steps.
-          </h2>
-          <p className="mt-3 text-[13px] leading-relaxed text-neutral-700">
-            The generator at the top of this page handles everything. You
-            don&apos;t need an account to create or download a QR code.
-          </p>
+          </SectionTitle>
+          <SectionSub>
+            The generator at the top of this page handles everything. You don&apos;t need an account to create or download a QR code.
+          </SectionSub>
         </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
-          {steps.map((step) => (
-            <article
-              key={step.step}
-              className="flex flex-col rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-[12px] bg-[#050505] text-[11px] font-semibold text-white">
-                  {step.step}
+        <div className="grid gap-6 md:grid-cols-3">
+          {steps.map((s) => (
+            <div key={s.step} className="rounded-3xl bg-[#F7F7F3] p-7 ring-1 ring-[#E5E7EB]">
+              <div className="flex items-center gap-4">
+                <IconBadge icon={s.icon} bg="bg-white" />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">Step {s.step}</p>
+                  <h3 className="mt-1 text-base font-semibold text-[#0B0F1A]">{s.title}</h3>
                 </div>
-                <h3 className="text-sm font-semibold text-[#050505]">
-                  {step.title}
-                </h3>
               </div>
-              <p className="mt-3 text-[12px] leading-relaxed text-neutral-700">
-                {step.body}
-              </p>
-            </article>
+              <p className="mt-4 text-sm leading-relaxed text-neutral-700">{s.body}</p>
+            </div>
           ))}
         </div>
       </div>
@@ -273,51 +282,33 @@ function HowItWorksSection() {
 
 function UseCasesSection() {
   const cards = [
-    {
-      title: "Restaurants & cafés",
-      body: "Put QR menus on tables, windows, receipts and takeaway boxes that always point customers to the right page.",
-    },
-    {
-      title: "Flyers, posters & events",
-      body: "Connect street posters, campus flyers or out-of-home ads to ticketing, RSVPs or promo landing pages.",
-    },
-    {
-      title: "Business cards & packaging",
-      body: "Link to your website, Kompi bio page, support hub or socials without changing your printed materials.",
-    },
+    { title: "Restaurants & cafés", body: "Put QR menus on tables, windows, receipts and takeaway boxes that always point customers to the right page." },
+    { title: "Flyers, posters & events", body: "Connect street posters, campus flyers or out-of-home ads to ticketing, RSVPs or promo landing pages." },
+    { title: "Business cards & packaging", body: "Link to your website, Kompi bio page, support hub or socials without changing your printed materials." },
   ];
 
   return (
-    <SectionShell id="use-cases">
-      <div aria-labelledby="qr-use-cases-heading">
-        <h2
-          id="qr-use-cases-heading"
-          className="text-[24px] font-semibold tracking-tight text-[#050505] sm:text-[26px]"
-          style={{ letterSpacing: "-0.04em" }}
-        >
-          Where Kompi QR codes
-          <br />
-          make the biggest impact.
-        </h2>
-        <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-neutral-700">
-          Turn anything with a surface into a smart link. Kompi QR codes work
-          anywhere you can print or display an image — and dynamic QR codes let
-          you change destinations later.
-        </p>
+    <SectionShell id="use-cases" tone="soft">
+      <div className="space-y-12">
+        <div className="space-y-4">
+          <Eyebrow>USE CASES</Eyebrow>
+          <SectionTitle>
+            Where Kompi QR codes
+            <br />
+            make the biggest impact.
+          </SectionTitle>
+          <SectionSub>
+            Turn anything with a surface into a smart link. Kompi QR codes work anywhere you can print or display an image — and dynamic
+            QR codes let you change destinations later.
+          </SectionSub>
+        </div>
 
-        <div className="mt-7 grid gap-5 md:grid-cols-3">
-          {cards.map((card) => (
-            <article
-              key={card.title}
-              className="rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4 shadow-[0_14px_36px_rgba(15,23,42,0.08)]"
-            >
-              <h3 className="text-sm font-semibold text-[#050505]">
-                {card.title}
-              </h3>
-              <p className="mt-3 text-[12px] leading-relaxed text-neutral-700">
-                {card.body}
-              </p>
-            </article>
+        <div className="grid gap-6 md:grid-cols-3">
+          {cards.map((c) => (
+            <div key={c.title} className="rounded-3xl bg-white p-7 ring-1 ring-[#E5E7EB]">
+              <h3 className="text-base font-semibold text-[#0B0F1A]">{c.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-neutral-700">{c.body}</p>
+            </div>
           ))}
         </div>
       </div>
@@ -327,149 +318,107 @@ function UseCasesSection() {
 
 function PlatformPitchSection() {
   const cards = [
-    {
-      title: "Dynamic QR codes",
-      body: "Point QR codes at Kompi short links so you can change destinations later and keep printed codes in use.",
-    },
-    {
-      title: "Link analytics that make sense",
-      body: "See clicks and scans by device, country and referrer, so you know which campaigns and locations perform best.",
-    },
-    {
-      title: "Bio pages, QR menus & KR Codes",
-      body: "Create Kompi bio pages, branded QR menus and trackable KR Codes from the same workspace and share them everywhere.",
-    },
+    { title: "Dynamic QR codes", body: "Point QR codes at Kompi short links so you can change destinations later and keep printed codes in use." },
+    { title: "Link analytics that make sense", body: "See clicks and scans by device, country and referrer, so you know which campaigns and locations perform best." },
+    { title: "Bio pages, QR menus & KR Codes", body: "Create Kompi bio pages, branded QR menus and trackable KR Codes from the same workspace and share them everywhere." },
   ];
 
   return (
-    <SectionShell id="platform">
-      <div
-        className="grid gap-10 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-center"
-        aria-labelledby="qr-platform-heading"
-      >
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
-            Kompi platform
-          </p>
-          <h2
-            id="qr-platform-heading"
-            className="mt-2 text-[24px] font-semibold leading-[1.15] tracking-tight text-[#050505] sm:text-[26px]"
-            style={{ letterSpacing: "-0.04em" }}
-          >
-            More than a free
-            <br />
-            QR code generator.
-          </h2>
-          <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-neutral-700">
-            Behind every QR you create, you can plug into Kompi&apos;s full
-            platform — short links, QR menus, KR Codes, bio pages and rich
-            analytics. One login, one place to see how people actually find
-            you.
-          </p>
+    <SectionShell id="platform" tone="white">
+      <Card>
+        <CardBody>
+          <div className="space-y-12">
+            <div className="space-y-4">
+              <Eyebrow>KOMPI PLATFORM</Eyebrow>
+              <SectionTitle>
+                More than a free
+                <br />
+                QR code generator.
+              </SectionTitle>
+              <SectionSub>
+                Behind every QR you create, you can plug into Kompi&apos;s full platform — short links, QR menus, KR Codes, bio pages and
+                rich analytics. One login, one place to see how people actually find you.
+              </SectionSub>
+            </div>
 
-          <div className="mt-7 grid gap-4 md:grid-cols-3">
-            {cards.map((card) => (
-              <article
-                key={card.title}
-                className="rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4 text-left shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
-              >
-                <h3 className="text-[13px] font-semibold text-[#050505]">
-                  {card.title}
-                </h3>
-                <p className="mt-2 text-[12px] leading-relaxed text-neutral-700">
-                  {card.body}
-                </p>
-              </article>
-            ))}
-          </div>
+            <div className="grid gap-10 md:grid-cols-2 md:items-center">
+              <div className="grid gap-4">
+                {cards.map((card) => (
+                  <div key={card.title} className="rounded-3xl bg-[#F7F7F3] p-6 ring-1 ring-[#E5E7EB]">
+                    <h3 className="text-sm font-semibold text-[#0B0F1A]">{card.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-neutral-700">{card.body}</p>
+                  </div>
+                ))}
 
-          <div className="mt-7 flex flex-wrap items-center gap-3 text-[12px]">
-            <Link href="/pricing"
-              className="inline-flex items-center justify-center rounded-full bg-[#050505] px-7 py-2.5 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.75)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.9)]"
-            >
-              See Kompi plans
-            </Link>
-            <Link href="/signin"
-              className="text-[12px] font-medium text-neutral-800 underline-offset-4 hover:underline"
-            >
-              Or create a free account →
-            </Link>
-          </div>
-        </div>
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-8 py-3.5 text-sm font-semibold text-[#F7F7F3] transition hover:bg-black"
+                  >
+                    See Kompi plans
+                  </Link>
+                  <Link
+                    href="/signin"
+                    className="inline-flex items-center justify-center rounded-full border border-[#1E2330] bg-white px-8 py-3.5 text-sm font-semibold text-[#1E2330] hover:bg-[#F7F7F3]"
+                  >
+                    Or create a free account →
+                  </Link>
+                </div>
+              </div>
 
-        <div className="relative mx-auto w-full max-w-md">
-          <div className="pointer-events-none absolute -inset-5 rounded-[32px] bg-gradient-to-br from-amber-300/40 via-orange-300/20 to-pink-300/20 blur-2xl" />
-          <div className="relative rounded-[28px] border border-black/5 bg-white p-4 shadow-[0_26px_70px_rgba(148,64,12,0.35)]">
-            <img
-              src="/kompi-platform.png"
-              alt="Kompi platform with links, QR codes and analytics"
-              className="h-auto w-full rounded-2xl object-cover"
-            />
+              {/* Image (no frame, no glow, no shadow) */}
+              <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-[#E5E7EB]">
+                <img
+                  src="/kompi-platform.png"
+                  alt="Kompi platform with links, QR codes and analytics"
+                  className="h-auto w-full object-cover"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </CardBody>
+      </Card>
     </SectionShell>
   );
 }
 
 function TypesGridSection() {
   const types = [
-    {
-      title: "URL QR codes",
-      body: "Send people to any website, store or landing page with one scan.",
-    },
-    {
-      title: "Wi-Fi QR codes",
-      body: "Let guests connect without typing your network name and password.",
-    },
-    {
-      title: "vCard / contact QR codes",
-      body: "Share your contact details so people can save them in one tap.",
-    },
-    {
-      title: "Email QR codes",
-      body: "Open a pre-filled email to your address with subject and message.",
-    },
-    {
-      title: "SMS QR codes",
-      body: "Start a text conversation with a pre-written message and number.",
-    },
-    {
-      title: "Plain text QR codes",
-      body: "Show instructions, coupon codes or any short text on scan.",
-    },
+    { title: "URL QR codes", body: "Send people to any website, store or landing page with one scan.", icon: <Link2 className="h-5 w-5" /> },
+    { title: "Wi-Fi QR codes", body: "Let guests connect without typing your network name and password.", icon: <Wifi className="h-5 w-5" /> },
+    { title: "vCard / contact QR codes", body: "Share your contact details so people can save them in one tap.", icon: <Contact className="h-5 w-5" /> },
+    { title: "Email QR codes", body: "Open a pre-filled email to your address with subject and message.", icon: <Mail className="h-5 w-5" /> },
+    { title: "SMS QR codes", body: "Start a text conversation with a pre-written message and number.", icon: <MessageSquareText className="h-5 w-5" /> },
+    { title: "Plain text QR codes", body: "Show instructions, coupon codes or any short text on scan.", icon: <FileText className="h-5 w-5" /> },
   ];
 
   return (
-    <SectionShell id="qr-types">
-      <div aria-labelledby="qr-types-heading">
-        <h2
-          id="qr-types-heading"
-          className="text-[24px] font-semibold tracking-tight text-[#050505] sm:text-[26px]"
-          style={{ letterSpacing: "-0.04em" }}
-        >
-          What type of QR codes
-          <br />
-          can you create for free?
-        </h2>
-        <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-neutral-700">
-          Kompi&apos;s free QR code generator supports the most common QR types
-          out of the box. Choose the one you need in the content step above.
-        </p>
+    <SectionShell id="qr-types" tone="soft">
+      <div className="space-y-12">
+        <div className="space-y-4">
+          <Eyebrow>QR TYPES</Eyebrow>
+          <SectionTitle>
+            What type of QR codes
+            <br />
+            can you create for free?
+          </SectionTitle>
+          <SectionSub>
+            Kompi&apos;s free QR code generator supports the most common QR types out of the box. Choose the one you need in the content
+            step above.
+          </SectionSub>
+        </div>
 
-        <div className="mt-7 grid gap-4 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {types.map((type) => (
-            <article
-              key={type.title}
-              className="rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4"
-            >
-              <h3 className="text-[13px] font-semibold text-[#050505]">
-                {type.title}
-              </h3>
-              <p className="mt-2 text-[12px] leading-relaxed text-neutral-700">
-                {type.body}
-              </p>
-            </article>
+            <div key={type.title} className="rounded-3xl bg-white p-7 ring-1 ring-[#E5E7EB]">
+              <div className="flex items-start gap-4">
+                <IconBadge icon={type.icon} bg="bg-[#F7F7F3]" />
+                <div>
+                  <h3 className="text-base font-semibold text-[#0B0F1A]">{type.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-700">{type.body}</p>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -477,54 +426,37 @@ function TypesGridSection() {
   );
 }
 
-
 function RelatedQrToolsSection() {
   const links = [
-    {
-      href: "/qr-code/dynamic",
-      label: "Dynamic QR codes",
-      body: "Create QR codes you can update later without reprinting.",
-    },
-    {
-      href: "/qr-code/static",
-      label: "Static QR codes",
-      body: "Simple QR codes that point straight to a URL or text.",
-    },
-    {
-      href: "/qr-code/with-logo",
-      label: "QR codes with logo",
-      body: "Add your brand mark in the middle of a scannable QR.",
-    },
-    {
-      href: "/qr-code/for-restaurant",
-      label: "QR codes for restaurants",
-      body: "Menu QR codes for tables, windows and takeaway packaging.",
-    },
+    { href: "/qr-code/dynamic", label: "Dynamic QR codes", body: "Create QR codes you can update later without reprinting." },
+    { href: "/qr-code/static", label: "Static QR codes", body: "Simple QR codes that point straight to a URL or text." },
+    { href: "/qr-code/with-logo", label: "QR codes with logo", body: "Add your brand mark in the middle of a scannable QR." },
+    { href: "/qr-code/for-restaurant", label: "QR codes for restaurants", body: "Menu QR codes for tables, windows and takeaway packaging." },
   ];
 
   return (
-    <SectionShell id="more-qr-tools">
-      <div aria-labelledby="more-qr-tools-heading">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
-          More QR tools
-        </p>
-        <h2
-          id="more-qr-tools-heading"
-          className="mt-2 text-[24px] font-semibold tracking-tight text-[#050505]"
-          style={{ letterSpacing: "-0.04em" }}
-        >
-          Explore more free QR code tools.
-        </h2>
+    <SectionShell id="more-qr-tools" tone="white">
+      <div className="space-y-12">
+        <div className="space-y-4">
+          <Eyebrow>MORE QR TOOLS</Eyebrow>
+          <SectionTitle>Explore more free QR code tools.</SectionTitle>
+          <SectionSub>Expand beyond basic QR files: dynamic updates, logo styling, and industry-specific flows.</SectionSub>
+        </div>
 
-        <div className="mt-7 grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {links.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="group block rounded-2xl border border-black/5 bg-[#f5f3ee]/80 p-4"
+              className="group rounded-3xl bg-[#F7F7F3] p-6 ring-1 ring-[#E5E7EB] transition hover:bg-white"
             >
-              <h3 className="text-[13px] font-semibold text-[#050505]">{item.label}</h3>
-              <p className="mt-2 text-[12px] leading-relaxed text-neutral-700">{item.body}</p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-semibold text-[#0B0F1A]">{item.label}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-700">{item.body}</p>
+                </div>
+                <span className="mt-1 opacity-60 group-hover:opacity-100 transition-opacity">↗</span>
+              </div>
             </Link>
           ))}
         </div>
@@ -533,79 +465,55 @@ function RelatedQrToolsSection() {
   );
 }
 
-
 function FaqSection() {
   const faqs = [
-    {
-      q: "Is this QR code generator really free?",
-      a: "Yes. You can create and download static QR codes as PNG files for free without creating a Kompi account.",
-    },
-    {
-      q: "Do free QR codes show the Kompi logo?",
-      a: "Yes. Free QR codes include a small Kompi mark in the corner, similar to how other QR providers brand their codes. Paid Kompi plans unlock fully white-label QR codes and advanced branding options.",
-    },
-    {
-      q: "Do the QR codes expire?",
-      a: "Static QR codes created here never expire. They will keep working as long as the underlying URL, Wi-Fi details or other encoded value is still valid.",
-    },
-    {
-      q: "What’s the difference between static and dynamic QR codes?",
-      a: "Static QR codes point directly to a fixed value, such as a URL. Dynamic QR codes point to a Kompi short link, which you can edit later and track with analytics — without changing the printed code.",
-    },
-    {
-      q: "Can I track how many times my QR is scanned?",
-      a: "Scan tracking is available when your QR points to a Kompi short link. Create the link inside your Kompi dashboard, then generate a dynamic QR from it to see clicks and scans over time.",
-    },
-    {
-      q: "Can I customise colours and add my own logo?",
-      a: "Yes. The free QR generator lets you change colours, dot styles, borders and upload a logo. With a Kompi account you can save presets, sync brand colours and use your own domain.",
-    },
+    { q: "Is this QR code generator really free?", a: "Yes. You can create and download static QR codes as PNG files for free without creating a Kompi account." },
+    { q: "Do free QR codes show the Kompi logo?", a: "Yes. Free QR codes include a small Kompi mark in the corner, similar to how other QR providers brand their codes. Paid Kompi plans unlock fully white-label QR codes and advanced branding options." },
+    { q: "Do the QR codes expire?", a: "Static QR codes created here never expire. They will keep working as long as the underlying URL, Wi-Fi details or other encoded value is still valid." },
+    { q: "What’s the difference between static and dynamic QR codes?", a: "Static QR codes point directly to a fixed value, such as a URL. Dynamic QR codes point to a Kompi short link, which you can edit later and track with analytics — without changing the printed code." },
+    { q: "Can I track how many times my QR is scanned?", a: "Scan tracking is available when your QR points to a Kompi short link. Create the link inside your Kompi dashboard, then generate a dynamic QR from it to see clicks and scans over time." },
+    { q: "Can I customise colours and add my own logo?", a: "Yes. The free QR generator lets you change colours, dot styles, borders and upload a logo. With a Kompi account you can save presets, sync brand colours and use your own domain." },
   ];
 
   return (
-    <SectionShell id="faq" className="pb-14">
-      <div aria-labelledby="qr-faq-heading">
-        <h2
-          id="qr-faq-heading"
-          className="text-[24px] font-semibold tracking-tight text-[#050505] sm:text-[26px]"
-          style={{ letterSpacing: "-0.04em" }}
-        >
-          Frequently asked questions
-          <br />
-          about Kompi QR codes.
-        </h2>
-        <div className="mt-7 rounded-2xl border border-black/5 bg-white/90">
-          {faqs.map((item, index) => (
-            <details
-              key={item.q}
-              className={`group border-b border-black/5 last:border-b-0 ${
-                index === 0 ? "rounded-t-2xl" : ""
-              } ${index === faqs.length - 1 ? "rounded-b-2xl" : ""}`}
-            >
-              <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium text-[#050505]">
-                <span>{item.q}</span>
-                <span className="ml-4 text-xs text-neutral-500 group-open:hidden">
-                  +
-                </span>
-                <span className="ml-4 hidden text-xs text-neutral-500 group-open:inline">
-                  −
-                </span>
-              </summary>
-              <div className="px-4 pb-4 text-[12px] leading-relaxed text-neutral-700">
-                {item.a}
-              </div>
-            </details>
-          ))}
+    <SectionShell id="faq" tone="soft">
+      <div className="space-y-12">
+        <div className="space-y-4">
+          <Eyebrow>FAQ</Eyebrow>
+          <SectionTitle>
+            Frequently asked questions
+            <br />
+            about Kompi QR codes.
+          </SectionTitle>
+          <SectionSub>Quick answers about free downloads, scan reliability, and when to upgrade.</SectionSub>
         </div>
+
+        <Card>
+          <CardBody>
+            <div className="space-y-4">
+              {faqs.map((item) => (
+                <details key={item.q} className="group rounded-2xl border border-neutral-200 bg-white p-5 md:p-6">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                    <span className="text-base md:text-lg font-semibold text-neutral-900">{item.q}</span>
+                    <span className="text-sm text-neutral-500 group-open:hidden">+</span>
+                    <span className="hidden text-sm text-neutral-500 group-open:inline">−</span>
+                  </summary>
+                  <p className="mt-4 text-base md:text-lg leading-relaxed text-neutral-700">{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
       </div>
     </SectionShell>
   );
 }
 
-// --- Page ---
+/* -------------------------------------------------------------------------- */
+/*  PAGE                                                                      */
+/* -------------------------------------------------------------------------- */
 
 export default function QrCodeGeneratorPage() {
-  // FAQ schema for rich results
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -662,14 +570,14 @@ export default function QrCodeGeneratorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f3ee] text-[#050505]">
+    <div className="min-h-screen bg-[#f7f7f4] text-[#050505]">
       <Navbar />
-      {/* Padding so the fixed header doesn’t overlap */}
-      <main className="pt-16 md:pt-20">
-        {/* Generator is the hero + main H1 */}
+
+      {/* Stronger padding so header never overlaps */}
+      <main className="pt-20 md:pt-28">
+        {/* DO NOT WRAP THE GENERATOR */}
         <QrGenerator />
 
-        {/* Supporting sections */}
         <QuickTemplatesStrip />
         <NewToQrSection />
         <HowItWorksSection />
@@ -680,14 +588,12 @@ export default function QrCodeGeneratorPage() {
         <FaqSection />
 
         <FooterCTA />
-
-        {/* SEO: FAQ structured data */}
-        <script
-          type="application/ld+json"
-           
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
       </main>
+
+      {/* SEO: FAQ structured data */}
+      <Script id="qr-code-generator-faq-jsonld" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify(faqSchema)}
+      </Script>
     </div>
   );
 }

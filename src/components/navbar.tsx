@@ -1,3 +1,4 @@
+//src/components/navbar.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -40,6 +41,18 @@ export function Navbar() {
         ignoreScrollUntil.current !== null &&
         Date.now() < ignoreScrollUntil.current
       ) {
+        return;
+      }
+
+      // ✅ If any megamenu is open, don't auto-hide the navbar on scroll
+      const menuOpen =
+        document.documentElement.getAttribute("data-megamenu-open") === "1";
+
+      if (menuOpen) {
+        setHidden(false);
+        const yNow = window.scrollY || 0;
+        setAtTop(yNow < 8);
+        lastYRef.current = yNow;
         return;
       }
 
@@ -346,9 +359,8 @@ function CustomersMegaMenu() {
                   Social movement, not just a link in bio.
                 </h3>
                 <p className="text-[13px] text-[color:var(--color-subtle)]">
-                  Communities, brands and teams use Kompi to turn everyday
-                  links and QR codes into ongoing conversations, not one-off
-                  clicks.
+                  Communities, brands and teams use Kompi to turn everyday links
+                  and QR codes into ongoing conversations, not one-off clicks.
                 </p>
               </div>
             </div>

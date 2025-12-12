@@ -1,4 +1,4 @@
-//src/app/pricing/page.tsx
+// src/app/pricing/page.tsx
 "use client";
 
 import { useState, Fragment } from "react";
@@ -13,7 +13,7 @@ import GoProModal from "@/components/modals/GoProModal";
 import "./pricing.css";
 
 type BillingPeriod = "monthly" | "yearly";
-type PlanId = "free" | "creator" | "enterprise";
+type PlanId = "free" | "creator" | "suite";
 
 type Plan = {
   id: PlanId;
@@ -47,17 +47,18 @@ const plans: Plan[] = [
       "Link shortener",
       "Kompi branding on public pages",
       "Standard email support",
+      "Access to selected tools",
     ],
   },
   {
     id: "creator",
     name: "Creator",
-    tagline: "For solo founders & small brands.",
+    tagline: "For solo creators & growing brands.",
     monthly: 9.99,
-    yearly: 119.88, // tweak if you want a discount
+    yearly: 119.88,
     cta: "Choose Creator",
     highlighted: true,
-    bestFor: "Freelancers, coaches, personal brands",
+    bestFor: "Creators, freelancers, personal brands",
     features: [
       "Up to 5 workspaces",
       "Unlimited short links",
@@ -69,29 +70,27 @@ const plans: Plan[] = [
       "Smart UTM builder",
       "Remove Kompi branding",
       "Priority email support",
+      "All Kompi tools included",
     ],
   },
   {
-    id: "enterprise",
-    name: "Enterprise",
-    tagline: "For agencies, studios & teams.",
-    monthly: 0,
-    yearly: 0,
+    id: "suite",
+    name: "Kompi Suite",
+    tagline: "All Kompi tools. One powerful suite.",
+    monthly: 19.99,
+    yearly: 239.88,
     cta: "Coming soon",
-    bestFor: "Studios, agencies, multi-brand teams",
+    bestFor: "Power users & multi-tool creators",
     comingSoon: true,
     features: [
-      "Unlimited workspaces",
-      "Up to 10 team members",
-      "Unlimited links & Link-in-Bio pages",
-      "Custom domains (yourbrand.link)",
-      "Workspace roles & approvals",
-      "Advanced analytics & CSV export",
-      "Premium Kompi Codes™ (logos, frames, palettes)",
-      "K-Cards for teams & clients",
-      "Smart Links routing (device & geo rules)",
-      "SLA-backed priority support",
-      "Early access to experimental features",
+      "Everything in Creator",
+      "Full Kompi tools suite (PDFs, images, docs)",
+      "Advanced generators & converters",
+      "Cross-tool analytics",
+      "Workspace-level permissions",
+      "Early access to new tools",
+      "Suite-only experiments",
+      "Priority support",
     ],
   },
 ];
@@ -131,13 +130,61 @@ const featureSections = [
   },
 ];
 
+const toolSections = [
+  {
+    title: "QR & Links",
+    tools: [
+      "QR Code Generator",
+      "Barcode Generator",
+      "UTM Builder",
+      "WhatsApp Link Generator",
+      "Link Shortener",
+    ],
+  },
+  {
+    title: "Content & Social",
+    tools: [
+      "TikTok Caption Generator",
+      "TikTok Bio Generator",
+      "Instagram Caption Generator",
+      "Instagram Bio Generator",
+      "YouTube Title Generator",
+      "Hashtag Generator",
+      "Username Generator",
+    ],
+  },
+  {
+    title: "Text & Dev Helpers",
+    tools: [
+      "Case Converter",
+      "Word Counter",
+      "Character Counter",
+      "JSON Formatter",
+      "Password Generator",
+      "Random Number Generator",
+    ],
+  },
+  {
+    title: "Design & Color",
+    tools: ["Brand Color Extractor", "Color Palette Generator"],
+  },
+  {
+    title: "PDF & Images",
+    tools: ["PDF Converter", "PDF to Image", "Image to PDF", "PDF Merge", "PDF Split"],
+  },
+  {
+    title: "Business",
+    tools: ["Hourly Rate Calculator", "Profit Margin Calculator"],
+  },
+] as const;
+
 function formatPrice(plan: Plan, period: BillingPeriod): string {
-  if (plan.id === "free") return "£0";
+  if (plan.id === "free") return "$0";
   if (plan.comingSoon) return "Coming soon";
 
-  if (period === "monthly") return `£${plan.monthly.toFixed(2)}`;
+  if (period === "monthly") return `$${plan.monthly.toFixed(2)}`;
   const monthlyEquivalent = plan.yearly / 12;
-  return `£${monthlyEquivalent.toFixed(2)}`;
+  return `$${monthlyEquivalent.toFixed(2)}`;
 }
 
 function subLabel(plan: Plan, period: BillingPeriod): string {
@@ -145,59 +192,69 @@ function subLabel(plan: Plan, period: BillingPeriod): string {
   if (plan.comingSoon) return "Launching soon";
 
   if (period === "monthly") return "Billed monthly";
-  return `Billed yearly (£${plan.yearly.toFixed(2)})`;
+  return `Billed yearly ($${plan.yearly.toFixed(2)})`;
 }
 
 function cell(planId: PlanId, row: string): string {
   switch (row) {
     case "Active short links":
-      if (planId === "free") return "10";
-      return "Unlimited";
+      return planId === "free" ? "10" : "Unlimited";
+
     case "Workspaces":
       if (planId === "free") return "1";
       if (planId === "creator") return "5";
       return "Unlimited";
+
     case "Link-in-Bio pages":
-      if (planId === "free") return "1";
-      return "Unlimited";
+      return planId === "free" ? "1" : "Unlimited";
+
     case "Bulk link creation":
       return planId === "free" ? "—" : "✓";
+
     case "Smart redirect rules":
-      return planId === "enterprise" ? "✓" : "—";
+      return planId === "suite" ? "✓" : "—";
 
     case "Custom Link-in-Bio themes":
-      if (planId === "free") return "Basic";
-      return "Advanced";
+      return planId === "free" ? "Basic" : "Advanced";
+
     case "Remove Kompi branding":
       return planId === "free" ? "—" : "✓";
+
     case "Branded QR codes (Kompi Codes™)":
       if (planId === "free") return "Standard";
       if (planId === "creator") return "Branded";
       return "Premium";
+
     case "Custom domains":
-      return planId === "enterprise" ? "✓" : "—";
+      return planId === "suite" ? "✓" : "—";
 
     case "Basic click counts":
       return "✓";
+
     case "UTM & referrer analytics":
       return planId === "free" ? "—" : "✓";
+
     case "Device / browser insights":
-      if (planId === "enterprise") return "✓";
+      if (planId === "suite") return "✓";
       if (planId === "creator") return "Lite";
       return "—";
+
     case "Export & reporting":
-      return planId === "enterprise" ? "✓" : "—";
+      return planId === "suite" ? "✓" : "—";
 
     case "Team members":
       if (planId === "free") return "1";
       if (planId === "creator") return "1";
-      return "Up to 10";
+      return "Up to 5";
+
     case "Priority support":
       if (planId === "creator") return "Email";
-      if (planId === "enterprise") return "Priority";
+      if (planId === "suite") return "Priority";
       return "—";
+
     case "Early feature access":
-      return planId === "enterprise" ? "✓" : "—";
+      return planId === "suite" ? "✓" : "—";
+
     default:
       return "—";
   }
@@ -212,7 +269,6 @@ export default function PricingPage() {
       <main className="wf-pricing-page">
         <GoProBanner onGoProClick={() => setShowProModal(true)} />
 
-        {/* NEW: hero + cards inside one rounded frame */}
         <section className="wf-section wf-pricing-hero">
           <div className="wf-pricing-container">
             <div className="wf-pricing-frame">
@@ -221,11 +277,12 @@ export default function PricingPage() {
                 <h1 className="wf-pricing-hero-heading">
                   Membership pricing for growing brands.
                 </h1>
-<AutoLinkedContent
-                text="Start free. When you're ready, unlock K-Cards, link shortener, QR code generator and studio-grade analytics in one place."
-                currentUrl="/pricing"
-                className="wf-pricing-hero-body"
-/>
+
+                <AutoLinkedContent
+                  text="Start free. When you're ready, unlock K-Cards, link shortener, QR code generator and studio-grade analytics in one place."
+                  currentUrl="/pricing"
+                  className="wf-pricing-hero-body"
+                />
 
                 <div className="wf-billing-toggle">
                   <button
@@ -258,7 +315,6 @@ export default function PricingPage() {
                 </div>
               </div>
 
-              {/* Cards now live inside the frame, like your screenshot */}
               <div className="grid gap-5 md:grid-cols-3 wf-pricing-plans-grid">
                 {plans.map((plan) => {
                   const price = formatPrice(plan, billing);
@@ -310,7 +366,8 @@ export default function PricingPage() {
                           "wf-plan-cta" +
                           (plan.highlighted
                             ? " wf-plan-cta-primary"
-                            : " wf-plan-cta-secondary")
+                            : " wf-plan-cta-secondary") +
+                          (plan.comingSoon ? " wf-plan-cta-disabled" : "")
                         }
                         asChild={!plan.comingSoon}
                         disabled={plan.comingSoon}
@@ -334,11 +391,36 @@ export default function PricingPage() {
                   );
                 })}
               </div>
+
+              {/* Tools included */}
+              <div className="wf-tools-shell">
+                <div className="wf-tools-header">
+                  <h3 className="wf-tools-title">All Kompi tools</h3>
+                  <p className="wf-tools-sub">
+                    Creator includes the full tool set today. Kompi Suite adds premium upgrades (coming soon).
+                  </p>
+                </div>
+
+                <div className="wf-tools-grid">
+                  {toolSections.map((section) => (
+                    <div key={section.title} className="wf-tools-card">
+                      <p className="wf-tools-card-title">{section.title}</p>
+                      <div className="wf-tools-pills">
+                        {section.tools.map((t) => (
+                          <span key={t} className="wf-tool-pill">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
 
-        {/* Comparison (Free / Creator / Enterprise) */}
         <section className="wf-section wf-pricing-compare">
           <div className="wf-pricing-container">
             <div className="wf-compare-shell">
@@ -346,14 +428,13 @@ export default function PricingPage() {
                 <div>
                   <h3 className="wf-compare-title">Compare plans</h3>
                   <p className="wf-compare-body">
-                    See what unlocks as you grow — from simple links to
-                    full-funnel routing.
+                    See what unlocks as you grow — from simple links to a full suite.
                   </p>
                 </div>
                 <div className="wf-compare-tags">
                   <span>Free → Launch</span>
                   <span>Creator → Grow</span>
-                  <span>Enterprise → Scale</span>
+                  <span>Kompi Suite → Power</span>
                 </div>
               </div>
 
@@ -364,17 +445,14 @@ export default function PricingPage() {
                       <th className="wf-compare-th-feature">Feature</th>
                       <th className="wf-compare-th">Free</th>
                       <th className="wf-compare-th">Creator</th>
-                      <th className="wf-compare-th">Enterprise</th>
+                      <th className="wf-compare-th">Kompi Suite</th>
                     </tr>
                   </thead>
                   <tbody>
                     {featureSections.map((section) => (
                       <Fragment key={section.title}>
                         <tr className="wf-compare-section-row">
-                          <td
-                            colSpan={4}
-                            className="wf-compare-section-cell"
-                          >
+                          <td colSpan={4} className="wf-compare-section-cell">
                             {section.title}
                           </td>
                         </tr>
@@ -391,7 +469,7 @@ export default function PricingPage() {
                               {cell("creator", row)}
                             </td>
                             <td className="wf-compare-cell">
-                              {cell("enterprise", row)}
+                              {cell("suite", row)}
                             </td>
                           </tr>
                         ))}
@@ -413,10 +491,7 @@ export default function PricingPage() {
         <FooterCTA />
       </main>
 
-      <GoProModal
-        open={showProModal}
-        onClose={() => setShowProModal(false)}
-      />
+      <GoProModal open={showProModal} onClose={() => setShowProModal(false)} />
     </>
   );
 }

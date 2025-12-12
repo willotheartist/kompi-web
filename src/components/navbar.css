@@ -64,7 +64,7 @@
 }
 
 .wf-nav-link-active {
-  color: var(--color-accent);
+  color: #C4C8FF;;
 }
 
 /* CTAs */
@@ -94,7 +94,7 @@
 }
 
 .wf-nav-cta-primary {
-  background-color: var(--color-accent);
+  background-color: #C4C8FF;;
   color: var(--color-text);
   border-radius: 999px;
   text-decoration: none;

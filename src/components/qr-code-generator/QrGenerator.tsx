@@ -466,7 +466,7 @@ export function QrGenerator() {
             that just{" "}
             <span className="wf-serif-accent italic">work.</span>
           </h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-slate-600">
+          <p className="max-w-2xl text-sm leading-tight text-slate-600">
             Paste a link or add content, style the QR card to match your brand,
             then download a sharp PNG that&apos;s ready for menus, flyers,
             packaging and more.

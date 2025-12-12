@@ -14,7 +14,8 @@ type Plan = {
   tagline: string;
   description: string;
   ctaLabel: string;
-  href: string;
+  href?: string;
+  comingSoon?: boolean;
 };
 
 const plans: Plan[] = [
@@ -34,9 +35,9 @@ const plans: Plan[] = [
     priceLabel: "$9.99 / month",
     tagline: "For growing creators",
     description:
-      "Advanced branding, analytics, and growth features for serious creators.",
+      "Full Creator plan: advanced branding, analytics, unlimited links, and pro K-Cards — plus all Kompi tools.",
     ctaLabel: "Upgrade to Creator",
-    href: "/pricing", // adjust if you have a direct checkout link
+    href: "/signin",
   },
   {
     id: "suite",
@@ -44,20 +45,23 @@ const plans: Plan[] = [
     priceLabel: "$19.99 / month",
     tagline: "Everything in one suite",
     description:
-      "All creator features plus the full Kompi tools suite for PDFs, images, docs and more.",
-    ctaLabel: "Get Kompi Suite",
-    href: "/pricing", // or a direct Suite checkout URL
+      "All Creator features + premium upgrades and suite-only tools. Launching soon.",
+    ctaLabel: "Coming soon",
+    comingSoon: true,
   },
 ];
 
 function PlanCard({ plan }: { plan: Plan }) {
   const isSuite = plan.id === "suite";
+  const isCreator = plan.id === "creator";
 
   return (
     <div
       className={[
         "flex h-full flex-col rounded-3xl border px-6 py-7 sm:px-7 sm:py-8",
         "bg-white",
+        isCreator ? "ring-2 ring-[#3A61FF]" : "",
+        plan.comingSoon ? "opacity-90" : "",
       ].join(" ")}
       style={{
         borderColor: isSuite ? "#1A1A1A" : "#E5E5E0",
@@ -89,14 +93,19 @@ function PlanCard({ plan }: { plan: Plan }) {
 
       <div className="mt-4">
         <Button
-          asChild
+          asChild={!plan.comingSoon}
+          disabled={plan.comingSoon}
           className="w-full rounded-full text-sm font-medium"
           style={{
-            backgroundColor: isSuite ? "#1A1A1A" : "#111827",
-            color: "#F9FAFB",
+            backgroundColor: plan.comingSoon ? "#E5E7EB" : "#111827",
+            color: plan.comingSoon ? "#111827" : "#F9FAFB",
           }}
         >
-          <Link href={plan.href}>{plan.ctaLabel}</Link>
+          {plan.comingSoon ? (
+            <span>{plan.ctaLabel}</span>
+          ) : (
+            <Link href={plan.href || "/signin"}>{plan.ctaLabel}</Link>
+          )}
         </Button>
       </div>
     </div>

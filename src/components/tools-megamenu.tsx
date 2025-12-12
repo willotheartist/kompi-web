@@ -1,7 +1,9 @@
+//src/components/tools-megamenu.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   ChevronDown,
@@ -20,6 +22,8 @@ import {
   Lock,
   Dice5,
   Braces,
+  Sparkles,
+  Tag,
 } from "lucide-react";
 
 type Area = "content" | "growth" | "files" | "utility";
@@ -30,6 +34,13 @@ type Tool = {
   desc: string;
   area: Area;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+};
+
+type Category = {
+  id: Area;
+  label: string;
+  kicker: string;
+  items: Tool[];
 };
 
 const TOOLS: Tool[] = [
@@ -104,7 +115,7 @@ const TOOLS: Tool[] = [
     name: "UTM builder",
     desc: "Tag links for clean campaign data.",
     area: "growth",
-    icon: Link2,
+    icon: Tag,
   },
   {
     slug: "profit-margin-calculator",
@@ -182,31 +193,41 @@ const TOOLS: Tool[] = [
   },
 ];
 
-const AREAS: { id: Area; title: string; label: string }[] = [
-  {
-    id: "content",
-    title: "Creative content tools",
-    label: "Write, format & post faster",
-  },
-  {
-    id: "growth",
-    title: "Growth & tracking tools",
-    label: "Understand what’s working",
-  },
-  {
-    id: "files",
-    title: "File & PDF tools",
-    label: "Tidy up assets and docs",
-  },
-  {
-    id: "utility",
-    title: "Utility tools",
-    label: "Everyday helpers",
-  },
-];
+// Curated subset to avoid overwhelm (still “Browse all tools” for the full list)
+const CURATED: Record<Area, string[]> = {
+  content: [
+    "instagram-caption-generator",
+    "instagram-bio-generator",
+    "tiktok-caption-generator",
+    "youtube-title-generator",
+    "hashtag-generator",
+    "case-converter",
+  ],
+  growth: [
+    "utm-builder",
+    "whatsapp-link-generator",
+    "profit-margin-calculator",
+    "hourly-rate-calculator",
+  ],
+  files: ["image-to-pdf", "pdf-converter", "pdf-to-image"],
+  utility: [
+    "password-generator",
+    "json-formatter",
+    "random-number-generator",
+    "username-generator",
+  ],
+};
+
+const AREA_META: Record<Area, { label: string; kicker: string }> = {
+  content: { label: "Content", kicker: "Write, format & post faster" },
+  growth: { label: "Growth", kicker: "Track + improve what converts" },
+  files: { label: "Files", kicker: "Clean up PDFs & assets" },
+  utility: { label: "Utility", kicker: "Quick helpers for daily work" },
+};
 
 export function ToolsMegaMenu() {
   const [open, setOpen] = useState(false);
+  const [active, setActive] = useState<Area>("content");
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
@@ -225,8 +246,15 @@ export function ToolsMegaMenu() {
 
   const scheduleClose = () => {
     clearCloseTimer();
-    closeTimer.current = setTimeout(() => setOpen(false), 150);
+    closeTimer.current = setTimeout(() => setOpen(false), 250);
   };
+
+  // Tell Navbar "a megamenu is open" so it doesn't scroll-hide
+  useEffect(() => {
+    if (open) document.documentElement.setAttribute("data-megamenu-open", "1");
+    else document.documentElement.removeAttribute("data-megamenu-open");
+    return () => document.documentElement.removeAttribute("data-megamenu-open");
+  }, [open]);
 
   // Close on click-outside / Esc
   useEffect(() => {
@@ -251,11 +279,27 @@ export function ToolsMegaMenu() {
   // Close whenever the route changes
   useEffect(() => {
     clearCloseTimer();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const isToolsRoute = pathname?.startsWith("/tools");
+
+  const categories: Category[] = useMemo(() => {
+    const bySlug = new Map(TOOLS.map((t) => [t.slug, t]));
+    const build = (id: Area): Category => ({
+      id,
+      label: AREA_META[id].label,
+      kicker: AREA_META[id].kicker,
+      items: CURATED[id]
+        .map((slug) => bySlug.get(slug))
+        .filter(Boolean) as Tool[],
+    });
+
+    return [build("content"), build("growth"), build("files"), build("utility")];
+  }, []);
+
+  const activeCat = categories.find((c) => c.id === active) ?? categories[0];
 
   return (
     <div
@@ -275,160 +319,206 @@ export function ToolsMegaMenu() {
         ].join(" ")}
         aria-haspopup="dialog"
         aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
       >
         <span>Tools</span>
         <ChevronDown
-          className={`h-4 w-4 transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 
-      {/* Panel */}
+      {/* Panel — same layout language as Features */}
       {open && (
         <div
+          role="dialog"
           onMouseEnter={openNow}
           onMouseLeave={scheduleClose}
-          role="dialog"
           className="
-            fixed left-1/2 top-24 z-[60]
-            w-[min(1200px,100vw-40px)]
+            fixed left-1/2 top-24 z-[60] grid
+            w-[min(1360px,100vw-40px)]
             -translate-x-1/2
-            rounded-[28px]
+            overflow-hidden rounded-3xl
             border border-[color:var(--color-border)]
-            bg-[#FBF9F3]
-            text-[color:var(--color-text)]
-            shadow-lg
-            p-5 md:p-6
+            bg-[color:var(--color-surface)] text-[color:var(--color-text)]
+            [grid-template-columns:280px_1fr_420px]
           "
         >
-          {/* Top bar: just 'Browse all tools' on the right */}
-          <div className="mb-3 flex justify-end">
-            <Link
-              href="/tools"
-              onClick={() => {
-                clearCloseTimer();
-                setOpen(false);
-              }}
-              className="text-[12px] font-medium text-[#A5B0FF] underline-offset-2 hover:underline"
-            >
-              Browse all tools →
-            </Link>
+          {/* Left rail */}
+          <div className="border-r border-[color:var(--color-border)] bg-[color:var(--color-bg)] p-3">
+            <div className="px-2 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+              Browse tools
+            </div>
+
+            <ul className="flex flex-col gap-2">
+              {categories.map((c) => {
+                const isActive = c.id === active;
+                return (
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      onMouseEnter={() => setActive(c.id)}
+                      onFocus={() => setActive(c.id)}
+                      className={[
+                        "w-full rounded-2xl px-4 py-3 text-left text-[15px] transition-colors",
+                        isActive
+                          ? "bg-[color:#C4C8FF] text-[color:var(--color-text)]"
+                          : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-surface)]",
+                      ].join(" ")}
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <span>{c.label}</span>
+                        {isActive && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-[color:#C4C8FF]" />
+                        )}
+                      </span>
+                      <div className="mt-0.5 text-[12px] tracking-tight text-[color:var(--color-subtle)]">
+                        {c.kicker}
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="mt-3 px-2">
+              <Link
+                href="/tools"
+                onClick={() => {
+                  clearCloseTimer();
+                  setOpen(false);
+                }}
+                className="text-[12px] font-medium text-[color:#C4C8FF] underline-offset-2 hover:underline"
+              >
+                Browse all tools →
+              </Link>
+            </div>
           </div>
 
-          {/* Columns */}
-          <div
-            className="
-              grid gap-5 md:gap-6
-              [grid-template-columns:1.7fr_1.5fr_1.2fr_1.2fr]
-              max-md:[grid-template-columns:1fr_1fr]
-            "
-          >
-            {AREAS.map((area, idx) => {
-              const tools = TOOLS.filter((t) => t.area === area.id);
-              if (!tools.length) return null;
+          {/* Middle column */}
+          <div className="p-4">
+            <div className="flex items-center justify-between pb-2">
+              <div className="flex items-center gap-2 px-1">
+                <span className="h-4 w-0.5 rounded-full bg-[color:#C4C8FF]" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+                  {activeCat.label}
+                </span>
+              </div>
 
-              return (
-                <section
-                  key={area.id}
-                  className={[
-                    "flex flex-col gap-3",
-                    idx !== 0
-                      ? "border-l border-dashed border-[rgba(15,23,42,0.1)] pl-4"
-                      : "",
-                  ].join(" ")}
-                >
-                  {/* Column header – plain text, no box, no all caps */}
-                  <div className="space-y-0.5">
-                    <div className="text-[13px] font-semibold tracking-tight text-[#1E2330]">
-                      {area.title}
-                    </div>
-                    <div className="text-[12px] tracking-tight text-[color:var(--color-subtle)]">
-                      {area.label}
-                    </div>
-                  </div>
+              <Link
+                href="/tools"
+                onClick={() => {
+                  clearCloseTimer();
+                  setOpen(false);
+                }}
+                className="text-[12px] font-medium text-[color:#C4C8FF] hover:underline underline-offset-2"
+              >
+                All tools →
+              </Link>
+            </div>
 
-                  {/* Tools list */}
-                  <div className="space-y-1">
-                    {tools.map((tool) => {
-                      const Icon = tool.icon;
-                      return (
-                        <Link
-                          key={tool.slug}
-                          href={`/tools/${tool.slug}`}
-                          onClick={() => {
-                            clearCloseTimer();
-                            setOpen(false);
-                          }}
-                          className="
-                            group flex items-center justify-between gap-3
-                            rounded-xl border border-transparent
-                            bg-white/70 px-3 py-2.5
-                            text-left text-[13px]
-                            transition-all
-                            hover:bg-white
-                            hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)]
-                            hover:-translate-y-[1px]
-                          "
-                        >
-                          <div className="space-y-0.5">
-                            <div
-                              className="
-                                text-[14px] font-medium text-[#1E2330]
-                                tracking-tight
-                                transition-transform
-                                group-hover:translate-x-[2px]
-                              "
-                            >
-                              {tool.name}
-                            </div>
-                            <div
-                              className="
-                                text-[12px] tracking-tight
-                                text-[color:var(--color-subtle)]
-                                transition-transform
-                                group-hover:translate-x-[2px]
-                              "
-                            >
-                              {tool.desc}
-                            </div>
-                          </div>
-                          <div
-                            className="
-                              flex h-8 w-8 items-center justify-center
-                              rounded-full border border-[rgba(15,23,42,0.2)]
-                              bg-white
-                              text-[rgba(15,23,42,0.55)]
-                              transition-all
-                              group-hover:border-[#A5B0FF]
-                              group-hover:text-[#A5B0FF]
-                              group-hover:translate-x-[2px]
-                            "
-                          >
-                            <Icon className="h-3.5 w-3.5" />
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            })}
+            <div className="grid gap-2">
+              {activeCat.items.map((tool) => {
+                const Icon = tool.icon;
+                return (
+                  <Link
+                    key={tool.slug}
+                    href={`/tools/${tool.slug}`}
+                    onClick={() => {
+                      clearCloseTimer();
+                      setOpen(false);
+                    }}
+                    className="group flex items-start gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-[color:var(--color-bg)]"
+                  >
+                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[color:#C4C8FF] text-[color:var(--color-text)]">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="leading-tight">
+                      <div className="text-[15px] font-semibold text-[color:var(--color-text)] group-hover:text-[color:#C4C8FF]">
+                        {tool.name}
+                      </div>
+                      <div className="text-[13px] text-[color:var(--color-subtle)]">
+                        {tool.desc}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="mt-3 px-1 text-[11px] text-[color:var(--color-subtle)]">
+              Curated highlights — see everything on{" "}
+              <Link
+                href="/tools"
+                onClick={() => {
+                  clearCloseTimer();
+                  setOpen(false);
+                }}
+                className="font-medium text-[color:#C4C8FF] hover:underline underline-offset-2"
+              >
+                Tools
+              </Link>
+              .
+            </div>
           </div>
 
-          {/* Footer */}
-          <div className="mt-4 flex items-center justify-between border-t border-[rgba(15,23,42,0.08)] pt-3 text-[11px] text-[color:var(--color-subtle)]">
-            <span>Use any tool free • No login needed</span>
-            <Link
-              href="/tools"
-              onClick={() => {
-                clearCloseTimer();
-                setOpen(false);
-              }}
-              className="text-[11px] font-medium tracking-tight text-[#A5B0FF] hover:underline"
-            >
-              Browse all tools →
-            </Link>
+          {/* Right featured — VISUAL (Linktree-style) */}
+          <div className="p-4">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)]">
+              {/* Visual */}
+              <div className="relative aspect-[4/3] w-full">
+                <Image
+                  src="/kompi-analytics.png"
+                  alt="Kompi tools + analytics preview"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+
+              {/* Copy + CTAs */}
+              <div className="flex flex-1 flex-col justify-between p-5">
+                <div className="space-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+                    Featured
+                  </p>
+                  <h3 className="text-[18px] font-semibold leading-snug text-[color:var(--color-text)]">
+                    Tools that feel instant
+                  </h3>
+                  <p className="text-[13px] text-[color:var(--color-subtle)]">
+                    Use any tool free — then connect the winners to short links,
+                    QR codes and analytics.
+                  </p>
+                </div>
+
+                <div className="mt-4 grid gap-2">
+                  <Link
+                    href="/tools"
+                    onClick={() => {
+                      clearCloseTimer();
+                      setOpen(false);
+                    }}
+                    className="inline-flex w-full items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-2.5 text-[14px] font-semibold text-[color:var(--color-text)] transition-colors hover:bg-[color:var(--color-bg)]"
+                  >
+                    Explore tools
+                  </Link>
+
+                  <Link
+                    href="/signin"
+                    onClick={() => {
+                      clearCloseTimer();
+                      setOpen(false);
+                    }}
+                    className="inline-flex w-full items-center justify-center rounded-full bg-[color:#C4C8FF] px-5 py-2.5 text-[14px] font-semibold text-[color:var(--color-text)] transition-colors hover:brightness-105"
+                  >
+                    Sign up free
+                  </Link>
+                </div>
+
+                <div className="mt-3 text-center text-[11px] text-[color:var(--color-subtle)]">
+                  No login needed for tools • Upgrade when you’re ready
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
