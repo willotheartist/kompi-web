@@ -191,6 +191,10 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   const [activeSection, setActiveSection] =
     useState<DesignSection>("header");
 
+
+  const [addOpen, setAddOpen] = useState(false);
+  const [contactEnabled, setContactEnabled] = useState(false);
+
   // refs for scroll + intersection observer
   const headerRef = useRef<HTMLElement | null>(null);
   const themeRef = useRef<HTMLElement | null>(null);
@@ -993,7 +997,7 @@ const buttonBaseStyles = useMemo(() => {
                     <span>Links</span>
                     <button
                       type="button"
-                      onClick={addLink}
+                      onClick={() => setAddOpen(true)}
                       className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold shadow-[0_2px_0_#000000] transition hover:-translate-y-0.5"
                       style={{ backgroundColor: "#d9ff2f", color: "#050505" }}
                     >
@@ -1123,6 +1127,65 @@ const buttonBaseStyles = useMemo(() => {
             </section>
 
           </div>
+
+          {addOpen && (
+            <div className="fixed inset-0 z-[90] flex items-center justify-center px-4">
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setAddOpen(false)}
+                className="absolute inset-0 bg-black/40"
+              />
+
+              <div className="relative w-full max-w-[420px] rounded-[32px] bg-white p-5 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+                <button
+                  type="button"
+                  onClick={() => setAddOpen(false)}
+                  className="absolute right-4 top-4 text-[18px] leading-none text-black/60 hover:text-black"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+
+                <div className="mb-4 text-center">
+                  <p className="text-[15px] font-semibold tracking-tight text-[#050505]">
+                    Add to your K-Card
+                  </p>
+                  <p className="mt-1 text-[12px] text-black/55">
+                    Choose what you want to add.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addLink();
+                      setAddOpen(false);
+                    }}
+                    className="w-full rounded-[22px] border border-black/10 bg-[#f6f4f0] px-4 py-4 text-left hover:bg-white hover:shadow-sm transition"
+                  >
+                    <div className="text-[13px] font-semibold text-[#050505]">Link</div>
+                    <div className="mt-1 text-[11px] text-black/55">Add a normal link button.</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setContactEnabled(true);
+                      setAddOpen(false);
+                      toast.success("Contact button added");
+                    }}
+                    className="w-full rounded-[22px] border border-black/10 bg-[#f6f4f0] px-4 py-4 text-left hover:bg-white hover:shadow-sm transition"
+                  >
+                    <div className="text-[13px] font-semibold text-[#050505]">Contact Button</div>
+                    <div className="mt-1 text-[11px] text-black/55">Let visitors message you.</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
 
           {/* RIGHT: Frozen preview (320 × 680, responsive) */}
           <aside className="hidden w-[360px] shrink-0 lg:block">
