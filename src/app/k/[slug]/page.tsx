@@ -29,7 +29,7 @@ async function resolveParams(params: Params): Promise<{ slug: string }> {
   return params instanceof Promise ? await params : params;
 }
 
-const SOCIAL_ICON_MAP: Record<
+const _SOCIAL_ICON_MAP: Record<
   string,
   React.ComponentType<React.SVGProps<SVGSVGElement>>
 > = {

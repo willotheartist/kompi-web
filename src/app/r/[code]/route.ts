@@ -35,12 +35,12 @@ export async function GET(
   const userAgent = req.headers.get("user-agent") || "";
 
   // If you later add UTM columns to ClickEvent, you can wire them back.
-  const utmSource = url.searchParams.get("utm_source");
-  const utmMedium = url.searchParams.get("utm_medium");
-  const utmCampaign = url.searchParams.get("utm_campaign");
+  const _utmSource = url.searchParams.get("utm_source");
+  const _utmMedium = url.searchParams.get("utm_medium");
+  const _utmCampaign = url.searchParams.get("utm_campaign");
 
   try {
-    // ✅ Match your Prisma schema: no utmSource/utmMedium/utmCampaign fields here
+    // ✅ Match your Prisma schema: no _utmSource/_utmMedium/_utmCampaign fields here
     await prisma.clickEvent.create({
       data: {
         linkId: link.id,

@@ -26,15 +26,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Pencil,
-  Trash2,
   Globe2,
   FileText,
   UserCircle2,
   Type as TypeIcon,
-  Smartphone,
   MessageCircle,
   Mail,
   Phone,
@@ -109,7 +105,7 @@ type KRCode = {
 };
 
 type ListResponse = {
-  workspace: { id: string; name: string } | null;
+  _workspace: { id: string; name: string } | null;
   codes: KRCode[];
 };
 
@@ -204,7 +200,7 @@ const CONTENT_TYPES = [
 
 type ContentTypeId = (typeof CONTENT_TYPES)[number]["id"];
 
-function labelForContentType(id: string | null | undefined) {
+function _labelForContentType(id: string | null | undefined) {
   if (!id) return null;
   const found = CONTENT_TYPES.find((t) => t.id === id);
   if (found) return found.label;
@@ -477,10 +473,10 @@ function getStyleForCode(code: KRCode): StyleState {
 }
 
 export default function KRCodesPage() {
-  const [workspace, setWorkspace] =
-    useState<ListResponse["workspace"]>(null);
+  const [_workspace, setWorkspace] =
+    useState<ListResponse["_workspace"]>(null);
   const [codes, setCodes] = useState<KRCode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -495,9 +491,9 @@ export default function KRCodesPage() {
   const [showMoreTypes, setShowMoreTypes] = useState(false);
   const [designerOpen, setDesignerOpen] = useState(true);
 
-  const [downloadMenuFor, setDownloadMenuFor] =
+  const [_downloadMenuFor, _setDownloadMenuFor] =
     useState<string | null>(null);
-  const [deleteIntentFor, setDeleteIntentFor] =
+  const [_deleteIntentFor, setDeleteIntentFor] =
     useState<string | null>(null);
 
   const [createdPreview, setCreatedPreview] =
@@ -509,7 +505,7 @@ export default function KRCodesPage() {
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  const krcodeIdFromQuery = searchParams.get("krcodeId");
+const krcodeIdFromQuery = searchParams.get("krcodeId");
 
   const form = useForm<FormValues>({
     // still using any resolver, keep simple
@@ -674,7 +670,7 @@ export default function KRCodesPage() {
         }
         const data: ListResponse = await res.json();
         if (!cancelled) {
-          setWorkspace(data.workspace);
+          setWorkspace(data._workspace);
           setCodes(data.codes ?? []);
         }
       } catch (err) {
@@ -892,7 +888,7 @@ export default function KRCodesPage() {
         const textMessage = await res.text();
         setQrLimitError(
           textMessage ||
-            "Free plan limit reached: you’ve created the maximum number of Kompi Codes for this workspace.",
+            "Free plan limit reached: you’ve created the maximum number of Kompi Codes for this _workspace.",
         );
         setCreating(false);
         return;
@@ -971,7 +967,7 @@ export default function KRCodesPage() {
     }
   }
 
-  async function handleDelete(code: KRCode) {
+  async function _handleDelete(code: KRCode) {
     setError(null);
     try {
       const res = await fetch(`/api/kr-codes/${code.id}`, {
@@ -1059,7 +1055,7 @@ export default function KRCodesPage() {
             </div>
           </div>
 
-          {/* RIGHT: workspace activity pill */}
+          {/* RIGHT: _workspace activity pill */}
           <div className="mt-4 w-full max-w-xs md:mt-0 md:ml-6">
             <div className="flex h-full flex-col justify-between rounded-[32px] bg-[#A5B0FF] px-6 py-5 text-[#020617]">
               <p
@@ -1091,7 +1087,7 @@ export default function KRCodesPage() {
               </div>
 
               <p className="mt-3 text-[11px] leading-snug opacity-80">
-                All scans route through Kompi for clean, workspace-level analytics.
+                All scans route through Kompi for clean, _workspace-level analytics.
               </p>
             </div>
           </div>
@@ -2188,7 +2184,7 @@ export default function KRCodesPage() {
                           {style.logoUrl && (
                             <div className="flex items-center gap-3 text-[11px] text-[color:var(--color-subtle)]">
                               <div className="h-10 w-10 overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                { }
                                 <img
                                   src={style.logoUrl}
                                   alt="Logo preview"
@@ -2304,7 +2300,7 @@ export default function KRCodesPage() {
                   </div>
 
                   <p className="max-w-xs text-center text-xs text-[color:var(--color-subtle)]">
-                    Final PNG/SVG downloads use your workspace domain and
+                    Final PNG/SVG downloads use your _workspace domain and
                     keep this styling.
                   </p>
                 </div>

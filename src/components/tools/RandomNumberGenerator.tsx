@@ -6,16 +6,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 type Variant = "public" | "dashboard";
+type Mode = "integer" | "decimal";
 
 interface RandomNumberGeneratorProps {
   variant?: Variant;
+  _variant?: Variant; // backwards compat
 }
 
-type Mode = "integer" | "decimal";
-
 export function RandomNumberGenerator({
-  variant = "public",
+  variant,
+  _variant,
 }: RandomNumberGeneratorProps) {
+  const effectiveVariant: Variant = (variant ?? _variant ?? "public") as Variant;
+
   const [min, setMin] = useState<string>("1");
   const [max, setMax] = useState<string>("100");
   const [count, setCount] = useState<string>("1");
@@ -82,9 +85,7 @@ export function RandomNumberGenerator({
 
   function handleCopy(value: string, index: number) {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(value).catch(() => {
-        // ignore
-      });
+      navigator.clipboard.writeText(value).catch(() => {});
     }
     setCopiedIndex(index);
     setTimeout(() => {
@@ -101,6 +102,7 @@ export function RandomNumberGenerator({
         "flex flex-col gap-6 sm:gap-7 lg:gap-8",
         wrapperPadding,
       ].join(" ")}
+      data-variant={effectiveVariant}
     >
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
         {/* LEFT – controls */}
@@ -278,9 +280,7 @@ function ModePill({
       onClick={onClick}
       className={[
         "flex-1 rounded-[999px] px-3 py-1.5 text-xs font-medium transition",
-        active
-          ? "bg-[#111111] text-white"
-          : "bg-transparent text-[#111111]",
+        active ? "bg-[#111111] text-white" : "bg-transparent text-[#111111]",
       ].join(" ")}
     >
       {label}

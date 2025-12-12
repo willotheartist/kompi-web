@@ -1,8 +1,8 @@
+//src/app/qr-menus/[id]/service/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 type MenuSectionItem = {
@@ -33,7 +33,7 @@ type MenuData = {
 export default function QrMenuServiceModePage() {
   const params = useParams();
   const router = useRouter();
-  const id = (params?.id as string) || "";
+const id = (params?.id as string) || "";
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

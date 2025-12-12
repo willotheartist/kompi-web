@@ -141,7 +141,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
             <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3 sm:gap-4">
                 {menu.logoUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
+                   
                   <img
                     src={menu.logoUrl}
                     alt={menu.title || "Menu logo"}

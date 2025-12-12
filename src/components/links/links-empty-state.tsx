@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 
 export function LinksEmptyState({ workspaceId }: { workspaceId: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
+const searchParams = useSearchParams();
+  const _pathname = usePathname();
 
   const goToCreate = () => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");

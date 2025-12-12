@@ -15,7 +15,7 @@ function isRedirectError(error: unknown): boolean {
 
 // GET /api/tools
 // Returns: { toolIds: string[] }
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const user = await requireUser();
 

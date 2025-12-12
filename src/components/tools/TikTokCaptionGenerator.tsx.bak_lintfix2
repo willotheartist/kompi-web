@@ -402,6 +402,12 @@ function Dropdown<T extends string>(props: {
       return;
     }
   }
+
+  useEffect(() => {
+    // keep highlight synced with value when menu opens
+    if (open) setActiveIndex(Math.max(0, props.options.indexOf(props.value)));
+  }, [open, props.value, props.options]);
+
   return (
     <div ref={wrapRef} className="relative">
       <p className="mb-2 text-[13px] font-medium tracking-[0.02em] text-[#0B0F1A]">

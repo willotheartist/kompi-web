@@ -118,15 +118,13 @@ export default function PublicTikTokCaptionGeneratorPage() {
         </div>
       </section>
 
-      {/* TOOL SECTION */}
+      {/* TOOL SECTION (FIXED: remove extra wrapper box) */}
       <section
         id="tiktok-caption-generator-tool"
         className="-mt-10 bg-[#050816] px-4 pb-20 pt-0 sm:px-6 lg:px-8"
       >
-        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#22D3EE] bg-gradient-to-b from-[#020617] to-[#050816] p-[1px]">
-          <div className="rounded-[1.9rem] bg-[#F7F7F3] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-            <TikTokCaptionGenerator variant="public" />
-          </div>
+        <div className="mx-auto max-w-5xl">
+          <TikTokCaptionGenerator variant="public" />
         </div>
       </section>
 
@@ -229,7 +227,8 @@ export default function PublicTikTokCaptionGeneratorPage() {
         <div className="mx-auto max-w-5xl">
           <div className="overflow-hidden rounded-[999px] bg-gradient-to-r from-[#00F6C6] via-[#22D3EE] to-[#FF66C4] px-8 py-10 text-center text-[#020617] sm:px-12">
             <h2 className="text-xl font-semibold sm:text-2xl md:text-3xl">
-              Your camera roll is full of good clips. The captions shouldn&apos;t be the bottleneck.
+              Your camera roll is full of good clips. The captions shouldn&apos;t
+              be the bottleneck.
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-sm sm:text-base">
               Use Kompi to generate a tiny stack of captions for each video,
@@ -365,8 +364,8 @@ export default function PublicTikTokCaptionGeneratorPage() {
                 “Captions feel like me, not AI voice”
               </p>
               <p className="mt-2 text-xs text-[#CBD5F5]">
-                “They&apos;re close enough that I just tweak a few words and
-                hit post.”
+                “They&apos;re close enough that I just tweak a few words and hit
+                post.”
               </p>
             </div>
             <div className="rounded-3xl bg-[#020617] p-5 ring-1 ring-[#1E293B]">
@@ -420,7 +419,7 @@ export default function PublicTikTokCaptionGeneratorPage() {
       {/* JSON-LD schema markup */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
+         
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
     </main>

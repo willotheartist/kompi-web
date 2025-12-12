@@ -38,7 +38,7 @@ type KCardPreviewProps = {
   titleColor: string;
   pageTextColor: string;
   titleSize: "small" | "large";
-  profileLayout: "classic" | "hero";
+  _profileLayout: "classic" | "hero";
   avatarPreview: string | null;
   socials: string[];
   socialUrls?: Record<string, string>;
@@ -64,7 +64,7 @@ export function KCardPreview({
   titleColor,
   pageTextColor,
   titleSize: _titleSize,
-  profileLayout,
+  _profileLayout,
   avatarPreview,
   socials,
   socialUrls = {},

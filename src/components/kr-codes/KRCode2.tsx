@@ -828,7 +828,7 @@ export function KRCode2() {
                                 active ? "opacity-100" : "opacity-60 hover:opacity-100",
                               )}
                             >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              { }
                               <img
                                 src={PATTERN_PREVIEW[opt.key]}
                                 alt={`${opt.label} pattern preview`}
@@ -896,7 +896,7 @@ export function KRCode2() {
                               )}
                             >
                               <div className="flex flex-col items-center gap-1">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                { }
                                 <img
                                   src={CORNER_FRAME_PREVIEW[opt.key]}
                                   alt={`${opt.label} corner frame`}
@@ -937,7 +937,7 @@ export function KRCode2() {
                               )}
                             >
                               <div className="flex flex-col items-center gap-1">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                { }
                                 <img
                                   src={CORNER_DOT_PREVIEW[opt.key]}
                                   alt={`${opt.label} corner dots`}
@@ -1069,7 +1069,7 @@ export function KRCode2() {
                     }}
                   >
                     {qrDataUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
+                       
                       <img
                         src={qrDataUrl}
                         alt="QR code preview"

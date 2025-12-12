@@ -4,8 +4,6 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Faces from "@/components/sections/faces";
 import Faqs from "@/components/faqs";
-import { FooterCTA } from "@/components/footer-cta";
-
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0 },

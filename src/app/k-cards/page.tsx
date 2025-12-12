@@ -3,6 +3,8 @@ import KCardsPage, { type KCardsInitialData } from "@/components/k-cards/KCardsP
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
+export const metadata = { robots: { index: false, follow: false, googleBot: { index: false, follow: false } } };
+
 export const dynamic = "force-dynamic";
 
 export default async function KCardsRoutePage() {

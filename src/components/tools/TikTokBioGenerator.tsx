@@ -56,7 +56,7 @@ function buildBio(opts: {
   const emojiEnergy = ["⚡️", "🔥", "💥", "🚀"];
   const emojiChill = ["🌊", "🌿", "🌙", "☁️"];
   const emojiSoft = ["✨", "💫", "🌸", "🫶"];
-  const arrow = ["→", "→", "↓", "↘︎"][Math.floor(Math.random() * 4)];
+  const _arrow = ["→", "→", "↓", "↘︎"][Math.floor(Math.random() * 4)];
 
   // Hook line (first line)
   const hookPools: Record<HookStyle, string[]> = {

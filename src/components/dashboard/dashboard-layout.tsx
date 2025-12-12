@@ -20,7 +20,6 @@ import {
   ChevronLeft,
   ChevronRight,
   QrCode,
-  LayoutGrid,
   Rocket,
   Globe2,
   ChevronDown,
@@ -415,7 +414,7 @@ type Workspace = {
 function Topbar({ pageTitle }: { pageTitle?: string }) {
   const { data } = useSession();
   const router = useRouter();
-  const pathname = usePathname();
+const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const email = data?.user?.email ?? "";

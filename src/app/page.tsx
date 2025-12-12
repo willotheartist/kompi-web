@@ -3,8 +3,6 @@
 import type { ReactNode, CSSProperties } from "react";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import KPromo from "@/components/KPromo";
 import "./kompi-marketing.css";
@@ -59,14 +57,14 @@ export default function HomePage() {
         {/* SEO structured data for Google */}
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
+           
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationJsonLd),
           }}
         />
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
+           
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(webSiteJsonLd),
           }}
@@ -119,7 +117,7 @@ export default function HomePage() {
 
 /* Layout primitives */
 
-function Section({
+function _Section({
   children,
   className,
   style,
@@ -136,7 +134,7 @@ function Section({
   );
 }
 
-function Container({
+function _Container({
   children,
   className,
 }: {
@@ -147,7 +145,7 @@ function Container({
   return <div className={cls}>{children}</div>;
 }
 
-function Heading({
+function _Heading({
   as: Tag = "h1",
   children,
   align = "left",

@@ -23,7 +23,7 @@ export type { LinkSummary } from "@/components/dashboard/dashboard-types";
 // Pattern: Shell/DashboardMain
 export function DashboardShell({ links }: { links: LinkSummary[] }) {
   const router = useRouter();
-  const [quickMode, setQuickMode] = useState<QuickMode>("link");
+const [quickMode, setQuickMode] = useState<QuickMode>("link");
   const [dashboardMode, setDashboardMode] =
     useState<DashboardMode>("overview");
   const [quickUrl, setQuickUrl] = useState("");
@@ -33,7 +33,7 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
 
   const hasLinks = links.length > 0;
 
-  const { totalClicks, activeLinks, avgClicks, topLinks } = useMemo(() => {
+  const { totalClicks, activeLinks, avgClicks, _topLinks } = useMemo(() => {
     const total = links.reduce(
       (sum, link) => sum + (link.clicks ?? 0),
       0
@@ -49,7 +49,7 @@ export function DashboardShell({ links }: { links: LinkSummary[] }) {
       totalClicks: total,
       activeLinks: count,
       avgClicks: avg,
-      topLinks: sortedTop,
+      _topLinks: sortedTop,
     };
   }, [links]);
 

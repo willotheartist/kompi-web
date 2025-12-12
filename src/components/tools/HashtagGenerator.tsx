@@ -32,7 +32,7 @@ interface HashtagSet {
   tags: string[];
 }
 
-function randomFrom<T>(arr: T[]): T {
+function _randomFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 

@@ -38,12 +38,12 @@ type MenuData = {
 export default function EditQrMenuPage() {
   const params = useParams();
   const router = useRouter();
-  const id = (params?.id as string) || "";
+const id = (params?.id as string) || "";
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [menu, setMenu] = useState<MenuData | null>(null);
+  const [_menu, setMenu] = useState<MenuData | null>(null);
 
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -90,11 +90,11 @@ export default function EditQrMenuPage() {
 
         if (!res.ok) {
           const txt = await res.text();
-          throw new Error(txt || "Failed to load menu");
+          throw new Error(txt || "Failed to load _menu");
         }
 
         const data = await res.json();
-        const m: MenuData = data.menu ?? data;
+        const m: MenuData = data._menu ?? data;
 
         if (cancelled) return;
 
@@ -111,7 +111,7 @@ export default function EditQrMenuPage() {
       } catch (err) {
         console.error(err);
         if (!cancelled) {
-          toast.error("Failed to load menu");
+          toast.error("Failed to load _menu");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -191,7 +191,7 @@ export default function EditQrMenuPage() {
 
   async function handleSave() {
     if (!id) {
-      toast.error("Missing menu id");
+      toast.error("Missing _menu id");
       return;
     }
 
@@ -232,7 +232,7 @@ export default function EditQrMenuPage() {
       });
 
       if (!res.ok) {
-        let msg = "Failed to save menu";
+        let msg = "Failed to save _menu";
         try {
           const txt = await res.text();
           if (txt) msg = txt;
@@ -247,7 +247,7 @@ export default function EditQrMenuPage() {
     } catch (err: unknown) {
       console.error(err);
       const message =
-        err instanceof Error ? err.message : "Failed to save menu";
+        err instanceof Error ? err.message : "Failed to save _menu";
       toast.error(message);
     } finally {
       setSaving(false);
@@ -256,11 +256,11 @@ export default function EditQrMenuPage() {
 
   async function handleDelete() {
     if (!id) {
-      toast.error("Missing menu id");
+      toast.error("Missing _menu id");
       return;
     }
 
-    if (!confirm("Delete this menu? This cannot be undone.")) return;
+    if (!confirm("Delete this _menu? This cannot be undone.")) return;
 
     setDeleting(true);
     try {
@@ -269,7 +269,7 @@ export default function EditQrMenuPage() {
       });
 
       if (!res.ok) {
-        let msg = "Failed to delete menu";
+        let msg = "Failed to delete _menu";
         try {
           const txt = await res.text();
           if (txt) msg = txt;
@@ -284,7 +284,7 @@ export default function EditQrMenuPage() {
     } catch (err: unknown) {
       console.error(err);
       const message =
-        err instanceof Error ? err.message : "Failed to delete menu";
+        err instanceof Error ? err.message : "Failed to delete _menu";
       toast.error(message);
     } finally {
       setDeleting(false);
@@ -310,7 +310,7 @@ export default function EditQrMenuPage() {
 
   async function handleEditQr() {
     if (!id) {
-      toast.error("Missing menu id");
+      toast.error("Missing _menu id");
       return;
     }
 
@@ -384,7 +384,7 @@ export default function EditQrMenuPage() {
                 }}
               >
                 <QrCode className="h-3.5 w-3.5" />
-                View public menu
+                View public _menu
                 <ExternalLink className="h-3 w-3 opacity-70" />
               </a>
             )}
@@ -407,7 +407,7 @@ export default function EditQrMenuPage() {
               onClick={handleSave}
               disabled={saving || loading}
             >
-              {saving ? "Saving…" : "Save menu"}
+              {saving ? "Saving…" : "Save _menu"}
             </Button>
           </div>
         </div>
@@ -433,7 +433,7 @@ export default function EditQrMenuPage() {
                   className="text-[11px]"
                   style={{ color: "var(--color-subtle)" }}
                 >
-                  Name your menu and set a short URL slug.
+                  Name your _menu and set a short URL slug.
                 </p>
               </div>
 
@@ -512,7 +512,7 @@ export default function EditQrMenuPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
-                    placeholder="Short description that appears at the top of the menu."
+                    placeholder="Short description that appears at the top of the _menu."
                     className="rounded-none border-none shadow-none text-sm px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     style={textAreaStyle}
                     disabled={loading}
@@ -735,7 +735,7 @@ export default function EditQrMenuPage() {
                   style={{ color: "var(--color-subtle)" }}
                 >
                   Logo, accent colour and page background used on the live QR
-                  menu.
+                  _menu.
                 </p>
               </div>
 
@@ -755,7 +755,7 @@ export default function EditQrMenuPage() {
                   />
                   {logoUrl.trim() && (
                     <div className="mt-1 inline-flex items-center gap-2 text-[11px]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      { }
                       <img
                         src={logoUrl}
                         alt="Logo preview"
@@ -822,7 +822,7 @@ export default function EditQrMenuPage() {
                     className="text-[11px]"
                     style={{ color: "var(--color-subtle)" }}
                   >
-                    Used behind the whole menu page.
+                    Used behind the whole _menu page.
                   </p>
                 </div>
               </div>
@@ -863,7 +863,7 @@ export default function EditQrMenuPage() {
                 How to use this with Kompi Codes
               </p>
               <ol className="list-decimal space-y-1 pl-4">
-                <li>Create or update this menu and save.</li>
+                <li>Create or update this _menu and save.</li>
                 <li>Copy the public URL {publicPath || "/m/<slug>"}.</li>
                 <li>
                   Generate or customise a Kompi Code that points to this URL and
@@ -879,7 +879,7 @@ export default function EditQrMenuPage() {
             className="text-[11px]"
             style={{ color: "var(--color-subtle)" }}
           >
-            Loading menu…
+            Loading _menu…
           </p>
         )}
       </div>

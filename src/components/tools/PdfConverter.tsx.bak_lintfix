@@ -75,9 +75,10 @@ export function PdfConverter({ variant = "public" }: PdfConverterProps) {
 
       const arrayBuffer = await pdf.file.arrayBuffer();
 
-      const pdfjsLib = (await import("pdfjs-dist/build/pdf")) as any;
+      const pdfjsLib: any = await import("pdfjs-dist/build/pdf");
+      // @ts-ignore – worker URL helper, assuming pdfjs-webpack.d.ts exists
       const workerSrc = (await import("pdfjs-dist/build/pdf.worker?url")).default;
-      (pdfjsLib as { GlobalWorkerOptions: { workerSrc: string } }).GlobalWorkerOptions.workerSrc = workerSrc;
+      (pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSrc;
 
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       const doc = await loadingTask.promise;

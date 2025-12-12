@@ -1,4 +1,3 @@
-import type { NextRequest } from "next/server";
 export { default } from "next-auth/middleware";
 
 // Protect all authenticated app areas – if there is no valid session,

@@ -31,7 +31,7 @@ import Faqs from "@/components/faqs";
 
 export const metadata: Metadata = {
   title:
-    "Kompi Suite — One suite. Every tool you need to build, create and run your digital world.",
+    "Kompi Suite",
   description:
     "Kompi Suite gives creators, teams, and businesses a full set of premium tools — PDF editors, image utilities, text generators, brand tools, converters and more — all in one place.",
 };

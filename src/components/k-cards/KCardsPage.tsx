@@ -28,15 +28,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
+
 import { cn } from "@/lib/utils";
 
 import {
@@ -63,7 +57,6 @@ import {
   Plus,
   Search,
   GripVertical,
-  Pencil,
   Copy,
 } from "lucide-react";
 
@@ -114,8 +107,8 @@ const FONT_OPTIONS = [
   { value: "display", label: "Display" },
 ];
 
-const BUTTON_STYLES: KCardButtonStyle[] = ["solid", "glass", "outline"];
-const BUTTON_SHADOWS: KCardButtonShadow[] = ["none", "soft", "hard", "3d"];
+const _BUTTON_STYLES: KCardButtonStyle[] = ["solid", "glass", "outline"];
+const _BUTTON_SHADOWS: KCardButtonShadow[] = ["none", "soft", "hard", "3d"];
 
 type KCardLink = {
   id: string;
@@ -143,7 +136,7 @@ const SOCIAL_ICON_MAP: Record<
   Website: Globe2,
 };
 
-const SOCIAL_OPTIONS = Object.keys(SOCIAL_ICON_MAP);
+const _SOCIAL_OPTIONS = Object.keys(SOCIAL_ICON_MAP);
 
 function slugFromTitle(raw: string): string {
   if (!raw) return "";
@@ -224,7 +217,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   );
 
   // header
-  const [profileLayout, setProfileLayout] = useState<"classic" | "hero">(
+  const [profileLayout, _setProfileLayout] = useState<"classic" | "hero">(
     initialData?.profileLayout === "hero" ? "hero" : "classic",
   );
   const [title, setTitle] = useState(initialData?.title ?? "@yourname");
@@ -273,7 +266,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   );
 
   // keep title size as an independent tweak
-  const [titleSize, setTitleSize] = useState<"small" | "large">(
+  const [titleSize, _setTitleSize] = useState<"small" | "large">(
     initialData?.titleSize === "large" ? "large" : "small",
   );
 
@@ -384,7 +377,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
     })();
   }, [title, shareLoading, shareSaving]);
 
-  async function saveShareSettings() {
+  async function _saveShareSettings() {
     if (!shareSlug.trim()) {
       toast.error("Add a public slug for your K-Card");
       return;
@@ -1145,7 +1138,7 @@ const buttonBaseStyles = useMemo(() => {
                   titleColor={titleColor}
                   pageTextColor={pageTextColor}
                   titleSize={titleSize}
-                  profileLayout={profileLayout}
+                  _profileLayout={profileLayout}
                   avatarPreview={avatarPreview}
                   socials={socials}
                   socialUrls={socialUrls}

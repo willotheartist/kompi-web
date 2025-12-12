@@ -62,8 +62,8 @@ const PERKS: PerkCard[] = [
   },
 ];
 
-// luxe easing
-const easing: [number, number, number, number] = [0.16, 1, 0.3, 1];
+// luxe _easing
+const _easing: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 // ~40s loop feels slow & calm. Adjust if you want even slower/faster.
 const SCROLL_DURATION = 40;

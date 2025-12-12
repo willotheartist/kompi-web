@@ -11,8 +11,7 @@ import { Button } from "@/components/ui/button";
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  const token = searchParams.get("token") ?? "";
+const token = searchParams.get("token") ?? "";
   const emailFromUrl = searchParams.get("email") ?? "";
 
   const [email] = useState(emailFromUrl);
@@ -22,7 +21,7 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const disabled = !token || !email;
+  const _disabled = !token || !email;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

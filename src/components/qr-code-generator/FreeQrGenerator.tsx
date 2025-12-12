@@ -82,7 +82,7 @@ export function FreeQrGenerator() {
   const [state, setState] = useState<QrState>(DEFAULT_STATE);
   const [openSection, setOpenSection] =
     useState<"colors" | "logo" | "design" | null>("colors");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [_isGenerating, setIsGenerating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -313,7 +313,7 @@ export function FreeQrGenerator() {
           ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
           ctx.restore();
         } catch (err: unknown) {
-          // eslint-disable-next-line no-console
+           
           console.error("Failed loading logo image", err);
         }
       }
@@ -339,7 +339,7 @@ export function FreeQrGenerator() {
           ctx.drawImage(kompiImg, x, y, markW, markH);
           ctx.restore();
         } catch (err: unknown) {
-          // eslint-disable-next-line no-console
+           
           console.error("Failed loading Kompi logo", err);
         }
       }
@@ -356,7 +356,7 @@ export function FreeQrGenerator() {
         const metrics = ctx.measureText(labelText);
         const textWidth = metrics.width;
         const paddingX = cellSize * 1.2;
-        const paddingY = cellSize * 0.9;
+        const _paddingY = cellSize * 0.9;
 
         const pillWidth = textWidth + paddingX * 2;
         const pillHeight = cellSize * 2.4;
@@ -390,7 +390,7 @@ export function FreeQrGenerator() {
 
       setHasGenerated(true);
     } catch (err: unknown) {
-      // eslint-disable-next-line no-console
+       
       console.error("QR generation failed", err);
       setHasGenerated(false);
     } finally {
@@ -746,7 +746,7 @@ export function FreeQrGenerator() {
                   </button>
                   {state.logoDataUrl && (
                     <div className="flex items-center gap-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      { }
                       <img
                         src={state.logoDataUrl}
                         alt="Logo preview"

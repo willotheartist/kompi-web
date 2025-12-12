@@ -148,13 +148,13 @@ export function ColorPaletteGenerator({ variant = "full" }: ColorPaletteGenerato
       window.removeEventListener("keydown", handleKeydown);
     };
   }, [shuffleAll]);
-  // Trigger an initial shuffle on mount (async to avoid setState-in-effect lint).
+
+  // We intentionally trigger an initial shuffle when the component mounts.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
-    const id = window.setTimeout(() => {
-      shuffleAll();
-    }, 0);
-    return () => window.clearTimeout(id);
+    shuffleAll();
   }, [shuffleAll]);
+
   const isMinimal = variant === "minimal";
 
   return (

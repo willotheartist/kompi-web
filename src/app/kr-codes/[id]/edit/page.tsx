@@ -395,7 +395,7 @@ export default function EditKrcodePage() {
               <CardContent className="flex flex-col gap-4 pt-4">
                 <div className="flex flex-col items-center gap-4">
                   <div className="inline-flex flex-col items-center justify-center rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg)] px-5 py-4">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    { }
                     <img
                       src={`/api/kr-codes/${data.krcode.id}/png`}
                       alt="Kompi Code preview"

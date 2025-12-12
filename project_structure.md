@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 11/12/2025, 20:26:38*
+*Generated on: 12/12/2025, 11:53:17*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 541 |
-| 📁 Total Folders | 240 |
+| 📄 Total Files | 548 |
+| 📁 Total Folders | 243 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,17 +26,18 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 310 files (57.3%)
-- 🖼️ **.png** (PNG images): 69 files (12.8%)
-- 🔷 **.ts** (TypeScript files): 67 files (12.4%)
-- 📄 **.sql** (Other files): 21 files (3.9%)
-- 🎨 **.css** (Stylesheets): 9 files (1.7%)
+- ⚛️ **.tsx** (React TypeScript files): 315 files (57.5%)
+- 🖼️ **.png** (PNG images): 69 files (12.6%)
+- 🔷 **.ts** (TypeScript files): 67 files (12.2%)
+- 📄 **.sql** (Other files): 21 files (3.8%)
+- 🎨 **.css** (Stylesheets): 9 files (1.6%)
 - 🎨 **.svg** (SVG images): 7 files (1.3%)
-- 📄 **.zip** (Other files): 5 files (0.9%)
 - 📄 **.mjs** (Other files): 5 files (0.9%)
 - ⚙️ **.json** (JSON files): 4 files (0.7%)
-- 📄 **.mp4** (Other files): 3 files (0.6%)
+- 📄 **.bak_lintfix** (Other files): 4 files (0.7%)
+- 📄 **.mp4** (Other files): 3 files (0.5%)
 - 📖 **.md** (Markdown files): 2 files (0.4%)
+- 📄 **.zip** (Other files): 2 files (0.4%)
 - 🖼️ **.ico** (Icon files): 2 files (0.4%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.2%)
 - 📄 **.** (Other files): 1 files (0.2%)
@@ -74,15 +75,16 @@
 - 📄 **.fix_limit_block** (Other files): 1 files (0.2%)
 - 📄 **.fix_links_copy2** (Other files): 1 files (0.2%)
 - 📄 **.pre_pro_copy** (Other files): 1 files (0.2%)
+- 📄 **.bak_lintfix2** (Other files): 1 files (0.2%)
 - 📄 **.tsbuildinfo** (Other files): 1 files (0.2%)
 
 ### By Category
 
-- **React**: 310 files (57.3%)
-- **Assets**: 79 files (14.6%)
-- **TypeScript**: 67 files (12.4%)
-- **Other**: 64 files (11.8%)
-- **Styles**: 9 files (1.7%)
+- **React**: 315 files (57.5%)
+- **Assets**: 79 files (14.4%)
+- **TypeScript**: 67 files (12.2%)
+- **Other**: 66 files (12.0%)
+- **Styles**: 9 files (1.6%)
 - **Config**: 7 files (1.3%)
 - **DevOps**: 2 files (0.4%)
 - **Docs**: 2 files (0.4%)
@@ -90,10 +92,10 @@
 
 ### 📁 Largest Directories
 
-- **root**: 541 files
-- **src**: 408 files
-- **src/app**: 218 files
-- **src/components**: 176 files
+- **root**: 548 files
+- **src**: 418 files
+- **src/app**: 222 files
+- **src/components**: 181 files
 - **public**: 81 files
 
 ## 🌳 Directory Structure
@@ -108,9 +110,6 @@ kompi-web/
 ├── 🟡 🐳 **docker-compose.yml**
 ├── 🟡 🐳 **Dockerfile**
 ├── 🔵 🔍 **eslint.config.mjs**
-├── 📄 kompi-plan-batch1.zip
-├── 📄 kompi-pro-audit.zip
-├── 📄 kompi-tools-debug.zip
 ├── 📄 make-qr-sticky.patch
 ├── 🔷 middleware.ts
 ├── 🔷 next-env.d.ts
@@ -271,7 +270,9 @@ kompi-web/
 │   │   ├── 📂 (seo)/
 │   │   │   ├── 📂 barcode-generator/
 │   │   │   │   └── ⚛️ page.tsx
-│   │   │   └── 📂 qr-gen-online/
+│   │   │   ├── 📂 qr-gen-online/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── 📂 whatsapp-link-generator/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 analytics/
 │   │   │   └── ⚛️ page.tsx
@@ -444,6 +445,9 @@ kompi-web/
 │   │   │   │   ├── 📂 barcode-generator/
 │   │   │   │   │   ├── ⚛️ BarcodeGeneratorClient.tsx
 │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 brand-color-extractor/
+│   │   │   │   │   ├── ⚛️ BrandColorExtractorClient.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 case-converter/
 │   │   │   │   │   ├── ⚛️ CaseConverterClient.tsx
 │   │   │   │   │   └── ⚛️ page.tsx
@@ -615,6 +619,8 @@ kompi-web/
 │   │   │   └── ⚛️ layout.tsx
 │   │   └── 📂 tools/
 │   │   │   ├── 📂 barcode-generator/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 brand-color-extractor/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 case-converter/
 │   │   │   │   └── ⚛️ page.tsx
@@ -819,9 +825,11 @@ kompi-web/
 │   │   │   └── ⚛️ subscribers-table.tsx
 │   │   ├── 📂 tools/
 │   │   │   ├── ⚛️ BarcodeGenerator.tsx
+│   │   │   ├── ⚛️ BrandColorExtractor.tsx
 │   │   │   ├── ⚛️ CaseConverter.tsx
 │   │   │   ├── ⚛️ CharacterCounter.tsx
 │   │   │   ├── ⚛️ ColorPaletteGenerator.tsx
+│   │   │   ├── 📄 ColorPaletteGenerator.tsx.bak_lintfix
 │   │   │   ├── ⚛️ ContactLinkGenerator.tsx
 │   │   │   ├── ⚛️ HashtagGenerator.tsx
 │   │   │   ├── ⚛️ HourlyRateCalculator.tsx
@@ -831,6 +839,7 @@ kompi-web/
 │   │   │   ├── ⚛️ JsonFormatter.tsx
 │   │   │   ├── ⚛️ PasswordGenerator.tsx
 │   │   │   ├── ⚛️ PdfConverter.tsx
+│   │   │   ├── 📄 PdfConverter.tsx.bak_lintfix
 │   │   │   ├── ⚛️ PdfMerge.tsx
 │   │   │   ├── ⚛️ PdfSplit.tsx
 │   │   │   ├── ⚛️ PdfToImage.tsx
@@ -838,6 +847,8 @@ kompi-web/
 │   │   │   ├── ⚛️ RandomNumberGenerator.tsx
 │   │   │   ├── ⚛️ TikTokBioGenerator.tsx
 │   │   │   ├── ⚛️ TikTokCaptionGenerator.tsx
+│   │   │   ├── 📄 TikTokCaptionGenerator.tsx.bak_lintfix
+│   │   │   ├── 📄 TikTokCaptionGenerator.tsx.bak_lintfix2
 │   │   │   ├── ⚛️ ToolCard.tsx
 │   │   │   ├── ⚛️ UsernameGenerator.tsx
 │   │   │   ├── ⚛️ UtmBuilder.tsx
@@ -878,7 +889,8 @@ kompi-web/
 │   │   ├── 🔷 tools-config.ts
 │   │   └── 🔷 utils.ts
 │   └── 📂 types/
-│   │   └── 🔷 pdfjs-webpack.d.ts
+│   │   ├── 🔷 pdfjs-webpack.d.ts
+│   │   └── 📄 pdfjs-webpack.d.ts.bak_lintfix
 ├── 🟡 🔷 **tsconfig.json**
 └── 📄 tsconfig.tsbuildinfo
 ```

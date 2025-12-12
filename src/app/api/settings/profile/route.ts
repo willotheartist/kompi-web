@@ -13,13 +13,13 @@ async function getCurrentUser() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    // ⚠️ If your User model does not have `phone`, remove it from this select + the update below.
+    // ⚠️ If your User model does not have `_phone`, remove it from this select + the update below.
     select: {
       id: true,
       name: true,
       email: true,
       image: true,
-      // phone: true,
+      // _phone: true,
     },
   });
 
@@ -55,18 +55,18 @@ export async function PATCH(req: Request) {
     return new NextResponse("Invalid payload", { status: 400 });
   }
 
-  const { name, phone } = body as { name?: string; phone?: string };
+  const { name, _phone } = body as { name?: string; _phone?: string };
 
-  const dataToUpdate: { name?: string | null; /* phone?: string | null */ } = {};
+  const dataToUpdate: { name?: string | null; /* _phone?: string | null */ } = {};
 
   if (typeof name === "string") {
     dataToUpdate.name = name.trim() || null;
   }
 
-  // ⚠️ If your User model has a `phone` field, uncomment this block:
+  // ⚠️ If your User model has a `_phone` field, uncomment this block:
   /*
-  if (typeof phone === "string") {
-    dataToUpdate.phone = phone.trim() || null;
+  if (typeof _phone === "string") {
+    dataToUpdate._phone = _phone.trim() || null;
   }
   */
 
@@ -82,7 +82,7 @@ export async function PATCH(req: Request) {
       name: true,
       email: true,
       image: true,
-      // phone: true,
+      // _phone: true,
     },
   });
 
