@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -44,7 +44,9 @@ export function Navbar() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
+  
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+useEffect(() => {
     // Close mobile menu on route change (defer to avoid set-state-in-effect rule)
     const raf = requestAnimationFrame(() => setMobileOpen(false));
     return () => cancelAnimationFrame(raf);
@@ -192,7 +194,7 @@ export function Navbar() {
         </header>
       </div>
 
-      <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <MobileNav open={mobileOpen} onClose={closeMobile} />
     </>
   );
 }
@@ -266,12 +268,12 @@ function MobileNav({
   }, [open]);
 
   useEffect(() => {
+    if (!open) return;
     // Close on route change (defer to avoid set-state-in-effect rule)
     const raf = requestAnimationFrame(onClose);
     return () => cancelAnimationFrame(raf);
-  }, [pathname, onClose]);
-
-  // lock scroll when open
+  }, [pathname, onClose, open]);
+// lock scroll when open
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
