@@ -13,7 +13,6 @@ import {
   Quote,
   Video,
   LineChart,
-  Link2,
   Percent,
   Calculator,
   FileImage,
@@ -22,7 +21,6 @@ import {
   Lock,
   Dice5,
   Braces,
-  Sparkles,
   Tag,
 } from "lucide-react";
 
@@ -279,11 +277,10 @@ export function ToolsMegaMenu() {
   // Close whenever the route changes
   useEffect(() => {
     clearCloseTimer();
-    setOpen(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const t = setTimeout(() => setOpen(false), 0);
+    return () => clearTimeout(t);
   }, [pathname]);
-
-  const isToolsRoute = pathname?.startsWith("/tools");
+const isToolsRoute = pathname?.startsWith("/tools");
 
   const categories: Category[] = useMemo(() => {
     const bySlug = new Map(TOOLS.map((t) => [t.slug, t]));

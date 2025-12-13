@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 12/12/2025, 16:10:49*
+*Generated on: 13/12/2025, 17:50:30*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 548 |
-| 📁 Total Folders | 251 |
+| 📄 Total Files | 555 |
+| 📁 Total Folders | 256 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,10 +26,10 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 324 files (59.1%)
-- 🖼️ **.png** (PNG images): 71 files (13.0%)
-- 🔷 **.ts** (TypeScript files): 67 files (12.2%)
-- 📄 **.sql** (Other files): 21 files (3.8%)
+- ⚛️ **.tsx** (React TypeScript files): 328 files (59.1%)
+- 🖼️ **.png** (PNG images): 71 files (12.8%)
+- 🔷 **.ts** (TypeScript files): 68 files (12.3%)
+- 📄 **.sql** (Other files): 22 files (4.0%)
 - 🎨 **.css** (Stylesheets): 9 files (1.6%)
 - 🎨 **.svg** (SVG images): 7 files (1.3%)
 - 📄 **.mjs** (Other files): 5 files (0.9%)
@@ -57,6 +57,7 @@
 - 📄 **.bak_sidebar_typo2** (Other files): 1 files (0.2%)
 - 📄 **.bak_sidebar_typography** (Other files): 1 files (0.2%)
 - 📄 **.bak_variant** (Other files): 1 files (0.2%)
+- 📄 **.bak_contactfix** (Other files): 1 files (0.2%)
 - 📄 **.fix-onavatarclear** (Other files): 1 files (0.2%)
 - 📄 **.header-social** (Other files): 1 files (0.2%)
 - 📄 **.header-v2** (Other files): 1 files (0.2%)
@@ -70,10 +71,10 @@
 
 ### By Category
 
-- **React**: 324 files (59.1%)
-- **Assets**: 81 files (14.8%)
-- **TypeScript**: 67 files (12.2%)
-- **Other**: 55 files (10.0%)
+- **React**: 328 files (59.1%)
+- **Assets**: 81 files (14.6%)
+- **TypeScript**: 68 files (12.3%)
+- **Other**: 57 files (10.3%)
 - **Styles**: 9 files (1.6%)
 - **Config**: 7 files (1.3%)
 - **DevOps**: 2 files (0.4%)
@@ -82,10 +83,10 @@
 
 ### 📁 Largest Directories
 
-- **root**: 548 files
-- **src**: 420 files
-- **src/app**: 225 files
-- **src/components**: 180 files
+- **root**: 555 files
+- **src**: 426 files
+- **src/app**: 229 files
+- **src/components**: 182 files
 - **public**: 81 files
 
 ## 🌳 Directory Structure
@@ -148,6 +149,8 @@ kompi-web/
 │   │   ├── 📂 20251202195231_add_kcard_link_clicks/
 │   │   │   └── 📄 migration.sql
 │   │   ├── 📂 20251205202257_add_workspace_tool/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251212201122_add_kcard_messages/
 │   │   │   └── 📄 migration.sql
 │   │   └── ⚙️ migration_lock.toml
 │   └── 📄 schema.prisma
@@ -318,6 +321,8 @@ kompi-web/
 │   │   │   ├── 📂 k-cards/
 │   │   │   │   ├── 📂 clicks/
 │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   ├── 📂 messages/
+│   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   ├── 🔷 route.ts
 │   │   │   │   └── 📂 share/
 │   │   │   │   │   └── 🔷 route.ts
@@ -406,6 +411,9 @@ kompi-web/
 │   │   │   │   ├── ⚛️ layout.tsx
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 k-cards/
+│   │   │   │   ├── ⚛️ layout.tsx
+│   │   │   │   ├── 📂 messages/
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 kr-codes/
 │   │   │   │   ├── ⚛️ page.tsx
@@ -414,6 +422,8 @@ kompi-web/
 │   │   │   ├── 📂 links/
 │   │   │   │   └── 📂 new/
 │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 messages/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── ⚛️ page.tsx
 │   │   │   ├── 📂 qr-menus/
 │   │   │   │   ├── 📂 [id]/
@@ -534,6 +544,7 @@ kompi-web/
 │   │   │   └── 📂 [slug]/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 k-cards/
+│   │   │   ├── 📂 messages/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🎨 kompi-marketing.css
 │   │   ├── 📂 kompi-suite/
@@ -741,11 +752,13 @@ kompi-web/
 │   │   │   └── ⚛️ two.tsx
 │   │   ├── 📂 k-cards/
 │   │   │   ├── ⚛️ ClaimHandleCTA.tsx
+│   │   │   ├── ⚛️ IntentModal.tsx
 │   │   │   ├── 🔷 kcard-style.ts
 │   │   │   ├── 🔷 kcard-theme-presets.ts
 │   │   │   ├── ⚛️ KCardPreview.tsx
 │   │   │   ├── 📄 KCardPreview.tsx.bak_variant
 │   │   │   ├── ⚛️ KCardsPage.tsx
+│   │   │   ├── 📄 KCardsPage.tsx.bak_contactfix
 │   │   │   ├── 📄 KCardsPage.tsx.fix-onAvatarClear
 │   │   │   ├── 📄 KCardsPage.tsx.header-social
 │   │   │   ├── 📄 KCardsPage.tsx.header-v2

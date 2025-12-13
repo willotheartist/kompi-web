@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,7 +55,14 @@ const baseNavGroups: NavGroup[] = [
     items: [
       { href: "/dashboard", label: "Overview", icon: Home },
       { href: "/links", label: "Links", icon: Link2 },
-      { href: "/k-cards", label: "K-Cards", icon: IdCard },
+      {
+      href: "/k-cards",
+      label: "K-Cards",
+      icon: IdCard,
+      children: [
+        { href: "/dashboard/k-cards/messages", label: "Messages" },
+      ],
+    },
       {
         href: "/dashboard/qr-menus",
         label: "QR Menus",
@@ -161,7 +168,15 @@ export function DashboardLayout({ children, pageTitle }: { children: React.React
 
 /* ---------------- Sidebar ---------------- */
 
-function Sidebar({
+function Sidebar(props: Parameters<typeof SidebarInner>[0]) {
+  return (
+    <Suspense fallback={null}>
+      <SidebarInner {...props} />
+    </Suspense>
+  );
+}
+
+function SidebarInner({
   collapsed,
   setCollapsed,
 }: {
@@ -411,7 +426,15 @@ type Workspace = {
   name: string;
 };
 
-function Topbar({ pageTitle }: { pageTitle?: string }) {
+function Topbar(props: Parameters<typeof TopbarInner>[0]) {
+  return (
+    <Suspense fallback={null}>
+      <TopbarInner {...props} />
+    </Suspense>
+  );
+}
+
+function TopbarInner({ pageTitle }: { pageTitle?: string }) {
   const { data } = useSession();
   const router = useRouter();
 const pathname = usePathname();

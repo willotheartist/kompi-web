@@ -182,8 +182,8 @@ export function FeaturesMegaMenu() {
   // Close whenever the route changes
   useEffect(() => {
     clearCloseTimer();
-    setOpen(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const t = setTimeout(() => setOpen(false), 0);
+    return () => clearTimeout(t);
   }, [pathname]);
 
   const activeCat = CATEGORIES.find((c) => c.id === active) ?? CATEGORIES[0];

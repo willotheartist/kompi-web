@@ -5,7 +5,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type React from "react";
-import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { KCardPreview } from "@/components/k-cards/KCardPreview";
 import {
@@ -32,11 +31,9 @@ async function resolveParams(params: Params): Promise<{ slug: string }> {
 }
 
 // ✅ Dedupes DB reads between generateMetadata() and the page render (per request)
-const getPublicKCardBySlug = cache(async (slug: string) => {
-  return prisma.kCard.findFirst({
-    where: { slug, isPublic: true },
-  });
-});
+const getPublicKCardBySlug = async (slug: string) => {
+  return prisma.kCard.findFirst({ where: { slug, isPublic: true } });
+};
 
 // (kept as-is; currently unused in this file, but harmless)
 const _SOCIAL_ICON_MAP: Record<
@@ -218,6 +215,7 @@ export default async function PublicKCardPage(props: { params: Params }) {
             avatarPreview={avatarDataUrl}
             socials={socials}
             visibleLinks={visibleLinks}
+        contact={data.contact}
             buttonBaseStyles={buttonBaseStyles}
             avatarSize={avatarSize}
             headerTextSize={headerTextSize}

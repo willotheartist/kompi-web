@@ -1,5 +1,4 @@
 // src/app/customers/page.tsx
-/* eslint-disable react/no-unescaped-entities */
 
 import type { Metadata } from "next";
 import Script from "next/script";

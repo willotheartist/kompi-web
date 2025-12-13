@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
+
 
 function hashIp(ip: string) {
   return crypto.createHash("sha256").update(ip).digest("hex").slice(0, 32);
@@ -93,6 +95,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("POST /api/k-cards/messages error", e);
+    return NextResponse.json({ error: "Server error." }, { status: 500 });
+  }
+}
+
+export async function GET(_req: NextRequest) {
+  try {
+    const user = await requireUser();
+
+    const items = await prisma.kCardMessage.findMany({
+      where: { ownerId: user.id },
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        message: true,
+        intentLabel: true,
+        createdAt: true,
+      },
+    });
+
+    return NextResponse.json({ ok: true, items });
+  } catch (e) {
+    console.error("GET /api/k-cards/messages error", e);
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }

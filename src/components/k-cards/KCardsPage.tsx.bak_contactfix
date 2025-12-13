@@ -195,8 +195,6 @@ export type KCardsInitialData = {
   avatarSize?: "small" | "medium" | "large";
   headerTextSize?: "small" | "medium" | "large";
   avatarShadow?: "shadow" | "flat";
-  contact?: KCardContact;
-
 };
 
 type KCardsPageProps = {
@@ -211,6 +209,8 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
 
 
   const [addOpen, setAddOpen] = useState(false);
+  const [contactEnabled, setContactEnabled] = useState(false);
+
   // refs for scroll + intersection observer
   const headerRef = useRef<HTMLElement | null>(null);
   const themeRef = useRef<HTMLElement | null>(null);
@@ -295,45 +295,14 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
     (initialData?.links as KCardLink[] | undefined) ?? INITIAL_LINKS,
   );
 
-  const [contact, setContact] = useState<KCardContact>(() => {
-    type RawContact = Partial<KCardContact> & { intents?: unknown };
-
-    const raw: RawContact = (initialData?.contact as RawContact | undefined) ?? {};
-    const rawIntents = Array.isArray(raw.intents) ? raw.intents : null;
-
-    const asObj = (v: unknown): v is Record<string, unknown> =>
-      typeof v === "object" && v !== null;
-
-    const intents: KCardContactIntent[] =
-      rawIntents && rawIntents.length
-        ? rawIntents
-            .map((v) => {
-              if (!asObj(v)) return null;
-
-              const key = String(v["key"] ?? "").trim();
-              const label = String(v["label"] ?? "").trim();
-
-              let enabled = true;
-              const enabledRaw = v["enabled"];
-              if (typeof enabledRaw === "boolean") enabled = enabledRaw;
-
-              if (!key || !label) return null;
-              return { key, label, enabled };
-            })
-            .filter((v): v is KCardContactIntent => Boolean(v))
-        : [
-            { key: "hire", label: "Hire me", enabled: true },
-            { key: "collab", label: "Collaborate", enabled: true },
-          ];
-
-    const enabled = typeof raw.enabled === "boolean" ? raw.enabled : false;
-    const buttonLabel =
-      typeof raw.buttonLabel === "string" && raw.buttonLabel.trim()
-        ? raw.buttonLabel
-        : "Message me";
-    const emailOnly = typeof raw.emailOnly === "boolean" ? raw.emailOnly : true;
-
-    return { enabled, buttonLabel, emailOnly, intents };
+  const [contact, setContact] = useState<KCardContact>({
+    enabled: false,
+    buttonLabel: "Message me",
+    emailOnly: true,
+    intents: [
+      { key: "hire", label: "Hire me", enabled: true },
+      { key: "collab", label: "Collaborate", enabled: true },
+    ],
   });
 
   const [intentOpen, setIntentOpen] = useState(false);
@@ -400,8 +369,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
     return () => {
       cancelled = true;
     };
-  }, [baseUrl,
-    contact,]);
+  }, [baseUrl]);
 
   // Keep the public K-Card URL slug in sync with the header title.
   // Whenever the title changes, we derive a slug and upsert it via the share API.
@@ -714,8 +682,7 @@ const buttonBaseStyles = useMemo(() => {
     avatarDataUrl,
     avatarSize,
     headerTextSize,
-    avatarShadow,,
-    contact
+    avatarShadow,
   ]);
 
   // IntersectionObserver for auto-highlight in the sections list
@@ -1351,7 +1318,7 @@ const buttonBaseStyles = useMemo(() => {
                   <button
                     type="button"
                     onClick={() => {
-                      setContact((prev) => ({ ...prev, enabled: true }));
+                      setContactEnabled(true);
                       setAddOpen(false);
                       toast.success("Contact button added");
                     }}
