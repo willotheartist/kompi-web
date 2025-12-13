@@ -1,4 +1,3 @@
-//src/components/navbar.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -7,12 +6,20 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   ChevronDown,
+  ChevronRight,
+  Menu,
+  X,
   User,
   Store,
   Users,
   Megaphone,
   Briefcase,
   Calendar,
+  Sparkles,
+  LayoutGrid,
+  QrCode,
+  Link2,
+  Tag,
 } from "lucide-react";
 import { FeaturesMegaMenu } from "@/components/features-megamenu";
 import { ToolsMegaMenu } from "@/components/tools-megamenu";
@@ -22,12 +29,26 @@ const ACTIVE_BLUE_CLASS = "wf-nav-link-active";
 const ACTIVE_BLUE_BG = "wf-nav-cta-primary";
 const ACTIVE_BLUE_SHADOW = "wf-nav-cta-primary-shadow";
 
+type MobileSectionId =
+  | "features"
+  | "tools"
+  | "customers"
+  | "pricing";
+
 export function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [atTop, setAtTop] = useState(true);
   const lastYRef = useRef(0);
   const ignoreScrollUntil = useRef<number | null>(null);
   const pathname = usePathname();
+
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    // Close mobile menu on route change (defer to avoid set-state-in-effect rule)
+    const raf = requestAnimationFrame(() => setMobileOpen(false));
+    return () => cancelAnimationFrame(raf);
+  }, [pathname]);
 
   useEffect(() => {
     // Initialize the ignore window once on mount to avoid hydration issues
@@ -80,87 +101,362 @@ export function Navbar() {
   const isPricing = pathname?.startsWith("/pricing");
 
   return (
-    <div
-      className={[
-        "fixed inset-x-0 top-0 z-50 flex justify-center",
-        "transition-all duration-300",
-        hidden ? "wf-nav-hidden" : "wf-nav-visible",
-        atTop ? "wf-nav-top" : "wf-nav-scrolled",
-      ].join(" ")}
-    >
-      <header
+    <>
+      <div
         className={[
-          "wf-nav-shell",
-          "w-full max-w-7xl",
-          "px-4 md:px-6 py-3 md:py-4",
-          "rounded-2xl md:rounded-3xl",
-          "flex items-center justify-between gap-4 md:gap-6",
+          "fixed inset-x-0 top-0 z-50 flex justify-center",
+          "transition-all duration-300",
+          hidden ? "wf-nav-hidden" : "wf-nav-visible",
+          atTop ? "wf-nav-top" : "wf-nav-scrolled",
         ].join(" ")}
       >
-        {/* LOGO */}
-        <Link href="/" className="wf-nav-logo">
-          <Image
-            src="/Kompi..svg"
-            alt="Kompi"
-            width={120}
-            height={40}
-            priority
-            className="h-8 w-auto object-contain"
-          />
-        </Link>
+        <header
+          className={[
+            "wf-nav-shell",
+            "w-full max-w-7xl",
+            "px-4 md:px-6 py-3 md:py-4",
+            "rounded-2xl md:rounded-3xl",
+            "flex items-center justify-between gap-4 md:gap-6",
+          ].join(" ")}
+        >
+          {/* LOGO */}
+          <Link href="/" className="wf-nav-logo">
+            <Image
+              src="/Kompi..svg"
+              alt="Kompi"
+              width={120}
+              height={40}
+              priority
+              className="h-8 w-auto object-contain"
+            />
+          </Link>
 
-        {/* NAV (DESKTOP) */}
-        <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-          <div className="wf-nav-link-wrap">
-            <FeaturesMegaMenu />
+          {/* NAV (DESKTOP) */}
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+            <div className="wf-nav-link-wrap">
+              <FeaturesMegaMenu />
+            </div>
+
+            <div className="wf-nav-link-wrap">
+              <ToolsMegaMenu />
+            </div>
+
+            <CustomersMegaMenu />
+
+            <Link
+              href="/pricing"
+              className={[linkBase, isPricing ? activeColor : inactiveColor].join(
+                " "
+              )}
+            >
+              Pricing
+            </Link>
+          </nav>
+
+          {/* RIGHT CTAs (DESKTOP) */}
+          <div className="hidden md:flex items-center gap-2.5">
+            <Link
+              href="/signin"
+              className={["wf-nav-cta-secondary", "hidden md:inline-flex"].join(
+                " "
+              )}
+            >
+              Log in
+            </Link>
+
+            <Link
+              href="/signin"
+              className={[
+                "inline-flex items-center justify-center",
+                "text-sm font-semibold",
+                "rounded-full px-4 py-2",
+                ACTIVE_BLUE_BG,
+                ACTIVE_BLUE_SHADOW,
+              ].join(" ")}
+            >
+              Sign up free
+            </Link>
           </div>
 
-          <div className="wf-nav-link-wrap">
-            <ToolsMegaMenu />
+          {/* MOBILE: hamburger */}
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Open menu"
+              onClick={() => setMobileOpen(true)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)]"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </div>
+        </header>
+      </div>
+
+      <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
+    </>
+  );
+}
+
+
+function MobileNavRow({
+  label,
+  onClick,
+  right,
+}: {
+  label: string;
+  onClick?: () => void;
+  right?: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center justify-between py-5 text-left"
+      style={{ borderBottom: "1px solid var(--color-border)" }}
+    >
+      <span className="text-[22px] font-semibold tracking-tight">{label}</span>
+      {right ?? <ChevronRight className="h-6 w-6 opacity-60" />}
+    </button>
+  );
+}
+
+function MobileNavSubLink({
+  href,
+  icon: Icon,
+  title,
+  onClick,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="flex items-center justify-between py-4"
+      style={{ borderBottom: "1px solid var(--color-border)" }}
+    >
+      <span className="flex items-center gap-3 text-[18px]">
+        <Icon className="h-5 w-5 opacity-70" />
+        {title}
+      </span>
+      <ChevronRight className="h-5 w-5 opacity-50" />
+    </Link>
+  );
+}
+
+/** Linktree-style full-screen mobile menu */
+function MobileNav({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const pathname = usePathname();
+  const [expanded, setExpanded] = useState<MobileSectionId | null>(null);
+
+  useEffect(() => {
+    // When opened, reset accordion state (defer to satisfy react-hooks/set-state-in-effect)
+    if (!open) return;
+    const raf = requestAnimationFrame(() => setExpanded(null));
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
+
+  useEffect(() => {
+    // Close on route change (defer to avoid set-state-in-effect rule)
+    const raf = requestAnimationFrame(onClose);
+    return () => cancelAnimationFrame(raf);
+  }, [pathname, onClose]);
+
+  // lock scroll when open
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  const toggle = (id: MobileSectionId) =>
+    setExpanded((cur) => (cur === id ? null : id));
+
+  return (
+    <div
+      className={[
+        "fixed inset-0 z-[70] md:hidden",
+        "transition-opacity duration-200",
+        open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+      ].join(" ")}
+      aria-hidden={!open}
+    >
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Sheet */}
+      <div
+        className={[
+          "absolute inset-x-0 top-0",
+          "h-[100svh]",
+          "bg-[color:var(--color-bg)] text-[color:var(--color-text)]",
+        ].join(" ")}
+      >
+        {/* Top bar */}
+        <div className="mx-auto w-full max-w-2xl px-5 pt-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Link href="/" onClick={onClose} className="inline-flex">
+                <Image
+                  src="/Kompi..svg"
+                  alt="Kompi"
+                  width={112}
+                  height={28}
+                  priority
+                  className="h-7 w-auto"
+                />
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/signin"
+                onClick={onClose}
+                className="inline-flex h-10 items-center justify-center rounded-2xl border border-[color:var(--color-border)] px-4 text-[15px] font-semibold"
+              >
+                Log in
+              </Link>
+
+              <Link
+                href="/signin"
+                onClick={onClose}
+                className="inline-flex h-10 items-center justify-center rounded-2xl px-4 text-[15px] font-semibold text-white"
+                style={{ backgroundColor: "#1E2330" }}
+              >
+                Sign up free
+              </Link>
+
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={onClose}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full"
+                style={{ backgroundColor: "#D5FF3E" }}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
-          <CustomersMegaMenu />
-
-          <Link
-            href="/pricing"
-            className={[linkBase, isPricing ? activeColor : inactiveColor].join(
-              " "
+          {/* Menu content */}
+          <div className="mt-8">
+            {/* Features */}
+            <MobileNavRow
+              label="Features"
+              onClick={() => toggle("features")}
+              right={
+                <ChevronDown
+                  className={[
+                    "h-6 w-6 opacity-70 transition-transform",
+                    expanded === "features" ? "rotate-180" : "",
+                  ].join(" ")}
+                />
+              }
+            />
+            {expanded === "features" && (
+              <div className="pb-2">
+                <MobileNavSubLink href="/kompi-suite" icon={Sparkles} title="Kompi Suite" onClick={onClose}/>
+                <MobileNavSubLink href="/features/url-shortener" icon={Link2} title="Short links" onClick={onClose}/>
+                <MobileNavSubLink href="/KR-Codes-QR-Code-Generator" icon={QrCode} title="KR Codes" onClick={onClose}/>
+                <MobileNavSubLink href="/k-cards" icon={LayoutGrid} title="K-Cards" onClick={onClose}/>
+                <MobileNavSubLink href="/qr-menus" icon={QrCode} title="QR Menus" onClick={onClose}/>
+                <MobileNavSubLink href="/free-qr-code-generator" icon={QrCode} title="Free QR code" onClick={onClose}/>
+                <MobileNavSubLink href="/claim" icon={Sparkles} title="Claim your handle" onClick={onClose}/>
+                <MobileNavSubLink href="/creator-studio" icon={User} title="Creator Studio" onClick={onClose}/>
+              </div>
             )}
-          >
-            Pricing
-          </Link>
-        </nav>
 
-        {/* RIGHT CTAs */}
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/signin"
-            className={["wf-nav-cta-secondary", "hidden md:inline-flex"].join(
-              " "
+            {/* Tools */}
+            <MobileNavRow
+              label="Tools"
+              onClick={() => toggle("tools")}
+              right={
+                <ChevronDown
+                  className={[
+                    "h-6 w-6 opacity-70 transition-transform",
+                    expanded === "tools" ? "rotate-180" : "",
+                  ].join(" ")}
+                />
+              }
+            />
+            {expanded === "tools" && (
+              <div className="pb-2">
+                <MobileNavSubLink href="/tools" icon={Sparkles} title="Browse all tools" onClick={onClose}/>
+                <MobileNavSubLink href="/tools/utm-builder" icon={Tag} title="UTM builder" onClick={onClose}/>
+                <MobileNavSubLink href="/tools/password-generator" icon={Sparkles} title="Password generator" onClick={onClose}/>
+                <MobileNavSubLink href="/tools/image-to-pdf" icon={Sparkles} title="Image to PDF" onClick={onClose}/>
+                <MobileNavSubLink href="/tools/case-converter" icon={Sparkles} title="Case converter" onClick={onClose}/>
+                <MobileNavSubLink href="/tools/hashtag-generator" icon={Sparkles} title="Hashtag generator" onClick={onClose}/>
+              </div>
             )}
-          >
-            Log in
-          </Link>
 
-          <Link
-            href="/signin"
-            className={[
-              "inline-flex items-center justify-center",
-              "text-sm font-semibold",
-              "rounded-full px-4 py-2",
-              ACTIVE_BLUE_BG,
-              ACTIVE_BLUE_SHADOW,
-            ].join(" ")}
-          >
-            Sign up free
-          </Link>
+            {/* Customers */}
+            <MobileNavRow
+              label="Customers"
+              onClick={() => toggle("customers")}
+              right={
+                <ChevronDown
+                  className={[
+                    "h-6 w-6 opacity-70 transition-transform",
+                    expanded === "customers" ? "rotate-180" : "",
+                  ].join(" ")}
+                />
+              }
+            />
+            {expanded === "customers" && (
+              <div className="pb-2">
+                <MobileNavSubLink href="/customers" icon={Users} title="All customers" onClick={onClose}/>
+                <MobileNavSubLink href="/customers/creators" icon={User} title="Creators" onClick={onClose}/>
+                <MobileNavSubLink href="/customers/small-business" icon={Store} title="Small businesses" onClick={onClose}/>
+                <MobileNavSubLink href="/customers/communities" icon={Users} title="Communities" onClick={onClose}/>
+                <MobileNavSubLink href="/customers/brands" icon={Megaphone} title="Brands" onClick={onClose}/>
+                <MobileNavSubLink href="/customers/agencies" icon={Briefcase} title="Agencies" onClick={onClose}/>
+                <MobileNavSubLink href="/customers/events" icon={Calendar} title="Events" onClick={onClose}/>
+              </div>
+            )}
+
+            {/* Pricing */}
+            <Link
+              href="/pricing"
+              onClick={onClose}
+              className="block"
+              style={{ textDecoration: "none" }}
+            >
+              <div
+                className="w-full flex items-center justify-between py-5 text-left"
+                style={{ borderBottom: "1px solid var(--color-border)" }}
+              >
+                <span className="text-[22px] font-semibold tracking-tight">Pricing</span>
+                <ChevronRight className="h-6 w-6 opacity-60" />
+              </div>
+            </Link>
+
+            <div className="h-10" />
+          </div>
+
         </div>
-      </header>
+      </div>
     </div>
   );
 }
 
-/** Customers mega menu (persona-based, similar feel to Features) */
+/** Customers mega menu (persona-based, desktop only) */
 function CustomersMegaMenu() {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -249,11 +545,11 @@ function CustomersMegaMenu() {
     };
   }, [open]);
 
-  // Close whenever the route changes
+  // Close whenever the route changes (avoid setState directly in effect)
   useEffect(() => {
     clearCloseTimer();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOpen(false);
+    const t = setTimeout(() => setOpen(false), 0);
+    return () => clearTimeout(t);
   }, [pathname]);
 
   return (
@@ -297,7 +593,6 @@ function CustomersMegaMenu() {
             border border-[color:var(--color-border)]
             bg-[color:var(--color-surface)]
             text-[color:var(--color-text)]
-           
             grid gap-0
             [grid-template-columns:2fr_1.2fr]
           "
