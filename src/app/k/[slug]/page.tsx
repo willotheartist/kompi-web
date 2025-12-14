@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import type React from "react";
 import { prisma } from "@/lib/prisma";
 import { KCardPreview } from "@/components/k-cards/KCardPreview";
+import { getKCardFontClass } from "@/lib/fonts";
 import {
   DEFAULT_KCARD_THEME,
   type KCardThemeState,
@@ -126,29 +127,14 @@ export default async function PublicKCardPage(props: { params: Params }) {
     buttonShadow,
   } = theme;
 
-  const previewTitleFont = (() => {
-    switch (titleFont) {
-      case "serif":
-        return "font-serif";
-      case "display":
-        return "font-semibold tracking-tight";
-      default:
-        return "font-sans";
-    }
-  })();
+  const titleFontToken =
+    titleFont === "serif" ? "serif" : titleFont === "display" ? "display" : "system";
+  const pageFontToken =
+    pageFont === "serif" ? "serif" : pageFont === "display" ? "display" : "system";
 
-  const previewBodyFont = (() => {
-    switch (pageFont) {
-      case "serif":
-        return "font-serif";
-      case "display":
-        return "font-semibold tracking-tight";
-      default:
-        return "font-sans";
-    }
-  })();
-
-  const buttonBaseStyles: React.CSSProperties = {
+  const previewTitleFont = getKCardFontClass(titleFontToken as any);
+  const previewBodyFont = getKCardFontClass(pageFontToken as any);
+const buttonBaseStyles: React.CSSProperties = {
     borderRadius: buttonRadius,
     boxShadow:
       buttonShadow === "none"
