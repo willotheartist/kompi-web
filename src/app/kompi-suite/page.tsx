@@ -28,6 +28,8 @@ import  FKSuite1  from "@/components/ksuite/ksuite1";
 import  FKSuite2  from "@/components/ksuite/ksuite2";
 import  FKSuite3  from "@/components/ksuite/ksuite3";
 import Faqs from "@/components/faqs";
+import KompiDoes from "@/components/kompidoes";
+
 
 export const metadata: Metadata = {
   title:
@@ -239,6 +241,8 @@ export default function KompiSuitePage() {
       <FKSuite1 />
       <FKSuite2 />
       <FKSuite3 />
+
+      <KompiDoes />
 
       {/* ======================= FEATURE COMPARISON ======================= */}
       <section className="bg-[#F7F7F3] px-4 py-20 sm:px-6 lg:px-8">

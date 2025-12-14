@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 13/12/2025, 17:50:30*
+*Generated on: 14/12/2025, 15:56:33*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 555 |
-| 📁 Total Folders | 256 |
+| 📄 Total Files | 561 |
+| 📁 Total Folders | 262 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,12 +26,12 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 328 files (59.1%)
-- 🖼️ **.png** (PNG images): 71 files (12.8%)
-- 🔷 **.ts** (TypeScript files): 68 files (12.3%)
-- 📄 **.sql** (Other files): 22 files (4.0%)
+- ⚛️ **.tsx** (React TypeScript files): 334 files (59.5%)
+- 🖼️ **.png** (PNG images): 71 files (12.7%)
+- 🔷 **.ts** (TypeScript files): 68 files (12.1%)
+- 📄 **.sql** (Other files): 22 files (3.9%)
 - 🎨 **.css** (Stylesheets): 9 files (1.6%)
-- 🎨 **.svg** (SVG images): 7 files (1.3%)
+- 🎨 **.svg** (SVG images): 7 files (1.2%)
 - 📄 **.mjs** (Other files): 5 files (0.9%)
 - ⚙️ **.json** (JSON files): 4 files (0.7%)
 - 📄 **.bak_lintfix** (Other files): 4 files (0.7%)
@@ -71,21 +71,21 @@
 
 ### By Category
 
-- **React**: 328 files (59.1%)
-- **Assets**: 81 files (14.6%)
-- **TypeScript**: 68 files (12.3%)
-- **Other**: 57 files (10.3%)
+- **React**: 334 files (59.5%)
+- **Assets**: 81 files (14.4%)
+- **TypeScript**: 68 files (12.1%)
+- **Other**: 57 files (10.2%)
 - **Styles**: 9 files (1.6%)
-- **Config**: 7 files (1.3%)
+- **Config**: 7 files (1.2%)
 - **DevOps**: 2 files (0.4%)
 - **Docs**: 2 files (0.4%)
 - **JavaScript**: 1 files (0.2%)
 
 ### 📁 Largest Directories
 
-- **root**: 555 files
-- **src**: 426 files
-- **src/app**: 229 files
+- **root**: 561 files
+- **src**: 432 files
+- **src/app**: 235 files
 - **src/components**: 182 files
 - **public**: 81 files
 
@@ -270,6 +270,8 @@ kompi-web/
 │   │   │   ├── 📂 free-qr-code/
 │   │   │   │   └── 📂 with-logo/
 │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 hashtag-generator/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 landing-page-creator/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 qr-gen-online/
@@ -374,6 +376,14 @@ kompi-web/
 │   │   │   └── 📂 workspaces/
 │   │   │   │   └── 🔷 route.ts
 │   │   ├── 🖼️ apple-icon.png
+│   │   ├── 📂 blog/
+│   │   │   ├── 📂 instagram-hashtag-mistakes-2026/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 instagram-hashtag-strategy-2026/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── ⚛️ page.tsx
+│   │   │   └── 📂 qr-code-generator-that-people-actually-scan/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 claim/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 customers/
@@ -561,6 +571,8 @@ kompi-web/
 │   │   │   ├── 🎨 kr-codes.css
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 krcode2/
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 landing/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── ⚛️ layout.tsx
 │   │   ├── 📂 links/
