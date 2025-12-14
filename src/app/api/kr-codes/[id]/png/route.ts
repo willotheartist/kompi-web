@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { getKrCodeLinkAndUrl } from "../qr-helpers";
 import sharp from "sharp";
-import fs from "node:fs/promises";
-import path from "node:path";
 
 export const runtime = "nodejs";
 
@@ -77,12 +75,11 @@ export async function GET(req: Request, ctx: RouteContext) {
             logoBuffer = Buffer.from(base64, "base64");
           }
         } else if (logoUrl.startsWith("/")) {
-          const logoPath = path.join(
-            process.cwd(),
-            "public",
-            logoUrl.replace(/^\/+/, ""),
-          );
-          logoBuffer = await fs.readFile(logoPath);
+          const origin = new URL(req.url).origin;
+          const res = await fetch(origin + logoUrl, { cache: "force-cache" });
+          if (res.ok) {
+            logoBuffer = Buffer.from(await res.arrayBuffer());
+          }
         }
 
         if (logoBuffer) {
