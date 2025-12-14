@@ -41,16 +41,11 @@ export function Navbar() {
   const lastYRef = useRef(0);
   const ignoreScrollUntil = useRef<number | null>(null);
   const pathname = usePathname();
-
   const [mobileOpen, setMobileOpen] = useState(false);
 
   
   const closeMobile = useCallback(() => setMobileOpen(false), []);
-useEffect(() => {
-    // Close mobile menu on route change (defer to avoid set-state-in-effect rule)
-    const raf = requestAnimationFrame(() => setMobileOpen(false));
-    return () => cancelAnimationFrame(raf);
-  }, [pathname]);
+
 
   useEffect(() => {
     // Initialize the ignore window once on mount to avoid hydration issues
@@ -185,7 +180,7 @@ useEffect(() => {
             <button
               type="button"
               aria-label="Open menu"
-              onClick={() => setMobileOpen(true)}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); requestAnimationFrame(() => setMobileOpen(true)); }}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)]"
             >
               <Menu className="h-5 w-5" />
@@ -258,6 +253,7 @@ function MobileNav({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const lastPathRef = useRef<string>(pathname ?? "");
   const [expanded, setExpanded] = useState<MobileSectionId | null>(null);
 
   useEffect(() => {
@@ -268,11 +264,19 @@ function MobileNav({
   }, [open]);
 
   useEffect(() => {
-    if (!open) return;
-    // Close on route change (defer to avoid set-state-in-effect rule)
-    const raf = requestAnimationFrame(onClose);
-    return () => cancelAnimationFrame(raf);
-  }, [pathname, onClose, open]);
+    // Close ONLY when the route actually changes while the sheet is open.
+    if (!open) {
+      lastPathRef.current = pathname ?? "";
+      return;
+    }
+    const next = pathname ?? "";
+    if (lastPathRef.current !== next) {
+      const raf = requestAnimationFrame(onClose);
+      lastPathRef.current = next;
+      return () => cancelAnimationFrame(raf);
+    }
+    lastPathRef.current = next;
+  }, [pathname, open, onClose]);
 // lock scroll when open
   useEffect(() => {
     if (!open) return;
@@ -464,7 +468,6 @@ function CustomersMegaMenu() {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
-
   const CUSTOMERS = [
     {
       id: "creators",
