@@ -134,7 +134,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
           <div className="flex items-center gap-3 text-xs">
             <Link
               href="/links"
-              className="inline-flex items-center gap-2 text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
+              className="inline-flex items-center gap-2 text-[color:var(--color-subtle)] hover:text-(--color-text)"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to dashboard
@@ -152,7 +152,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
         </div>
 
         {/* Primary heading card */}
-        <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-sm md:px-6 md:py-6">
+        <GlassCard className="border border-(--color-border) bg-(--color-surface) px-5 py-5 shadow-sm md:px-6 md:py-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             {/* Left side: title + URLs + meta */}
             <div className="min-w-0 flex-1 space-y-2">
@@ -295,7 +295,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                 <BarChart3 className="h-4 w-4 opacity-80" />
                 <span>Total clicks</span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-[color:var(--color-text)]">
+              <p className="mt-2 text-2xl font-semibold text-(--color-text)">
                 {totalClicks.toLocaleString()}
               </p>
               <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">

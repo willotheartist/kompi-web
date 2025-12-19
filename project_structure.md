@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 14/12/2025, 15:56:33*
+*Generated on: 19/12/2025, 01:11:40*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 561 |
-| 📁 Total Folders | 262 |
+| 📄 Total Files | 569 |
+| 📁 Total Folders | 264 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,9 +26,9 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 334 files (59.5%)
-- 🖼️ **.png** (PNG images): 71 files (12.7%)
-- 🔷 **.ts** (TypeScript files): 68 files (12.1%)
+- ⚛️ **.tsx** (React TypeScript files): 336 files (59.1%)
+- 🖼️ **.png** (PNG images): 77 files (13.5%)
+- 🔷 **.ts** (TypeScript files): 69 files (12.1%)
 - 📄 **.sql** (Other files): 22 files (3.9%)
 - 🎨 **.css** (Stylesheets): 9 files (1.6%)
 - 🎨 **.svg** (SVG images): 7 files (1.2%)
@@ -67,14 +67,13 @@
 - 📄 **.fix_links_copy2** (Other files): 1 files (0.2%)
 - 📄 **.pre_pro_copy** (Other files): 1 files (0.2%)
 - 📄 **.bak_lintfix2** (Other files): 1 files (0.2%)
-- 📄 **.tsbuildinfo** (Other files): 1 files (0.2%)
 
 ### By Category
 
-- **React**: 334 files (59.5%)
-- **Assets**: 81 files (14.4%)
-- **TypeScript**: 68 files (12.1%)
-- **Other**: 57 files (10.2%)
+- **React**: 336 files (59.1%)
+- **Assets**: 87 files (15.3%)
+- **TypeScript**: 69 files (12.1%)
+- **Other**: 56 files (9.8%)
 - **Styles**: 9 files (1.6%)
 - **Config**: 7 files (1.2%)
 - **DevOps**: 2 files (0.4%)
@@ -83,11 +82,11 @@
 
 ### 📁 Largest Directories
 
-- **root**: 561 files
-- **src**: 432 files
-- **src/app**: 235 files
-- **src/components**: 182 files
-- **public**: 81 files
+- **root**: 569 files
+- **src**: 435 files
+- **src/app**: 236 files
+- **src/components**: 183 files
+- **public**: 87 files
 
 ## 🌳 Directory Structure
 
@@ -244,6 +243,13 @@ kompi-web/
 │   │   └── 📂 passgen/
 │   │   │   ├── 📄 password-gen-kompi.mp4
 │   │   │   └── 📄 password-generator-with-kompi.mp4
+│   ├── 📂 widgets/
+│   │   ├── 🖼️ widget2.png
+│   │   ├── 🖼️ widget3.png
+│   │   ├── 🖼️ widget4.png
+│   │   ├── 🖼️ widget5.png
+│   │   ├── 🖼️ widget6.png
+│   │   └── 🖼️ widget8.png
 │   ├── 🎨 window.svg
 │   └── 🖼️ workspacekompi.png
 ├── 🔷 qrcode.d.ts
@@ -380,6 +386,8 @@ kompi-web/
 │   │   │   ├── 📂 instagram-hashtag-mistakes-2026/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 instagram-hashtag-strategy-2026/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 link-in-bio-best-practices/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── ⚛️ page.tsx
 │   │   │   └── 📂 qr-code-generator-that-people-actually-scan/
@@ -781,6 +789,7 @@ kompi-web/
 │   │   ├── ⚛️ KBenefits.tsx
 │   │   ├── ⚛️ KolorKards.tsx
 │   │   ├── 🎨 kompi-promo-cards.css
+│   │   ├── ⚛️ kompidoes.tsx
 │   │   ├── ⚛️ KompiPerks.tsx
 │   │   ├── ⚛️ KPromo.tsx
 │   │   ├── 📂 kr-codes/
@@ -899,6 +908,7 @@ kompi-web/
 │   ├── 📚 lib/
 │   │   ├── 🔷 analytics-overview.ts
 │   │   ├── 🔷 auth.ts
+│   │   ├── 🔷 blog-route-index.ts
 │   │   ├── 🔷 email.ts
 │   │   ├── 🔷 fonts.ts
 │   │   ├── 🔷 plan-limits.ts
@@ -914,8 +924,7 @@ kompi-web/
 │   └── 📂 types/
 │   │   ├── 🔷 pdfjs-webpack.d.ts
 │   │   └── 📄 pdfjs-webpack.d.ts.bak_lintfix
-├── 🟡 🔷 **tsconfig.json**
-└── 📄 tsconfig.tsbuildinfo
+└── 🟡 🔷 **tsconfig.json**
 ```
 
 ## 📖 Legend

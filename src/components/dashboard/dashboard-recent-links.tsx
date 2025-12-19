@@ -50,14 +50,14 @@ export function DashboardRecentLinks({ links }: { links: LinkSummary[] }) {
     <section className="flex h-full flex-col gap-4">
       {/* Header – same sizing language as Lifetime / Activity */}
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold text-[color:var(--color-text)]">
+        <h2 className="text-xl font-semibold text-(--color-text)">
           Recent links
         </h2>
 
         {hasLinks && (
           <Link
             href="/links"
-            className="inline-flex items-center gap-1 text-sm font-medium text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
+            className="inline-flex items-center gap-1 text-sm font-medium text-(--color-subtle) hover:text-(--color-text)"
           >
             View all
             <ArrowRight className="h-3.5 w-3.5" />
@@ -66,17 +66,17 @@ export function DashboardRecentLinks({ links }: { links: LinkSummary[] }) {
       </div>
 
       {!hasLinks ? (
-        <div className="rounded-3xl border border-dashed border-[var(--color-border)] px-4 py-5 sm:px-5">
-          <p className="text-sm font-medium text-[color:var(--color-text)]">
+        <div className="rounded-3xl border border-dashed border-(--color-border) px-4 py-5 sm:px-5">
+          <p className="text-sm font-medium text-(--color-text)">
             No links yet.
           </p>
-          <p className="mt-1 text-sm text-[color:var(--color-subtle)]">
+          <p className="mt-1 text-sm text-(--color-subtle)">
             Create your first Kompi link to see it appear here.
           </p>
           <button
             type="button"
             onClick={() => router.push("/links/new")}
-            className="mt-3 inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[color:var(--color-text)] hover:bg-[var(--color-surface)]"
+            className="mt-3 inline-flex items-center gap-1 rounded-full border border-(--color-border) px-3 py-1.5 text-xs font-medium text-(--color-text) hover:bg-(--color-surface)"
           >
             <Link2 className="h-3.5 w-3.5" />
             Create a link
@@ -120,7 +120,7 @@ export function DashboardRecentLinks({ links }: { links: LinkSummary[] }) {
                     },
                   },
                 }}
-                className="group flex w-full items-center gap-3 rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-3 text-left text-sm transition-colors sm:px-4 sm:py-3.5 hover:bg-[var(--color-bg)]"
+                className="group flex w-full items-center gap-3 rounded-[18px] border border-(--color-border) bg-[var(--color-surface)] px-3.5 py-3 text-left text-sm transition-colors sm:px-4 sm:py-3.5 hover:bg-[var(--color-bg)]"
               >
                 <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-black/5">
                   <Link2 className="h-4 w-4 text-[color:var(--color-text)]" />

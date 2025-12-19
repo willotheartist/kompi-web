@@ -1,100 +1,150 @@
-//src/components/dashboard/dashboard-tips-card.tsx
+// src/components/dashboard/dashboard-tips-card.tsx
 "use client";
 
-import { BookOpen, ArrowRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { BookOpen, ArrowRight } from "lucide-react";
 
-type TipItemProps = {
-  label: string;
-  title: string;
+type TipCard = {
   href: string;
+  imageSrc: string;
+  title: string;
+  topic: string;
+  author: string;
 };
 
-function TipItem({ label, title, href }: TipItemProps) {
+function ArticleCard({ item }: { item: TipCard }) {
   return (
-    <motion.li
-      variants={{
-        hidden: { opacity: 0, y: 8 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration: 0.4,
-            ease: [0.22, 0.61, 0.36, 1],
-          },
-        },
-      }}
-      className="h-full"
+    <Link
+      href={item.href}
+      className="group block overflow-hidden rounded-[14px] bg-white"
+      aria-label={item.title}
     >
-      <Link
-        href={href}
-        className="group flex h-full items-center justify-between rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-bg)]"
-      >
-        <div className="flex flex-col gap-1">
-          <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
-            {label}
-          </span>
-          <p className="truncate text-sm font-medium text-[color:var(--color-text)]">
-            {title}
-          </p>
-        </div>
-        <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[color:var(--color-subtle)] transition-transform group-hover:translate-x-0.5" />
-      </Link>
-    </motion.li>
+      {/* Image: dominant and consistent */}
+      <div className="relative h-[150px] w-full overflow-hidden">
+        <Image
+          src={item.imageSrc}
+          alt={item.title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 1024px) 100vw, 360px"
+        />
+      </div>
+
+      {/* Title */}
+      <div className="px-6 py-4">
+        <h3 className="text-[19px] font-semibold leading-[1.15] tracking-[-0.015em] text-neutral-900">
+          {item.title}
+        </h3>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px w-full bg-neutral-200" />
+
+      {/* Topic row */}
+      <div className="grid grid-cols-2 items-center px-6 py-4 text-[12px]">
+        <span className="font-semibold text-neutral-900">Topic</span>
+        <span className="text-neutral-500">{item.topic}</span>
+      </div>
+
+      <div className="h-px w-full bg-neutral-200" />
+
+      {/* Author row + arrow */}
+      <div className="grid grid-cols-[auto,1fr,auto] items-center gap-3 px-6 py-4 text-[13px]">
+        <span className="font-semibold text-neutral-900">Written by:</span>
+        <span className="text-neutral-500">{item.author}</span>
+        <ArrowRight className="h-5 w-5 text-neutral-900 transition-transform group-hover:translate-x-0.5" />
+      </div>
+    </Link>
   );
 }
 
-// Pattern: TipsList_Mini – flat, same header rhythm as other sections
-export function DashboardTipsCard() {
+function ReadMoreCard() {
   return (
-    <section className="flex h-full flex-col gap-4">
-      {/* Header – same visual weight as Lifetime / Activity / Recent links */}
+    <Link
+      href="/growth"
+      className="group relative block h-full overflow-hidden rounded-[26px]"
+      style={{ backgroundColor: "#DDFB73" }}
+      aria-label="Read more useful articles"
+    >
+      <div className="flex h-full flex-col justify-between px-8 py-8">
+        <div className="max-w-[240px]">
+          <p className="text-[34px] font-semibold leading-[1.02] tracking-[-0.03em] text-neutral-900">
+            Read more
+            <br />
+            useful
+            <br />
+            articles to
+            <br />
+            help boost
+            <br />
+            your brand
+          </p>
+        </div>
+
+        <div className="mt-6 flex items-center justify-end gap-6">
+          <span className="text-2xl font-semibold text-neutral-900">→</span>
+          <span className="text-2xl font-semibold text-neutral-900">→</span>
+          <span className="text-2xl font-semibold text-neutral-900">→</span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export function DashboardTipsCard() {
+  const items: TipCard[] = [
+    {
+      href: "/growth",
+      imageSrc: "/tips/one.png",
+      title: "Five Ways to Use Kompi Cards to Get More Clients",
+      topic: "Marketing",
+      author: "Kompi Editorial",
+    },
+    {
+      href: "/growth",
+      imageSrc: "/tips/two.png",
+      title: "How to Turn a QR Scan Into a Repeat Customer",
+      topic: "Growth",
+      author: "Kompi Editorial",
+    },
+    {
+      href: "/growth",
+      imageSrc: "/tips/three.png",
+      title: "Build a Link Strategy That Works Across Every Platform",
+      topic: "Strategy",
+      author: "Kompi Editorial",
+    },
+  ];
+
+  return (
+    <section className="flex flex-col gap-6">
+      {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-xl font-semibold text-[color:var(--color-text)]">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-text)]">
+        <h2 className="flex items-center gap-3 text-xl font-semibold text-[color:var(--color-text)]">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[color:var(--color-text)]">
             <BookOpen className="h-4 w-4 text-[color:var(--color-text)]" />
           </span>
           <span>Tips &amp; playbooks</span>
         </h2>
 
-        <Link href="/growth"
+        <Link
+          href="/growth"
           className="text-sm font-medium text-[color:var(--color-subtle)] hover:text-[color:var(--color-text)]"
         >
           View all
         </Link>
       </div>
 
-      <motion.ul
-        className="grid gap-2 sm:grid-cols-3"
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: {},
-          visible: {
-            transition: {
-              staggerChildren: 0.06,
-              delayChildren: 0.04,
-            },
-          },
-        }}
-      >
-        <TipItem
-          label="Playbook"
-          title="5 ways to use Kompi Codes…"
-          href="/growth"
-        />
-        <TipItem
-          label="Guide"
-          title="Track campaigns with Kompi…"
-          href="/growth"
-        />
-        <TipItem
-          label="Inspiration"
-          title="Brands connecting print & digital…"
-          href="/growth"
-        />
-      </motion.ul>
+      {/* Layout: 3 wide cards + 1 narrower lime card (no page scroll) */}
+      <div className="w-full min-w-0 overflow-hidden">
+        <div className="grid w-full min-w-0 gap-6 grid-cols-[1fr_1fr_1fr_0.78fr]">
+          {items.map((item, idx) => (
+            <ArticleCard key={idx} item={item} />
+          ))}
+          <ReadMoreCard />
+        </div>
+      </div>
     </section>
   );
 }

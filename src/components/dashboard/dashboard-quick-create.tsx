@@ -21,11 +21,11 @@ type DashboardQuickCreateProps = {
 
 const COLORS = {
   // main palette
-  darkBg: "#0c4138", // link mode card bg
+  darkBg: "#f1f1f1", // link mode card bg
   lightBg: "#eaf77a", // KR mode card bg
   navy: "#0c4138", // toggle background / dark button
   neon: "#eaf77a", // selected toggle / light button
-  lightText: "#eaf77a",
+  lightText: "#1e2330",
   darkText: "#0c4138",
   underlineDark: "#194f43",
   underlineLight: "#c7e55d",

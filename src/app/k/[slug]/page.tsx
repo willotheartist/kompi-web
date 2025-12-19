@@ -51,6 +51,13 @@ const _SOCIAL_ICON_MAP: Record<
   Website: Globe2,
 };
 
+// ✅ Use the function signature to stay in sync with whatever getKCardFontClass expects
+type KCardFontToken = Parameters<typeof getKCardFontClass>[0];
+
+const toFontToken = (v: unknown): KCardFontToken => {
+  return v === "serif" || v === "display" ? v : "system";
+};
+
 export async function generateMetadata(props: {
   params: Params;
 }): Promise<Metadata> {
@@ -89,7 +96,6 @@ export default async function PublicKCardPage(props: { params: Params }) {
   const { slug } = await resolveParams(props.params);
 
   const kcard = await getPublicKCardBySlug(slug);
-
   if (!kcard) notFound();
 
   const data = (kcard.data ?? {}) as KCardsInitialData;
@@ -127,14 +133,15 @@ export default async function PublicKCardPage(props: { params: Params }) {
     buttonShadow,
   } = theme;
 
-  const titleFontToken =
-    titleFont === "serif" ? "serif" : titleFont === "display" ? "display" : "system";
-  const pageFontToken =
-    pageFont === "serif" ? "serif" : pageFont === "display" ? "display" : "system";
+  // ✅ Typed tokens (no `any`)
+  const titleFontToken: KCardFontToken = toFontToken(titleFont);
+  const pageFontToken: KCardFontToken = toFontToken(pageFont);
 
-  const previewTitleFont = getKCardFontClass(titleFontToken as any);
-  const previewBodyFont = getKCardFontClass(pageFontToken as any);
-const buttonBaseStyles: React.CSSProperties = {
+  // ✅ No casts needed
+  const previewTitleFont = getKCardFontClass(titleFontToken);
+  const previewBodyFont = getKCardFontClass(pageFontToken);
+
+  const buttonBaseStyles: React.CSSProperties = {
     borderRadius: buttonRadius,
     boxShadow:
       buttonShadow === "none"
@@ -201,7 +208,7 @@ const buttonBaseStyles: React.CSSProperties = {
             avatarPreview={avatarDataUrl}
             socials={socials}
             visibleLinks={visibleLinks}
-        contact={data.contact}
+            contact={data.contact}
             buttonBaseStyles={buttonBaseStyles}
             avatarSize={avatarSize}
             headerTextSize={headerTextSize}

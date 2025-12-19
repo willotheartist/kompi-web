@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Eye,
   Link2,
-  MousePointer2,
   QrCode,
-  FilePlus2,
+  IdCard,
+  MessageSquare,
+  UserPlus,
 } from "lucide-react";
 
 type DashboardMode = "overview" | "performance";
@@ -22,71 +22,60 @@ type DashboardHeroStatsProps = {
   };
 };
 
-const formatNumber = (value: number) => {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}m`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
-  return value.toLocaleString();
+const formatNumber = (value: number) => value.toLocaleString();
+
+type StatCard = {
+  label: string;
+  value: string;
+  delta: string; // keep as string so you can later swap to real computed deltas
+  Icon: React.ComponentType<{ className?: string }>;
 };
 
 export function DashboardHeroStats({ stats }: DashboardHeroStatsProps) {
-  const { totalClicks, activeLinks, avgClicks } = stats;
+  const { totalClicks, activeLinks } = stats;
 
-  // Derived temporary stats until you wire real data
-  const linksCreated = activeLinks;
-  const qrCodesCreated = 0;
-  const qrScans = totalClicks;
-
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    // Defer state update to the next animation frame to satisfy
-    // react-hooks/set-state-in-effect (no synchronous setState in the effect body)
-    const frame = requestAnimationFrame(() => {
-      setMounted(true);
-    });
-
-    return () => {
-      cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  const cards = [
-    { label: "Clicks", metric: formatNumber(totalClicks), Icon: Eye },
-    { label: "Links", metric: formatNumber(activeLinks), Icon: Link2 },
-    { label: "Avg / link", metric: formatNumber(avgClicks), Icon: MousePointer2 },
-    { label: "Links made", metric: formatNumber(linksCreated), Icon: FilePlus2 },
-    { label: "QRs made", metric: formatNumber(qrCodesCreated), Icon: QrCode },
-    { label: "QR scans", metric: formatNumber(qrScans), Icon: QrCode },
+  // NOTE: placeholders until wired (design-first)
+  const cards: StatCard[] = [
+    { label: "Views", value: formatNumber(totalClicks), delta: "+0%", Icon: Eye },
+    { label: "Links created", value: formatNumber(activeLinks), delta: "+0%", Icon: Link2 },
+    { label: "QR Scans", value: formatNumber(0), delta: "+0%", Icon: QrCode },
+    { label: "K-Card Taps", value: formatNumber(0), delta: "+0%", Icon: IdCard },
+    { label: "Messages", value: formatNumber(0), delta: "+0%", Icon: MessageSquare },
+    { label: "Leads", value: formatNumber(0), delta: "+0%", Icon: UserPlus },
   ];
 
   return (
-    <section className="space-y-4 sm:space-y-5">
-      <h1 className="text-xl font-semibold sm:text-2xl">Lifetime totals</h1>
+    <section className="space-y-4">
+      <h1 className="text-2xl font-semibold">Lifetime totals</h1>
 
-      {/* One row, clean, evenly spaced */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
-        {cards.map(({ label, metric, Icon }, index) => (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        {cards.map(({ label, value, delta, Icon }) => (
           <div
             key={label}
-            className={`flex items-center gap-3 rounded-[24px] px-4 py-3 sm:px-5 sm:py-4 transition-all duration-300
-              ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
-            style={{
-              backgroundColor: "var(--muted)",
-              transitionDelay: `${index * 60}ms`,
-            }}
+            className="rounded-2xl bg-white p-5"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70">
-              <Icon className="h-4 w-4" style={{ color: "var(--color-subtle)" }} />
-            </div>
+            <div className="text-sm font-medium text-neutral-700">{label}</div>
 
-            <div className="flex flex-col">
-              <span className="text-lg font-semibold sm:text-xl">{metric}</span>
-              <span
-                className="text-xs sm:text-sm"
-                style={{ color: "var(--color-subtle)" }}
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-full"
+                  style={{ backgroundColor: "rgba(162, 184, 255, 0.55)" }}
+                >
+                  <Icon className="h-5 w-5 text-neutral-900" />
+                </div>
+
+                <div className="text-4xl font-semibold tracking-tight text-neutral-900">
+                  {value}
+                </div>
+              </div>
+
+              <div
+                className="rounded-full px-3 py-1 text-xs font-medium text-neutral-900"
+                style={{ backgroundColor: "#DDFB73" }}
               >
-                {label}
-              </span>
+                {delta}
+              </div>
             </div>
           </div>
         ))}

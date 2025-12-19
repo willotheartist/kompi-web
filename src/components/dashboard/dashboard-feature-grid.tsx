@@ -1,151 +1,134 @@
+// src/components/dashboard/dashboard-feature-grid.tsx
 "use client";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { GlassCard } from "@/components/dashboard/glass-card";
 
-type ToolConfig = {
+type FeatureCardConfig = {
+  bg: string; // hex
+  heading: string; // can include \n
+  body: string;
+  href: string;
   imageSrc: string;
   imageAlt: string;
-  headingLines: [string, string, string, string]; // last line is accent
-  body: string; // let the browser wrap this nicely
-  href: string;
 };
 
-type ToolCardProps = ToolConfig & {
+type FeatureCardProps = FeatureCardConfig & {
   onClick: () => void;
 };
 
-// Single tool card – cream background, image left, controlled heading, natural body wrap.
-function ToolCard({
+function FeatureCard({
+  bg,
+  heading,
+  body,
   imageSrc,
   imageAlt,
-  headingLines,
-  body,
   onClick,
-}: ToolCardProps) {
-  const [h1, h2, h3, hAccent] = headingLines;
-
+}: FeatureCardProps) {
   return (
-    <div
-      className="flex flex-col items-center gap-4 rounded-[30px] px-4 py-4 sm:flex-row sm:items-center sm:gap-6 sm:px-5 sm:py-5"
-      style={{
-        backgroundColor: "#FFF1E3", // warm cream
-      }}
+    <button
+      type="button"
+      onClick={onClick}
+      className="group w-full rounded-[28px] p-8 text-center transition-transform hover:-translate-y-0.5"
+      style={{ backgroundColor: bg }}
     >
-      {/* Left: PNG visual */}
-      <div className="relative w-full max-w-[190px] sm:max-w-[210px]">
-        <div className="relative aspect-[4/5] w-full">
-          <Image
-            src={imageSrc}
-            alt={imageAlt}
-            fill
-            className="object-contain"
-          />
-        </div>
-      </div>
-
-      {/* Right: copy + CTA – nudged left for better alignment */}
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-4 text-left sm:-ml-4">
-        <div className="space-y-3 max-w-[230px] sm:max-w-[260px]">
-          {/* Heading – 3 lines + 1 accent line */}
-          <h3
-            className="text-[1.5rem] font-semibold leading-[1.02]"
-            style={{ letterSpacing: "-0.04em" }}
-          >
-            <span className="block">{h1}</span>
-            <span className="block">{h2}</span>
-            <span className="block">{h3}</span>
-            <span
-              className="block"
-              style={{
-                fontFamily:
-                  "var(--font-accent, var(--font-primary, system-ui, -apple-system, BlinkMacSystemFont, sans-serif))",
-                fontWeight: 400,
-                fontStyle: "italic",
-                fontSize: "1.15em",
-                letterSpacing: "-0.03em",
-              }}
-            >
-              {hAccent}
-            </span>
-          </h3>
-
-          {/* Body – single string, natural wrap */}
-          <p
-            className="text-[0.85rem] leading-[1.5]"
-            style={{ color: "var(--color-subtle)" }}
-          >
-            {body}
-          </p>
-        </div>
-
-        {/* CTA – always "Get Started" */}
-        <button
-          type="button"
-          onClick={onClick}
-          className="mt-1 inline-flex w-fit items-center justify-center rounded-full px-6 py-2.5 text-sm font-semibold"
+      <div className="flex h-full flex-col items-center">
+        {/* Headline (centered, non-italic, not semibold) */}
+        <h3
+          className="whitespace-pre-line leading-[0.95] tracking-[-0.03em]"
           style={{
-            backgroundColor: "#D4FF3E",
-            color: "#000000",
-            letterSpacing: "-0.02em",
+            fontFamily:
+              "var(--font-accent, var(--font-primary, system-ui, -apple-system, BlinkMacSystemFont, sans-serif))",
+            fontSize: "2.4rem",
+            color: "#0B0B0B",
+            fontWeight: 400,
+            fontStyle: "normal",
           }}
         >
-          Get Started
-        </button>
+          {heading}
+        </h3>
+
+        {/* Image only (no white box, no visible wrapper) */}
+        <div className="mt-10 w-full">
+          <div className="relative mx-auto h-[140px] w-[78%]">
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              fill
+              className="object-contain"
+              sizes="(max-width: 1280px) 60vw, 260px"
+            />
+          </div>
+        </div>
+
+        {/* Bottom copy (centered) */}
+        <p className="mt-6 max-w-[320px] text-[0.86rem] leading-tight text-black/85">
+          {body}
+        </p>
       </div>
-    </div>
+    </button>
   );
 }
 
-// Pattern: FeatureGrid_Dashboard – three promo cards in one panel
 export function DashboardFeatureGrid() {
   const router = useRouter();
 
-  const tools: ToolConfig[] = [
+  const cards: FeatureCardConfig[] = [
     {
-      imageSrc: "/kcard-dashboard-card.png",
-      imageAlt: "K-Card example",
-      headingLines: ["Your", "digital", "card,", "optimized."],
+      bg: "#DDFB73",
+      heading: "Make your links\nfeel intentional",
       body:
-        "Customize your K-Card, track performance, and make every interaction count.",
-      href: "/k-cards",
-    },
-    {
-      imageSrc: "/kr-dashboard-card.png",
-      imageAlt: "Kompi Codes example",
-      headingLines: ["Your", "QR", "menus,", "upgraded."],
-      body:
-        "Design Kompi Codes for menus, posters and packaging, then see what gets scanned.",
-      href: "/qr-menus",
-    },
-    {
-      imageSrc: "/links-dashboard-card.png",
-      imageAlt: "Kompi links example",
-      headingLines: ["Your", "links,", "all in", "one."],
-      body:
-        "Create clean Kompi links and bio pages that stay in sync across every channel.",
+        "Paste a URL and Kompi turns it into something clean, quick, and easy to trust. Name it your way, reuse it anywhere.",
       href: "/links/new",
+      imageSrc: "/links-dashboard-card.png",
+      imageAlt: "Kompi links",
+    },
+    {
+      bg: "#EAD7E7",
+      heading: "Know what landed.",
+      body:
+        "See what’s getting clicks, where people came from, and what they used — so you can double down on what works.",
+      href: "/analytics",
+      imageSrc: "/kompi-analytics.png",
+      imageAlt: "Kompi analytics",
+    },
+    {
+      bg: "#B7CADB",
+      heading: "Look like you,\neverywhere",
+      body:
+        "Connect your own domain so every share looks legit, consistent, and professional — without the technical fuss.",
+      href: "/dashboard/settings/domains",
+      imageSrc: "/kompi-branding.png",
+      imageAlt: "Kompi branding",
+    },
+    {
+      bg: "#D7CEC3",
+      heading: "Meet people where\nthey are",
+      body:
+        "Menus, posters, packaging, stickers — turn anything into a doorway. Add a QR and send people exactly where you want.",
+      href: "/kr-codes",
+      imageSrc: "/kr-dashboard-card.png",
+      imageAlt: "Kompi codes",
     },
   ];
 
   return (
-    <GlassCard className="space-y-4 bg-[var(--color-bg)]">
+    <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold sm:text-lg">
           Tools to Grow Your Audience
         </h2>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        {tools.map((tool) => (
-          <ToolCard
-            key={tool.href}
-            {...tool}
-            onClick={() => router.push(tool.href)}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {cards.map((c) => (
+          <FeatureCard
+            key={c.href}
+            {...c}
+            onClick={() => router.push(c.href)}
           />
         ))}
       </div>
-    </GlassCard>
+    </section>
   );
 }
