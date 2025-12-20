@@ -1,5 +1,4 @@
 // src/app/dashboard/qr-menus/[id]/create-krcode/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -12,29 +11,8 @@ type SessionUserWithId = {
 };
 
 type RouteContext = {
-  params:
-    | { id?: string }
-    | Promise<{ id?: string }>
-    | undefined;
+  params: Promise<{ id: string }>;
 };
-
-async function resolveId(raw: RouteContext["params"]): Promise<string | null> {
-  if (!raw) return null;
-
-  // Handle Next 16 weirdness where params can be a Promise
-  if (raw instanceof Promise) {
-    const resolved = (await raw) ?? {};
-    const id = (resolved as { id?: unknown }).id;
-    return typeof id === "string" ? id : null;
-  }
-
-  if (typeof raw === "object" && raw !== null && "id" in raw) {
-    const id = (raw as { id?: unknown }).id;
-    return typeof id === "string" ? id : null;
-  }
-
-  return null;
-}
 
 export async function GET(
   req: NextRequest,
@@ -50,17 +28,15 @@ export async function GET(
       return NextResponse.redirect(signin);
     }
 
-    const id = await resolveId(context.params);
+    const { id } = await context.params;
+
     if (!id) {
       const fallback = new URL("/dashboard/qr-menus", req.url);
       return NextResponse.redirect(fallback);
     }
 
     const menu = await prisma.menu.findFirst({
-      where: {
-        id,
-        userId,
-      },
+      where: { id, userId },
     });
 
     if (!menu || !menu.slug) {
@@ -102,7 +78,6 @@ export async function GET(
       });
     }
 
-    // ✅ Take the user straight to the created code
     const target = new URL(`/kr-codes/${krCode.id}`, req.url);
     return NextResponse.redirect(target);
   } catch (err) {

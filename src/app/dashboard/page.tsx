@@ -1,5 +1,4 @@
 // src/app/dashboard/page.tsx
-
 import { prisma } from "@/lib/prisma";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
@@ -12,23 +11,18 @@ import { CreateWorkspaceEmpty } from "@/components/dashboard/create-workspace-em
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     workspaceId?: string;
-  };
+  }>;
 };
 
-type LinkRecord = Awaited<
-  ReturnType<typeof prisma.link.findMany>
->[number];
+type LinkRecord = Awaited<ReturnType<typeof prisma.link.findMany>>[number];
 
 export default async function DashboardPage(props: PageProps) {
-  const searchParams = await props.searchParams;
+  const searchParams = (await props.searchParams) ?? {};
 
   const user = await requireUser();
-  const workspace = await getActiveWorkspace(
-    user.id,
-    searchParams?.workspaceId
-  );
+  const workspace = await getActiveWorkspace(user.id, searchParams.workspaceId ?? null);
 
   if (!workspace) {
     return (
@@ -44,8 +38,7 @@ export default async function DashboardPage(props: PageProps) {
     take: 15,
   });
 
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   const links: LinkSummary[] = linksRaw.map((link: LinkRecord) => {
     const code = link.code ?? null;
@@ -64,7 +57,6 @@ export default async function DashboardPage(props: PageProps) {
   return (
     <DashboardLayout>
       <DashboardShell links={links} />
-
     </DashboardLayout>
   );
 }

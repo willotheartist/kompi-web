@@ -1,5 +1,3 @@
-// src/app/dashboard/contact-forms/[id]/page.tsx
-
 import type { Metadata } from "next";
 import { ContactFormDetail } from "../contact-form-detail";
 
@@ -8,11 +6,11 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
-export default function ContactFormDetailPage({ params }: PageProps) {
-  const { id } = params;
+export default async function ContactFormDetailPage({ params }: PageProps) {
+  const { id } = await params;
 
   return (
     <main className="wf-dashboard-main flex flex-col gap-6">

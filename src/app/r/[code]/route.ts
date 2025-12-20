@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
+// src/app/r/[code]/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -10,17 +9,12 @@ function normalizeTargetUrl(raw: string): string {
   return `https://${trimmed}`;
 }
 
-type CodeParams = { code: string } | Promise<{ code: string }>;
+type RouteContext = {
+  params: Promise<{ code: string }>;
+};
 
-async function resolveParams(params: CodeParams): Promise<{ code: string }> {
-  return params instanceof Promise ? await params : params;
-}
-
-export async function GET(
-  req: Request,
-  ctx: { params: CodeParams }
-) {
-  const { code } = await resolveParams(ctx.params);
+export async function GET(req: Request, ctx: RouteContext) {
+  const { code } = await ctx.params;
 
   const link = await prisma.link.findFirst({
     where: { code, isActive: true },
@@ -40,24 +34,19 @@ export async function GET(
   const _utmCampaign = url.searchParams.get("utm_campaign");
 
   try {
-    // ✅ Match your Prisma schema: no _utmSource/_utmMedium/_utmCampaign fields here
     await prisma.clickEvent.create({
       data: {
         linkId: link.id,
         referer,
         userAgent,
-        // If your ClickEvent model has an ip field, you can also add:
-        // ip: req.headers.get("x-forwarded-for") || null,
       },
     });
 
-    // also increment the simple counter used by dashboards
     await prisma.link.update({
       where: { id: link.id },
       data: { clicks: { increment: 1 } },
     });
   } catch (err) {
-    // Don't silently swallow the bug again
     console.error("Error while logging ClickEvent for /r/[code]:", err);
   }
 

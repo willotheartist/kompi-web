@@ -1,6 +1,8 @@
+// src/app/dashboard/settings/billing/page.tsx
 import type { ReactNode, CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
+
 import {
   Card,
   CardHeader,
@@ -9,6 +11,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
 import { UpgradeButton } from "@/components/billing/upgrade-button";
 import { ManageBillingButton } from "@/components/billing/manage-billing-button";
@@ -17,13 +20,25 @@ import { getPlanLimits } from "@/lib/plan-limits";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Next.js 16 generated PageProps expects searchParams to be Promise-like in its
+ * type checks. This keeps you compatible with the build-time generated types.
+ */
 type BillingPageProps = {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+function pickFirst(v: string | string[] | undefined): string | undefined {
+  if (typeof v === "string") return v;
+  if (Array.isArray(v)) return v[0];
+  return undefined;
+}
 
 export default async function DashboardBillingSettingsPage({
   searchParams,
 }: BillingPageProps) {
+  const sp = (await searchParams) ?? {};
+
   const user = await requireUser();
   const workspace = await getActiveWorkspace(user.id, null);
 
@@ -61,13 +76,10 @@ export default async function DashboardBillingSettingsPage({
   ];
 
   // Current plan first (so Creator sits on top if you're on Creator)
-  const orderedPlans = isCreator
-    ? [plans[1], plans[0]]
-    : [plans[0], plans[1]];
+  const orderedPlans = isCreator ? [plans[1], plans[0]] : [plans[0], plans[1]];
 
-  const statusParam = searchParams?.status;
-  const status =
-    typeof statusParam === "string" ? statusParam.toLowerCase() : undefined;
+  const statusParam = pickFirst(sp.status);
+  const status = statusParam ? statusParam.toLowerCase() : undefined;
 
   let statusTitle: string | null = null;
   let statusBody: string | null = null;
@@ -92,23 +104,17 @@ export default async function DashboardBillingSettingsPage({
         <h1 className="text-[22px] font-semibold tracking-tight md:text-[24px]">
           Billing &amp; Plans
         </h1>
-        <p
-          className="text-sm max-w-xl"
-          style={{ color: "var(--color-subtle)" }}
-        >
-          Review your current plan, upgrade Kompi, or manage your billing
-          details via Stripe.
+        <p className="text-sm max-w-xl" style={{ color: "var(--color-subtle)" }}>
+          Review your current plan, upgrade Kompi, or manage your billing details
+          via Stripe.
         </p>
       </header>
 
       {/* Status strip */}
       {statusTitle && statusBody && (
-        <div className="rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-4 py-3 text-sm">
+        <div className="rounded-2xl border border-(--color-border) bg-(--color-bg) px-4 py-3 text-sm">
           <p className="font-medium">{statusTitle}</p>
-          <p
-            className="mt-0.5"
-            style={{ color: "var(--color-subtle)" }}
-          >
+          <p className="mt-0.5" style={{ color: "var(--color-subtle)" }}>
             {statusBody}
           </p>
         </div>
@@ -148,7 +154,6 @@ export default async function DashboardBillingSettingsPage({
           const baseTextColor = isCreatorCard ? "#F9FAFB" : "#111827";
           const secondaryTextColor = isCreatorCard ? "#D1D5DB" : "#4B5563";
 
-          // Title styling (Instrument Serif via wf-serif-accent, regular, bigger)
           const titleStyle: CSSProperties = {
             color: isCreatorCard ? "#C6D2FF" : baseTextColor,
             fontWeight: 400,
@@ -168,8 +173,8 @@ export default async function DashboardBillingSettingsPage({
               <div className="flex flex-col gap-6 p-6 md:flex-row md:p-8">
                 {/* Left: image only for Creator */}
                 {isCreatorCard ? (
-                  <div className="w-full md:w-[260px] md:flex-shrink-0">
-                    <div className="overflow-hidden rounded-[24px]">
+                  <div className="w-full md:w-[260px] md:shrink-0">
+                    <div className="overflow-hidden rounded-3xl">
                       <Image
                         src="/kompi-analytics.png"
                         alt="Kompi Creator plan visual"
@@ -193,7 +198,6 @@ export default async function DashboardBillingSettingsPage({
                           {p.name}
                         </CardTitle>
 
-                        {/* Current pill – Inter Tight + lime green */}
                         {isCurrent && (
                           <span
                             className="rounded-full px-3 py-1 text-[11px] font-medium tracking-wide"
@@ -217,7 +221,6 @@ export default async function DashboardBillingSettingsPage({
                       </CardDescription>
                     </div>
 
-                    {/* Price – Instrument Serif, regular, larger */}
                     <p
                       className="text-[22px] md:text-[24px]"
                       style={{
@@ -233,7 +236,6 @@ export default async function DashboardBillingSettingsPage({
                   </CardHeader>
 
                   <CardContent className="mt-4 space-y-6 p-0">
-                    {/* Features */}
                     <ul
                       className="space-y-1.5 text-sm"
                       style={{ color: secondaryTextColor }}
@@ -243,7 +245,6 @@ export default async function DashboardBillingSettingsPage({
                       ))}
                     </ul>
 
-                    {/* Divider */}
                     <div
                       className="h-px w-full"
                       style={{
@@ -253,7 +254,6 @@ export default async function DashboardBillingSettingsPage({
                       }}
                     />
 
-                    {/* Helper + actions */}
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                       {helperCopy && (
                         <p

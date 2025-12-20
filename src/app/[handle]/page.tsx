@@ -13,10 +13,9 @@ import {
 } from "@/components/k-cards/kcard-theme-presets";
 import type { KCardsInitialData } from "@/components/k-cards/KCardsPage";
 
-type Params = { handle: string } | Promise<{ handle: string }>;
-async function resolveParams(params: Params): Promise<{ handle: string }> {
-  return params instanceof Promise ? await params : params;
-}
+type PageProps = {
+  params: Promise<{ handle: string }>;
+};
 
 const getPublicKCard = cache(async (handle: string) => {
   if (!handle) return null;
@@ -27,10 +26,10 @@ const getPublicKCard = cache(async (handle: string) => {
   });
 });
 
-export async function generateMetadata(props: {
-  params: Params;
-}): Promise<Metadata> {
-  const { handle } = await resolveParams(props.params);
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { handle } = await params;
   const kcard = await getPublicKCard(handle);
 
   if (!kcard || !kcard.isPublic) {
@@ -59,8 +58,8 @@ export async function generateMetadata(props: {
   };
 }
 
-export default async function PublicHandlePage(props: { params: Params }) {
-  const { handle } = await resolveParams(props.params);
+export default async function PublicHandlePage({ params }: PageProps) {
+  const { handle } = await params;
 
   const kcard = await getPublicKCard(handle);
   if (!kcard || !kcard.isPublic) notFound();

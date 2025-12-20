@@ -44,7 +44,7 @@ const SEO_VIDEO_SRC = `/seo/${SLUG}.mp4`;
 const SEO_VIDEO_ABS = `${DOMAIN}${SEO_VIDEO_SRC}`;
 
 const BRAND_NAME = "Kompi";
-const PRIMARY_KEYWORD = "hashtag generator";
+const _PRIMARY_KEYWORD = "hashtag generator";
 
 const LSI_KEYWORDS: string[] = [
   "hashtag generator",
@@ -188,7 +188,7 @@ function ColorBand({
   );
 }
 
-function IconBubble({
+function _IconBubble({
   icon: Icon,
   bg = "#ffffff",
   color = "#111827",
@@ -306,7 +306,7 @@ function BandHeader({
 
 function HashtagHeroBand() {
   return (
-    <ColorBand className="bg-lime-300 min-h-[100svh] pt-24 pb-14 md:pt-28 md:pb-20">
+    <ColorBand className="bg-lime-300 min-h-svh pt-24 pb-14 md:pt-28 md:pb-20">
       <div className="grid gap-10 md:grid-cols-12 items-center">
         <div className="md:col-span-6 space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-neutral-900 ring-1 ring-black/10">

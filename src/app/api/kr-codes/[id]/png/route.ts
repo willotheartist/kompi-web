@@ -7,16 +7,12 @@ import sharp from "sharp";
 export const runtime = "nodejs";
 
 type RouteContext = {
-  params: { id: string } | Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 };
-
-async function resolveParams(params: RouteContext["params"]) {
-  return params instanceof Promise ? await params : params;
-}
 
 export async function GET(req: Request, ctx: RouteContext) {
   try {
-    const { id } = await resolveParams(ctx.params);
+    const { id } = await ctx.params;
 
     if (!id) {
       return new NextResponse("Missing id", { status: 400 });
@@ -32,19 +28,15 @@ export async function GET(req: Request, ctx: RouteContext) {
         : "transparent";
 
     // qrcode lib wants real colors, not "transparent"
-    const bg =
-      bgRaw.toLowerCase() === "transparent" ? "#FFFFFF" : bgRaw;
+    const bg = bgRaw.toLowerCase() === "transparent" ? "#FFFFFF" : bgRaw;
 
-    const margin =
-      typeof style.margin === "number" ? style.margin : 2;
-    const baseSize =
-      typeof style.size === "number" ? style.size : 240;
+    const margin = typeof style.margin === "number" ? style.margin : 2;
+    const baseSize = typeof style.size === "number" ? style.size : 240;
 
     // Keep exports fairly large for print
     const width = Math.max(512, baseSize * 2);
 
-    const hasLogo =
-      !!style.logoUrl && style.logoEnabled !== false;
+    const hasLogo = !!style.logoUrl && style.logoEnabled !== false;
 
     const ecLevel =
       hasLogo && style.ecLevel !== "H" ? "H" : style.ecLevel ?? "M";
@@ -120,10 +112,7 @@ export async function GET(req: Request, ctx: RouteContext) {
             gravity: "centre",
           });
 
-          outputBuffer = await qrImage
-            .composite(composites)
-            .png()
-            .toBuffer();
+          outputBuffer = await qrImage.composite(composites).png().toBuffer();
         }
       } catch (e) {
         console.error("KR Code PNG logo composite failed", e);

@@ -15,7 +15,6 @@ function pickEntity(input: PSEOPageInput) {
 }
 
 export function generateDecisionTable(input: PSEOPageInput): PSEOSection {
-  const kw = input.primaryKeyword.toLowerCase();
   const { value: entity, type: entityType } = pickEntity(input);
 
   const lines: string[] = [];
@@ -26,7 +25,6 @@ export function generateDecisionTable(input: PSEOPageInput): PSEOSection {
 
   lines.push(`Decision table (practical rules you can follow today):`);
 
-  // Core “when to choose what” rules (keep these bullet-dense for quality gate + usefulness)
   lines.push(
     row(
       `You want to change content after printing`,
@@ -83,7 +81,6 @@ export function generateDecisionTable(input: PSEOPageInput): PSEOSection {
     `If you’re unsure: start with one placement + one destination, measure baseline performance, then split placements once you have data.`
   );
 
-  // Small entity-aware nudge (still deterministic)
   if (entityType === "industry") {
     lines.push(
       `For ${entity} specifically: prioritize “remove friction” destinations first (menu/service list, booking/contact, or a single offer).`

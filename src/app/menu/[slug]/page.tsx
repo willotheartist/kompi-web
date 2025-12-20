@@ -3,4 +3,13 @@
 
 export const dynamic = "force-dynamic";
 
-export { default } from "@/app/m/[slug]/page";
+import MPage from "@/app/m/[slug]/page";
+
+type PageProps = {
+  params?: Promise<{ slug: string }>;
+};
+
+export default async function MenuSlugPage({ params }: PageProps) {
+  const resolved = (await params) ?? { slug: "" };
+  return <MPage params={resolved} />;
+}

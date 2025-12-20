@@ -26,19 +26,15 @@ export function buildPSEOPage(
   const sections = [
     generateIntro(input),
 
-    // BIG value payload:
     generateIdeaLibrary(input),
     generateCTASwipe(input),
     generatePlacementGuide(input),
 
-    // Information gain (must-have for ranking):
     generateDecisionTable(input),
     generateFailureCases(input),
 
-    // Mid-article re-anchoring:
     generateCheckpoint(input),
 
-    // Supporting depth:
     generateUseCases(input),
     generateExamples(input),
     generateKompiAngle(input),
@@ -57,15 +53,11 @@ export function buildPSEOPage(
     index: input.index,
   };
 
-  // Quality gate -> indexing
   if (!passesQualityGate(page)) {
     page.index = false;
 
-    // Optional: help you debug quickly during dev/build
-    // (Keep or remove; safe in prod, just noisier.)
     if (process.env.NODE_ENV !== "production") {
       const report = qualityReport(page);
-      // eslint-disable-next-line no-console
       console.warn(`[PSEO] noindex: /blog/${page.slug}`, report.reasons);
     }
   }

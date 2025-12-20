@@ -6,10 +6,10 @@ import { buildPSEOPage } from "../src/lib/pseo/page-builder";
 import { qualityReport } from "../src/lib/pseo/quality-gate";
 import type { PSEOPageInput } from "../src/lib/pseo/types";
 
-function readJsonArray(relPath: string): any[] {
+function readJsonArray(relPath: string): unknown[] {
   const abs = path.join(process.cwd(), relPath);
   const raw = fs.readFileSync(abs, "utf8");
-  const data = JSON.parse(raw);
+  const data: unknown = JSON.parse(raw);
   if (!Array.isArray(data)) throw new Error(`${relPath} is not an array`);
   return data;
 }
@@ -33,7 +33,9 @@ function dedupeBySlug(pages: PSEOPageInput[]): PSEOPageInput[] {
 
 function getAllPages(): PSEOPageInput[] {
   const manual = asPages(readJsonArray("src/content/pseo/datasets/qr-ideas.json"));
-  const generated = asPages(readJsonArray("src/content/pseo/datasets/qr-ideas.generated.json"));
+  const generated = asPages(
+    readJsonArray("src/content/pseo/datasets/qr-ideas.generated.json")
+  );
   return dedupeBySlug([...manual, ...generated]);
 }
 

@@ -2,17 +2,12 @@ import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { prisma } from "@/lib/prisma";
 
-type IdParams = { id: string } | Promise<{ id: string }>;
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
 
-async function resolveParams(params: IdParams): Promise<{ id: string }> {
-  return params instanceof Promise ? await params : params;
-}
-
-export async function GET(
-  _req: Request,
-  ctx: { params: IdParams }
-) {
-  const { id } = await resolveParams(ctx.params);
+export async function GET(_req: Request, ctx: RouteContext) {
+  const { id } = await ctx.params;
 
   const link = await prisma.link.findUnique({
     where: { id },
@@ -22,8 +17,7 @@ export async function GET(
     return new NextResponse("Not found", { status: 404 });
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const fullUrl = `${baseUrl}/r/${link.code}`;
 
   try {

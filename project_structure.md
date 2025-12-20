@@ -1,12 +1,12 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 20/12/2025, 14:19:03*
+*Generated on: 20/12/2025, 17:24:44*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 604 |
+| 📄 Total Files | 607 |
 | 📁 Total Folders | 274 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
@@ -26,14 +26,14 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 340 files (56.3%)
-- 🔷 **.ts** (TypeScript files): 87 files (14.4%)
-- 🖼️ **.png** (PNG images): 84 files (13.9%)
+- ⚛️ **.tsx** (React TypeScript files): 340 files (56.0%)
+- 🔷 **.ts** (TypeScript files): 89 files (14.7%)
+- 🖼️ **.png** (PNG images): 84 files (13.8%)
 - 📄 **.sql** (Other files): 22 files (3.6%)
 - 🎨 **.css** (Stylesheets): 11 files (1.8%)
+- 📄 **.mjs** (Other files): 7 files (1.2%)
 - 🎨 **.svg** (SVG images): 7 files (1.2%)
 - ⚙️ **.json** (JSON files): 6 files (1.0%)
-- 📄 **.mjs** (Other files): 6 files (1.0%)
 - 📄 **.bak_lintfix** (Other files): 4 files (0.7%)
 - 📄 **.mp4** (Other files): 3 files (0.5%)
 - 📖 **.md** (Markdown files): 2 files (0.3%)
@@ -71,10 +71,10 @@
 
 ### By Category
 
-- **React**: 340 files (56.3%)
-- **Assets**: 94 files (15.6%)
-- **TypeScript**: 87 files (14.4%)
-- **Other**: 58 files (9.6%)
+- **React**: 340 files (56.0%)
+- **Assets**: 94 files (15.5%)
+- **TypeScript**: 89 files (14.7%)
+- **Other**: 59 files (9.7%)
 - **Styles**: 11 files (1.8%)
 - **Config**: 9 files (1.5%)
 - **DevOps**: 2 files (0.3%)
@@ -83,7 +83,7 @@
 
 ### 📁 Largest Directories
 
-- **root**: 604 files
+- **root**: 607 files
 - **src**: 461 files
 - **src/app**: 239 files
 - **src/components**: 186 files
@@ -265,13 +265,16 @@ kompi-web/
 ├── 🔷 qrcode.d.ts
 ├── 🔴 📖 **README.md**
 ├── 📂 scripts/
+│   ├── 📄 backfill-pseo-dates.mjs
+│   ├── 🔷 check-qr-indexability.ts
 │   ├── 📄 debug-db.mjs
 │   ├── 📄 debug-events.mjs
 │   ├── 📄 gen-qr-ideas.mjs
 │   ├── 📂 python3 scripts/
 │   │   └── 📄 patch_kcards_header_v2.py
 │   ├── 📄 smoke.sh
-│   └── 📄 test-click-event.mjs
+│   ├── 📄 test-click-event.mjs
+│   └── 🔷 why-noindex.ts
 ├── 📄 settings.tar.gz
 ├── 📁 src/
 │   ├── 🚀 app/

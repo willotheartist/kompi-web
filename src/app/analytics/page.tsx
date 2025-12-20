@@ -8,14 +8,18 @@ import { CreateWorkspaceEmpty } from "@/components/dashboard/create-workspace-em
 export const dynamic = "force-dynamic";
 
 type AnalyticsPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     workspaceId?: string;
-  };
+  }>;
 };
 
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
   const user = await requireUser();
-  const workspace = await getActiveWorkspace(user.id, searchParams?.workspaceId ?? null);
+
+  const sp = (await searchParams) ?? {};
+  const workspaceId = sp.workspaceId ?? null;
+
+  const workspace = await getActiveWorkspace(user.id, workspaceId);
 
   if (!workspace) {
     return (

@@ -1,5 +1,4 @@
 // src/app/api/qr-menus/[id]/create-krcode/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -12,32 +11,9 @@ type SessionUserWithId = {
 };
 
 type RouteContext = {
-  params:
-    | { id?: string }
-    | Promise<{ id?: string }>
-    | undefined;
+  params: Promise<{ id: string }>;
 };
 
-async function resolveId(raw: RouteContext["params"]): Promise<string | null> {
-  if (!raw) return null;
-
-  // Handle potential Promise from Next.js for params
-  if (raw instanceof Promise) {
-    const resolved = (await raw) ?? {};
-    const id = (resolved as { id?: unknown }).id;
-    return typeof id === "string" ? id : null;
-  }
-
-  if (typeof raw === "object" && raw !== null && "id" in raw) {
-    const id = (raw as { id?: unknown }).id;
-    return typeof id === "string" ? id : null;
-  }
-
-  return null;
-}
-
-// You can change this to GET if your original route used GET;
-// the TypeScript fix is the same either way.
 export async function POST(
   req: NextRequest,
   context: RouteContext
@@ -48,18 +24,13 @@ export async function POST(
     const userId = user?.id ?? undefined;
 
     if (!userId) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const id = await resolveId(context.params);
+    const { id } = await context.params;
+
     if (!id) {
-      return NextResponse.json(
-        { error: "Menu id is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Menu id is required" }, { status: 400 });
     }
 
     const menu = await prisma.menu.findFirst({
@@ -76,15 +47,10 @@ export async function POST(
       );
     }
 
-    // Compute a robust origin:
-    // 1. Prefer request Origin header
-    // 2. Then NEXT_PUBLIC_APP_URL env or URL-derived origin
-    // 3. Finally fallback to hardcoded kompi.app
+    // Robust origin:
     const headerOrigin = req.headers.get("origin");
-
     const url = new URL(req.url);
     const urlOrigin = `${url.protocol}//${url.host}`;
-
     const envOrUrlOrigin = process.env.NEXT_PUBLIC_APP_URL ?? urlOrigin;
     const origin = headerOrigin ?? envOrUrlOrigin ?? "https://kompi.app";
 
@@ -122,18 +88,9 @@ export async function POST(
       });
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        krCode,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, krCode }, { status: 200 });
   } catch (err) {
     console.error("API_QR_MENUS_CREATE_KRCODE_ERROR", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

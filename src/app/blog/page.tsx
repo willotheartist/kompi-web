@@ -1,278 +1,168 @@
-// src/app/blog/[slug]/page.tsx
+// src/app/blog/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import Image from "next/image";
+import { ArrowUpRight, BookOpen } from "lucide-react";
 
-import { buildPSEOPage } from "@/lib/pseo/page-builder";
-import { getAllPSEOPages, getPSEOPageBySlug, getSiblingPages } from "@/lib/pseo/dataset";
-import AutoLinkedContent from "@/components/seo/AutoLinkedContent";
+import { Navbar } from "@/components/navbar";
+import { FooterCTA } from "@/components/footer-cta";
+import { getBlogRoutesIndex, type BlogRoutePost } from "@/lib/blog-route-index";
 
-import { buildTLDR, extractExamples, buildPlaybook, buildTOC } from "@/lib/pseo/enhancers";
+const DOMAIN = "https://kompi.app";
+const CANONICAL = "/blog";
 
-import "./blog-article.css";
+export const metadata: Metadata = {
+  title: "Kompi Blog",
+  description: "Practical articles on creator growth, hashtags, links, QR, and tracking.",
+  alternates: { canonical: CANONICAL },
+  openGraph: {
+    type: "website",
+    url: `${DOMAIN}${CANONICAL}`,
+    title: "Kompi Blog",
+    description: "Practical articles on creator growth, hashtags, links, QR, and tracking.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kompi Blog",
+    description: "Practical articles on creator growth, hashtags, links, QR, and tracking.",
+  },
+  robots: { index: true, follow: true },
+};
 
-type ParamsPromise = Promise<{ slug: string }>;
-
-const BASE_URL = "https://kompi.app";
-
-function safeISODate(value: unknown, fallback: string): string {
-  if (typeof value !== "string") return fallback;
-  const v = value.trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return fallback;
-  return v;
+function Container({ children }: { children: React.ReactNode }) {
+  return <div className="mx-auto w-full max-w-6xl px-4">{children}</div>;
 }
 
-export async function generateStaticParams() {
-  return getAllPSEOPages().map((p) => ({ slug: p.slug }));
+/**
+ * ✅ Fix for Next App Router dynamic href error:
+ * Even if you *think* you're passing `/blog/${slug}`, your `getBlogRoutesIndex()`
+ * is likely still returning `slug: "[slug]"` or `href: "/blog/[slug]"` for some items.
+ *
+ * This helper guarantees the final URL contains no bracket params.
+ */
+function safeBlogHref(p: Partial<BlogRoutePost>): string {
+  const slug = (p.slug ?? "").toString().trim();
+
+  // If slug is missing or still "[slug]" fallback to a safe non-dynamic page.
+  if (!slug || slug === "[slug]" || slug.includes("[") || slug.includes("]")) return "/blog";
+
+  return `/blog/${slug}`;
 }
 
-export async function generateMetadata({ params }: { params: ParamsPromise }): Promise<Metadata> {
-  const { slug } = await params;
-
-  const input = getPSEOPageBySlug(slug);
-  if (!input) return {};
-
-  const siblings = getSiblingPages(input);
-  const built = buildPSEOPage(input, siblings);
-
-  const url = `${BASE_URL}/blog/${input.slug}`;
-
-  return {
-    title: built.title,
-    description: built.description,
-    alternates: { canonical: url },
-
-    openGraph: {
-      type: "article",
-      url,
-      title: built.title,
-      description: built.description,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: built.title,
-      description: built.description,
-    },
-
-    robots: built.index ? { index: true, follow: true } : { index: false, follow: true },
-  };
-}
-
-function labelFromHref(href: string) {
-  const raw = href.replace("/blog/", "").replaceAll("-", " ").trim();
-  return raw.length ? raw : "Related article";
-}
-
-export default async function PSEOPage({ params }: { params: ParamsPromise }) {
-  const { slug } = await params;
-
-  const input = getPSEOPageBySlug(slug);
-  if (!input) return notFound();
-
-  const siblings = getSiblingPages(input);
-  const built = buildPSEOPage(input, siblings);
-
-  const currentUrl = `/blog/${input.slug}`;
-  const absoluteUrl = `${BASE_URL}${currentUrl}`;
-
-  const tldr = buildTLDR(built.sections);
-  const examples = extractExamples(built.sections, 24);
-  const playbook = buildPlaybook(built.title);
-  const toc = buildTOC(built.sections);
-
-  const today = new Date().toISOString().slice(0, 10);
-
-  // ✅ Prefer dataset dates (stable for Google)
-  const publishedAt = safeISODate(input.publishedAt, today);
-  const updatedAt = safeISODate(input.updatedAt ?? input.publishedAt, publishedAt);
-
-  const jsonLd =
-    built.index
-      ? {
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: built.title,
-          description: built.description,
-          mainEntityOfPage: absoluteUrl,
-          datePublished: publishedAt,
-          dateModified: updatedAt,
-          author: { "@type": "Organization", name: "Kompi" },
-          publisher: { "@type": "Organization", name: "Kompi" },
-        }
-      : null;
+export default function BlogPage() {
+  const posts = getBlogRoutesIndex();
+  const featured = posts[0];
+  const rest = posts.slice(1);
 
   return (
-    <main className="k-article-wrap">
-      {jsonLd ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      ) : null}
+    <div className="min-h-screen bg-white text-neutral-900">
+      <Navbar />
 
-      <div className="k-shell">
-        <div className="k-grid">
-          <article className="k-article" style={{ paddingLeft: 0, paddingRight: 0 }}>
-            {!built.index && (
-              <div
-                style={{
-                  marginBottom: 18,
-                  padding: 12,
-                  borderRadius: 12,
-                  background: "rgba(255, 200, 0, .12)",
-                  color: "rgba(0,0,0,.75)",
-                  fontSize: 13,
-                }}
+      <main className="pt-0">
+        <section className="border-b border-black/10 bg-linear-to-b from-[#F7F7F4] to-white pt-24 md:pt-28 pb-10">
+          <Container>
+            <div className="flex flex-col gap-5">
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-700">
+                <BookOpen className="h-4 w-4" />
+                Kompi Blog
+              </div>
+
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-neutral-950">
+                Articles for clean, measurable growth.
+              </h1>
+
+              <p className="max-w-2xl text-base md:text-lg leading-relaxed text-neutral-700">
+                Short, practical reads you can apply today.
+              </p>
+            </div>
+          </Container>
+        </section>
+
+        <section className="py-10 md:py-14">
+          <Container>
+            {featured ? (
+              <Link
+                href={safeBlogHref(featured)}
+                className="group grid gap-6 md:grid-cols-12 items-stretch rounded-4xl border border-black/10 bg-white shadow-sm hover:shadow-xl transition overflow-hidden"
               >
-                This page is currently <strong>noindex</strong> (quality gate). It will still pass
-                internal links and can be improved later.
+                <div className="md:col-span-7 relative aspect-16/10 md:aspect-auto md:min-h-[340px]">
+                  <Image
+                    src={featured.cover}
+                    alt={featured.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 900px"
+                    priority
+                  />
+                </div>
+
+                <div className="md:col-span-5 p-7 md:p-10 flex flex-col justify-between gap-6">
+                  <div className="space-y-3">
+                    <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-neutral-950">
+                      {featured.title}
+                    </h2>
+                    {featured.description ? (
+                      <p className="text-neutral-700 leading-relaxed">{featured.description}</p>
+                    ) : null}
+                  </div>
+
+                  <div className="inline-flex items-center gap-2 font-semibold text-neutral-950">
+                    Read article{" "}
+                    <ArrowUpRight className="h-4 w-4 opacity-70 group-hover:opacity-100 transition" />
+                  </div>
+                </div>
+              </Link>
+            ) : (
+              <div className="rounded-3xl border border-black/10 bg-[#F7F7F4] p-10 text-center">
+                <div className="text-xl font-bold text-neutral-950">No posts found</div>
+                <div className="mt-2 text-neutral-700">
+                  Create route folders in{" "}
+                  <code className="px-2 py-1 rounded bg-white border border-black/10">
+                    src/app/blog/&lt;slug&gt;/page.tsx
+                  </code>
+                </div>
               </div>
             )}
+          </Container>
+        </section>
 
-            <header>
-              <div className="k-eyebrow">Kompi Blog</div>
-              <h1 className="k-title">{built.title}</h1>
-              <p className="k-subtitle">{built.description}</p>
-
-              <div className="k-meta">
-                <span className="k-avatar" aria-hidden="true" />
-                <span>Kompi Editorial</span>
-                <span>·</span>
-                <span>Updated {updatedAt}</span>
-              </div>
-
-              <div className="k-divider" />
-
-              {tldr.bullets.length > 0 && (
-                <div className="k-tldr">
-                  <h4>Key takeaways</h4>
-                  <ul>
-                    {tldr.bullets.map((b, i) => (
-                      <li key={i}>{b}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </header>
-
-            <section className="k-content k-dropcap">
-              {built.sections.map((s, idx) => (
-                <section key={s.id} id={toc[idx]?.id || s.id}>
-                  <h2>{s.title}</h2>
-                  <AutoLinkedContent text={s.content} currentUrl={currentUrl} className="k-prose" as="div" />
-                </section>
-              ))}
-
-              {examples.length > 0 && (
-                <section>
-                  <h2>Examples you can copy</h2>
-                  <p>
-                    Use these as starting points. Keep one QR per placement, measure results for a
-                    week, then iterate.
-                  </p>
-
-                  <div className="k-examples">
-                    {examples.map((ex, i) => (
-                      <div key={i} className="k-example">
-                        <h5>{ex.title}</h5>
-                        <dl>
-                          {ex.linkTo && (
-                            <div>
-                              <dt>Link to</dt>
-                              <dd>{ex.linkTo}</dd>
-                            </div>
-                          )}
-                          {ex.cta && (
-                            <div>
-                              <dt>CTA</dt>
-                              <dd>{ex.cta}</dd>
-                            </div>
-                          )}
-                          {ex.tracking && (
-                            <div>
-                              <dt>Tracking</dt>
-                              <dd>{ex.tracking}</dd>
-                            </div>
-                          )}
-                        </dl>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              <section>
-                <h2>A simple 3-week playbook</h2>
-                <div className="k-playbook">
-                  {playbook.map((w, i) => (
-                    <div key={i} className="k-week">
-                      <h5>{w.title}</h5>
-                      <ul>
-                        {w.bullets.map((b, j) => (
-                          <li key={j}>{b}</li>
-                        ))}
-                      </ul>
+        {rest.length ? (
+          <section className="pb-16 md:pb-24">
+            <Container>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {rest.map((p: BlogRoutePost) => (
+                  <Link
+                    key={p.slug}
+                    href={safeBlogHref(p)}
+                    className="group rounded-3xl border border-black/10 bg-white shadow-sm hover:shadow-lg transition overflow-hidden"
+                  >
+                    <div className="relative aspect-16/10 w-full">
+                      <Image
+                        src={p.cover}
+                        alt={p.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 520px"
+                      />
                     </div>
-                  ))}
-                </div>
-              </section>
-            </section>
 
-            <aside className="k-related">
-              <h4>Related</h4>
-              {built.internalLinks.map((href) => (
-                <Link key={href} href={href}>
-                  {labelFromHref(href)}
-                </Link>
-              ))}
-            </aside>
-          </article>
+                    <div className="p-6 md:p-7 space-y-3">
+                      <div className="text-xl font-extrabold tracking-tight text-neutral-950">{p.title}</div>
+                      {p.description ? <div className="text-neutral-700 leading-relaxed">{p.description}</div> : null}
 
-          <aside className="k-aside">
-            <div className="k-sticky">
-              <div className="k-panel">
-                <h4>Try Kompi</h4>
-                <Link className="k-btn" href="/qr-code/dynamic">
-                  Create a dynamic QR
-                </Link>
-                <div
-                  style={{
-                    marginTop: 10,
-                    fontSize: 13,
-                    color: "rgba(0,0,0,.6)",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Editable destination + tracking. Use one QR per placement to learn what actually
-                  works.
-                </div>
+                      <div className="pt-1 inline-flex items-center gap-2 font-semibold text-neutral-950">
+                        Read <ArrowUpRight className="h-4 w-4 opacity-70 group-hover:opacity-100 transition" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
+            </Container>
+          </section>
+        ) : null}
+      </main>
 
-              <div className="k-panel">
-                <h4>On this page</h4>
-                <nav aria-label="On this page">
-                  <div style={{ display: "grid", gap: 8, fontSize: 13, lineHeight: 1.45 }}>
-                    {toc.map((t) => (
-                      <a key={t.id} href={`#${t.id}`}>
-                        {t.title}
-                      </a>
-                    ))}
-                  </div>
-                </nav>
-              </div>
-
-              <div className="k-panel">
-                <h4>More tools</h4>
-                <div style={{ display: "grid", gap: 8, fontSize: 13 }}>
-                  <Link href="/qr-menus">QR menus</Link>
-                  <Link href="/qr-code/with-logo">QR with logo</Link>
-                  <Link href="/features/url-shortener">URL shortener</Link>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </main>
+      <FooterCTA />
+    </div>
   );
 }

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function pickParam(v: string | string[] | undefined, fallback: string): string {
@@ -21,9 +21,11 @@ function pickParam(v: string | string[] | undefined, fallback: string): string {
   return Array.isArray(v) ? v[0] ?? fallback : v;
 }
 
-export default function ClaimPage({ searchParams }: Props) {
-  const handle = pickParam(searchParams?.handle, "");
-  const callbackUrl = pickParam(searchParams?.callbackUrl, "/dashboard");
+export default async function ClaimPage({ searchParams }: Props) {
+  const sp = (await searchParams) ?? {};
+
+  const handle = pickParam(sp.handle, "");
+  const callbackUrl = pickParam(sp.callbackUrl, "/dashboard");
 
   const signinHref =
     `/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` +

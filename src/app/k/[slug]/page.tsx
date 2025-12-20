@@ -1,10 +1,6 @@
 // src/app/k/[slug]/page.tsx
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import type React from "react";
 import { prisma } from "@/lib/prisma";
 import { KCardPreview } from "@/components/k-cards/KCardPreview";
 import { getKCardFontClass } from "@/lib/fonts";
@@ -13,55 +9,23 @@ import {
   type KCardThemeState,
 } from "@/components/k-cards/kcard-theme-presets";
 import type { KCardsInitialData } from "@/components/k-cards/KCardsPage";
-import {
-  Instagram,
-  Youtube,
-  Music2,
-  Facebook,
-  Linkedin,
-  MessageCircle,
-  Mail,
-  Globe2,
-} from "lucide-react";
 import { ClaimHandleCTA } from "@/components/k-cards/ClaimHandleCTA";
 
-type Params = { slug: string } | Promise<{ slug: string }>;
+type PageProps = {
+  params: Promise<{ slug: string }>;
+};
 
-async function resolveParams(params: Params): Promise<{ slug: string }> {
-  return params instanceof Promise ? await params : params;
-}
-
-// ✅ Dedupes DB reads between generateMetadata() and the page render (per request)
 const getPublicKCardBySlug = async (slug: string) => {
   return prisma.kCard.findFirst({ where: { slug, isPublic: true } });
 };
 
-// (kept as-is; currently unused in this file, but harmless)
-const _SOCIAL_ICON_MAP: Record<
-  string,
-  React.ComponentType<React.SVGProps<SVGSVGElement>>
-> = {
-  Instagram,
-  YouTube: Youtube,
-  TikTok: Music2,
-  Twitter: Facebook, // placeholder
-  LinkedIn: Linkedin,
-  WhatsApp: MessageCircle,
-  Email: Mail,
-  Website: Globe2,
-};
-
-// ✅ Use the function signature to stay in sync with whatever getKCardFontClass expects
 type KCardFontToken = Parameters<typeof getKCardFontClass>[0];
-
 const toFontToken = (v: unknown): KCardFontToken => {
   return v === "serif" || v === "display" ? v : "system";
 };
 
-export async function generateMetadata(props: {
-  params: Params;
-}): Promise<Metadata> {
-  const { slug } = await resolveParams(props.params);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
 
   const kcard = await getPublicKCardBySlug(slug);
 
@@ -69,16 +33,15 @@ export async function generateMetadata(props: {
     return {
       title: "K-Card not found",
       description: "This K-Card is not available.",
+      robots: { index: false, follow: false },
     };
   }
 
   const data = (kcard.data ?? {}) as KCardsInitialData;
   const title = data.title || "@yourname";
-  const description =
-    data.subtitle || "All your important links in one K-Card.";
+  const description = data.subtitle || "All your important links in one K-Card.";
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-  // keep /k/ working, but canonicalize to clean /{slug}
   return {
     title,
     description,
@@ -92,8 +55,8 @@ export async function generateMetadata(props: {
   };
 }
 
-export default async function PublicKCardPage(props: { params: Params }) {
-  const { slug } = await resolveParams(props.params);
+export default async function PublicKCardPage({ params }: PageProps) {
+  const { slug } = await params;
 
   const kcard = await getPublicKCardBySlug(slug);
   if (!kcard) notFound();
@@ -112,6 +75,7 @@ export default async function PublicKCardPage(props: { params: Params }) {
     avatarSize = "medium",
     headerTextSize = "medium",
     avatarShadow = "shadow",
+    contact,
   } = data || {};
 
   const theme: KCardThemeState = {
@@ -133,13 +97,8 @@ export default async function PublicKCardPage(props: { params: Params }) {
     buttonShadow,
   } = theme;
 
-  // ✅ Typed tokens (no `any`)
-  const titleFontToken: KCardFontToken = toFontToken(titleFont);
-  const pageFontToken: KCardFontToken = toFontToken(pageFont);
-
-  // ✅ No casts needed
-  const previewTitleFont = getKCardFontClass(titleFontToken);
-  const previewBodyFont = getKCardFontClass(pageFontToken);
+  const previewTitleFont = getKCardFontClass(toFontToken(titleFont));
+  const previewBodyFont = getKCardFontClass(toFontToken(pageFont));
 
   const buttonBaseStyles: React.CSSProperties = {
     borderRadius: buttonRadius,
@@ -174,23 +133,16 @@ export default async function PublicKCardPage(props: { params: Params }) {
 
   const wallpaperStyle: React.CSSProperties = { background: wallpaper };
 
-  const visibleLinks =
-    (linksRaw ?? []).filter((l) => l && l.enabled !== false) ?? [];
-
+  const visibleLinks = (linksRaw ?? []).filter((l) => l && l.enabled !== false);
   const socials = socialsRaw ?? ["Instagram", "YouTube", "Website"];
 
-  // send to claim page with suggested handle + destination back to clean URL
   const claimHref = `/claim?handle=${encodeURIComponent(
     slug
   )}&callbackUrl=${encodeURIComponent(`/${slug}`)}`;
 
   return (
-    <main
-      className="min-h-screen flex items-center justify-center"
-      style={wallpaperStyle}
-    >
+    <main className="min-h-screen flex items-center justify-center" style={wallpaperStyle}>
       <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10">
-        {/* Wrap preview so we can overlay CTA "on the card" without editing KCardPreview */}
         <div className="relative w-full">
           <KCardPreview
             variant="public"
@@ -204,23 +156,20 @@ export default async function PublicKCardPage(props: { params: Params }) {
             titleColor={titleColor}
             pageTextColor={pageTextColor}
             titleSize={titleSize}
-            profileLayout={profileLayout}
+            _profileLayout={profileLayout}   
             avatarPreview={avatarDataUrl}
             socials={socials}
             visibleLinks={visibleLinks}
-            contact={data.contact}
+            contact={contact}
             buttonBaseStyles={buttonBaseStyles}
             avatarSize={avatarSize}
             headerTextSize={headerTextSize}
             avatarShadow={avatarShadow}
           />
 
-          {/* CTA overlay (positioned "on the card") */}
           <div
             className="pointer-events-none absolute inset-x-0 flex justify-center"
-            style={{
-              bottom: 78, // tuned to sit above the card's footer area (adjust if needed)
-            }}
+            style={{ bottom: 78 }}
           >
             <div className="pointer-events-auto">
               <ClaimHandleCTA

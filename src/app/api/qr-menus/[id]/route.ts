@@ -1,10 +1,11 @@
+// src/app/api/qr-menus/[id]/route.ts
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
 type RouteParams = {
-  params: unknown;
+  params: Promise<{ id: string }>;
 };
 
 type SessionUserWithId = {
@@ -13,37 +14,6 @@ type SessionUserWithId = {
   email?: string | null;
   image?: string | null;
 };
-
-async function resolveId(rawParams: unknown): Promise<string | null> {
-  try {
-    if (!rawParams) return null;
-
-    // If Next hands us a Promise-like params (some 16.x behaviours)
-    if (
-      typeof rawParams === "object" &&
-      rawParams !== null &&
-      "then" in rawParams &&
-      typeof (rawParams as { then?: unknown }).then === "function"
-    ) {
-      const resolved = (await (rawParams as Promise<{ id?: unknown }>)) ?? {};
-      const id = resolved.id;
-      return typeof id === "string" ? id : null;
-    }
-
-    if (
-      typeof rawParams === "object" &&
-      rawParams !== null &&
-      "id" in rawParams
-    ) {
-      const id = (rawParams as { id?: unknown }).id;
-      return typeof id === "string" ? id : null;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 // GET /api/qr-menus/[id]
 export async function GET(_req: Request, { params }: RouteParams) {
@@ -56,7 +26,8 @@ export async function GET(_req: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = await resolveId(params);
+    const { id } = await params;
+
     if (!id) {
       return NextResponse.json(
         { error: "Invalid menu id in route params" },
@@ -87,8 +58,7 @@ export async function GET(_req: Request, { params }: RouteParams) {
     });
   } catch (err: unknown) {
     console.error("QR-MENU GET ERROR", err);
-    const message =
-      err instanceof Error ? err.message : "Internal server error (GET)";
+    const message = err instanceof Error ? err.message : "Internal server error (GET)";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -104,7 +74,8 @@ export async function PUT(req: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = await resolveId(params);
+    const { id } = await params;
+
     if (!id) {
       return NextResponse.json(
         { error: "Invalid menu id in route params" },
@@ -138,10 +109,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
     };
 
     if (!title || !slug) {
-      return NextResponse.json(
-        { error: "Title and slug are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Title and slug are required" }, { status: 400 });
     }
 
     const existing = await prisma.menu.findFirst({
@@ -155,19 +123,13 @@ export async function PUT(req: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    // Prisma knows the exact type for this field; reuse it instead of hand-rolling unions
     type SectionsField = Prisma.MenuUpdateInput["sections"];
 
     const existingSectionsRaw = existing.sections;
-    let existingSections: SectionsField;
-
-    if (existingSectionsRaw === null) {
-      // Use the JsonNull sentinel for "real" JSON null
-      existingSections = Prisma.JsonNull as SectionsField;
-    } else {
-      // Existing non-null JSON value
-      existingSections = existingSectionsRaw as unknown as SectionsField;
-    }
+    const existingSections: SectionsField =
+      existingSectionsRaw === null
+        ? (Prisma.JsonNull as SectionsField)
+        : (existingSectionsRaw as unknown as SectionsField);
 
     const nextSections: SectionsField =
       sections !== undefined
@@ -214,8 +176,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
     }
   } catch (err: unknown) {
     console.error("QR-MENU UPDATE ERROR", err);
-    const message =
-      err instanceof Error ? err.message : "Internal server error (PUT)";
+    const message = err instanceof Error ? err.message : "Internal server error (PUT)";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-//src/app/api/kr-codes/[id]/logo/route.ts
+// src/app/api/kr-codes/[id]/logo/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
@@ -12,14 +12,10 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-async function resolveParams(params: RouteContext["params"]) {
-  return params instanceof Promise ? await params : params;
-}
-
 export async function POST(req: Request, ctx: RouteContext) {
   try {
     const user = await requireUser();
-    const { id } = await resolveParams(ctx.params);
+    const { id } = await ctx.params;
 
     if (!id) {
       return new NextResponse("Missing id", { status: 400 });
@@ -54,8 +50,9 @@ export async function POST(req: Request, ctx: RouteContext) {
       file.type === "image/png"
         ? "png"
         : file.type === "image/jpeg"
-        ? "jpg"
-        : "png";
+          ? "jpg"
+          : "png";
+
     const fileName = `${id}.${ext}`;
     const filePath = path.join(uploadDir, fileName);
 

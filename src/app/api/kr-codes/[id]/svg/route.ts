@@ -8,16 +8,12 @@ import path from "node:path";
 export const runtime = "nodejs";
 
 type RouteContext = {
-  params: { id: string } | Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 };
-
-async function resolveParams(params: RouteContext["params"]) {
-  return params instanceof Promise ? await params : params;
-}
 
 export async function GET(req: Request, ctx: RouteContext) {
   try {
-    const { id } = await resolveParams(ctx.params);
+    const { id } = await ctx.params;
 
     if (!id) {
       return new NextResponse("Missing id", { status: 400 });
@@ -31,15 +27,13 @@ export async function GET(req: Request, ctx: RouteContext) {
         ? style.bg
         : "transparent";
 
-    const bg =
-      bgRaw.toLowerCase() === "transparent" ? "#FFFFFF" : bgRaw;
+    const bg = bgRaw.toLowerCase() === "transparent" ? "#FFFFFF" : bgRaw;
 
     const margin = style.margin ?? 2;
     const baseSize = style.size ?? 240;
     const width = Math.max(512, baseSize * 2);
 
-    const hasLogo =
-      !!style.logoUrl && style.logoEnabled !== false;
+    const hasLogo = !!style.logoUrl && style.logoEnabled !== false;
 
     const ecLevel =
       hasLogo && style.ecLevel !== "H" ? "H" : style.ecLevel ?? "M";
@@ -66,14 +60,15 @@ export async function GET(req: Request, ctx: RouteContext) {
           const logoPath = path.join(
             process.cwd(),
             "public",
-            logoUrl.replace(/^\/+/, ""),
+            logoUrl.replace(/^\/+/, "")
           );
           const logoBuffer = await fs.readFile(logoPath);
           const base64 = logoBuffer.toString("base64");
           const lower = logoPath.toLowerCase();
-          const mime = lower.endsWith(".jpg") || lower.endsWith(".jpeg")
-            ? "image/jpeg"
-            : "image/png";
+          const mime =
+            lower.endsWith(".jpg") || lower.endsWith(".jpeg")
+              ? "image/jpeg"
+              : "image/png";
           logoDataUri = `data:${mime};base64,${base64}`;
         }
 

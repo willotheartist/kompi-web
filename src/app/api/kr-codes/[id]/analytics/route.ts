@@ -6,14 +6,10 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-async function resolveParams(params: RouteContext["params"]) {
-  return params instanceof Promise ? await params : params;
-}
-
 export async function GET(_req: Request, ctx: RouteContext) {
   try {
     const user = await requireUser();
-    const { id } = await resolveParams(ctx.params);
+    const { id } = await ctx.params;
 
     if (!id) {
       return new NextResponse("Missing id", { status: 400 });
@@ -119,9 +115,7 @@ export async function GET(_req: Request, ctx: RouteContext) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
 
-    const lastScanAt = events.length
-      ? events[events.length - 1]!.createdAt
-      : null;
+    const lastScanAt = events.length ? events[events.length - 1]!.createdAt : null;
 
     const recentEvents = events
       .slice(-20)

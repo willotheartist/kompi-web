@@ -1,7 +1,7 @@
 // src/app/tools/word-counter/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Box, Piano, Shapes } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { WordCounter } from "@/components/tools/WordCounter";
 import AutoLinkedContent from "@/components/seo/AutoLinkedContent";
@@ -156,14 +156,6 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Pill({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-medium text-neutral-700 ring-1 ring-neutral-200">
-      {children}
-    </span>
-  );
-}
-
 function PrimaryLink({
   href,
   children,
@@ -283,7 +275,6 @@ export default function PublicWordCounterPage() {
                 </ol>
               </nav>
 
-
               <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[#0B0F1A]">
                 A{" "}
                 <span className="bg-linear-to-r from-[#cbcbe0] to-[#4B9FFF] bg-clip-text text-transparent">
@@ -306,11 +297,7 @@ export default function PublicWordCounterPage() {
               </div>
 
               <div className="items-center justify-center gap-5 pt-2">
-                100% in-browser
-               No login
-               Words + characters
-               Reading time
-               Copy-friendly
+                100% in-browser No login Words + characters Reading time Copy-friendly
               </div>
             </div>
           </div>
@@ -320,7 +307,6 @@ export default function PublicWordCounterPage() {
       {/* TOOL */}
       <Section id="word-counter-tool" tone="soft">
         <div className="space-y-50">
-          {/* Tool: wide, no wrapper, no shadow */}
           <div className="w-full">
             <WordCounter />
           </div>
@@ -395,9 +381,7 @@ export default function PublicWordCounterPage() {
                 <summary className="cursor-pointer list-none text-base font-semibold text-neutral-900 flex items-center justify-between gap-4">
                   {item.question}
                   <span className="text-neutral-500 group-open:hidden">+</span>
-                  <span className="text-neutral-500 hidden group-open:inline">
-                    −
-                  </span>
+                  <span className="text-neutral-500 hidden group-open:inline">−</span>
                 </summary>
                 <p className="mt-3 text-sm md:text-base leading-relaxed text-neutral-600">
                   {item.answer}
