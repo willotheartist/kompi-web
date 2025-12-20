@@ -12,7 +12,9 @@ export type BlogRoutePost = {
 const BLOG_DIR = path.join(process.cwd(), "src/app/blog");
 
 function extractStringField(file: string, field: "title" | "description"): string | null {
-  const re = new RegExp(String.raw`\\b\\s*:\\s*(["\x27])([^\\n\\r]*?)\\1`, "m");
+  // Looks for: title: "..."  OR  description: '...'
+  // (keeps it simple + deterministic)
+  const re = new RegExp(String.raw`\b${field}\s*:\s*(["'])((?:\\.|(?!\1).)*)\1`, "m");
   const m = file.match(re);
   if (!m) return null;
   return m[2].trim();
@@ -49,7 +51,10 @@ export function getBlogRoutesIndex(): BlogRoutePost[] {
   const slugs = entries
     .filter((e) => e.isDirectory())
     .map((e) => e.name)
-    .filter((name) => name !== "page.tsx");
+    // ✅ exclude the dynamic route folder so you never generate /blog/[slug] links
+    .filter((name) => name !== "[slug]")
+    // ignore any non-post folders you might add later
+    .filter((name) => !name.startsWith("(") && !name.startsWith("_") && !name.startsWith("."));
 
   const posts = slugs
     .map((slug) => {
@@ -65,7 +70,7 @@ export function getBlogRoutesIndex(): BlogRoutePost[] {
         slug,
         title,
         description,
-        href: `/blog/${slug}`,
+        href: `/blog/${slug}`, // ✅ always concrete
         cover: stableCover(slug),
       } satisfies BlogRoutePost;
     })

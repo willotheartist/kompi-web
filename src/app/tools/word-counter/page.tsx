@@ -1,15 +1,54 @@
 // src/app/tools/word-counter/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight, Box, Piano, Shapes } from "lucide-react";
+
 import { WordCounter } from "@/components/tools/WordCounter";
 import AutoLinkedContent from "@/components/seo/AutoLinkedContent";
 import { FooterCTA } from "@/components/footer-cta";
 
+const DOMAIN = "https://kompi.app";
+const CANONICAL = "/tools/word-counter";
+
 export const metadata: Metadata = {
-  title:
-    "Free Online Word Counter | Count Words & Characters | Kompi Tools",
+  title: "Free Online Word Counter | Count Words & Characters | Kompi Tools",
   description:
     "Use Kompi's free online word counter to count words, characters, lines and reading time. Perfect for social posts, blog articles, SEO copy, emails, and more.",
+  alternates: { canonical: CANONICAL },
+  robots: { index: true, follow: true },
+  keywords: [
+    "word counter",
+    "online word counter",
+    "character counter",
+    "count words",
+    "count characters",
+    "reading time calculator",
+    "word count tool",
+    "character count tool",
+  ],
+  openGraph: {
+    type: "website",
+    url: `${DOMAIN}${CANONICAL}`,
+    title: "Free Online Word Counter | Kompi Tools",
+    description:
+      "Count words, characters, lines, and reading time. Runs 100% in your browser — no signup required.",
+    siteName: "Kompi",
+    images: [
+      {
+        url: `${DOMAIN}/solutions/solutions21.png`,
+        width: 1200,
+        height: 630,
+        alt: "Kompi Word Counter",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Free Online Word Counter | Kompi Tools",
+    description:
+      "Count words, characters, lines, and reading time. Runs 100% in your browser — no signup required.",
+    images: [`${DOMAIN}/solutions/solutions21.png`],
+  },
 };
 
 const faqs = [
@@ -60,379 +99,346 @@ const faqs = [
   },
 ];
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  name: "Kompi Word Counter",
-  url: "https://kompi.app/tools/word-counter",
-  applicationCategory: "UtilitiesApplication",
-  description:
-    "Count words, characters, lines and reading time with Kompi's free online word counter.",
-  operatingSystem: "Any",
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-  },
-};
+function buildJsonLd() {
+  const webAppJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Kompi Word Counter",
+    url: `${DOMAIN}${CANONICAL}`,
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Count words, characters, lines and reading time with Kompi's free online word counter.",
+    operatingSystem: "Any",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  };
+
+  const breadcrumbsJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Kompi", item: `${DOMAIN}/` },
+      { "@type": "ListItem", position: 2, name: "Tools", item: `${DOMAIN}/tools` },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: "Word Counter",
+        item: `${DOMAIN}${CANONICAL}`,
+      },
+    ],
+  };
+
+  return [webAppJsonLd, faqJsonLd, breadcrumbsJsonLd];
+}
+
+function Container({ children }: { children: React.ReactNode }) {
+  return <div className="mx-auto w-full max-w-6xl px-4 md:px-8">{children}</div>;
+}
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5177e1]">
+      {children}
+    </p>
+  );
+}
+
+function Pill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-medium text-neutral-700 ring-1 ring-neutral-200">
+      {children}
+    </span>
+  );
+}
+
+function PrimaryLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center justify-center gap-2 whitespace-nowrap leading-none rounded-full bg-[#1E2330] px-8 py-3.5 text-sm font-semibold text-white shadow-md shadow-[#1E2330]/20 transition hover:bg-black"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function SecondaryLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center justify-center gap-2 whitespace-nowrap leading-none rounded-full border border-[#1E2330] bg-white px-8 py-3.5 text-sm font-semibold text-[#1E2330] shadow-sm transition hover:bg-[#F7F7F3]"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function Section({
+  id,
+  tone = "white",
+  children,
+}: {
+  id?: string;
+  tone?: "white" | "soft";
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      id={id}
+      className={
+        tone === "soft"
+          ? "bg-[#f7f7f4] border-t border-neutral-200"
+          : "bg-white border-t border-neutral-200"
+      }
+    >
+      <Container>
+        <div className="py-16 md:py-20">{children}</div>
+      </Container>
+    </section>
+  );
+}
+
+function FeatureCard({
+  title,
+  desc,
+  href,
+  cta,
+}: {
+  title: string;
+  desc: string;
+  href: string;
+  cta: string;
+}) {
+  return (
+    <div className="flex h-full flex-col justify-between rounded-3xl bg-white p-7 ring-1 ring-neutral-200">
+      <div className="space-y-2">
+        <h3 className="text-base font-semibold text-neutral-900">{title}</h3>
+        <p className="text-sm leading-relaxed text-neutral-600">{desc}</p>
+      </div>
+
+      <Link
+        href={href}
+        className="mt-7 inline-flex items-center justify-center rounded-full border border-neutral-200 bg-white px-4 py-2.5 text-xs font-semibold text-neutral-900 hover:bg-neutral-50"
+      >
+        {cta}
+      </Link>
+    </div>
+  );
+}
 
 export default function PublicWordCounterPage() {
+  const jsonLd = buildJsonLd();
+
   return (
-    <main className="min-h-screen bg-[#F7F7F3] text-foreground">
-      {/* HERO – text only, centred, tall & airy */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-[-8rem] -z-10 transform-gpu blur-3xl">
-          <div className="mx-auto h-64 max-w-3xl bg-gradient-to-r from-[#F4C6FF] via-[#A3CF3D] to-[#9BDFD1] opacity-60" />
+    <main className="min-h-screen bg-[#f7f7f4] text-[#c8c4c4]">
+      {/* HERO */}
+      <section className="relative overflow-hidden bg-[#f7f7f4]">
+        <div className="pointer-events-none absolute inset-x-0 -top-28 -z-10 transform-gpu blur-3xl">
+          <div className="mx-auto h-56 max-w-4xl bg-linear-to-r from-[#A3CF3D] via-[#9BDFD1] to-[#4B9FFF] opacity-70" />
         </div>
 
-        <div className="mx-auto flex min-h-[90vh] max-w-5xl flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-xs font-medium text-[#1E2330] shadow-sm ring-1 ring-[#E3F2FF]">
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#006B81] text-[10px] font-semibold text-white">
-              K
-            </span>
-            <span>Kompi Tools · Word counter</span>
-          </div>
+        <Container>
+          <div className="py-20 md:py-30">
+            <div className="mx-auto max-w-3xl text-center space-y-7">
+              <nav aria-label="Breadcrumb">
+                <ol className="mx-auto inline-flex items-center gap-2 bg-transparent px-4 py-1.5 text-xs font-medium text-[#1E2330] ring ring-neutral-500">
+                  <li>
+                    <Link href="/" className="hover:underline">
+                      Kompi
+                    </Link>
+                  </li>
+                  <li aria-hidden="true">/</li>
+                  <li>
+                    <Link href="/tools" className="hover:underline">
+                      Tools
+                    </Link>
+                  </li>
+                  <li aria-hidden="true">/</li>
+                  <li aria-current="page">Word counter</li>
+                </ol>
+              </nav>
 
-          <div className="space-y-7">
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
-              The free{" "}
-              <span className="bg-[#E8F739] px-2 text-[#1E2330]">
-                online word counter
-              </span>{" "}
-              that actually feels nice to write in.
-            </h1>
 
-            <AutoLinkedContent
-              text="Kompi gives you more than a free word counter. Create QR codes, short links and landing pages from one dashboard, then choose the pricing and plan that fit how you work as a creator."
-              currentUrl="/tools/word-counter"
-              className="mx-auto max-w-3xl text-base leading-relaxed text-[#4B5563] sm:text-lg"
-            />
+              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[#0B0F1A]">
+                A{" "}
+                <span className="bg-linear-to-r from-[#cbcbe0] to-[#4B9FFF] bg-clip-text text-transparent">
+                  super clean
+                </span>{" "}
+                word counter that feels good to write in.
+              </h1>
 
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="#word-counter-tool"
-                className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-7 py-3 text-sm font-medium text-[#F7F7F3] shadow-md shadow-[#1E2330]/30 transition hover:bg-black"
-              >
-                Start counting words
-              </a>
-              <Link
-                href="/signup"
-                className="inline-flex items-center justify-center rounded-full border border-[#1E2330] bg-[#FFFFFF] px-7 py-3 text-sm font-medium text-[#1E2330] shadow-sm hover:bg-[#F7F7F3]"
-              >
-                Add to my Kompi dashboard
-              </Link>
-            </div>
+              <AutoLinkedContent
+                text="Paste or type, and Kompi instantly shows words, characters, lines, paragraphs, sentences, and reading time. Then keep going — Kompi also helps you create short links, QR codes, and landing pages from one dashboard."
+                currentUrl={CANONICAL}
+                className="mx-auto max-w-2xl text-lg md:text-xl leading-relaxed text-neutral-700"
+              />
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-[#6B7280] sm:text-sm">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 ring-1 ring-[#E3F2FF]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#A3CF3D]" />
-                Runs 100% in your browser
+              <div className="flex flex-wrap justify-center gap-3 pt-2">
+                <PrimaryLink href="#word-counter-tool">
+                  Start counting <ArrowRight className="h-4 w-4" />
+                </PrimaryLink>
+                <SecondaryLink href="/signup">Add to my dashboard</SecondaryLink>
               </div>
-              <span>• No login or email required</span>
-              <span>• Works on desktop, tablet & mobile</span>
+
+              <div className="items-center justify-center gap-5 pt-2">
+                100% in-browser
+               No login
+               Words + characters
+               Reading time
+               Copy-friendly
+              </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
-      {/* TOOL SECTION – directly under hero, tight spacing */}
-      <section
-        id="word-counter-tool"
-        className="bg-[#F7F7F3] px-4 pb-20 pt-0 sm:px-6 lg:px-8 -mt-10"
-      >
-        <div className="mx-auto max-w-3xl rounded-[2rem] bg-[#1E2330] p-[1px] shadow-xl shadow-[#1E2330]/30">
-          <div className="rounded-[1.9rem] bg-[#FFFFFF] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+      {/* TOOL */}
+      <Section id="word-counter-tool" tone="soft">
+        <div className="space-y-50">
+          {/* Tool: wide, no wrapper, no shadow */}
+          <div className="w-full">
             <WordCounter />
           </div>
-        </div>
-      </section>
 
-      {/* PLAN-STYLE CARDS */}
-      <section className="bg-[#FFFFFF] px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl space-y-12">
-          <div className="space-y-4 text-center">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-[#1E2330] sm:text-sm">
-              CHECK YOUR WRITING AT A GLANCE
+          <div className="mx-auto max-w-3xl text-center space-y-4">
+            <Eyebrow>WHAT IT CHECKS</Eyebrow>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0B0F1A]">
+              Everything you need — nothing you don’t.
             </h2>
-            <p className="text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
-              One word counter, three everyday use cases.
-            </p>
-            <p className="mx-auto max-w-2xl text-sm leading-relaxed text-[#4B5563] sm:text-base">
-              Whether you&apos;re writing fast social posts, longer blog
-              articles, or polished landing pages, Kompi keeps your content the
-              right length for the job.
+            <p className="mx-auto max-w-2xl text-base md:text-lg leading-relaxed text-neutral-700">
+              Word count, character count, lines, paragraphs, sentences, and a
+              simple reading time estimate. Perfect for social posts, emails,
+              scripts, blog drafts, and SEO snippets.
             </p>
           </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {/* Card 1 */}
-            <div className="flex flex-col justify-between rounded-3xl bg-[#F7F7F3] p-7 shadow-sm ring-1 ring-[#E3F2FF]">
-              <div className="space-y-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
-                  SOCIAL & SHORT FORM
-                </p>
-                <h3 className="text-xl font-semibold text-[#1E2330] sm:text-2xl">
-                  Social-ready copy
-                </h3>
-                <p className="text-sm text-[#4B5563] sm:text-base">
-                  Make sure tweets, captions, and hooks stay punchy without
-                  getting cut off by character limits.
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-[#374151]">
-                  <li>• Perfect for X, LinkedIn & IG</li>
-                  <li>• See characters with & without spaces</li>
-                  <li>• Quickly test multiple variations</li>
-                </ul>
-              </div>
-              <button className="mt-7 inline-flex w-full items-center justify-center rounded-full border border-[#1E2330] bg-white px-4 py-2.5 text-xs font-medium text-[#1E2330] hover:bg-[#F7F7F3]">
-                Draft a social post
-              </button>
-            </div>
-
-            {/* Card 2 – highlighted */}
-            <div className="flex flex-col justify-between rounded-3xl bg-[#F4C6FF] p-7 shadow-lg shadow-[#F4C6FF]/40 ring-2 ring-[#1E2330]">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#1E2330] px-3 py-1 text-[11px] font-semibold text-[#F7F7F3]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#A3CF3D]" />
-                  Recommended
-                </div>
-                <h3 className="text-xl font-semibold text-[#1E2330] sm:text-2xl">
-                  Blog & long-form
-                </h3>
-                <p className="text-sm text-[#111827] sm:text-base">
-                  Shape blog posts, articles, and scripts with a clear sense of
-                  length and reading time.
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-[#111827]">
-                  <li>• Track word count as you write</li>
-                  <li>• Estimate reading time for your audience</li>
-                  <li>• Great for newsletters & essays</li>
-                </ul>
-              </div>
-              <button className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-[#1E2330] px-4 py-2.5 text-xs font-semibold text-[#F7F7F3] hover:bg-black">
-                Draft a blog section
-              </button>
-            </div>
-
-            {/* Card 3 */}
-            <div className="flex flex-col justify-between rounded-3xl bg-[#E3F2FF] p-7 shadow-sm ring-1 ring-[#9BDFD1]">
-              <div className="space-y-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#006B81]">
-                  SEO & LANDING PAGES
-                </p>
-                <h3 className="text-xl font-semibold text-[#1E2330] sm:text-2xl">
-                  SEO-friendly content
-                </h3>
-                <p className="text-sm text-[#4B5563] sm:text-base">
-                  Keep titles, meta descriptions, and hero copy within
-                  best-practice ranges for search and UX.
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-[#374151]">
-                  <li>• Check character limits for meta</li>
-                  <li>• Balance short, scannable sections</li>
-                  <li>• Pair with Kompi links & QR tools</li>
-                </ul>
-              </div>
-              <button className="mt-7 inline-flex w-full items-center justify-center rounded-full border border-[#006B81] bg-[#006B81] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#034557]">
-                Optimise an SEO snippet
-              </button>
-            </div>
-          </div>
         </div>
-      </section>
+      </Section>
 
-      {/* BRIGHT STRIP */}
-      <section className="bg-[#F7F7F3] px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl">
-          <div className="overflow-hidden rounded-[999px] bg-[#E8F739] px-8 py-10 text-center shadow-md sm:px-12">
-            <h2 className="text-xl font-semibold text-[#1E2330] sm:text-2xl md:text-3xl">
-              Ready to sanity-check your next piece of writing?
+      {/* USE CASES */}
+      <Section tone="white">
+        <div className="space-y-10">
+          <div className="mx-auto max-w-3xl text-center space-y-4">
+            <Eyebrow>USE CASES</Eyebrow>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0B0F1A]">
+              Three everyday ways people use this.
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-[#111827] sm:text-base">
-              Use Kompi&apos;s free word counter now, then pin it to your Kompi
-              dashboard so it&apos;s always one click away when you&apos;re
-              drafting links, menus, and campaigns.
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="#word-counter-tool"
-                className="inline-flex items-center justify-center rounded-full bg-[#1E2330] px-6 py-2.5 text-xs font-semibold text-[#F7F7F3] shadow hover:bg:black hover:bg-black"
-              >
-                Open the word counter
-              </a>
-              <Link
-                href="/signup"
-                className="inline-flex items-center justify-center rounded-full border border-[#1E2330] bg-[#FFFFFF] px-6 py-2.5 text-xs font-medium text-[#1E2330] hover:bg-[#F7F7F3]"
-              >
-                Create free Kompi account
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURE PANELS – narrative use cases */}
-      <section className="bg-[#FFFFFF] px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl space-y-12">
-          <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
-            Writing for the web, without second guessing length.
-          </h2>
-
-          {/* Panel 1 */}
-          <div className="grid gap-10 rounded-3xl bg-[#E3F2FF] p-10 sm:grid-cols-2 sm:p-16">
-            <div className="space-y-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1E2330] sm:text-sm">
-                FOR EVERYDAY WRITING
-              </p>
-              <h3 className="text-2xl font-semibold text-[#1E2330] sm:text-3xl">
-                Keep your copy clear, concise, and to the point.
-              </h3>
-              <p className="text-sm leading-relaxed text-[#374151] sm:text-base">
-                Emails, intros, announcements — Kompi gives you a quick sense of
-                how long something feels before you hit send. No more guessing
-                whether that paragraph is too heavy.
-              </p>
-            </div>
-            <div className="flex items-center justify-center">
-              <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#F7F7F3] shadow-md sm:h-80 sm:w-80">
-                {/* You can later swap this for a word-counter demo video if you add one */}
-                <div className="flex h-full w-full items-center justify-center text-xs text-[#6B7280]">
-                  Word counter preview
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Panel 2 */}
-          <div className="grid gap-10 rounded-3xl bg-[#9BDFD1] p-10 sm:grid-cols-2 sm:p-16">
-            <div className="order-2 flex items-center justify-center sm:order-1">
-              <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#F7F7F3] shadow-md sm:h-80 sm:w-80">
-                <div className="flex h-full w-full items-center justify-center text-xs text-[#0F172A]">
-                  Great for teams & client work
-                </div>
-              </div>
-            </div>
-            <div className="order-1 space-y-5 sm:order-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#1E2330] sm:text-sm">
-                FOR TEAMS & CLIENT CONTENT
-              </p>
-              <h3 className="text-2xl font-semibold text-[#1E2330] sm:text-3xl">
-                Align writers, editors, and stakeholders on length.
-              </h3>
-              <p className="text-sm leading-relaxed text-[#111827] sm:text-base">
-                Agencies, studios, and in-house teams can use Kompi to quickly
-                check copy length against briefs and content guidelines before
-                pushing anything live.
-              </p>
-            </div>
-          </div>
-
-          {/* Panel 3 */}
-          <div className="grid gap-10 rounded-3xl bg-[#006B81] p-10 sm:grid-cols-2 sm:p-16">
-            <div className="space-y-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#E3F2FF] sm:text-sm">
-                FOR CREATORS & BUILDERS
-              </p>
-              <h3 className="text-2xl font-semibold text-[#E3F2FF] sm:text-3xl">
-                Pair clear copy with smarter links and QR codes.
-              </h3>
-              <p className="text-sm leading-relaxed text-[#E3F2FF] sm:text-base">
-                Kompi isn&apos;t just a word counter. It&apos;s part of a
-                toolkit for creators and small businesses — from link tracking
-                to QR menus — so your words and destinations always work
-                together.
-              </p>
-            </div>
-            <div className="flex items-center justify-center">
-              <div className="h-56 w-56 overflow-hidden rounded-[2rem] bg-[#0B1220] shadow-md sm:h-80 sm:w-80">
-                <div className="flex h-full w-full items-center justify-center text-xs text-[#E5E7EB]">
-                  Kompi tools ecosystem
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SIMPLE TESTIMONIAL ROW */}
-      <section className="bg-[#F7F7F3] px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl space-y-10">
-          <div className="space-y-3 text-center">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-[#6B7280] sm:text-sm">
-              SMALL TOOL, BIG WRITING UPGRADE
-            </h2>
-            <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Less guessing, more confident publishing.
+            <p className="mx-auto max-w-2xl text-base md:text-lg leading-relaxed text-neutral-700">
+              Keep your writing tight where it matters, and comfortably long
+              where it needs space.
             </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-3xl bg-[#FFFFFF] p-5 shadow-sm ring-1 ring-[#E3F2FF]">
-              <p className="mb-2 text-xs text-[#FBBF24]">★★★★★</p>
-              <p className="text-sm font-semibold text-[#1E2330]">
-                “My tab for every caption”
-              </p>
-              <p className="mt-2 text-xs text-[#4B5563]">
-                “I write all my Instagram and LinkedIn posts here now. Super
-                easy to see if something&apos;s too long before I copy it over.”
-              </p>
-            </div>
-            <div className="rounded-3xl bg-[#FFFFFF] p-5 shadow-sm ring-1 ring-[#E3F2FF]">
-              <p className="mb-2 text-xs text-[#FBBF24]">★★★★★</p>
-              <p className="text-sm font-semibold text-[#1E2330]">
-                “Helpful for client blogs”
-              </p>
-              <p className="mt-2 text-xs text-[#4B5563]">
-                “We have rough word targets in our briefs. Kompi makes it easy
-                to check where we are without opening a full document tool.”
-              </p>
-            </div>
-            <div className="rounded-3xl bg-[#FFFFFF] p-5 shadow-sm ring-1 ring-[#E3F2FF]">
-              <p className="mb-2 text-xs text-[#FBBF24]">★★★★★</p>
-              <p className="text-sm font-semibold text-[#1E2330]">
-                “Clean, focused, no fluff”
-              </p>
-              <p className="mt-2 text-xs text-[#4B5563]">
-                “It does one job really well. No random distractions, no heavy
-                interface. Just a nice space to paste and check my writing.”
-              </p>
-            </div>
+            <FeatureCard
+              title="Social & short-form"
+              desc="Check character limits fast for X, LinkedIn captions, hooks, and ads."
+              href="#word-counter-tool"
+              cta="Draft a short post"
+            />
+            <FeatureCard
+              title="Blog & long-form"
+              desc="Track word count and reading time while you write sections and newsletters."
+              href="#word-counter-tool"
+              cta="Draft a blog section"
+            />
+            <FeatureCard
+              title="SEO & landing pages"
+              desc="Tune meta descriptions, titles, and hero copy without guessing."
+              href="#word-counter-tool"
+              cta="Polish an SEO snippet"
+            />
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* FAQ */}
-      <section className="bg-[#FFFFFF] px-4 pb-20 pt-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl gap-14 space-y-10 lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.3fr)] lg:space-y-0">
-          <div className="space-y-3">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Questions about the Kompi word counter?
+      <Section tone="soft">
+        <div className="space-y-10">
+          <div className="mx-auto max-w-3xl text-center space-y-4">
+            <Eyebrow>FAQ</Eyebrow>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0B0F1A]">
+              People usually ask…
             </h2>
-            <p className="text-sm leading-relaxed text-[#4B5563] sm:text-base">
-              Here&apos;s what people usually ask before they start using this
-              page every day. Straight answers, no jargon.
-            </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="mx-auto grid max-w-3xl gap-4">
             {faqs.map((item) => (
-              <div
+              <details
                 key={item.question}
-                className="rounded-2xl border border-[#E3F2FF] bg-[#F7F7F3] p-5 text-sm"
+                className="group rounded-3xl bg-white p-6 ring-1 ring-neutral-200"
               >
-                <h3 className="mb-1 text-sm font-medium text-[#1E2330] sm:text-base">
+                <summary className="cursor-pointer list-none text-base font-semibold text-neutral-900 flex items-center justify-between gap-4">
                   {item.question}
-                </h3>
-                <p className="text-sm leading-relaxed text-[#4B5563]">
+                  <span className="text-neutral-500 group-open:hidden">+</span>
+                  <span className="text-neutral-500 hidden group-open:inline">
+                    −
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm md:text-base leading-relaxed text-neutral-600">
                   {item.answer}
                 </p>
-              </div>
+              </details>
             ))}
           </div>
         </div>
+      </Section>
+
+      {/* CTA */}
+      <section className="border-t border-neutral-200 bg-[#f7f7f4]">
+        <Container>
+          <div className="py-16 md:py-20">
+            <div className="rounded-3xl bg-[#1E2330] p-10 md:p-14 text-center text-white">
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+                Want this tool pinned in your workspace?
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base md:text-lg text-white/80 leading-relaxed">
+                Create a free Kompi account and keep the word counter one click
+                away while you build links, QR codes, and campaigns.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap leading-none rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-[#111827] hover:bg-[#F7F7F3]"
+                >
+                  Start free <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/tools"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap leading-none rounded-full border border-white/30 bg-transparent px-8 py-3.5 text-sm font-semibold text-white hover:bg-white/10"
+                >
+                  Explore tools
+                </Link>
+              </div>
+            </div>
+          </div>
+        </Container>
       </section>
 
-      {/* Global footer CTA */}
       <FooterCTA />
 
       {/* JSON-LD schema markup */}

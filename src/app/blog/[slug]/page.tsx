@@ -9,18 +9,11 @@ import AutoLinkedContent from "@/components/seo/AutoLinkedContent";
 
 import { buildTLDR, extractExamples, buildPlaybook, buildTOC } from "@/lib/pseo/enhancers";
 
-import "./blog-article.css";
+import "../blog-article.css";
 
 type ParamsPromise = Promise<{ slug: string }>;
 
 const BASE_URL = "https://kompi.app";
-
-function safeISODate(value: unknown, fallback: string): string {
-  if (typeof value !== "string") return fallback;
-  const v = value.trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return fallback;
-  return v;
-}
 
 export async function generateStaticParams() {
   return getAllPSEOPages().map((p) => ({ slug: p.slug }));
@@ -40,8 +33,11 @@ export async function generateMetadata({ params }: { params: ParamsPromise }): P
   return {
     title: built.title,
     description: built.description,
+
+    // ✅ Absolute canonical (safer)
     alternates: { canonical: url },
 
+    // ✅ Social metadata
     openGraph: {
       type: "article",
       url,
@@ -54,6 +50,7 @@ export async function generateMetadata({ params }: { params: ParamsPromise }): P
       description: built.description,
     },
 
+    // ✅ Respect the gate
     robots: built.index ? { index: true, follow: true } : { index: false, follow: true },
   };
 }
@@ -80,11 +77,9 @@ export default async function PSEOPage({ params }: { params: ParamsPromise }) {
   const playbook = buildPlaybook(built.title);
   const toc = buildTOC(built.sections);
 
-  const today = new Date().toISOString().slice(0, 10);
-
-  // ✅ Prefer dataset dates (stable for Google)
-  const publishedAt = safeISODate(input.publishedAt, today);
-  const updatedAt = safeISODate(input.updatedAt ?? input.publishedAt, publishedAt);
+  // ⚠️ Prefer a stable date from your dataset if available:
+  // const updated = input.updatedAt ?? input.publishedAt ?? "2025-12-20";
+  const updated = new Date().toISOString().slice(0, 10);
 
   const jsonLd =
     built.index
@@ -94,15 +89,15 @@ export default async function PSEOPage({ params }: { params: ParamsPromise }) {
           headline: built.title,
           description: built.description,
           mainEntityOfPage: absoluteUrl,
-          datePublished: publishedAt,
-          dateModified: updatedAt,
           author: { "@type": "Organization", name: "Kompi" },
           publisher: { "@type": "Organization", name: "Kompi" },
+          dateModified: updated,
         }
       : null;
 
   return (
     <main className="k-article-wrap">
+      {/* ✅ Article structured data */}
       {jsonLd ? (
         <script
           type="application/ld+json"
@@ -138,7 +133,7 @@ export default async function PSEOPage({ params }: { params: ParamsPromise }) {
                 <span className="k-avatar" aria-hidden="true" />
                 <span>Kompi Editorial</span>
                 <span>·</span>
-                <span>Updated {updatedAt}</span>
+                <span>Updated {updated}</span>
               </div>
 
               <div className="k-divider" />

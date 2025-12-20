@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 19/12/2025, 01:11:40*
+*Generated on: 20/12/2025, 14:19:03*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 569 |
-| 📁 Total Folders | 264 |
+| 📄 Total Files | 604 |
+| 📁 Total Folders | 274 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,18 +26,18 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 336 files (59.1%)
-- 🖼️ **.png** (PNG images): 77 files (13.5%)
-- 🔷 **.ts** (TypeScript files): 69 files (12.1%)
-- 📄 **.sql** (Other files): 22 files (3.9%)
-- 🎨 **.css** (Stylesheets): 9 files (1.6%)
+- ⚛️ **.tsx** (React TypeScript files): 340 files (56.3%)
+- 🔷 **.ts** (TypeScript files): 87 files (14.4%)
+- 🖼️ **.png** (PNG images): 84 files (13.9%)
+- 📄 **.sql** (Other files): 22 files (3.6%)
+- 🎨 **.css** (Stylesheets): 11 files (1.8%)
 - 🎨 **.svg** (SVG images): 7 files (1.2%)
-- 📄 **.mjs** (Other files): 5 files (0.9%)
-- ⚙️ **.json** (JSON files): 4 files (0.7%)
+- ⚙️ **.json** (JSON files): 6 files (1.0%)
+- 📄 **.mjs** (Other files): 6 files (1.0%)
 - 📄 **.bak_lintfix** (Other files): 4 files (0.7%)
 - 📄 **.mp4** (Other files): 3 files (0.5%)
-- 📖 **.md** (Markdown files): 2 files (0.4%)
-- 🖼️ **.ico** (Icon files): 2 files (0.4%)
+- 📖 **.md** (Markdown files): 2 files (0.3%)
+- 🖼️ **.ico** (Icon files): 2 files (0.3%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.2%)
 - 📄 **.** (Other files): 1 files (0.2%)
 - 🐳 **.dockerfile** (Docker files): 1 files (0.2%)
@@ -67,26 +67,27 @@
 - 📄 **.fix_links_copy2** (Other files): 1 files (0.2%)
 - 📄 **.pre_pro_copy** (Other files): 1 files (0.2%)
 - 📄 **.bak_lintfix2** (Other files): 1 files (0.2%)
+- 📄 **.tsbuildinfo** (Other files): 1 files (0.2%)
 
 ### By Category
 
-- **React**: 336 files (59.1%)
-- **Assets**: 87 files (15.3%)
-- **TypeScript**: 69 files (12.1%)
-- **Other**: 56 files (9.8%)
-- **Styles**: 9 files (1.6%)
-- **Config**: 7 files (1.2%)
-- **DevOps**: 2 files (0.4%)
-- **Docs**: 2 files (0.4%)
+- **React**: 340 files (56.3%)
+- **Assets**: 94 files (15.6%)
+- **TypeScript**: 87 files (14.4%)
+- **Other**: 58 files (9.6%)
+- **Styles**: 11 files (1.8%)
+- **Config**: 9 files (1.5%)
+- **DevOps**: 2 files (0.3%)
+- **Docs**: 2 files (0.3%)
 - **JavaScript**: 1 files (0.2%)
 
 ### 📁 Largest Directories
 
-- **root**: 569 files
-- **src**: 435 files
-- **src/app**: 236 files
-- **src/components**: 183 files
-- **public**: 87 files
+- **root**: 604 files
+- **src**: 461 files
+- **src/app**: 239 files
+- **src/components**: 186 files
+- **public**: 94 files
 
 ## 🌳 Directory Structure
 
@@ -169,6 +170,11 @@ kompi-web/
 │   │   ├── 🖼️ face84.png
 │   │   └── 🖼️ face85.png
 │   ├── 🖼️ favicon.ico
+│   ├── 📂 feature/
+│   │   ├── 🖼️ f11.png
+│   │   ├── 🖼️ f12.png
+│   │   ├── 🖼️ f13.png
+│   │   └── 🖼️ f14.png
 │   ├── 🎨 file.svg
 │   ├── 🎨 globe.svg
 │   ├── 📂 growth/
@@ -235,6 +241,10 @@ kompi-web/
 │   │   ├── 🖼️ solutions24.png
 │   │   ├── 🖼️ solutions25.png
 │   │   └── 🖼️ solutions26.png
+│   ├── 📂 tips/
+│   │   ├── 🖼️ one.png
+│   │   ├── 🖼️ three.png
+│   │   └── 🖼️ two.png
 │   ├── 📂 uploads/
 │   │   └── 📂 krcodes/
 │   │   │   └── 🖼️ cmiadm2e00003js049itq83xr.png
@@ -257,6 +267,7 @@ kompi-web/
 ├── 📂 scripts/
 │   ├── 📄 debug-db.mjs
 │   ├── 📄 debug-events.mjs
+│   ├── 📄 gen-qr-ideas.mjs
 │   ├── 📂 python3 scripts/
 │   │   └── 📄 patch_kcards_header_v2.py
 │   ├── 📄 smoke.sh
@@ -383,6 +394,9 @@ kompi-web/
 │   │   │   │   └── 🔷 route.ts
 │   │   ├── 🖼️ apple-icon.png
 │   │   ├── 📂 blog/
+│   │   │   ├── 📂 [slug]/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 🎨 blog-article.css
 │   │   │   ├── 📂 instagram-hashtag-mistakes-2026/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 instagram-hashtag-strategy-2026/
@@ -390,7 +404,9 @@ kompi-web/
 │   │   │   ├── 📂 link-in-bio-best-practices/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── ⚛️ page.tsx
-│   │   │   └── 📂 qr-code-generator-that-people-actually-scan/
+│   │   │   ├── 📂 qr-code-generator-that-people-actually-scan/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── 📂 qr-codes/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 claim/
 │   │   │   └── ⚛️ page.tsx
@@ -705,6 +721,10 @@ kompi-web/
 │   │   │   └── ⚛️ upgrade-button.tsx
 │   │   ├── 📂 bio/
 │   │   │   └── ⚛️ bio-card.tsx
+│   │   ├── 📂 blog/
+│   │   │   ├── ⚛️ ArticleTOC.tsx
+│   │   │   ├── 🎨 playbook.css
+│   │   │   └── ⚛️ Playbook.tsx
 │   │   ├── 📂 claim/
 │   │   │   ├── ⚛️ claim-handle-hero.tsx
 │   │   │   └── ⚛️ claim-handle-inline.tsx
@@ -905,6 +925,11 @@ kompi-web/
 │   │   │   ├── ⚛️ workspace-switcher-dialog.tsx
 │   │   │   ├── ⚛️ workspace-switcher.tsx
 │   │   │   └── ⚛️ workspace-topbar-switcher.tsx
+│   ├── 📂 content/
+│   │   └── 📂 pseo/
+│   │   │   └── 📂 datasets/
+│   │   │   │   ├── ⚙️ qr-ideas.generated.json
+│   │   │   │   └── ⚙️ qr-ideas.json
 │   ├── 📚 lib/
 │   │   ├── 🔷 analytics-overview.ts
 │   │   ├── 🔷 auth.ts
@@ -913,6 +938,26 @@ kompi-web/
 │   │   ├── 🔷 fonts.ts
 │   │   ├── 🔷 plan-limits.ts
 │   │   ├── 🔷 prisma.ts
+│   │   ├── 📂 pseo/
+│   │   │   ├── 🔷 dataset.ts
+│   │   │   ├── 🔷 enhancers.ts
+│   │   │   ├── 🔷 internal-links.ts
+│   │   │   ├── 🔷 page-builder.ts
+│   │   │   ├── 🔷 quality-gate.ts
+│   │   │   ├── 📂 section-generators/
+│   │   │   │   ├── 🔷 checkpoint.ts
+│   │   │   │   ├── 🔷 conclusion.ts
+│   │   │   │   ├── 🔷 cta-swipe.ts
+│   │   │   │   ├── 🔷 decision-table.ts
+│   │   │   │   ├── 🔷 examples.ts
+│   │   │   │   ├── 🔷 failure-cases.ts
+│   │   │   │   ├── 🔷 faqs.ts
+│   │   │   │   ├── 🔷 idea-library.ts
+│   │   │   │   ├── 🔷 intro.ts
+│   │   │   │   ├── 🔷 kompi-angle.ts
+│   │   │   │   ├── 🔷 placement-guide.ts
+│   │   │   │   └── 🔷 use-cases.ts
+│   │   │   └── 🔷 types.ts
 │   │   ├── 📂 seo/
 │   │   │   ├── 🔷 auto-link.ts
 │   │   │   ├── 🔷 inline-link-engine.ts
@@ -924,7 +969,8 @@ kompi-web/
 │   └── 📂 types/
 │   │   ├── 🔷 pdfjs-webpack.d.ts
 │   │   └── 📄 pdfjs-webpack.d.ts.bak_lintfix
-└── 🟡 🔷 **tsconfig.json**
+├── 🟡 🔷 **tsconfig.json**
+└── 📄 tsconfig.tsbuildinfo
 ```
 
 ## 📖 Legend

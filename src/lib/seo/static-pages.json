@@ -1,26 +1,106 @@
 [
   {
+    "url": "/blog",
+    "title": "Kompi Blog",
+    "keywords": ["qr code ideas", "qr code guide", "link tracking", "marketing tools"],
+    "topic": "blog"
+  },
+  {
     "url": "/qr-code-generator",
     "title": "Free QR Code Generator",
-    "keywords": ["QR code", "QR codes", "QR code generator", "QR menus"],
+    "keywords": [
+      "qr code generator",
+      "generate qr code",
+      "create qr code",
+      "qr code maker",
+      "qr code design",
+      "qr code template"
+    ],
     "topic": "qr"
+  },
+  {
+    "url": "/free-qr-code-generator",
+    "title": "Free QR Code Generator",
+    "keywords": ["free qr code", "free qr generator", "make a qr code free"],
+    "topic": "qr"
+  },
+  {
+    "url": "/qr-code/dynamic",
+    "title": "Dynamic QR Codes",
+    "keywords": [
+      "dynamic qr code",
+      "editable qr code",
+      "trackable qr code",
+      "update qr code destination",
+      "qr code analytics"
+    ],
+    "topic": "qr"
+  },
+  {
+    "url": "/qr-code/static",
+    "title": "Static QR Codes",
+    "keywords": ["static qr code", "non editable qr code", "permanent qr code"],
+    "topic": "qr"
+  },
+  {
+    "url": "/qr-code/with-logo",
+    "title": "QR Code with Logo",
+    "keywords": ["qr code with logo", "branded qr code", "logo qr code"],
+    "topic": "qr"
+  },
+  {
+    "url": "/qr-menus",
+    "title": "QR Menus",
+    "keywords": ["qr menu", "restaurant qr menu", "digital menu qr", "menu qr code"],
+    "topic": "qr-menu"
   },
   {
     "url": "/features/url-shortener",
     "title": "URL Shortener",
-    "keywords": ["short links", "URL shortener", "track links"],
+    "keywords": [
+      "url shortener",
+      "short link",
+      "short links",
+      "track links",
+      "link tracking",
+      "custom short link"
+    ],
+    "topic": "links"
+  },
+  {
+    "url": "/tools/utm-builder",
+    "title": "UTM Builder",
+    "keywords": ["utm builder", "utm parameters", "campaign tracking", "utm generator"],
+    "topic": "utm"
+  },
+  {
+    "url": "/links/new",
+    "title": "Create a Trackable Link",
+    "keywords": ["trackable link", "link analytics", "shorten and track", "click tracking"],
     "topic": "links"
   },
   {
     "url": "/k-cards",
     "title": "Kompi Pages",
-    "keywords": ["mini landing pages", "bio link", "landing page"],
+    "keywords": ["link in bio", "bio link", "mini landing page", "creator landing page", "link page"],
     "topic": "pages"
   },
   {
     "url": "/pricing",
     "title": "Kompi Pricing & Plans",
-    "keywords": ["pricing", "plans", "creator plan"],
+    "keywords": ["pricing", "plans", "pro plan", "creator plan", "business plan"],
     "topic": "pricing"
+  },
+  {
+    "url": "/analytics",
+    "title": "Analytics",
+    "keywords": ["analytics dashboard", "click analytics", "qr analytics", "traffic analytics"],
+    "topic": "analytics"
+  },
+  {
+    "url": "/growth",
+    "title": "Growth Tools",
+    "keywords": ["growth tools", "subscriber growth", "audience growth", "marketing growth"],
+    "topic": "growth"
   }
 ]

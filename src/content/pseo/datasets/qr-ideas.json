@@ -1,0 +1,497 @@
+[
+  {
+    "slug": "qr-code-ideas-for-restaurants",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for restaurants",
+    "secondaryKeywords": [
+      "restaurant QR menu ideas",
+      "QR codes for cafes",
+      "QR codes for food ordering"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "restaurants"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/with-logo",
+      "/qr-code/dynamic"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-cafes",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for cafes",
+    "secondaryKeywords": [
+      "cafe QR menu",
+      "QR ordering for cafes",
+      "QR loyalty cards for cafes"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "cafes"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/with-logo",
+      "/qr-code/dynamic"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-bars",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for bars",
+    "secondaryKeywords": [
+      "bar QR menu",
+      "QR cocktail menu",
+      "QR ordering for bars"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "bars"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-salons",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for salons",
+    "secondaryKeywords": [
+      "salon booking QR code",
+      "QR price list",
+      "QR reviews for salons"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "salons"
+    },
+    "kompiTools": [
+      "/qr-code/with-logo",
+      "/qr-code/dynamic"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-gyms",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for gyms",
+    "secondaryKeywords": [
+      "gym check-in QR",
+      "QR workout plans",
+      "QR class schedules"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "gyms"
+    },
+    "kompiTools": [
+      "/qr-code/dynamic",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-real-estate",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for real estate",
+    "secondaryKeywords": [
+      "property listing QR code",
+      "open house QR code",
+      "QR brochure"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "real estate"
+    },
+    "kompiTools": [
+      "/qr-code/dynamic",
+      "/links/new",
+      "/dashboard/growth"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-events",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for events",
+    "secondaryKeywords": [
+      "event check-in QR code",
+      "QR ticketing",
+      "QR event schedule"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "events"
+    },
+    "kompiTools": [
+      "/qr-code/dynamic",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-weddings",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for weddings",
+    "secondaryKeywords": [
+      "wedding RSVP QR code",
+      "QR photo gallery",
+      "QR seating plan"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "weddings"
+    },
+    "kompiTools": [
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-retail-stores",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for retail stores",
+    "secondaryKeywords": [
+      "QR product info",
+      "QR promotions",
+      "QR reviews"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "retail stores"
+    },
+    "kompiTools": [
+      "/qr-code/dynamic",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-markets",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for markets",
+    "secondaryKeywords": [
+      "QR payment link",
+      "QR socials",
+      "QR loyalty signup"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "markets"
+    },
+    "kompiTools": [
+      "/qr-code/dynamic",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-photographers",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for photographers",
+    "secondaryKeywords": [
+      "QR portfolio",
+      "QR booking link",
+      "QR reviews"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "photographers"
+    },
+    "kompiTools": [
+      "/qr-code/with-logo",
+      "/links/new",
+      "/p"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-musicians",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for musicians",
+    "secondaryKeywords": [
+      "QR music link",
+      "QR merch link",
+      "QR tour dates"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "musicians"
+    },
+    "kompiTools": [
+      "/links/new",
+      "/qr-code/dynamic",
+      "/p"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-artists",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for artists",
+    "secondaryKeywords": [
+      "QR portfolio",
+      "QR shop link",
+      "QR commissions"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "artists"
+    },
+    "kompiTools": [
+      "/links/new",
+      "/qr-code/with-logo",
+      "/p"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-creators",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for creators",
+    "secondaryKeywords": [
+      "QR link in bio",
+      "QR socials",
+      "QR subscribe link"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "creators"
+    },
+    "kompiTools": [
+      "/p",
+      "/links/new",
+      "/qr-code/dynamic"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-youtube-channels",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for YouTube channels",
+    "secondaryKeywords": [
+      "QR subscribe",
+      "QR latest video",
+      "QR channel link"
+    ],
+    "entity": {
+      "type": "platform",
+      "value": "YouTube"
+    },
+    "kompiTools": [
+      "/links/new",
+      "/qr-code/dynamic",
+      "/tools/utm-builder"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-instagram",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for Instagram",
+    "secondaryKeywords": [
+      "Instagram QR code",
+      "QR link in bio",
+      "QR for Stories"
+    ],
+    "entity": {
+      "type": "platform",
+      "value": "Instagram"
+    },
+    "kompiTools": [
+      "/p",
+      "/links/new",
+      "/tools/utm-builder"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-wifi",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for WiFi",
+    "secondaryKeywords": [
+      "WiFi QR code",
+      "QR connect to WiFi",
+      "guest WiFi QR"
+    ],
+    "entity": {
+      "type": "use-case",
+      "value": "WiFi access"
+    },
+    "kompiTools": [
+      "/qr-code/static",
+      "/qr-code/with-logo"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-payments",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for payments",
+    "secondaryKeywords": [
+      "payment QR code",
+      "QR for tips",
+      "QR for invoices"
+    ],
+    "entity": {
+      "type": "use-case",
+      "value": "payments"
+    },
+    "kompiTools": [
+      "/links/new",
+      "/qr-code/dynamic"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-reviews",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for reviews",
+    "secondaryKeywords": [
+      "QR code for Google reviews",
+      "review QR code",
+      "QR feedback form"
+    ],
+    "entity": {
+      "type": "use-case",
+      "value": "reviews"
+    },
+    "kompiTools": [
+      "/links/new",
+      "/qr-code/dynamic"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-coupons",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for coupons",
+    "secondaryKeywords": [
+      "QR discount code",
+      "QR promo",
+      "QR voucher"
+    ],
+    "entity": {
+      "type": "use-case",
+      "value": "discounts"
+    },
+    "kompiTools": [
+      "/links/new",
+      "/qr-code/dynamic",
+      "/dashboard/discount-codes"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-newsletters",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for newsletters",
+    "secondaryKeywords": [
+      "QR email signup",
+      "QR subscribe link",
+      "QR lead capture"
+    ],
+    "entity": {
+      "type": "channel",
+      "value": "email"
+    },
+    "kompiTools": [
+      "/subscribers",
+      "/links/new",
+      "/qr-code/dynamic"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  }
+]

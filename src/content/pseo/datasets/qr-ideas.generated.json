@@ -1,0 +1,1130 @@
+[
+  {
+    "slug": "qr-code-ideas-for-restaurants",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for restaurants",
+    "secondaryKeywords": [
+      "restaurants QR code ideas",
+      "how to use QR codes for restaurants"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "restaurants"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-cafes",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for cafes",
+    "secondaryKeywords": [
+      "cafes QR code ideas",
+      "how to use QR codes for cafes"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "cafes"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-bars",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for bars",
+    "secondaryKeywords": [
+      "bars QR code ideas",
+      "how to use QR codes for bars"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "bars"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-pubs",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for pubs",
+    "secondaryKeywords": [
+      "pubs QR code ideas",
+      "how to use QR codes for pubs"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "pubs"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-food-trucks",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for food trucks",
+    "secondaryKeywords": [
+      "food trucks QR code ideas",
+      "how to use QR codes for food trucks"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "food trucks"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-bakeries",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for bakeries",
+    "secondaryKeywords": [
+      "bakeries QR code ideas",
+      "how to use QR codes for bakeries"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "bakeries"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-hotels",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for hotels",
+    "secondaryKeywords": [
+      "hotels QR code ideas",
+      "how to use QR codes for hotels"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "hotels"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-gyms",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for gyms",
+    "secondaryKeywords": [
+      "gyms QR code ideas",
+      "how to use QR codes for gyms"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "gyms"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-yoga-studios",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for yoga studios",
+    "secondaryKeywords": [
+      "yoga studios QR code ideas",
+      "how to use QR codes for yoga studios"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "yoga studios"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-salons",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for salons",
+    "secondaryKeywords": [
+      "salons QR code ideas",
+      "how to use QR codes for salons"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "salons"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-barbershops",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for barbershops",
+    "secondaryKeywords": [
+      "barbershops QR code ideas",
+      "how to use QR codes for barbershops"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "barbershops"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-spas",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for spas",
+    "secondaryKeywords": [
+      "spas QR code ideas",
+      "how to use QR codes for spas"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "spas"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-dentists",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for dentists",
+    "secondaryKeywords": [
+      "dentists QR code ideas",
+      "how to use QR codes for dentists"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "dentists"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-clinics",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for clinics",
+    "secondaryKeywords": [
+      "clinics QR code ideas",
+      "how to use QR codes for clinics"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "clinics"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-pharmacies",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for pharmacies",
+    "secondaryKeywords": [
+      "pharmacies QR code ideas",
+      "how to use QR codes for pharmacies"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "pharmacies"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-real-estate",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for real estate",
+    "secondaryKeywords": [
+      "real estate QR code ideas",
+      "how to use QR codes for real estate"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "real estate"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-car-dealerships",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for car dealerships",
+    "secondaryKeywords": [
+      "car dealerships QR code ideas",
+      "how to use QR codes for car dealerships"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "car dealerships"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-museums",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for museums",
+    "secondaryKeywords": [
+      "museums QR code ideas",
+      "how to use QR codes for museums"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "museums"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-galleries",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for galleries",
+    "secondaryKeywords": [
+      "galleries QR code ideas",
+      "how to use QR codes for galleries"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "galleries"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-events",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for events",
+    "secondaryKeywords": [
+      "events QR code ideas",
+      "how to use QR codes for events"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "events"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-weddings",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for weddings",
+    "secondaryKeywords": [
+      "weddings QR code ideas",
+      "how to use QR codes for weddings"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "weddings"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-festivals",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for festivals",
+    "secondaryKeywords": [
+      "festivals QR code ideas",
+      "how to use QR codes for festivals"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "festivals"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-conferences",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for conferences",
+    "secondaryKeywords": [
+      "conferences QR code ideas",
+      "how to use QR codes for conferences"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "conferences"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-schools",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for schools",
+    "secondaryKeywords": [
+      "schools QR code ideas",
+      "how to use QR codes for schools"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "schools"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-universities",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for universities",
+    "secondaryKeywords": [
+      "universities QR code ideas",
+      "how to use QR codes for universities"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "universities"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-charities",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for charities",
+    "secondaryKeywords": [
+      "charities QR code ideas",
+      "how to use QR codes for charities"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "charities"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-churches",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for churches",
+    "secondaryKeywords": [
+      "churches QR code ideas",
+      "how to use QR codes for churches"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "churches"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-retail-stores",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for retail stores",
+    "secondaryKeywords": [
+      "retail stores QR code ideas",
+      "how to use QR codes for retail stores"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "retail stores"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-markets",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for markets",
+    "secondaryKeywords": [
+      "markets QR code ideas",
+      "how to use QR codes for markets"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "markets"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-bookshops",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for bookshops",
+    "secondaryKeywords": [
+      "bookshops QR code ideas",
+      "how to use QR codes for bookshops"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "bookshops"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-restaurants-fine-dining",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for restaurants",
+    "secondaryKeywords": [
+      "restaurants QR code ideas",
+      "how to use QR codes for restaurants"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "restaurants"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-takeaways",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for takeaways",
+    "secondaryKeywords": [
+      "takeaways QR code ideas",
+      "how to use QR codes for takeaways"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "takeaways"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-nightclubs",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for nightclubs",
+    "secondaryKeywords": [
+      "nightclubs QR code ideas",
+      "how to use QR codes for nightclubs"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "nightclubs"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-co-working-spaces",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for co-working spaces",
+    "secondaryKeywords": [
+      "co-working spaces QR code ideas",
+      "how to use QR codes for co-working spaces"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "co-working spaces"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-agencies",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for agencies",
+    "secondaryKeywords": [
+      "agencies QR code ideas",
+      "how to use QR codes for agencies"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "agencies"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-photographers",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for photographers",
+    "secondaryKeywords": [
+      "photographers QR code ideas",
+      "how to use QR codes for photographers"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "photographers"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-musicians",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for musicians",
+    "secondaryKeywords": [
+      "musicians QR code ideas",
+      "how to use QR codes for musicians"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "musicians"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-artists",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for artists",
+    "secondaryKeywords": [
+      "artists QR code ideas",
+      "how to use QR codes for artists"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "artists"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-creators",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for creators",
+    "secondaryKeywords": [
+      "creators QR code ideas",
+      "how to use QR codes for creators"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "creators"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-influencers",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for influencers",
+    "secondaryKeywords": [
+      "influencers QR code ideas",
+      "how to use QR codes for influencers"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "influencers"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-streamers",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for streamers",
+    "secondaryKeywords": [
+      "streamers QR code ideas",
+      "how to use QR codes for streamers"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "streamers"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-restaurants-fast-casual",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for restaurants",
+    "secondaryKeywords": [
+      "restaurants QR code ideas",
+      "how to use QR codes for restaurants"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "restaurants"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-restaurants-pizza",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for restaurants",
+    "secondaryKeywords": [
+      "restaurants QR code ideas",
+      "how to use QR codes for restaurants"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "restaurants"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-restaurants-sushi",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for restaurants",
+    "secondaryKeywords": [
+      "restaurants QR code ideas",
+      "how to use QR codes for restaurants"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "restaurants"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-restaurants-vegan",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for restaurants",
+    "secondaryKeywords": [
+      "restaurants QR code ideas",
+      "how to use QR codes for restaurants"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "restaurants"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-cafes-specialty-coffee",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for cafes",
+    "secondaryKeywords": [
+      "cafes QR code ideas",
+      "how to use QR codes for cafes"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "cafes"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  },
+  {
+    "slug": "qr-code-ideas-for-cafes-tea-rooms",
+    "cluster": "qr-codes",
+    "hub": "qr-codes",
+    "intent": "informational",
+    "primaryKeyword": "QR code ideas for cafes",
+    "secondaryKeywords": [
+      "cafes QR code ideas",
+      "how to use QR codes for cafes"
+    ],
+    "entity": {
+      "type": "industry",
+      "value": "cafes"
+    },
+    "kompiTools": [
+      "/qr-menus",
+      "/qr-code/dynamic",
+      "/qr-code/with-logo",
+      "/links/new"
+    ],
+    "index": true,
+    "publishedAt": "2025-12-19",
+    "updatedAt": "2025-12-19"
+  }
+]

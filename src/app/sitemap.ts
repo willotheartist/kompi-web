@@ -2,106 +2,95 @@
 import type { MetadataRoute } from "next";
 import { TOOL_DEFINITIONS } from "@/lib/tools-config";
 
+import { getAllPSEOPages, getSiblingPages } from "@/lib/pseo/dataset";
+import { buildPSEOPage } from "@/lib/pseo/page-builder";
+
+function parseISODateOrFallback(value: unknown, fallback: Date): Date {
+  if (typeof value !== "string") return fallback;
+  // Expect "YYYY-MM-DD"
+  const iso = value.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return fallback;
+
+  const d = new Date(iso);
+  // Guard invalid date
+  if (Number.isNaN(d.getTime())) return fallback;
+  return d;
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://kompi.app";
+
+  // Stable date string (avoid locale variance)
   const now = new Date();
+  const lastModified = new Date(now.toISOString().slice(0, 10));
+
+  const entries: MetadataRoute.Sitemap = [];
 
   // Core static marketing + product routes
-  const staticEntries: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/pricing`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/analytics`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/features/url-shortener`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/growth`,
-      lastModified: now,
-    },
+  entries.push(
+    { url: `${baseUrl}/`, lastModified, changeFrequency: "weekly", priority: 1.0 },
+    { url: `${baseUrl}/pricing`, lastModified, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/customers`, lastModified, changeFrequency: "monthly", priority: 0.8 },
 
-    // QR & QR generator landers
-    {
-      url: `${baseUrl}/qr-code-generator`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/free-qr-code-generator`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/qr-code/dynamic`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/qr-code/email`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/qr-code/for-restaurant`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/qr-code/static`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/qr-code/with-logo`,
-      lastModified: now,
-    },
+    // Product pages
+    { url: `${baseUrl}/k-cards`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/kr-codes`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/qr-menus`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/kompi-suite`, lastModified, changeFrequency: "monthly", priority: 0.7 },
 
-    // Product / solution pages
-    {
-      url: `${baseUrl}/k-cards`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/kr-codes`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/KR-Codes-QR-Code-Generator`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/qr-menus`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/kompi-suite`,
-      lastModified: now,
-    },
-    {
-      url: `${baseUrl}/customers`,
-      lastModified: now,
-    },
+    // Growth / analytics
+    { url: `${baseUrl}/analytics`, lastModified, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${baseUrl}/growth`, lastModified, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${baseUrl}/features/url-shortener`, lastModified, changeFrequency: "weekly", priority: 0.75 },
+
+    // QR landers
+    { url: `${baseUrl}/qr-code-generator`, lastModified, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${baseUrl}/free-qr-code-generator`, lastModified, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${baseUrl}/qr-code/dynamic`, lastModified, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${baseUrl}/qr-code/static`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/qr-code/with-logo`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/qr-code/email`, lastModified, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${baseUrl}/qr-code/for-restaurant`, lastModified, changeFrequency: "weekly", priority: 0.8 },
 
     // Tools hub
-    {
-      url: `${baseUrl}/tools`,
-      lastModified: now,
-    },
+    { url: `${baseUrl}/tools`, lastModified, changeFrequency: "weekly", priority: 0.75 },
 
-    // NOTE: dynamic routes like /p/[slug], /menu/[slug], /m/[slug], /k/[slug]
-    // can be added later by querying the DB for slugs and pushing them into this array.
-  ];
+    // Blog hub
+    { url: `${baseUrl}/blog`, lastModified, changeFrequency: "weekly", priority: 0.8 }
+  );
 
-  // All currently AVAILABLE tools – e.g. /tools/password-generator, /tools/word-counter, etc.
-  const toolEntries: MetadataRoute.Sitemap = TOOL_DEFINITIONS
-    .filter((tool) => tool.status === "available")
-    .map((tool) => ({
+  // Tools (available only)
+  for (const tool of TOOL_DEFINITIONS.filter((t) => t.status === "available")) {
+    entries.push({
       url: `${baseUrl}${tool.publicPath}`,
-      lastModified: now,
-    }));
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.65,
+    });
+  }
 
-  return [...staticEntries, ...toolEntries];
+  // PSEO blog pages (quality-gated)
+  const inputs = getAllPSEOPages();
+
+  for (const input of inputs) {
+    const siblings = getSiblingPages(input);
+    const built = buildPSEOPage(input, siblings);
+
+    // Exclude pages failing gate (noindex in metadata anyway)
+    if (!built.index) continue;
+
+    const pseoLastModified = parseISODateOrFallback(
+      input.updatedAt ?? input.publishedAt,
+      lastModified
+    );
+
+    entries.push({
+      url: `${baseUrl}/blog/${input.slug}`,
+      lastModified: pseoLastModified,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    });
+  }
+
+  return entries;
 }

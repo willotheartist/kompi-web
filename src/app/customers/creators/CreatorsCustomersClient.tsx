@@ -136,7 +136,7 @@ export default function CreatorsCustomersClient() {
       {/* HERO */}
       <section className="relative overflow-hidden bg-[#f7f7f4]">
         <div className="pointer-events-none absolute inset-x-0 -top-28 -z-10 transform-gpu blur-3xl">
-          <div className="mx-auto h-56 max-w-4xl bg-gradient-to-r from-[#A3CF3D] via-[#9BDFD1] to-[#4B9FFF] opacity-70" />
+          <div className="mx-auto h-56 max-w-4xl bg-linear-to-r from-[#A3CF3D] via-[#9BDFD1] to-[#4B9FFF] opacity-70" />
         </div>
 
         <Container>
@@ -158,7 +158,7 @@ export default function CreatorsCustomersClient() {
 
               <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[#0B0F1A]">
                 Grow your creator brand with{" "}
-                <span className="bg-gradient-to-r from-[#A3CF3D] to-[#4B9FFF] bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-[#A3CF3D] to-[#4B9FFF] bg-clip-text text-transparent">
                   K Cards, Kompi Codes™
                 </span>{" "}
                 and smarter links.
@@ -195,7 +195,7 @@ export default function CreatorsCustomersClient() {
               className="mx-auto mt-10 max-w-4xl"
             >
               <div className="relative overflow-hidden rounded-3xl">
-                <div className="relative aspect-[16/7] w-full">
+                <div className="relative aspect-16/7 w-full">
                   <Image
                     src="/kompiimage19.png"
                     alt="Creator links and Kompi dashboard"
@@ -264,7 +264,7 @@ export default function CreatorsCustomersClient() {
           <div className="grid gap-8 md:grid-cols-2 md:items-center">
             {/* image (no extra “box”) */}
             <div className="relative overflow-hidden rounded-3xl">
-              <div className="relative aspect-[16/10] w-full">
+              <div className="relative aspect-16/10 w-full">
                 <Image
                   src="/kompiimage19.png"
                   alt="Creator hub preview"
@@ -338,7 +338,7 @@ export default function CreatorsCustomersClient() {
 
             {/* image (no frame box) */}
             <div className="relative overflow-hidden rounded-3xl">
-              <div className="relative aspect-[16/10] w-full">
+              <div className="relative aspect-16/10 w-full">
                 <Image
                   src="/kompiimage18.png"
                   alt="Creators using Kompi Codes and K Cards"
