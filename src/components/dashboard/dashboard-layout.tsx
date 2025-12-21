@@ -95,6 +95,13 @@ const baseNavGroups: NavGroup[] = [
   },
 ];
 
+type ToolId = Parameters<typeof getToolById>[0];
+
+type Workspace = {
+  id: string;
+  name: string;
+};
+
 /**
  * ------------------------------------------------------------------
  * Module-scope caches so we don't refetch on every navigation.
@@ -102,16 +109,38 @@ const baseNavGroups: NavGroup[] = [
  */
 const toolsCache = new Map<
   string,
-  { ts: number; value: string[]; inflight?: Promise<string[]> }
+  { ts: number; value: ToolId[]; inflight?: Promise<ToolId[]> }
 >();
 
 const workspacesCache: {
   ts: number;
-  value: { id: string; name: string }[];
-  inflight?: Promise<{ id: string; name: string }[]>;
+  value: Workspace[];
+  inflight?: Promise<Workspace[]>;
 } = { ts: 0, value: [] };
 
 const CACHE_TTL_MS = 60_000;
+
+/* ---------------- helpers ---------------- */
+
+function parseToolIds(raw: string | null): ToolId[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    const strings = parsed.filter((x): x is string => typeof x === "string");
+    return strings as ToolId[];
+  } catch {
+    return [];
+  }
+}
+
+function parseToolIdsFromApi(json: unknown): ToolId[] {
+  if (!json || typeof json !== "object") return [];
+  const toolIds = (json as Record<string, unknown>).toolIds;
+  if (!Array.isArray(toolIds)) return [];
+  const strings = toolIds.filter((x): x is string => typeof x === "string");
+  return strings as ToolId[];
+}
 
 /* ---------------- Animated sidebar icon ---------------- */
 
@@ -158,10 +187,7 @@ export function DashboardLayout({
 
       <div className="wf-dashboard-main flex min-w-0 flex-1 flex-col">
         <div
-          className={cn(
-            "wf-dashboard-topbar-shell sticky top-0 z-40",
-            "backdrop-blur-md"
-          )}
+          className={cn("wf-dashboard-topbar-shell sticky top-0 z-40", "backdrop-blur-md")}
           style={{
             backgroundColor: "var(--color-surface)",
             borderBottom: "1px solid var(--color-border)",
@@ -203,33 +229,43 @@ function SidebarInner({
   const workspaceId = searchParams?.get("workspaceId") ?? "default";
   const storageKey = `kompi:enabledTools:${workspaceId}`;
 
-  const [toolIds, setToolIds] = useState<Parameters<typeof getToolById>[0][]>([]);
+  // ✅ derive initial state lazily (avoids setState-in-effect lint)
+  const [toolIds, setToolIds] = useState<ToolId[]>(() => {
+    if (typeof window === "undefined") return [];
+    return parseToolIds(window.localStorage.getItem(storageKey));
+  });
 
-  // Instant paint: localStorage
+  // ✅ When switching workspaces, refresh tool ids for the new key
+  // IMPORTANT: lint rule bans synchronous setState inside effect,
+  // so we schedule it asynchronously.
   useEffect(() => {
-    try {
-      const cached = localStorage.getItem(storageKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) setToolIds(parsed);
+    let cancelled = false;
+
+    const t = window.setTimeout(() => {
+      if (cancelled) return;
+      try {
+        setToolIds(parseToolIds(localStorage.getItem(storageKey)));
+      } catch {
+        setToolIds([]);
       }
-    } catch {
-      // ignore
-    }
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
   }, [storageKey]);
 
-  // Listen for updates
+  // Listen for updates (custom event) and refresh from localStorage
   useEffect(() => {
     const onToolsUpdated = () => {
-      try {
-        const cached = localStorage.getItem(storageKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed)) setToolIds(parsed);
+      setToolIds(() => {
+        try {
+          return parseToolIds(localStorage.getItem(storageKey));
+        } catch {
+          return [];
         }
-      } catch {
-        // ignore
-      }
+      });
     };
 
     window.addEventListener("kompi:tools-updated", onToolsUpdated);
@@ -253,22 +289,22 @@ function SidebarInner({
 
         // ✅ use in-memory cache (fastest)
         if (cached && now - cached.ts < CACHE_TTL_MS) {
-          setToolIds(cached.value as any);
+          setToolIds(cached.value);
           return;
         }
 
         // ✅ if already fetching, await it
         if (cached?.inflight) {
           const next = await cached.inflight;
-          if (!cancelled) setToolIds(next as any);
+          if (!cancelled) setToolIds(next);
           return;
         }
 
-        const inflight = fetch(toolsUrl)
+        const inflight: Promise<ToolId[]> = fetch(toolsUrl)
           .then(async (res) => {
             if (!res.ok) return [];
-            const json = await res.json();
-            return (json.toolIds ?? []) as string[];
+            const json: unknown = await res.json();
+            return parseToolIdsFromApi(json);
           })
           .catch(() => []);
 
@@ -282,9 +318,8 @@ function SidebarInner({
         if (cancelled) return;
 
         setToolIds((prev) => {
-          const same =
-            prev.length === next.length && prev.every((v, i) => v === next[i]);
-          return same ? prev : (next as any);
+          const same = prev.length === next.length && prev.every((v, i) => v === next[i]);
+          return same ? prev : next;
         });
 
         toolsCache.set(workspaceId, { ts: Date.now(), value: next });
@@ -314,12 +349,12 @@ function SidebarInner({
       },
       ...toolIds
         .map((id) => getToolById(id))
-        .filter(Boolean)
+        .filter((t): t is NonNullable<typeof t> => Boolean(t))
         .map((tool) => {
-          const icon = tool!.id === "password-generator" ? KeyRound : Wrench;
+          const icon = tool.id === "password-generator" ? KeyRound : Wrench;
           return {
-            href: tool!.dashboardPath,
-            label: tool!.name,
+            href: tool.dashboardPath,
+            label: tool.name,
             icon,
           };
         }),
@@ -327,22 +362,14 @@ function SidebarInner({
   }, [toolIds]);
 
   const navGroups: NavGroup[] = useMemo(() => {
-    return [
-      baseNavGroups[0],
-      baseNavGroups[1],
-      { section: "Tools", items: toolsItems },
-      baseNavGroups[2],
-    ];
+    return [baseNavGroups[0], baseNavGroups[1], { section: "Tools", items: toolsItems }, baseNavGroups[2]];
   }, [toolsItems]);
 
   return (
     <motion.aside
       animate={{ width: collapsed ? 80 : 240 }}
       transition={{ duration: 0.22, ease: "easeInOut" }}
-      className={cn(
-        "wf-dashboard-sidebar",
-        "sticky left-0 top-0 flex h-screen flex-col justify-between"
-      )}
+      className={cn("wf-dashboard-sidebar", "sticky left-0 top-0 flex h-screen flex-col justify-between")}
       style={{
         backgroundColor: "var(--color-surface)",
         borderRight: "1px solid var(--color-border)",
@@ -360,26 +387,12 @@ function SidebarInner({
         >
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <Image
-                src="/Kompi..svg"
-                alt="Kompi"
-                width={112}
-                height={24}
-                priority
-                className="h-6 w-28"
-              />
+              <Image src="/Kompi..svg" alt="Kompi" width={112} height={24} priority className="h-6 w-28" />
             </div>
           )}
 
           {collapsed && (
-            <Image
-              src="/Kompiwhite.svg"
-              alt="Kompi"
-              width={24}
-              height={24}
-              priority
-              className="h-6 w-6"
-            />
+            <Image src="/Kompiwhite.svg" alt="Kompi" width={24} height={24} priority className="h-6 w-6" />
           )}
           <span className="sr-only">Kompi</span>
         </Link>
@@ -389,9 +402,7 @@ function SidebarInner({
           {navGroups.map((group) => (
             <div key={group.section} className="flex flex-col gap-1.5">
               {!collapsed && (
-                <h2 className="px-2.5 text-[11px] font-medium text-(--color-subtle)">
-                  {group.section}
-                </h2>
+                <h2 className="px-2.5 text-[11px] font-medium text-(--color-subtle)">{group.section}</h2>
               )}
 
               <div className="flex flex-col gap-1">
@@ -412,18 +423,14 @@ function SidebarInner({
                         className={cn(
                           "wf-dashboard-nav-item group flex items-center rounded-lg px-2.5 py-1 text-sm font-medium transition",
                           collapsed ? "justify-center" : "gap-1.5",
-                          active
-                            ? "bg-[#f6f6f6] text-(--color-text)"
-                            : "text-(--color-subtle) hover:bg-[#f6f6f6]"
+                          active ? "bg-[#f6f6f6] text-(--color-text)" : "text-(--color-subtle) hover:bg-[#f6f6f6]"
                         )}
                       >
                         {!collapsed && (
                           <span
                             className="wf-dashboard-nav-accent mr-1 h-5 w-0.5 rounded-1px"
                             style={{
-                              backgroundColor: active
-                                ? "var(--color-accent)"
-                                : "transparent",
+                              backgroundColor: active ? "var(--color-accent)" : "transparent",
                             }}
                             aria-hidden="true"
                           />
@@ -431,32 +438,21 @@ function SidebarInner({
 
                         <AnimatedIcon Icon={Icon} active={active} />
 
-                        {!collapsed && (
-                          <span className="truncate">{label}</span>
-                        )}
+                        {!collapsed && <span className="truncate">{label}</span>}
                       </Link>
 
                       {children && !collapsed && (
-                        <div
-                          className="ml-5 flex flex-col gap-0.5 border-l pl-3"
-                          style={{ borderColor: "var(--color-border)" }}
-                        >
+                        <div className="ml-5 flex flex-col gap-0.5 border-l pl-3" style={{ borderColor: "var(--color-border)" }}>
                           {children.map((child: NavChild) => {
                             const childIsActive = pathname.startsWith(child.href);
                             return (
                               <Link
                                 key={child.href}
                                 href={child.href}
-                                className={cn(
-                                  "wf-dashboard-nav-subitem flex items-center rounded-xl px-2.5 py-1 text-sm font-medium transition"
-                                )}
+                                className={cn("wf-dashboard-nav-subitem flex items-center rounded-xl px-2.5 py-1 text-sm font-medium transition")}
                                 style={{
-                                  color: childIsActive
-                                    ? "var(--color-text)"
-                                    : "var(--color-subtle)",
-                                  backgroundColor: childIsActive
-                                    ? "var(--color-accent-soft)"
-                                    : "transparent",
+                                  color: childIsActive ? "var(--color-text)" : "var(--color-subtle)",
+                                  backgroundColor: childIsActive ? "var(--color-accent-soft)" : "transparent",
                                 }}
                               >
                                 {child.label}
@@ -485,15 +481,10 @@ function SidebarInner({
       >
         <div className="py-3">
           <motion.div
-            whileHover={{
-              scale: 1.06,
-              rotate: collapsed ? 6 : -6,
-            }}
+            whileHover={{ scale: 1.06, rotate: collapsed ? 6 : -6 }}
             whileTap={{ scale: 0.94, rotate: 0 }}
             className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{
-              backgroundColor: "#123932",
-            }}
+            style={{ backgroundColor: "#123932" }}
           >
             {collapsed ? (
               <ChevronRight className="h-4 w-4" style={{ color: "#F5FF7A" }} />
@@ -508,11 +499,6 @@ function SidebarInner({
 }
 
 /* ---------------- Topbar ---------------- */
-
-type Workspace = {
-  id: string;
-  name: string;
-};
 
 function Topbar(props: Parameters<typeof TopbarInner>[0]) {
   return (
@@ -566,11 +552,18 @@ function TopbarInner({ pageTitle }: { pageTitle?: string }) {
 
     setWsLoading(true);
     try {
-      const inflight = fetch("/api/workspaces")
+      const inflight: Promise<Workspace[]> = fetch("/api/workspaces")
         .then(async (res) => {
           if (!res.ok) return [];
-          const json = await res.json();
-          return (json.workspaces ?? []) as Workspace[];
+          const json: unknown = await res.json();
+          if (!json || typeof json !== "object") return [];
+          const wss = (json as Record<string, unknown>).workspaces;
+          if (!Array.isArray(wss)) return [];
+          return wss.filter((w): w is Workspace => {
+            if (!w || typeof w !== "object") return false;
+            const rec = w as Record<string, unknown>;
+            return typeof rec.id === "string" && typeof rec.name === "string";
+          });
         })
         .catch(() => []);
 
@@ -595,8 +588,20 @@ function TopbarInner({ pageTitle }: { pageTitle?: string }) {
       try {
         const res = await fetch("/api/workspaces");
         if (!res.ok) return;
-        const json = await res.json();
-        const next = (json.workspaces ?? []) as Workspace[];
+        const json: unknown = await res.json();
+
+        let next: Workspace[] = [];
+        if (json && typeof json === "object") {
+          const wss = (json as Record<string, unknown>).workspaces;
+          if (Array.isArray(wss)) {
+            next = wss.filter((w): w is Workspace => {
+              if (!w || typeof w !== "object") return false;
+              const rec = w as Record<string, unknown>;
+              return typeof rec.id === "string" && typeof rec.name === "string";
+            });
+          }
+        }
+
         setWorkspaces(next);
         workspacesCache.ts = Date.now();
         workspacesCache.value = next;
@@ -652,9 +657,7 @@ function TopbarInner({ pageTitle }: { pageTitle?: string }) {
           onClick={async () => {
             const next = !open;
             setOpen(next);
-            if (next) {
-              await ensureWorkspacesLoaded();
-            }
+            if (next) await ensureWorkspacesLoaded();
           }}
           className="inline-flex items-center gap-2 text-sm font-medium"
           style={{
@@ -688,10 +691,7 @@ function TopbarInner({ pageTitle }: { pageTitle?: string }) {
             >
               {initial}
             </div>
-            <ChevronDown
-              className="h-4 w-4"
-              style={{ color: "var(--color-subtle)" }}
-            />
+            <ChevronDown className="h-4 w-4" style={{ color: "var(--color-subtle)" }} />
           </div>
         </button>
 
@@ -720,27 +720,18 @@ function TopbarInner({ pageTitle }: { pageTitle?: string }) {
                   {initial}
                 </div>
                 <div className="flex min-w-0 flex-col">
-                  <span
-                    className="text-xs"
-                    style={{ color: "var(--color-subtle)" }}
-                  >
+                  <span className="text-xs" style={{ color: "var(--color-subtle)" }}>
                     Signed in as
                   </span>
                   <span className="truncate text-sm font-medium">{display}</span>
                 </div>
               </div>
 
-              <div
-                className="my-1 h-px"
-                style={{ backgroundColor: "var(--color-border)" }}
-              />
+              <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
 
               <div className="px-3 py-2">
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <span
-                    className="text-[11px] uppercase tracking-[0.16em]"
-                    style={{ color: "var(--color-subtle)" }}
-                  >
+                  <span className="text-[11px] uppercase tracking-[0.16em]" style={{ color: "var(--color-subtle)" }}>
                     Workspace
                   </span>
                   <button
@@ -755,19 +746,13 @@ function TopbarInner({ pageTitle }: { pageTitle?: string }) {
 
                 <div className="max-h-40 space-y-1 overflow-auto">
                   {wsLoading && (
-                    <div
-                      className="text-xs"
-                      style={{ color: "var(--color-subtle)" }}
-                    >
+                    <div className="text-xs" style={{ color: "var(--color-subtle)" }}>
                       Loading workspaces…
                     </div>
                   )}
 
                   {!wsLoading && workspaces.length === 0 && (
-                    <div
-                      className="text-xs"
-                      style={{ color: "var(--color-subtle)" }}
-                    >
+                    <div className="text-xs" style={{ color: "var(--color-subtle)" }}>
                       No workspaces yet.
                     </div>
                   )}
@@ -782,18 +767,13 @@ function TopbarInner({ pageTitle }: { pageTitle?: string }) {
                           onClick={() => handleWorkspaceSwitch(ws.id)}
                           className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-sm transition"
                           style={{
-                            backgroundColor: isActive
-                              ? "var(--color-accent-soft)"
-                              : "transparent",
+                            backgroundColor: isActive ? "var(--color-accent-soft)" : "transparent",
                             color: "var(--color-text)",
                           }}
                         >
                           <span className="truncate">{ws.name}</span>
                           {isActive && (
-                            <span
-                              className="text-[11px] uppercase tracking-wide"
-                              style={{ color: "var(--color-subtle)" }}
-                            >
+                            <span className="text-[11px] uppercase tracking-wide" style={{ color: "var(--color-subtle)" }}>
                               Active
                             </span>
                           )}
@@ -803,28 +783,19 @@ function TopbarInner({ pageTitle }: { pageTitle?: string }) {
                 </div>
               </div>
 
-              <div
-                className="my-1 h-px"
-                style={{ backgroundColor: "var(--color-border)" }}
-              />
+              <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
 
               <MenuItem href="/dashboard/settings/profile" label="Account" onClick={() => setOpen(false)} />
               <MenuItem href="/dashboard/settings" label="Workspace settings" onClick={() => setOpen(false)} />
               <MenuItem href="/pricing" label="Upgrade" onClick={() => setOpen(false)} />
 
-              <div
-                className="my-1 h-px"
-                style={{ backgroundColor: "var(--color-border)" }}
-              />
+              <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
 
               <MenuItem href="/dashboard/support" label="Ask a question" onClick={() => setOpen(false)} />
               <MenuItem href="/dashboard/support" label="Help topics" onClick={() => setOpen(false)} />
               <MenuItem href="/dashboard/support" label="Share feedback" onClick={() => setOpen(false)} />
 
-              <div
-                className="my-1 h-px"
-                style={{ backgroundColor: "var(--color-border)" }}
-              />
+              <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
 
               <button
                 className={cn(
@@ -861,9 +832,7 @@ function MenuItem({
     <Link
       href={href}
       onClick={onClick}
-      className={cn(
-        "wf-dashboard-account-menu-item block rounded-lg px-2.5 py-2 text-sm transition"
-      )}
+      className={cn("wf-dashboard-account-menu-item block rounded-lg px-2.5 py-2 text-sm transition")}
       role="menuitem"
       style={{ color: "var(--color-text)" }}
     >
@@ -874,20 +843,21 @@ function MenuItem({
 
 /* ---------------- utils ---------------- */
 
-function useOutsideClose<T extends HTMLElement>(
-  open: boolean,
-  onClose: () => void
-) {
+function useOutsideClose<T extends HTMLElement>(open: boolean, onClose: () => void) {
   const ref = useRef<T | null>(null);
+
   useEffect(() => {
     if (!open) return;
+
     function onDoc(e: MouseEvent) {
       if (!ref.current) return;
       if (!ref.current.contains(e.target as Node)) onClose();
     }
+
     function onEsc(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
+
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onEsc);
     return () => {
@@ -895,6 +865,7 @@ function useOutsideClose<T extends HTMLElement>(
       document.removeEventListener("keydown", onEsc);
     };
   }, [open, onClose]);
+
   return ref;
 }
 

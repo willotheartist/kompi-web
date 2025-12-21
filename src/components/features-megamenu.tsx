@@ -1,5 +1,4 @@
-//src/components/features-megamenu.tsx
-`use client`;
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -209,13 +208,16 @@ export function FeaturesMegaMenu() {
         />
       </button>
 
-      {/* Panel — centered to viewport (stable positioning) */}
-      {open && (
-        <div
-          role="dialog"
-          onMouseEnter={openNow}
-          onMouseLeave={scheduleClose}
-          className="
+      {/* Panel — centered to viewport (animated; stays mounted) */}
+      <div
+        role="dialog"
+        aria-hidden={!open}
+        onMouseEnter={openNow}
+        onMouseLeave={scheduleClose}
+        className={[
+          "wf-megamenu-panel",
+          open ? "wf-megamenu-open" : "wf-megamenu-closed",
+          `
             fixed left-1/2 top-24 z-60 grid
             w-[min(1360px,100vw-40px)]
             -translate-x-1/2
@@ -223,140 +225,140 @@ export function FeaturesMegaMenu() {
             border border-(--color-border)
             bg-(--color-surface) text-(--color-text)
             grid-cols-[280px_1fr_420px]
-          "
-        >
-          {/* Left rail */}
-          <div className="border-r border-(--color-border) bg-(--color-bg) p-3">
-            <div className="px-2 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
-              Explore
-            </div>
-            <ul className="flex flex-col gap-2">
-              {CATEGORIES.map((c) => {
-                const isActive = c.id === active;
-                return (
-                  <li key={c.id}>
-                    <button
-                      type="button"
-                      onMouseEnter={() => setActive(c.id)}
-                      onFocus={() => setActive(c.id)}
-                      className={[
-                        "w-full rounded-2xl px-4 py-3 text-left text-[15px] transition-colors",
-                        isActive
-                          ? "bg-[#C4C8FF] text-(--color-text)"
-                          : "text-(--color-subtle) hover:bg-(--color-surface)",
-                      ].join(" ")}
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        <span>{c.label}</span>
-                        {isActive && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#C4C8FF]" />
-                        )}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+          `,
+        ].join(" ")}
+      >
+        {/* Left rail */}
+        <div className="border-r border-(--color-border) bg-(--color-bg) p-3">
+          <div className="px-2 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
+            Explore
           </div>
-
-          {/* Middle column */}
-          <div className="p-4">
-            <div className="flex items-center justify-between pb-2">
-              <div className="flex items-center gap-2 px-1">
-                <span className="h-4 w-0.5 rounded-full bg-[#C4C8FF]" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
-                  {activeCat.label}
-                </span>
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              {activeCat.items.map((it) => {
-                const Icon = it.icon ?? Sparkles;
-                return (
-                  <Link
-                    key={it.title}
-                    href={it.href}
-                    className="group flex items-start gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-(--color-bg)"
-                    onClick={() => {
-                      clearCloseTimer();
-                      setOpen(false);
-                    }}
+          <ul className="flex flex-col gap-2">
+            {CATEGORIES.map((c) => {
+              const isActive = c.id === active;
+              return (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    onMouseEnter={() => setActive(c.id)}
+                    onFocus={() => setActive(c.id)}
+                    className={[
+                      "w-full rounded-2xl px-4 py-3 text-left text-[15px] transition-colors",
+                      isActive
+                        ? "bg-[#C4C8FF] text-(--color-text)"
+                        : "text-(--color-subtle) hover:bg-(--color-surface)",
+                    ].join(" ")}
                   >
-                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[#C4C8FF] text-(--color-text)">
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="leading-tight">
-                      <div className="text-[15px] font-semibold text-(--color-text) group-hover:text-[#C4C8FF]">
-                        {it.title}
-                      </div>
-                      <div className="text-[13px] text-(--color-subtle)">
-                        {it.desc}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+                    <span className="inline-flex items-center gap-2">
+                      <span>{c.label}</span>
+                      {isActive && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#C4C8FF]" />
+                      )}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {/* Middle column */}
+        <div className="p-4">
+          <div className="flex items-center justify-between pb-2">
+            <div className="flex items-center gap-2 px-1">
+              <span className="h-4 w-0.5 rounded-full bg-[#C4C8FF]" />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
+                {activeCat.label}
+              </span>
             </div>
           </div>
 
-          {/* Right featured — VISUAL (Linktree-style) */}
-          <div className="p-4">
-            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-bg)">
-              {/* Visual */}
-              <div className="relative aspect-4/3 w-full">
-                <Image
-                  src="/kompi-branding.png"
-                  alt="Kompi Suite preview"
-                  fill
-                  className="object-cover"
-                  priority
-                />
+          <div className="grid gap-2">
+            {activeCat.items.map((it) => {
+              const Icon = it.icon ?? Sparkles;
+              return (
+                <Link
+                  key={it.title}
+                  href={it.href}
+                  className="group flex items-start gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-(--color-bg)"
+                  onClick={() => {
+                    clearCloseTimer();
+                    setOpen(false);
+                  }}
+                >
+                  <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[#C4C8FF] text-(--color-text)">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="leading-tight">
+                    <div className="text-[15px] font-semibold text-(--color-text) group-hover:text-[#C4C8FF]">
+                      {it.title}
+                    </div>
+                    <div className="text-[13px] text-(--color-subtle)">
+                      {it.desc}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right featured — VISUAL (Linktree-style) */}
+        <div className="p-4">
+          <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-bg)">
+            {/* Visual */}
+            <div className="relative aspect-4/3 w-full">
+              <Image
+                src="/kompi-branding.png"
+                alt="Kompi Suite preview"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+
+            {/* Copy + CTAs */}
+            <div className="flex flex-1 flex-col justify-between p-5">
+              <div className="space-y-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
+                  Featured
+                </p>
+                <h3 className="text-[18px] font-semibold leading-snug text-(--color-text)">
+                  Meet Kompi Suite
+                </h3>
+                <p className="text-[13px] text-(--color-subtle)">
+                  Links, KR Codes, K-Cards and QR menus — with analytics that
+                  show what actually works.
+                </p>
               </div>
 
-              {/* Copy + CTAs */}
-              <div className="flex flex-1 flex-col justify-between p-5">
-                <div className="space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
-                    Featured
-                  </p>
-                  <h3 className="text-[18px] font-semibold leading-snug text-(--color-text)">
-                    Meet Kompi Suite
-                  </h3>
-                  <p className="text-[13px] text-(--color-subtle)">
-                    Links, KR Codes, K-Cards and QR menus — with analytics that
-                    show what actually works.
-                  </p>
-                </div>
+              <div className="mt-4 grid gap-2">
+                <Link
+                  href="/kompi-suite"
+                  onClick={() => {
+                    clearCloseTimer();
+                    setOpen(false);
+                  }}
+                  className="inline-flex w-full items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface) px-5 py-2.5 text-[14px] font-semibold text-(--color-text) transition-colors hover:bg-(--color-bg)"
+                >
+                  Explore Kompi Suite
+                </Link>
 
-                <div className="mt-4 grid gap-2">
-                  <Link
-                    href="/kompi-suite"
-                    onClick={() => {
-                      clearCloseTimer();
-                      setOpen(false);
-                    }}
-                    className="inline-flex w-full items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface) px-5 py-2.5 text-[14px] font-semibold text-(--color-text) transition-colors hover:bg-(--color-bg)"
-                  >
-                    Explore Kompi Suite
-                  </Link>
-
-                  <Link
-                    href="/signin"
-                    onClick={() => {
-                      clearCloseTimer();
-                      setOpen(false);
-                    }}
-                    className="inline-flex w-full items-center justify-center rounded-full bg-[#C4C8FF] px-5 py-2.5 text-[14px] font-semibold text-(--color-text) transition-colors hover:brightness-105"
-                  >
-                    Sign up free
-                  </Link>
-                </div>
+                <Link
+                  href="/signin"
+                  onClick={() => {
+                    clearCloseTimer();
+                    setOpen(false);
+                  }}
+                  className="inline-flex w-full items-center justify-center rounded-full bg-[#C4C8FF] px-5 py-2.5 text-[14px] font-semibold text-(--color-text) transition-colors hover:brightness-105"
+                >
+                  Sign up free
+                </Link>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

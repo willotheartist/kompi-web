@@ -1,5 +1,3 @@
-// src/app/links/new/page.tsx
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { CreateWorkspaceEmpty } from "@/components/dashboard/create-workspace-empty";
 import { CreateLinkPage } from "@/components/links/create-link-page";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
@@ -19,16 +17,8 @@ export default async function NewLinkPage({ searchParams }: PageProps) {
   const workspace = await getActiveWorkspace(user.id, sp.workspaceId ?? null);
 
   if (!workspace) {
-    return (
-      <DashboardLayout>
-        <CreateWorkspaceEmpty />
-      </DashboardLayout>
-    );
+    return <CreateWorkspaceEmpty />;
   }
 
-  return (
-    <DashboardLayout>
-      <CreateLinkPage workspaceId={workspace.id} />
-    </DashboardLayout>
-  );
+  return <CreateLinkPage workspaceId={workspace.id} />;
 }

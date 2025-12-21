@@ -1,6 +1,6 @@
 // middleware.ts
-import { NextResponse, type NextRequest } from "next/server";
 import NextAuthMiddleware from "next-auth/middleware";
+import { NextResponse, type NextRequest } from "next/server";
 
 export const config = {
   matcher: [
@@ -40,23 +40,15 @@ export default function middleware(req: NextRequest) {
     const ip = firstIp(req.headers.get("x-forwarded-for"));
     if (ip) headers.set("x-edge-ip", ip);
 
+    // Optional: runtime header for /r/* too
+    headers.set("x-kompi-rt", "0");
+
     return NextResponse.next({
       request: { headers },
     });
   }
 
   // ---- EVERYTHING ELSE: NEXTAUTH PROTECTION ----
-  // IMPORTANT: call the NextAuth middleware *function*, not withAuth() output
-  return (NextAuthMiddleware as unknown as (req: NextRequest) => any)(req);
-}
-
-
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-
-export function middleware(req: NextRequest) {
-  const t0 = Date.now();
-  const res = NextResponse.next();
-  res.headers.set("x-kompi-rt", String(Date.now() - t0));
-  return res;
+  // NextAuth's default export is a middleware handler that accepts NextRequest
+  return (NextAuthMiddleware as unknown as (req: NextRequest) => Response)(req);
 }

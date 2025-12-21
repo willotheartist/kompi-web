@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { requireUser } from "@/lib/auth";
 import {
   LinkAnalyticsClient,
-  LinkAnalyticsViewModel,
+  type LinkAnalyticsViewModel,
 } from "@/components/links/link-analytics-client";
 
 type PageProps = {
@@ -31,10 +31,13 @@ export default async function Page({ params }: PageProps) {
   const { id } = await params;
   if (!id) notFound();
 
+  const user = await requireUser();
   const identifier = id.trim();
 
+  // ✅ IMPORTANT: ensure the link belongs to the signed-in user
   const link = await prisma.link.findFirst({
     where: {
+      workspace: { ownerId: user.id },
       OR: [{ id: identifier }, { code: identifier }],
     },
   });
@@ -128,16 +131,14 @@ export default async function Page({ params }: PageProps) {
   const devices = Array.from(deviceCounts.entries())
     .sort((a, b) => b[1] - a[1])
     .map(([label, count]) => {
-      const pct =
-        totalClicks === 0 ? 0 : Math.round((count / totalClicks) * 100);
+      const pct = totalClicks === 0 ? 0 : Math.round((count / totalClicks) * 100);
       return { label, count, pct };
     });
 
   const createdLabel = link.createdAt.toISOString().slice(0, 10);
   const code = link.code ?? null;
 
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const shortUrl = code ? `${base}/r/${code}` : null;
 
   const vm: LinkAnalyticsViewModel = {
@@ -158,9 +159,5 @@ export default async function Page({ params }: PageProps) {
     isActive: link.isActive ?? true,
   };
 
-  return (
-    <DashboardLayout>
-      <LinkAnalyticsClient vm={vm} />
-    </DashboardLayout>
-  );
+  return <LinkAnalyticsClient vm={vm} />;
 }

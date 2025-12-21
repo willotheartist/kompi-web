@@ -29,11 +29,7 @@ const ACTIVE_BLUE_CLASS = "wf-nav-link-active";
 const ACTIVE_BLUE_BG = "wf-nav-cta-primary";
 const ACTIVE_BLUE_SHADOW = "wf-nav-cta-primary-shadow";
 
-type MobileSectionId =
-  | "features"
-  | "tools"
-  | "customers"
-  | "pricing";
+type MobileSectionId = "features" | "tools" | "customers" | "pricing";
 
 export function Navbar() {
   const [hidden, setHidden] = useState(false);
@@ -43,9 +39,7 @@ export function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  
   const closeMobile = useCallback(() => setMobileOpen(false), []);
-
 
   useEffect(() => {
     // Initialize the ignore window once on mount to avoid hydration issues
@@ -180,7 +174,11 @@ export function Navbar() {
             <button
               type="button"
               aria-label="Open menu"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); requestAnimationFrame(() => setMobileOpen(true)); }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                requestAnimationFrame(() => setMobileOpen(true));
+              }}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface)"
             >
               <Menu className="h-5 w-5" />
@@ -193,7 +191,6 @@ export function Navbar() {
     </>
   );
 }
-
 
 function MobileNavRow({
   label,
@@ -277,7 +274,8 @@ function MobileNav({
     }
     lastPathRef.current = next;
   }, [pathname, open, onClose]);
-// lock scroll when open
+
+  // lock scroll when open
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -377,14 +375,54 @@ function MobileNav({
             />
             {expanded === "features" && (
               <div className="pb-2">
-                <MobileNavSubLink href="/kompi-suite" icon={Sparkles} title="Kompi Suite" onClick={onClose}/>
-                <MobileNavSubLink href="/features/url-shortener" icon={Link2} title="Short links" onClick={onClose}/>
-                <MobileNavSubLink href="/KR-Codes-QR-Code-Generator" icon={QrCode} title="KR Codes" onClick={onClose}/>
-                <MobileNavSubLink href="/k-cards" icon={LayoutGrid} title="K-Cards" onClick={onClose}/>
-                <MobileNavSubLink href="/qr-menus" icon={QrCode} title="QR Menus" onClick={onClose}/>
-                <MobileNavSubLink href="/free-qr-code-generator" icon={QrCode} title="Free QR code" onClick={onClose}/>
-                <MobileNavSubLink href="/claim" icon={Sparkles} title="Claim your handle" onClick={onClose}/>
-                <MobileNavSubLink href="/creator-studio" icon={User} title="Creator Studio" onClick={onClose}/>
+                <MobileNavSubLink
+                  href="/kompi-suite"
+                  icon={Sparkles}
+                  title="Kompi Suite"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/features/url-shortener"
+                  icon={Link2}
+                  title="Short links"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/KR-Codes-QR-Code-Generator"
+                  icon={QrCode}
+                  title="KR Codes"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/k-cards"
+                  icon={LayoutGrid}
+                  title="K-Cards"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/qr-menus"
+                  icon={QrCode}
+                  title="QR Menus"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/free-qr-code-generator"
+                  icon={QrCode}
+                  title="Free QR code"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/claim"
+                  icon={Sparkles}
+                  title="Claim your handle"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/creator-studio"
+                  icon={User}
+                  title="Creator Studio"
+                  onClick={onClose}
+                />
               </div>
             )}
 
@@ -403,12 +441,42 @@ function MobileNav({
             />
             {expanded === "tools" && (
               <div className="pb-2">
-                <MobileNavSubLink href="/tools" icon={Sparkles} title="Browse all tools" onClick={onClose}/>
-                <MobileNavSubLink href="/tools/utm-builder" icon={Tag} title="UTM builder" onClick={onClose}/>
-                <MobileNavSubLink href="/tools/password-generator" icon={Sparkles} title="Password generator" onClick={onClose}/>
-                <MobileNavSubLink href="/tools/image-to-pdf" icon={Sparkles} title="Image to PDF" onClick={onClose}/>
-                <MobileNavSubLink href="/tools/case-converter" icon={Sparkles} title="Case converter" onClick={onClose}/>
-                <MobileNavSubLink href="/tools/hashtag-generator" icon={Sparkles} title="Hashtag generator" onClick={onClose}/>
+                <MobileNavSubLink
+                  href="/tools"
+                  icon={Sparkles}
+                  title="Browse all tools"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/tools/utm-builder"
+                  icon={Tag}
+                  title="UTM builder"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/tools/password-generator"
+                  icon={Sparkles}
+                  title="Password generator"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/tools/image-to-pdf"
+                  icon={Sparkles}
+                  title="Image to PDF"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/tools/case-converter"
+                  icon={Sparkles}
+                  title="Case converter"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/tools/hashtag-generator"
+                  icon={Sparkles}
+                  title="Hashtag generator"
+                  onClick={onClose}
+                />
               </div>
             )}
 
@@ -427,35 +495,66 @@ function MobileNav({
             />
             {expanded === "customers" && (
               <div className="pb-2">
-                <MobileNavSubLink href="/customers" icon={Users} title="All customers" onClick={onClose}/>
-                <MobileNavSubLink href="/customers/creators" icon={User} title="Creators" onClick={onClose}/>
-                <MobileNavSubLink href="/customers/small-business" icon={Store} title="Small businesses" onClick={onClose}/>
-                <MobileNavSubLink href="/customers/communities" icon={Users} title="Communities" onClick={onClose}/>
-                <MobileNavSubLink href="/customers/brands" icon={Megaphone} title="Brands" onClick={onClose}/>
-                <MobileNavSubLink href="/customers/agencies" icon={Briefcase} title="Agencies" onClick={onClose}/>
-                <MobileNavSubLink href="/customers/events" icon={Calendar} title="Events" onClick={onClose}/>
+                <MobileNavSubLink
+                  href="/customers"
+                  icon={Users}
+                  title="All customers"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/customers/creators"
+                  icon={User}
+                  title="Creators"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/customers/small-business"
+                  icon={Store}
+                  title="Small businesses"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/customers/communities"
+                  icon={Users}
+                  title="Communities"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/customers/brands"
+                  icon={Megaphone}
+                  title="Brands"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/customers/agencies"
+                  icon={Briefcase}
+                  title="Agencies"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/customers/events"
+                  icon={Calendar}
+                  title="Events"
+                  onClick={onClose}
+                />
               </div>
             )}
 
             {/* Pricing */}
-            <Link
-              href="/pricing"
-              onClick={onClose}
-              className="block"
-              style={{ textDecoration: "none" }}
-            >
+            <Link href="/pricing" onClick={onClose} className="block" style={{ textDecoration: "none" }}>
               <div
                 className="w-full flex items-center justify-between py-5 text-left"
                 style={{ borderBottom: "1px solid var(--color-border)" }}
               >
-                <span className="text-[22px] font-semibold tracking-tight">Pricing</span>
+                <span className="text-[22px] font-semibold tracking-tight">
+                  Pricing
+                </span>
                 <ChevronRight className="h-6 w-6 opacity-60" />
               </div>
             </Link>
 
             <div className="h-10" />
           </div>
-
         </div>
       </div>
     </div>
@@ -468,6 +567,7 @@ function CustomersMegaMenu() {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
+
   const CUSTOMERS = [
     {
       id: "creators",
@@ -578,19 +678,20 @@ function CustomersMegaMenu() {
       >
         <span>Customers</span>
         <ChevronDown
-          className={`h-4 w-4 transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 
-      {/* Panel */}
-      {open && (
-        <div
-          onMouseEnter={openNow}
-          onMouseLeave={scheduleClose}
-          role="dialog"
-          className="
+      {/* Panel (animated; stays mounted) */}
+      <div
+        onMouseEnter={openNow}
+        onMouseLeave={scheduleClose}
+        role="dialog"
+        aria-hidden={!open}
+        className={[
+          "wf-megamenu-panel",
+          open ? "wf-megamenu-open" : "wf-megamenu-closed",
+          `
             fixed left-1/2 top-24 z-60
             w-[min(1120px,100vw-40px)]
             -translate-x-1/2
@@ -600,73 +701,73 @@ function CustomersMegaMenu() {
             text-(--color-text)
             grid gap-0
             grid-cols-[2fr_1.2fr]
-          "
-        >
-          {/* Customer list */}
-          <div className="border-r border-(--color-border) bg-(--color-bg) p-4 md:p-5">
-            <div className="flex items-center gap-2 px-1 pb-3">
-              <span className="h-4 w-0.5 rounded-full bg-(--color-accent)" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
-                Customers
-              </span>
-            </div>
-            <div className="grid gap-1.5">
-              {CUSTOMERS.map((c) => {
-                const Icon = c.icon;
-                return (
-                  <Link
-                    key={c.id}
-                    href={c.href}
-                    onClick={() => {
-                      clearCloseTimer();
-                      setOpen(false);
-                    }}
-                    className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-(--color-surface)"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#A5B0FF] text-[#D5FF3E]">
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <div className="text-[15px] font-medium text-(--color-text) group-hover:text-[#1E2330]">
-                        {c.title}
-                      </div>
-                      <div className="text-[12px] text-(--color-subtle) group-hover:text-[#1E2330]/80">
-                        {c.desc}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+          `,
+        ].join(" ")}
+      >
+        {/* Customer list */}
+        <div className="border-r border-(--color-border) bg-(--color-bg) p-4 md:p-5">
+          <div className="flex items-center gap-2 px-1 pb-3">
+            <span className="h-4 w-0.5 rounded-full bg-(--color-accent)" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
+              Customers
+            </span>
           </div>
+          <div className="grid gap-1.5">
+            {CUSTOMERS.map((c) => {
+              const Icon = c.icon;
+              return (
+                <Link
+                  key={c.id}
+                  href={c.href}
+                  onClick={() => {
+                    clearCloseTimer();
+                    setOpen(false);
+                  }}
+                  className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-(--color-surface)"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#A5B0FF] text-[#D5FF3E]">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="text-[15px] font-medium text-(--color-text) group-hover:text-[#1E2330]">
+                      {c.title}
+                    </div>
+                    <div className="text-[12px] text-(--color-subtle) group-hover:text-[#1E2330]/80">
+                      {c.desc}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
 
-          {/* Featured story / CTA */}
-          <div className="p-4 md:p-5">
-            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface)">
-              <div className="relative aspect-4/3 w-full">
-                <Image
-                  src="/kompiimage19.png"
-                  alt="Communities using Kompi"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="space-y-2 p-4 md:p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
-                  Featured
-                </p>
-                <h3 className="text-[18px] font-semibold leading-snug text-[#1E2330]">
-                  Social movement, not just a link in bio.
-                </h3>
-                <p className="text-[13px] text-(--color-subtle)">
-                  Communities, brands and teams use Kompi to turn everyday links
-                  and QR codes into ongoing conversations, not one-off clicks.
-                </p>
-              </div>
+        {/* Featured story / CTA */}
+        <div className="p-4 md:p-5">
+          <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface)">
+            <div className="relative aspect-4/3 w-full">
+              <Image
+                src="/kompiimage19.png"
+                alt="Communities using Kompi"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="space-y-2 p-4 md:p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
+                Featured
+              </p>
+              <h3 className="text-[18px] font-semibold leading-snug text-[#1E2330]">
+                Social movement, not just a link in bio.
+              </h3>
+              <p className="text-[13px] text-(--color-subtle)">
+                Communities, brands and teams use Kompi to turn everyday links
+                and QR codes into ongoing conversations, not one-off clicks.
+              </p>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

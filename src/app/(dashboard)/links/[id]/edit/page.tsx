@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { EditLinkForm } from "@/components/links/edit-link-form";
 
 type PageProps = {
@@ -31,15 +30,13 @@ export default async function Page({ params }: PageProps) {
   const shortUrl = link.code ? `${base}/r/${link.code}` : null;
 
   return (
-    <DashboardLayout>
-      <EditLinkForm
-        id={link.id}
-        initialTargetUrl={link.targetUrl}
-        initialCode={link.code ?? ""}
-        initialTitle={link.title ?? ""}
-        initialIsActive={link.isActive ?? true}
-        shortUrl={shortUrl}
-      />
-    </DashboardLayout>
+    <EditLinkForm
+      id={link.id}
+      initialTargetUrl={link.targetUrl}
+      initialCode={link.code ?? ""}
+      initialTitle={link.title ?? ""}
+      initialIsActive={link.isActive ?? true}
+      shortUrl={shortUrl}
+    />
   );
 }
