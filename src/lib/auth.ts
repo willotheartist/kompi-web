@@ -84,6 +84,8 @@ export const authOptions: NextAuthOptions = {
       return mutableToken;
     },
 
+    // ✅ IMPORTANT PERFORMANCE FIX:
+    // Do NOT hit Prisma here. NextAuth session() runs a lot.
     async session({ session, token }) {
       if (!session.user) return session;
 
@@ -94,56 +96,18 @@ export const authOptions: NextAuthOptions = {
         image?: string | null;
       };
 
-      let dbUser:
-        | {
-            id: string;
-            email: string;
-            name: string | null;
-            image: string | null;
-          }
-        | null = null;
-
-      if (typedToken.id) {
-        dbUser = await prisma.user.findUnique({
-          where: { id: typedToken.id },
-          select: { id: true, email: true, name: true, image: true },
-        });
-      }
-
-      if (!dbUser && typedToken.email) {
-        dbUser = await prisma.user.findUnique({
-          where: { email: typedToken.email },
-          select: { id: true, email: true, name: true, image: true },
-        });
-      }
-
-      if (dbUser) {
-        session.user = {
-          ...session.user,
-          id: dbUser.id,
-          email: dbUser.email,
-          name: dbUser.name ?? session.user.name ?? undefined,
-          image: dbUser.image ?? session.user.image ?? undefined,
-        } as typeof session.user & {
-          id?: string;
-          email?: string | null;
-          name?: string | null;
-          image?: string | null;
-        };
-      } else {
-        session.user = {
-          ...session.user,
-          id: typedToken.id,
-          email: typedToken.email ?? session.user.email ?? undefined,
-          name: typedToken.name ?? session.user.name ?? undefined,
-          image: typedToken.image ?? session.user.image ?? undefined,
-        } as typeof session.user & {
-          id?: string;
-          email?: string | null;
-          name?: string | null;
-          image?: string | null;
-        };
-      }
+      session.user = {
+        ...session.user,
+        id: typedToken.id,
+        email: typedToken.email ?? session.user.email ?? undefined,
+        name: typedToken.name ?? session.user.name ?? undefined,
+        image: typedToken.image ?? session.user.image ?? undefined,
+      } as typeof session.user & {
+        id?: string;
+        email?: string | null;
+        name?: string | null;
+        image?: string | null;
+      };
 
       return session;
     },
@@ -220,19 +184,27 @@ export async function getUserWorkspaces(userId: string) {
   });
 }
 
+// ✅ IMPORTANT PERFORMANCE FIX:
+// Don't load *all* workspaces to select one.
+// Fetch only what's needed.
 export async function getActiveWorkspace(
   userId: string,
   workspaceId?: string | null,
 ) {
-  const workspaces = await getUserWorkspaces(userId);
-  if (!workspaces.length) return null;
-
+  // If a workspaceId/slug is provided, fetch just that one.
   if (workspaceId) {
-    const byId = workspaces.find((w) => w.id == workspaceId);
-    if (byId) return byId;
-    const bySlug = workspaces.find((w) => w.slug === workspaceId);
-    if (bySlug) return bySlug;
+    const ws = await prisma.workspace.findFirst({
+      where: {
+        ownerId: userId,
+        OR: [{ id: workspaceId }, { slug: workspaceId }],
+      },
+    });
+    if (ws) return ws;
   }
 
-  return workspaces[0];
+  // Otherwise fetch just the first workspace.
+  return prisma.workspace.findFirst({
+    where: { ownerId: userId },
+    orderBy: { createdAt: "asc" },
+  });
 }

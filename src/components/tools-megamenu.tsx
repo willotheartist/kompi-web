@@ -331,18 +331,18 @@ const isToolsRoute = pathname?.startsWith("/tools");
           onMouseEnter={openNow}
           onMouseLeave={scheduleClose}
           className="
-            fixed left-1/2 top-24 z-[60] grid
+            fixed left-1/2 top-24 z-60 grid
             w-[min(1360px,100vw-40px)]
             -translate-x-1/2
             overflow-hidden rounded-3xl
-            border border-[color:var(--color-border)]
-            bg-[color:var(--color-surface)] text-[color:var(--color-text)]
-            [grid-template-columns:280px_1fr_420px]
+            border border-(--color-border)
+            bg-(--color-surface) text-(--color-text)
+            grid-cols-[280px_1fr_420px]
           "
         >
           {/* Left rail */}
-          <div className="border-r border-[color:var(--color-border)] bg-[color:var(--color-bg)] p-3">
-            <div className="px-2 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+          <div className="border-r border-(--color-border) bg-(--color-bg) p-3">
+            <div className="px-2 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
               Browse tools
             </div>
 
@@ -358,17 +358,17 @@ const isToolsRoute = pathname?.startsWith("/tools");
                       className={[
                         "w-full rounded-2xl px-4 py-3 text-left text-[15px] transition-colors",
                         isActive
-                          ? "bg-[color:#C4C8FF] text-[color:var(--color-text)]"
-                          : "text-[color:var(--color-subtle)] hover:bg-[color:var(--color-surface)]",
+                          ? "bg-[#C4C8FF] text-(--color-text)"
+                          : "text-(--color-subtle) hover:bg-(--color-surface)",
                       ].join(" ")}
                     >
                       <span className="inline-flex items-center gap-2">
                         <span>{c.label}</span>
                         {isActive && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-[color:#C4C8FF]" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#C4C8FF]" />
                         )}
                       </span>
-                      <div className="mt-0.5 text-[12px] tracking-tight text-[color:var(--color-subtle)]">
+                      <div className="mt-0.5 text-[12px] tracking-tight text-(--color-subtle)">
                         {c.kicker}
                       </div>
                     </button>
@@ -384,7 +384,7 @@ const isToolsRoute = pathname?.startsWith("/tools");
                   clearCloseTimer();
                   setOpen(false);
                 }}
-                className="text-[12px] font-medium text-[color:#C4C8FF] underline-offset-2 hover:underline"
+                className="text-[12px] font-medium text-[#C4C8FF] underline-offset-2 hover:underline"
               >
                 Browse all tools →
               </Link>
@@ -395,8 +395,8 @@ const isToolsRoute = pathname?.startsWith("/tools");
           <div className="p-4">
             <div className="flex items-center justify-between pb-2">
               <div className="flex items-center gap-2 px-1">
-                <span className="h-4 w-0.5 rounded-full bg-[color:#C4C8FF]" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+                <span className="h-4 w-0.5 rounded-full bg-[#C4C8FF]" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
                   {activeCat.label}
                 </span>
               </div>
@@ -407,7 +407,7 @@ const isToolsRoute = pathname?.startsWith("/tools");
                   clearCloseTimer();
                   setOpen(false);
                 }}
-                className="text-[12px] font-medium text-[color:#C4C8FF] hover:underline underline-offset-2"
+                className="text-[12px] font-medium text-[#C4C8FF] hover:underline underline-offset-2"
               >
                 All tools →
               </Link>
@@ -424,16 +424,16 @@ const isToolsRoute = pathname?.startsWith("/tools");
                       clearCloseTimer();
                       setOpen(false);
                     }}
-                    className="group flex items-start gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-[color:var(--color-bg)]"
+                    className="group flex items-start gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-(--color-bg)"
                   >
-                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[color:#C4C8FF] text-[color:var(--color-text)]">
+                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[#C4C8FF] text-(--color-text)">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="leading-tight">
-                      <div className="text-[15px] font-semibold text-[color:var(--color-text)] group-hover:text-[color:#C4C8FF]">
+                      <div className="text-[15px] font-semibold text-(--color-text) group-hover:text-[#C4C8FF]">
                         {tool.name}
                       </div>
-                      <div className="text-[13px] text-[color:var(--color-subtle)]">
+                      <div className="text-[13px] text-(--color-subtle)">
                         {tool.desc}
                       </div>
                     </div>
@@ -442,7 +442,7 @@ const isToolsRoute = pathname?.startsWith("/tools");
               })}
             </div>
 
-            <div className="mt-3 px-1 text-[11px] text-[color:var(--color-subtle)]">
+            <div className="mt-3 px-1 text-[11px] text-(--color-subtle)">
               Curated highlights — see everything on{" "}
               <Link
                 href="/tools"
@@ -450,7 +450,7 @@ const isToolsRoute = pathname?.startsWith("/tools");
                   clearCloseTimer();
                   setOpen(false);
                 }}
-                className="font-medium text-[color:#C4C8FF] hover:underline underline-offset-2"
+                className="font-medium text-[#C4C8FF] hover:underline underline-offset-2"
               >
                 Tools
               </Link>
@@ -460,9 +460,9 @@ const isToolsRoute = pathname?.startsWith("/tools");
 
           {/* Right featured — VISUAL (Linktree-style) */}
           <div className="p-4">
-            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)]">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-bg)">
               {/* Visual */}
-              <div className="relative aspect-[4/3] w-full">
+              <div className="relative aspect-4/3 w-full">
                 <Image
                   src="/kompi-analytics.png"
                   alt="Kompi tools + analytics preview"
@@ -475,13 +475,13 @@ const isToolsRoute = pathname?.startsWith("/tools");
               {/* Copy + CTAs */}
               <div className="flex flex-1 flex-col justify-between p-5">
                 <div className="space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
                     Featured
                   </p>
-                  <h3 className="text-[18px] font-semibold leading-snug text-[color:var(--color-text)]">
+                  <h3 className="text-[18px] font-semibold leading-snug text-(--color-text)">
                     Tools that feel instant
                   </h3>
-                  <p className="text-[13px] text-[color:var(--color-subtle)]">
+                  <p className="text-[13px] text-(--color-subtle)">
                     Use any tool free — then connect the winners to short links,
                     QR codes and analytics.
                   </p>
@@ -494,7 +494,7 @@ const isToolsRoute = pathname?.startsWith("/tools");
                       clearCloseTimer();
                       setOpen(false);
                     }}
-                    className="inline-flex w-full items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-2.5 text-[14px] font-semibold text-[color:var(--color-text)] transition-colors hover:bg-[color:var(--color-bg)]"
+                    className="inline-flex w-full items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface) px-5 py-2.5 text-[14px] font-semibold text-(--color-text) transition-colors hover:bg-(--color-bg)"
                   >
                     Explore tools
                   </Link>
@@ -505,13 +505,13 @@ const isToolsRoute = pathname?.startsWith("/tools");
                       clearCloseTimer();
                       setOpen(false);
                     }}
-                    className="inline-flex w-full items-center justify-center rounded-full bg-[color:#C4C8FF] px-5 py-2.5 text-[14px] font-semibold text-[color:var(--color-text)] transition-colors hover:brightness-105"
+                    className="inline-flex w-full items-center justify-center rounded-full bg-[#C4C8FF] px-5 py-2.5 text-[14px] font-semibold text-(--color-text) transition-colors hover:brightness-105"
                   >
                     Sign up free
                   </Link>
                 </div>
 
-                <div className="mt-3 text-center text-[11px] text-[color:var(--color-subtle)]">
+                <div className="mt-3 text-center text-[11px] text-(--color-subtle)">
                   No login needed for tools • Upgrade when you’re ready
                 </div>
               </div>

@@ -4,12 +4,15 @@ import type { PSEOPageInput } from "./types";
 import qrIdeas from "@/content/pseo/datasets/qr-ideas.json";
 import qrIdeasGenerated from "@/content/pseo/datasets/qr-ideas.generated.json";
 
+import utmChannels from "@/content/pseo/datasets/utm-channels.json";
+import bioLinks from "@/content/pseo/datasets/bio-links.json";
+
 function asPages(v: unknown): PSEOPageInput[] {
   return (v as PSEOPageInput[]).filter(Boolean);
 }
 
 /**
- * Dedupes by slug. Priority: generated > manual (so pipeline output wins).
+ * Dedupes by slug. Priority: later datasets overwrite earlier ones.
  * This prevents duplicate routes, duplicate sitemap entries, and duplicate static params.
  */
 function dedupeBySlug(pages: PSEOPageInput[]): PSEOPageInput[] {
@@ -22,8 +25,17 @@ function dedupeBySlug(pages: PSEOPageInput[]): PSEOPageInput[] {
 }
 
 export function getAllPSEOPages(): PSEOPageInput[] {
-  // Put manual first, generated second so generated overwrites on slug collisions
-  const merged = [...asPages(qrIdeas), ...asPages(qrIdeasGenerated)];
+  // Earlier first, later last so later wins on slug collisions
+  const merged = [
+    ...asPages(qrIdeas),
+    ...asPages(qrIdeasGenerated),
+
+    // ✅ UTM cluster
+    ...asPages(utmChannels),
+
+    // ✅ Link-in-bio cluster
+    ...asPages(bioLinks),
+  ];
   return dedupeBySlug(merged);
 }
 

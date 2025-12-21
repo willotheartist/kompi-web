@@ -51,7 +51,7 @@ export function SideNav() {
       className={cn(
         "hidden md:flex flex-col",
         "w-64 h-screen sticky top-0",
-        "bg-[var(--color-surface)] border-r border-[var(--color-border)]",
+        "bg-(--color-surface) border-r border-(--color-border)",
         "px-4 py-5 gap-6",
         "font-sans text-sm"
       )}
@@ -79,9 +79,9 @@ export function SideNav() {
         className={cn(
           "inline-flex items-center justify-center gap-2",
           "w-full py-2.5 px-3",
-          "rounded-full bg-[var(--color-accent)] text-[var(--color-text)]",
+          "rounded-full bg-(--color-accent) text-(--color-text)",
           "text-sm font-semibold",
-          "shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-md)]/90",
+          "shadow-(--shadow-md) hover:shadow-(--shadow-md)/90",
           "transition-shadow"
         )}
       >
@@ -111,15 +111,15 @@ export function SideNav() {
       </nav>
 
       {/* User */}
-      <div className="mt-auto flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-[999px] bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-text)]">
+      <div className="mt-auto flex items-center gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-bg) px-3 py-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-[999px] bg-(--color-surface) text-xs font-semibold text-(--color-text)">
           U
         </div>
         <div className="flex flex-col">
-          <span className="text-[11px] text-[var(--color-subtle)]">
+          <span className="text-[11px] text-(--color-subtle)">
             Logged in
           </span>
-          <span className="truncate text-xs font-medium text-[var(--color-text)]">
+          <span className="truncate text-xs font-medium text-(--color-text)">
             you@example.com
           </span>
         </div>
@@ -137,7 +137,7 @@ function NavSection({ title, children }: NavSectionProps) {
   return (
     <div className="space-y-2">
       {/* Section header – same family as new page headers */}
-      <h2 className="px-2 text-xs font-semibold text-[var(--color-subtle)]">
+      <h2 className="px-2 text-xs font-semibold text-(--color-subtle)">
         {title}
       </h2>
       <ul className="space-y-1.5">{children}</ul>
@@ -165,17 +165,17 @@ function NavItemRow({ item, pathname }: NavItemRowProps) {
           "flex items-center gap-3 px-3 py-2",
           "rounded-full",
           "transition-colors",
-          "text-[var(--color-subtle)] hover:text-[var(--color-text)] hover:bg-[var(--color-accent-soft)]",
+          "text-(--color-subtle) hover:text-(--color-text) hover:bg-(--color-accent-soft)",
           active &&
-            "bg-[var(--color-accent-soft)] text-[var(--color-text)] shadow-[var(--shadow-sm)]"
+            "bg-(--color-accent-soft) text-(--color-text) shadow-(--shadow-sm)"
         )}
       >
         <span
           className={cn(
             "h-6 w-6 inline-flex items-center justify-center rounded-full border text-[11px]",
             active
-              ? "bg-[var(--color-text)] text-[var(--color-bg)] border-transparent"
-              : "bg-[var(--color-bg)] text-[var(--color-subtle)] border-[var(--color-border)]"
+              ? "bg-(--color-text) text-(--color-bg) border-transparent"
+              : "bg-(--color-bg) text-(--color-subtle) border-(--color-border)"
           )}
         >
           <Icon className="h-3.5 w-3.5" />

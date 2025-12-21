@@ -134,16 +134,16 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
           <div className="flex items-center gap-3 text-xs">
             <Link
               href="/links"
-              className="inline-flex items-center gap-2 text-[color:var(--color-subtle)] hover:text-(--color-text)"
+              className="inline-flex items-center gap-2 text-(--color-subtle) hover:text-(--color-text)"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to dashboard
             </Link>
-            <span className="inline-flex items-center gap-2 text-[color:var(--color-subtle)]">
+            <span className="inline-flex items-center gap-2 text-(--color-subtle)">
               /
               <Link
                 href="/links"
-                className="text-[color:var(--color-text)] underline-offset-4 hover:underline"
+                className="text-(--color-text) underline-offset-4 hover:underline"
               >
                 Links
               </Link>
@@ -157,18 +157,18 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
             {/* Left side: title + URLs + meta */}
             <div className="min-w-0 flex-1 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[color:var(--color-accent-soft)]">
-                  <Link2 className="h-5 w-5 text-[color:var(--color-text)]" />
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-(--color-accent-soft)">
+                  <Link2 className="h-5 w-5 text-(--color-text)" />
                 </span>
-                <h1 className="truncate text-2xl font-semibold text-[color:var(--color-text)] md:text-3xl">
+                <h1 className="truncate text-2xl font-semibold text-(--color-text) md:text-3xl">
                   {displayHeading}
                 </h1>
                 <span
                   className={
                     "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium tracking-wide " +
                     (isActive
-                      ? "border-[color:var(--color-accent)] bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
-                      : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-subtle)]")
+                      ? "border-(--color-accent) bg-(--color-accent-soft) text-(--color-text)"
+                      : "border-(--color-border) bg-(--color-bg) text-(--color-subtle)")
                   }
                 >
                   {isActive ? "ACTIVE" : "INACTIVE"}
@@ -176,16 +176,16 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
               </div>
 
               {shortUrl && (
-                <p className="break-all text-sm text-[color:var(--color-accent)]">
+                <p className="break-all text-sm text-(--color-accent)">
                   {shortUrl}
                 </p>
               )}
 
-              <p className="break-all text-xs text-[color:var(--color-subtle)] md:text-sm">
+              <p className="break-all text-xs text-(--color-subtle) md:text-sm">
                 {targetUrl}
               </p>
 
-              <div className="mt-1 flex flex-wrap gap-3 text-[11px] text-[color:var(--color-subtle)] md:text-xs">
+              <div className="mt-1 flex flex-wrap gap-3 text-[11px] text-(--color-subtle) md:text-xs">
                 <span className="inline-flex items-center gap-1">
                   <MousePointer2 className="h-3 w-3 opacity-70" />
                   Created: {createdLabel}
@@ -202,7 +202,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                 variant="ghost"
                 size="icon"
                 aria-label="Edit link"
-                className="h-8 w-8 rounded-full bg-transparent text-[color:var(--color-text)] hover:bg-[color:var(--color-accent-soft)]"
+                className="h-8 w-8 rounded-full bg-transparent text-(--color-text) hover:bg-(--color-accent-soft)"
                 onClick={handleEdit}
               >
                 <Pencil className="h-4 w-4" />
@@ -213,7 +213,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                 variant="ghost"
                 size="icon"
                 aria-label="Share link"
-                className="h-8 w-8 rounded-full bg-transparent text-[color:var(--color-text)] hover:bg-[color:var(--color-accent-soft)]"
+                className="h-8 w-8 rounded-full bg-transparent text-(--color-text) hover:bg-(--color-accent-soft)"
                 onClick={handleShare}
               >
                 <Share2 className="h-4 w-4" />
@@ -225,18 +225,18 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                   variant="ghost"
                   size="icon"
                   aria-label="Delete link"
-                  className="h-8 w-8 rounded-full bg-transparent text-[color:var(--color-text)] hover:bg-[color:var(--color-accent-soft)]"
+                  className="h-8 w-8 rounded-full bg-transparent text-(--color-text) hover:bg-(--color-accent-soft)"
                   onClick={handleConfirmDelete}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
 
-                <DialogContent className="max-w-sm rounded-3xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6">
+                <DialogContent className="max-w-sm rounded-3xl border border-(--color-border) bg-(--color-surface) p-6">
                   <DialogHeader>
-                    <DialogTitle className="text-base font-semibold text-[color:var(--color-text)]">
+                    <DialogTitle className="text-base font-semibold text-(--color-text)">
                       Delete this link?
                     </DialogTitle>
-                    <DialogDescription className="mt-1 text-sm text-[color:var(--color-subtle)]">
+                    <DialogDescription className="mt-1 text-sm text-(--color-subtle)">
                       This will permanently remove this Kompi link and all of
                       its analytics. This action cannot be undone.
                     </DialogDescription>
@@ -246,7 +246,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                     <Button
                       type="button"
                       variant="ghost"
-                      className="h-8 rounded-full px-3 text-sm text-[color:var(--color-text)] hover:bg-[color:var(--color-accent-soft)]"
+                      className="h-8 rounded-full px-3 text-sm text-(--color-text) hover:bg-(--color-accent-soft)"
                       onClick={handleCancelDelete}
                       disabled={isDeleting}
                     >
@@ -254,7 +254,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                     </Button>
                     <Button
                       type="button"
-                      className="h-8 rounded-full bg-[color:var(--color-accent)] px-4 text-sm font-semibold text-[color:var(--color-text)] hover:opacity-90"
+                      className="h-8 rounded-full bg-(--color-accent) px-4 text-sm font-semibold text-(--color-text) hover:opacity-90"
                       onClick={handleDelete}
                       disabled={isDeleting}
                     >
@@ -270,47 +270,47 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
         {/* Insights header */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--color-subtle)">
               Insights
             </p>
-            <h2 className="text-base font-semibold text-[color:var(--color-text)]">
+            <h2 className="text-base font-semibold text-(--color-text)">
               Lifetime & recent performance
             </h2>
           </div>
-          <div className="inline-flex items-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-1 text-[11px] text-[color:var(--color-subtle)]">
+          <div className="inline-flex items-center rounded-full border border-(--color-border) bg-(--color-surface) px-3 py-1 text-[11px] text-(--color-subtle)">
             Last {days} days
           </div>
         </div>
 
         {/* Lifetime totals row */}
-        <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-4 shadow-sm md:px-5 md:py-5">
+        <GlassCard className="border border-(--color-border) bg-(--color-surface) px-4 py-4 shadow-sm md:px-5 md:py-5">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-[color:var(--color-text)]">
+            <h3 className="text-sm font-semibold text-(--color-text)">
               Lifetime totals
             </h3>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex flex-col justify-between rounded-3xl bg-[color:var(--color-bg)] px-4 py-3">
-              <div className="flex items-center gap-2 text-xs text-[color:var(--color-subtle)]">
+            <div className="flex flex-col justify-between rounded-3xl bg-(--color-bg) px-4 py-3">
+              <div className="flex items-center gap-2 text-xs text-(--color-subtle)">
                 <BarChart3 className="h-4 w-4 opacity-80" />
                 <span>Total clicks</span>
               </div>
               <p className="mt-2 text-2xl font-semibold text-(--color-text)">
                 {totalClicks.toLocaleString()}
               </p>
-              <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+              <p className="mt-1 text-[11px] text-(--color-subtle)">
                 All-time engagements on this link.
               </p>
             </div>
 
-            <div className="flex flex-col justify-between rounded-3xl bg-[color:var(--color-bg)] px-4 py-3">
-              <p className="text-xs text-[color:var(--color-subtle)]">
+            <div className="flex flex-col justify-between rounded-3xl bg-(--color-bg) px-4 py-3">
+              <p className="text-xs text-(--color-subtle)">
                 Last 7 days
               </p>
-              <p className="mt-2 text-2xl font-semibold text-[color:var(--color-text)]">
+              <p className="mt-2 text-2xl font-semibold text-(--color-text)">
                 {last7.toLocaleString()}
               </p>
-              <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+              <p className="mt-1 text-[11px] text-(--color-subtle)">
                 {growth7 > 0
                   ? `+${growth7}% vs previous 7 days`
                   : growth7 < 0
@@ -319,26 +319,26 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
               </p>
             </div>
 
-            <div className="flex flex-col justify-between rounded-3xl bg-[color:var(--color-bg)] px-4 py-3">
-              <p className="text-xs text-[color:var(--color-subtle)]">
+            <div className="flex flex-col justify-between rounded-3xl bg-(--color-bg) px-4 py-3">
+              <p className="text-xs text-(--color-subtle)">
                 Last 30 days
               </p>
-              <p className="mt-2 text-2xl font-semibold text-[color:var(--color-text)]">
+              <p className="mt-2 text-2xl font-semibold text-(--color-text)">
                 {last30.toLocaleString()}
               </p>
-              <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+              <p className="mt-1 text-[11px] text-(--color-subtle)">
                 Rolling 30-day performance snapshot.
               </p>
             </div>
 
-            <div className="flex flex-col justify-between rounded-3xl bg-[color:var(--color-bg)] px-4 py-3">
-              <p className="text-xs text-[color:var(--color-subtle)]">
+            <div className="flex flex-col justify-between rounded-3xl bg-(--color-bg) px-4 py-3">
+              <p className="text-xs text-(--color-subtle)">
                 Avg per day ({days}d)
               </p>
-              <p className="mt-2 text-2xl font-semibold text-[color:var(--color-text)]">
+              <p className="mt-2 text-2xl font-semibold text-(--color-text)">
                 {avgPerDay.toFixed(1)}
               </p>
-              <p className="mt-1 text-[11px] text-[color:var(--color-subtle)]">
+              <p className="mt-1 text-[11px] text-(--color-subtle)">
                 Average daily clicks over the last {days} days.
               </p>
             </div>
@@ -346,13 +346,13 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
         </GlassCard>
 
         {/* Engagement over time */}
-        <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 md:px-6 md:py-6">
+        <GlassCard className="border border-(--color-border) bg-(--color-surface) px-5 py-5 md:px-6 md:py-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--color-subtle)">
                 Engagements over time
               </p>
-              <h3 className="text-base font-semibold text-[color:var(--color-text)]">
+              <h3 className="text-base font-semibold text-(--color-text)">
                 Clicks across the last {days} days
               </h3>
             </div>
@@ -360,7 +360,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
 
           <div className="mt-5">
             {daily.length === 0 ? (
-              <p className="text-sm text-[color:var(--color-subtle)]">
+              <p className="text-sm text-(--color-subtle)">
                 No clicks yet. Share your link to start seeing activity.
               </p>
             ) : (
@@ -370,9 +370,9 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                     key={d.label}
                     className="flex flex-1 flex-col items-center gap-1"
                   >
-                    <div className="h-full w-full overflow-hidden rounded-full bg-[color:var(--color-bg)]">
+                    <div className="h-full w-full overflow-hidden rounded-full bg-(--color-bg)">
                       <div
-                        className="w-full rounded-full bg-[color:var(--color-accent)]"
+                        className="w-full rounded-full bg-(--color-accent)"
                         style={{
                           height: `${
                             totalClicks ? (d.count / totalClicks) * 100 : 0
@@ -380,7 +380,7 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
                         }}
                       />
                     </div>
-                    <span className="text-[10px] text-[color:var(--color-subtle)]">
+                    <span className="text-[10px] text-(--color-subtle)">
                       {d.label}
                     </span>
                   </div>
@@ -393,33 +393,33 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
         {/* Lower grid: referrers + devices */}
         <div className="grid gap-4 md:grid-cols-2">
           {/* Top referrers */}
-          <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 md:px-6 md:py-6">
+          <GlassCard className="border border-(--color-border) bg-(--color-surface) px-5 py-5 md:px-6 md:py-6">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--color-subtle)">
                   Top referrers
                 </p>
-                <h3 className="text-base font-semibold text-[color:var(--color-text)]">
+                <h3 className="text-base font-semibold text-(--color-text)">
                   Where people are clicking from
                 </h3>
               </div>
             </div>
             {topReferrers.length === 0 ? (
-              <p className="text-sm text-[color:var(--color-subtle)]">
+              <p className="text-sm text-(--color-subtle)">
                 No referrer data yet. Share your Kompi link to start seeing
                 sources.
               </p>
             ) : (
-              <ul className="space-y-2 text-sm text-[color:var(--color-text)]">
+              <ul className="space-y-2 text-sm text-(--color-text)">
                 {topReferrers.map((r) => (
                   <li
                     key={r.label}
-                    className="flex items-center justify-between gap-3 rounded-2xl bg-[color:var(--color-bg)] px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded-2xl bg-(--color-bg) px-3 py-2"
                   >
                     <span className="truncate">
                       {r.label === "Direct" ? "Direct / Unknown" : r.label}
                     </span>
-                    <span className="text-xs text-[color:var(--color-accent)]">
+                    <span className="text-xs text-(--color-accent)">
                       {r.count} clicks
                     </span>
                   </li>
@@ -429,42 +429,42 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
           </GlassCard>
 
           {/* Devices */}
-          <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 md:px-6 md:py-6">
+          <GlassCard className="border border-(--color-border) bg-(--color-surface) px-5 py-5 md:px-6 md:py-6">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--color-subtle)">
                   Devices
                 </p>
-                <h3 className="text-base font-semibold text-[color:var(--color-text)]">
+                <h3 className="text-base font-semibold text-(--color-text)">
                   How people are visiting
                 </h3>
               </div>
-              <MapPin className="h-4 w-4 text-[color:var(--color-subtle)]" />
+              <MapPin className="h-4 w-4 text-(--color-subtle)" />
             </div>
             {devices.length === 0 ? (
-              <p className="text-sm text-[color:var(--color-subtle)]">
+              <p className="text-sm text-(--color-subtle)">
                 No device data yet. We&apos;ll show distribution once this link
                 receives traffic.
               </p>
             ) : (
-              <div className="space-y-2 text-sm text-[color:var(--color-text)]">
+              <div className="space-y-2 text-sm text-(--color-text)">
                 {devices.map((d) => (
                   <div
                     key={d.label}
-                    className="flex items-center justify-between gap-3 rounded-2xl bg-[color:var(--color-bg)] px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded-2xl bg-(--color-bg) px-3 py-2"
                   >
                     <div className="flex flex-1 items-center gap-3">
-                      <span className="w-20 text-[color:var(--color-text)]">
+                      <span className="w-20 text-(--color-text)">
                         {d.label}
                       </span>
-                      <div className="h-1.5 w-28 overflow-hidden rounded-full bg-[color:var(--color-surface)]">
+                      <div className="h-1.5 w-28 overflow-hidden rounded-full bg-(--color-surface)">
                         <div
-                          className="h-full rounded-full bg-[color:var(--color-accent)]"
+                          className="h-full rounded-full bg-(--color-accent)"
                           style={{ width: `${d.pct}%` }}
                         />
                       </div>
                     </div>
-                    <span className="text-xs text-[color:var(--color-subtle)]">
+                    <span className="text-xs text-(--color-subtle)">
                       {d.count} · {d.pct}%
                     </span>
                   </div>
@@ -475,17 +475,17 @@ export function LinkAnalyticsClient({ vm }: LinkAnalyticsClientProps) {
         </div>
 
         {/* KR / QR ready helper card */}
-        <GlassCard className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-4 md:px-6 md:py-5">
+        <GlassCard className="border border-(--color-border) bg-(--color-surface) px-5 py-4 md:px-6 md:py-5">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--color-subtle)">
                 KR / QR ready
               </p>
-              <h3 className="mt-1 flex items-center gap-2 text-base font-semibold text-[color:var(--color-text)]">
+              <h3 className="mt-1 flex items-center gap-2 text-base font-semibold text-(--color-text)">
                 <QrCode className="h-4 w-4" />
                 Use with Kompi Codes™
               </h3>
-              <p className="mt-1 text-sm text-[color:var(--color-subtle)]">
+              <p className="mt-1 text-sm text-(--color-subtle)">
                 Generate branded Kompi Codes™ from this link in one click and
                 use them on cards, posters, menus, and packaging.
               </p>

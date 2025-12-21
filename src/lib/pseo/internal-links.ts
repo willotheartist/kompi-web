@@ -22,6 +22,13 @@ type LinkPick = {
   type: "hub" | "cluster" | "intent" | "entity" | "tool";
 };
 
+function toolToUrl(tool: string) {
+  // Allow datasets to specify bare keys (utm-builder) OR full paths (/tools/utm-builder)
+  if (!tool) return tool;
+  if (tool.startsWith("/")) return tool;
+  return `/tools/${tool}`;
+}
+
 export function buildInternalLinks(input: PSEOPageInput, siblings: PSEOPageInput[]): string[] {
   const picks: LinkPick[] = [];
   const others = siblings.filter((s) => s.slug !== input.slug);
@@ -67,7 +74,17 @@ export function buildInternalLinks(input: PSEOPageInput, siblings: PSEOPageInput
   }
 
   // 5) Tool links (up to 3)
-  (input.kompiTools || []).slice(0, 3).forEach((tool) => picks.push({ url: tool, type: "tool" }));
+  (input.kompiTools || []).slice(0, 3).forEach((tool) => {
+    const url = toolToUrl(tool);
+    if (url) picks.push({ url, type: "tool" });
+  });
+
+  // 6) UTM cluster hardening: always include public tool + related product surface
+  if (input.cluster === "utm") {
+    picks.push({ url: "/tools/utm-builder", type: "tool" });
+    picks.push({ url: "/features/url-shortener", type: "tool" });
+    picks.push({ url: "/links", type: "tool" });
+  }
 
   // Dedupe while keeping priority order, then cap
   const urls = uniq(picks.map((p) => p.url));

@@ -181,7 +181,7 @@ export function Navbar() {
               type="button"
               aria-label="Open menu"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); requestAnimationFrame(() => setMobileOpen(true)); }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface)"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -293,7 +293,7 @@ function MobileNav({
   return (
     <div
       className={[
-        "fixed inset-0 z-[70] md:hidden",
+        "fixed inset-0 z-70 md:hidden",
         "transition-opacity duration-200",
         open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
       ].join(" ")}
@@ -310,8 +310,8 @@ function MobileNav({
       <div
         className={[
           "absolute inset-x-0 top-0",
-          "h-[100svh]",
-          "bg-[color:var(--color-bg)] text-[color:var(--color-text)]",
+          "h-svh",
+          "bg-(--color-bg) text-(--color-text)",
         ].join(" ")}
       >
         {/* Top bar */}
@@ -334,7 +334,7 @@ function MobileNav({
               <Link
                 href="/signin"
                 onClick={onClose}
-                className="inline-flex h-10 items-center justify-center rounded-2xl border border-[color:var(--color-border)] px-4 text-[15px] font-semibold"
+                className="inline-flex h-10 items-center justify-center rounded-2xl border border-(--color-border) px-4 text-[15px] font-semibold"
               >
                 Log in
               </Link>
@@ -591,22 +591,22 @@ function CustomersMegaMenu() {
           onMouseLeave={scheduleClose}
           role="dialog"
           className="
-            fixed left-1/2 top-24 z-[60]
+            fixed left-1/2 top-24 z-60
             w-[min(1120px,100vw-40px)]
             -translate-x-1/2
             overflow-hidden rounded-3xl
-            border border-[color:var(--color-border)]
-            bg-[color:var(--color-surface)]
-            text-[color:var(--color-text)]
+            border border-(--color-border)
+            bg-(--color-surface)
+            text-(--color-text)
             grid gap-0
-            [grid-template-columns:2fr_1.2fr]
+            grid-cols-[2fr_1.2fr]
           "
         >
           {/* Customer list */}
-          <div className="border-r border-[color:var(--color-border)] bg-[color:var(--color-bg)] p-4 md:p-5">
+          <div className="border-r border-(--color-border) bg-(--color-bg) p-4 md:p-5">
             <div className="flex items-center gap-2 px-1 pb-3">
-              <span className="h-4 w-0.5 rounded-full bg-[color:var(--color-accent)]" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+              <span className="h-4 w-0.5 rounded-full bg-(--color-accent)" />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
                 Customers
               </span>
             </div>
@@ -621,16 +621,16 @@ function CustomersMegaMenu() {
                       clearCloseTimer();
                       setOpen(false);
                     }}
-                    className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-[color:var(--color-surface)]"
+                    className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-(--color-surface)"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-[#A5B0FF] text-[#D5FF3E]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#A5B0FF] text-[#D5FF3E]">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="space-y-0.5">
-                      <div className="text-[15px] font-medium text-[color:var(--color-text)] group-hover:text-[#1E2330]">
+                      <div className="text-[15px] font-medium text-(--color-text) group-hover:text-[#1E2330]">
                         {c.title}
                       </div>
-                      <div className="text-[12px] text-[color:var(--color-subtle)] group-hover:text-[#1E2330]/80">
+                      <div className="text-[12px] text-(--color-subtle) group-hover:text-[#1E2330]/80">
                         {c.desc}
                       </div>
                     </div>
@@ -642,8 +642,8 @@ function CustomersMegaMenu() {
 
           {/* Featured story / CTA */}
           <div className="p-4 md:p-5">
-            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
-              <div className="relative aspect-[4/3] w-full">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface)">
+              <div className="relative aspect-4/3 w-full">
                 <Image
                   src="/kompiimage19.png"
                   alt="Communities using Kompi"
@@ -652,13 +652,13 @@ function CustomersMegaMenu() {
                 />
               </div>
               <div className="space-y-2 p-4 md:p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-subtle)]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-(--color-subtle)">
                   Featured
                 </p>
                 <h3 className="text-[18px] font-semibold leading-snug text-[#1E2330]">
                   Social movement, not just a link in bio.
                 </h3>
-                <p className="text-[13px] text-[color:var(--color-subtle)]">
+                <p className="text-[13px] text-(--color-subtle)">
                   Communities, brands and teams use Kompi to turn everyday links
                   and QR codes into ongoing conversations, not one-off clicks.
                 </p>

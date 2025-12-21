@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 20/12/2025, 17:24:44*
+*Generated on: 21/12/2025, 15:20:00*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 607 |
-| 📁 Total Folders | 274 |
+| 📄 Total Files | 620 |
+| 📁 Total Folders | 282 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,21 +26,22 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 340 files (56.0%)
-- 🔷 **.ts** (TypeScript files): 89 files (14.7%)
-- 🖼️ **.png** (PNG images): 84 files (13.8%)
-- 📄 **.sql** (Other files): 22 files (3.6%)
+- ⚛️ **.tsx** (React TypeScript files): 344 files (55.5%)
+- 🔷 **.ts** (TypeScript files): 93 files (15.0%)
+- 🖼️ **.png** (PNG images): 84 files (13.5%)
+- 📄 **.sql** (Other files): 24 files (3.9%)
 - 🎨 **.css** (Stylesheets): 11 files (1.8%)
-- 📄 **.mjs** (Other files): 7 files (1.2%)
-- 🎨 **.svg** (SVG images): 7 files (1.2%)
-- ⚙️ **.json** (JSON files): 6 files (1.0%)
-- 📄 **.bak_lintfix** (Other files): 4 files (0.7%)
+- ⚙️ **.json** (JSON files): 8 files (1.3%)
+- 📄 **.mjs** (Other files): 7 files (1.1%)
+- 🎨 **.svg** (SVG images): 7 files (1.1%)
+- 📄 **.bak_lintfix** (Other files): 4 files (0.6%)
 - 📄 **.mp4** (Other files): 3 files (0.5%)
 - 📖 **.md** (Markdown files): 2 files (0.3%)
 - 🖼️ **.ico** (Icon files): 2 files (0.3%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.2%)
 - 📄 **.** (Other files): 1 files (0.2%)
 - 🐳 **.dockerfile** (Docker files): 1 files (0.2%)
+- 📄 **.txt** (Text files): 1 files (0.2%)
 - ⚙️ **.yml** (YAML files): 1 files (0.2%)
 - 📄 **.patch** (Other files): 1 files (0.2%)
 - ⚙️ **.yaml** (YAML files): 1 files (0.2%)
@@ -71,21 +72,21 @@
 
 ### By Category
 
-- **React**: 340 files (56.0%)
-- **Assets**: 94 files (15.5%)
-- **TypeScript**: 89 files (14.7%)
-- **Other**: 59 files (9.7%)
+- **React**: 344 files (55.5%)
+- **Assets**: 94 files (15.2%)
+- **TypeScript**: 93 files (15.0%)
+- **Other**: 61 files (9.8%)
+- **Config**: 11 files (1.8%)
 - **Styles**: 11 files (1.8%)
-- **Config**: 9 files (1.5%)
+- **Docs**: 3 files (0.5%)
 - **DevOps**: 2 files (0.3%)
-- **Docs**: 2 files (0.3%)
 - **JavaScript**: 1 files (0.2%)
 
 ### 📁 Largest Directories
 
-- **root**: 607 files
-- **src**: 461 files
-- **src/app**: 239 files
+- **root**: 620 files
+- **src**: 471 files
+- **src/app**: 244 files
 - **src/components**: 186 files
 - **public**: 94 files
 
@@ -96,6 +97,7 @@ kompi-web/
 ├── 🟡 🚫 **.gitignore**
 ├── 📄 =
 ├── ⚙️ components.json
+├── 📄 dashboardlayout_wrappers.txt
 ├── 🟡 🐳 **docker-compose.yml**
 ├── 🟡 🐳 **Dockerfile**
 ├── 🔵 🔍 **eslint.config.mjs**
@@ -151,6 +153,10 @@ kompi-web/
 │   │   ├── 📂 20251205202257_add_workspace_tool/
 │   │   │   └── 📄 migration.sql
 │   │   ├── 📂 20251212201122_add_kcard_messages/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251221000734_add_utms_and_optional_workspaceid/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251221014443_add_click_geo_and_referrerhost/
 │   │   │   └── 📄 migration.sql
 │   │   └── ⚙️ migration_lock.toml
 │   └── 📄 schema.prisma
@@ -278,6 +284,16 @@ kompi-web/
 ├── 📄 settings.tar.gz
 ├── 📁 src/
 │   ├── 🚀 app/
+│   │   ├── 📂 (dashboard)/
+│   │   │   ├── ⚛️ layout.tsx
+│   │   │   └── 📂 links/
+│   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   ├── 📂 edit/
+│   │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 new/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 (seo)/
 │   │   │   ├── 📂 barcode-generator/
 │   │   │   │   └── ⚛️ page.tsx
@@ -331,6 +347,9 @@ kompi-web/
 │   │   │   │   │   └── 📂 submissions/
 │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 debug/
+│   │   │   │   └── 📂 headers/
+│   │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 discount-codes/
 │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 engagement-events/
@@ -406,10 +425,14 @@ kompi-web/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 link-in-bio-best-practices/
 │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 link-in-bio-hub/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── ⚛️ page.tsx
 │   │   │   ├── 📂 qr-code-generator-that-people-actually-scan/
 │   │   │   │   └── ⚛️ page.tsx
-│   │   │   └── 📂 qr-codes/
+│   │   │   ├── 📂 qr-codes/
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── 📂 utm/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 claim/
 │   │   │   └── ⚛️ page.tsx
@@ -602,14 +625,6 @@ kompi-web/
 │   │   ├── 📂 landing/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── ⚛️ layout.tsx
-│   │   ├── 📂 links/
-│   │   │   ├── 📂 [id]/
-│   │   │   │   ├── 📂 edit/
-│   │   │   │   │   └── ⚛️ page.tsx
-│   │   │   │   └── ⚛️ page.tsx
-│   │   │   ├── 📂 new/
-│   │   │   │   └── ⚛️ page.tsx
-│   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 m/
 │   │   │   └── 📂 [slug]/
 │   │   │   │   └── ⚛️ page.tsx
@@ -626,6 +641,8 @@ kompi-web/
 │   │   │   ├── ⚛️ layout.tsx
 │   │   │   ├── ⚛️ page.tsx
 │   │   │   └── 🎨 pricing.css
+│   │   ├── 📂 pricingv2/
+│   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 qr-code/
 │   │   │   ├── 📂 dynamic/
 │   │   │   │   └── ⚛️ page.tsx
@@ -931,8 +948,11 @@ kompi-web/
 │   ├── 📂 content/
 │   │   └── 📂 pseo/
 │   │   │   └── 📂 datasets/
+│   │   │   │   ├── ⚙️ bio-links.json
+│   │   │   │   ├── 🔷 index.ts
 │   │   │   │   ├── ⚙️ qr-ideas.generated.json
-│   │   │   │   └── ⚙️ qr-ideas.json
+│   │   │   │   ├── ⚙️ qr-ideas.json
+│   │   │   │   └── ⚙️ utm-channels.json
 │   ├── 📚 lib/
 │   │   ├── 🔷 analytics-overview.ts
 │   │   ├── 🔷 auth.ts
@@ -959,7 +979,9 @@ kompi-web/
 │   │   │   │   ├── 🔷 intro.ts
 │   │   │   │   ├── 🔷 kompi-angle.ts
 │   │   │   │   ├── 🔷 placement-guide.ts
-│   │   │   │   └── 🔷 use-cases.ts
+│   │   │   │   ├── 🔷 use-cases.ts
+│   │   │   │   ├── 🔷 utm-naming.ts
+│   │   │   │   └── 🔷 utm-presets.ts
 │   │   │   └── 🔷 types.ts
 │   │   ├── 📂 seo/
 │   │   │   ├── 🔷 auto-link.ts
@@ -984,6 +1006,7 @@ kompi-web/
 - 🐳 DevOps: Docker files
 - 📖 Docs: Markdown files
 - ⚙️ Config: JSON files
+- 📄 Docs: Text files
 - ⚙️ Config: YAML files
 - 🔷 TypeScript: TypeScript files
 - ⚙️ Config: YAML files

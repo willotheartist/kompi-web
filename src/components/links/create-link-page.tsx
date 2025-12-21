@@ -48,7 +48,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
   });
   const [isPending, startTransition] = useTransition();
 
-  // NEW: success popup state
+  // success popup state
   const [createdLinkId, setCreatedLinkId] = useState<string | null>(null);
   const [createdShortUrl, setCreatedShortUrl] = useState<string | null>(null);
 
@@ -121,6 +121,29 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
     }
   }
 
+  function buildUtmDefaults() {
+    if (!utmEnabled) return undefined;
+
+    const source = utm.source.trim();
+    const medium = utm.medium.trim();
+    const campaign = utm.campaign.trim();
+    const term = utm.term.trim();
+    const content = utm.content.trim();
+
+    // If user enabled UTMs but left everything blank, don't send anything.
+    if (!source && !medium && !campaign && !term && !content) return undefined;
+
+    // ✅ IMPORTANT: these keys should match what /r route expects as fallback
+    // (camelCase), but we'll handle snake_case there too.
+    return {
+      utmSource: source || null,
+      utmMedium: medium || null,
+      utmCampaign: campaign || null,
+      utmTerm: term || null,
+      utmContent: content || null,
+    };
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
@@ -136,6 +159,8 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
       return;
     }
 
+    const utmDefaults = buildUtmDefaults();
+
     startTransition(async () => {
       const res = await fetch("/api/links", {
         method: "POST",
@@ -148,7 +173,8 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
           options: {
             withKompiCode,
             qrColor,
-            addToBio, // will become "add to K-Card" behavior
+            addToBio,
+            utmDefaults, // ✅ NEW: store these on the link for analytics defaults
           },
         }),
       });
@@ -171,7 +197,6 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
       toast.success("Short link created");
 
       if (link.id) {
-        // Build short URL for the popup
         const shortUrl: string =
           link.shortUrl ??
           (link.code
@@ -182,7 +207,6 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
 
         setCreatedLinkId(link.id);
         setCreatedShortUrl(shortUrl || null);
-        // stay on page, popup will show
       } else {
         router.push("/links");
       }
@@ -226,7 +250,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
   return (
     <>
       <main
-        className="min-h-full w-full bg-[var(--color-bg)]"
+        className="min-h-full w-full bg-(--color-bg)"
         style={{
           fontFamily:
             "Inter Tight, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -236,15 +260,10 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
           onSubmit={handleSubmit}
           className="mx-auto flex w-full max-w-5xl flex-col gap-8 pb-16 pt-10"
         >
-          {/* --------------------------------------------------- */}
-          {/* HERO HEADER – Kompilink-style banner                */}
-          {/* --------------------------------------------------- */}
           <header className="w-full">
-            <div className="w-full rounded-[32px] bg-[#006476] px-6 py-6 sm:px-10 sm:py-8">
+            <div className="w-full rounded-4xl bg-[#006476] px-6 py-6 sm:px-10 sm:py-8">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                {/* Left: image + text */}
                 <div className="flex items-center gap-6">
-                  {/* Stacked image card */}
                   <div className="relative h-24 w-24 shrink-0 sm:h-28 sm:w-28">
                     <div className="absolute -left-4 top-3 h-20 w-16 rounded-3xl bg-[#F5FF47]" />
                     <div className="relative h-full w-full overflow-hidden rounded-3xl bg-[#FF5A4A]">
@@ -309,7 +328,6 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                   </div>
                 </div>
 
-                {/* Right: tiny stat pill */}
                 <div className="flex justify-start lg:justify-end">
                   <div className="min-w-[210px] rounded-2xl bg-[rgba(0,0,0,0.18)] px-4 py-3 text-right">
                     <p
@@ -336,10 +354,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
             </div>
           </header>
 
-          {/* --------------------------------------------------- */}
-          {/* Link details – primary card                         */}
-          {/* --------------------------------------------------- */}
-          <Card className="shadow-none rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-8 md:px-10 md:py-10">
+          <Card className="rounded-4xl border border-(--color-border) bg-(--color-surface) px-8 py-8 shadow-none md:px-10 md:py-10">
             <div className="mb-6 flex flex-wrap items-center gap-3">
               <span
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full"
@@ -348,68 +363,64 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                 <Link2 className="h-5 w-5" style={{ color: "#D8FF3B" }} />
               </span>
               <div className="space-y-0.5">
-                <h2 className="text-sm font-semibold text-[color:var(--color-text)]">
+                <h2 className="text-sm font-semibold text-(--color-text)">
                   Link details
                 </h2>
-                <p className="text-sm text-[color:var(--color-subtle)]">
+                <p className="text-sm text-(--color-subtle)">
                   Set the destination URL, short link, and optional title.
                 </p>
               </div>
             </div>
 
             <div className="space-y-8">
-              {/* BIG destination URL – no eyebrow label */}
               <div className="space-y-3">
                 <Input
                   id="destination-url"
                   placeholder="Paste your long link here"
                   value={targetUrl}
                   onChange={(e) => setTargetUrl(e.target.value)}
-                  className="h-20 border-0 border-b-2 border-[var(--color-border)] bg-transparent px-0 text-[28px] font-medium text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-0 focus-visible:border-[color:var(--color-text)] rounded-none md:text-[32px]"
+                  className="h-20 rounded-none border-0 border-b-2 border-(--color-border) bg-transparent px-0 text-[28px] font-medium text-(--color-text) placeholder:text-(--color-subtle) focus-visible:border-(--color-text) focus-visible:ring-0 md:text-[32px]"
                 />
               </div>
 
-              {/* Short link */}
               <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--color-subtle)">
                   Short link
                 </p>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="sm:w-52">
                     <Select value={domain} onValueChange={setDomain}>
-                      <SelectTrigger className="h-10 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0">
+                      <SelectTrigger className="h-10 rounded-full border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) focus-visible:ring-1 focus-visible:ring-(--color-accent) focus-visible:ring-offset-0">
                         <SelectValue placeholder="Choose domain" />
                       </SelectTrigger>
-                      <SelectContent className="border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)]">
-                        {/* TODO: populate from workspace domains */}
+                      <SelectContent className="border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text)">
                         <SelectItem value="kmp.li">kmp.li</SelectItem>
                         <SelectItem value="kompi.app">kompi.app</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <span className="hidden text-sm text-[color:var(--color-subtle)] sm:inline">
+                  <span className="hidden text-sm text-(--color-subtle) sm:inline">
                     /
                   </span>
                   <Input
                     placeholder="custom-code (optional)"
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
-                    className="h-10 flex-1 border-0 border-b border-[var(--color-border)] bg-transparent px-0 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-0 focus-visible:border-[color:var(--color-text)] rounded-none"
+                    className="h-10 flex-1 rounded-none border-0 border-b border-(--color-border) bg-transparent px-0 text-sm text-(--color-text) placeholder:text-(--color-subtle) focus-visible:border-(--color-text) focus-visible:ring-0"
                   />
                 </div>
                 {shortUrlPreview && (
-                  <p className="text-xs text-[color:var(--color-subtle)]">
+                  <p className="text-xs text-(--color-subtle)">
                     This will be your short link:{" "}
-                    <span className="font-medium text-[color:var(--color-text)] underline decoration-[var(--color-accent)] underline-offset-4">
+                    <span className="font-medium text-(--color-text) underline decoration-(--color-accent) underline-offset-4">
                       {shortUrlPreview}
                     </span>
                   </p>
                 )}
               </div>
 
-              {/* Title */}
               <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--color-subtle)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--color-subtle)">
                   Title{" "}
                   <span className="font-normal normal-case">(optional)</span>
                 </p>
@@ -418,14 +429,13 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                   placeholder="Give this link a friendly name"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="h-10 border-0 border-b border-[var(--color-border)] bg-transparent px-0 text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-0 focus-visible:border-[color:var(--color-text)] rounded-none"
+                  className="h-10 rounded-none border-0 border-b border-(--color-border) bg-transparent px-0 text-sm text-(--color-text) placeholder:text-(--color-subtle) focus-visible:border-(--color-text) focus-visible:ring-0"
                 />
               </div>
             </div>
           </Card>
 
-          {/* Sharing options */}
-          <Card className="shadow-none rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-8 md:px-10 md:py-10">
+          <Card className="rounded-4xl border border-(--color-border) bg-(--color-surface) px-8 py-8 shadow-none md:px-10 md:py-10">
             <div className="mb-5 flex items-center gap-3">
               <span
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full"
@@ -434,48 +444,46 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                 <QrCode className="h-5 w-5" style={{ color: "#D8FF3B" }} />
               </span>
               <div className="space-y-0.5">
-                <h2 className="text-sm font-semibold text-[color:var(--color-text)]">
+                <h2 className="text-sm font-semibold text-(--color-text)">
                   Sharing options
                 </h2>
-                <p className="text-sm text-[color:var(--color-subtle)]">
+                <p className="text-sm text-(--color-subtle)">
                   Generate a Kompi Code or attach this link to a K-Card.
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              {/* Kompi Code toggle + inner settings */}
-              <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4">
+              <div className="rounded-2xl border border-(--color-border) bg-(--color-bg) px-4 py-4">
                 <button
                   type="button"
                   onClick={() => setWithKompiCode((prev) => !prev)}
                   className="flex w-full items-center justify-between gap-4"
                 >
                   <div className="space-y-1 text-left">
-                    <p className="text-sm font-medium text-[color:var(--color-text)]">
+                    <p className="text-sm font-medium text-(--color-text)">
                       Generate a Kompi Code
                     </p>
-                    <p className="text-sm text-[color:var(--color-subtle)]">
+                    <p className="text-sm text-(--color-subtle)">
                       Create a scannable Kompi Code for this link to use on
                       print, packaging and signage.
                     </p>
                   </div>
                   <span
                     className={
-                      "inline-flex h-6 w-11 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-0.5 transition-all " +
+                      "inline-flex h-6 w-11 items-center rounded-full border border-(--color-border) bg-(--color-surface) p-0.5 transition-all " +
                       (withKompiCode ? "justify-end" : "justify-start")
                     }
                   >
-                    <span className="h-4 w-4 rounded-full bg-[var(--color-accent)]" />
+                    <span className="h-4 w-4 rounded-full bg-(--color-accent)" />
                   </span>
                 </button>
 
                 {withKompiCode && (
-                  <div className="mt-4 grid gap-4 border-t border-[var(--color-border)] pt-4 md:grid-cols-[2fr,1fr]">
-                    {/* Color + (future) logo */}
+                  <div className="mt-4 grid gap-4 border-t border-(--color-border) pt-4 md:grid-cols-[2fr,1fr]">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-[color:var(--color-text)]">
+                        <p className="text-sm font-medium text-(--color-text)">
                           Code color
                         </p>
                         <div className="flex flex-wrap gap-2">
@@ -487,7 +495,7 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                               className={
                                 "flex h-9 w-9 items-center justify-center rounded-full border-2 transition " +
                                 (qrColor === color
-                                  ? "border-[var(--color-text)]"
+                                  ? "border-(--color-text)"
                                   : "border-transparent")
                               }
                             >
@@ -501,18 +509,18 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-[color:var(--color-text)]">
+                        <p className="text-sm font-medium text-(--color-text)">
                           Logo
                         </p>
-                        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[color:var(--color-subtle)]">
+                        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-(--color-border) bg-(--color-surface) px-4 py-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--color-border) bg-(--color-bg) text-sm text-(--color-subtle)">
                             +
                           </div>
                           <div className="space-y-0.5">
-                            <p className="text-sm text-[color:var(--color-text)]">
+                            <p className="text-sm text-(--color-text)">
                               Logo upload coming soon
                             </p>
-                            <p className="text-xs text-[color:var(--color-subtle)]">
+                            <p className="text-xs text-(--color-subtle)">
                               PNG · 1:1 aspect ratio · up to 5MB.
                             </p>
                           </div>
@@ -520,23 +528,19 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                       </div>
                     </div>
 
-                    {/* Preview box */}
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-[color:var(--color-text)]">
+                      <p className="text-sm font-medium text-(--color-text)">
                         Preview
                       </p>
-                      <div className="flex h-40 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+                      <div className="flex h-40 items-center justify-center rounded-2xl border border-(--color-border) bg-(--color-surface)">
                         <div
-                          className="flex h-32 w-32 items-center justify-center rounded-xl border-4 bg-[var(--color-bg)]"
+                          className="flex h-32 w-32 items-center justify-center rounded-xl border-4 bg-(--color-bg)"
                           style={{ borderColor: qrColor }}
                         >
-                          <QrCode
-                            className="h-16 w-16"
-                            style={{ color: qrColor }}
-                          />
+                          <QrCode className="h-16 w-16" style={{ color: qrColor }} />
                         </div>
                       </div>
-                      <p className="text-xs text-[color:var(--color-subtle)]">
+                      <p className="text-xs text-(--color-subtle)">
                         More customizations will be available after creating the
                         link.
                       </p>
@@ -545,56 +549,51 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                 )}
               </div>
 
-              {/* K-Card toggle */}
               <button
                 type="button"
                 onClick={() => setAddToBio((prev) => !prev)}
                 className={
                   "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition " +
                   (addToBio
-                    ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
-                    : "border-[var(--color-border)] bg-[var(--color-bg)] hover:bg-[var(--color-surface)]")
+                    ? "border-(--color-accent) bg-(--color-accent-soft)"
+                    : "border-(--color-border) bg-(--color-bg) hover:bg-(--color-surface)")
                 }
               >
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-[color:var(--color-text)]">
+                  <p className="text-sm font-medium text-(--color-text)">
                     Add to a K-Card
                   </p>
-                  <p className="text-sm text-[color:var(--color-subtle)]">
+                  <p className="text-sm text-(--color-subtle)">
                     Attach this link to your K-Card so it’s ready to share with
                     one tap.
                   </p>
                 </div>
                 <span
                   className={
-                    "inline-flex h-6 w-11 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-0.5 transition-all " +
+                    "inline-flex h-6 w-11 items-center rounded-full border border-(--color-border) bg-(--color-surface) p-0.5 transition-all " +
                     (addToBio ? "justify-end" : "justify-start")
                   }
                 >
-                  <span className="h-4 w-4 rounded-full bg-[var(--color-accent)]" />
+                  <span className="h-4 w-4 rounded-full bg-(--color-accent)" />
                 </span>
               </button>
             </div>
           </Card>
 
-          {/* Advanced settings / UTM */}
-          <Card className="shadow-none rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] px-8 py-8 md:px-10 md:py-10">
+          <Card className="rounded-4xl border border-(--color-border) bg-(--color-surface) px-8 py-8 shadow-none md:px-10 md:py-10">
             <div className="mb-5 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <span
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full"
                   style={{ backgroundColor: "#111827" }}
                 >
-                  <SlidersHorizontal
-                    className="h-5 w-5"
-                    style={{ color: "#D8FF3B" }}
-                  />
+                  <SlidersHorizontal className="h-5 w-5" style={{ color: "#D8FF3B" }} />
                 </span>
                 <div className="space-y-0.5">
-                  <h2 className="text-sm font-semibold text-[color:var(--color-text)]">
+                  <h2 className="text-sm font-semibold text-(--color-text)">
                     Advanced settings
                   </h2>
-                  <p className="text-sm text-[color:var(--color-subtle)]">
+                  <p className="text-sm text-(--color-subtle)">
                     Track campaign performance with UTM parameters.
                   </p>
                 </div>
@@ -605,8 +604,8 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
                 className={
                   "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium transition " +
                   (utmEnabled
-                    ? "bg-[var(--color-accent-soft)] text-[color:var(--color-text)]"
-                    : "border border-[var(--color-border)] bg-[var(--color-surface)] text-[color:var(--color-text)]")
+                    ? "bg-(--color-accent-soft) text-(--color-text)"
+                    : "border border-(--color-border) bg-(--color-surface) text-(--color-text)")
                 }
               >
                 {utmEnabled ? "UTM enabled" : "Enable UTM"}
@@ -616,75 +615,68 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
             {utmEnabled ? (
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm text-[color:var(--color-text)]">
-                    UTM source
-                  </label>
+                  <label className="text-sm text-(--color-text)">UTM source</label>
                   <Input
                     placeholder="facebook, newsletter"
                     value={utm.source}
                     onChange={(e) => updateUtm("source", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) placeholder:text-(--color-subtle) focus-visible:ring-1 focus-visible:ring-(--color-accent) focus-visible:ring-offset-0"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm text-[color:var(--color-text)]">
-                    UTM medium
-                  </label>
+                  <label className="text-sm text-(--color-text)">UTM medium</label>
                   <Input
                     placeholder="cpc, email"
                     value={utm.medium}
                     onChange={(e) => updateUtm("medium", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) placeholder:text-(--color-subtle) focus-visible:ring-1 focus-visible:ring-(--color-accent) focus-visible:ring-offset-0"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm text-[color:var(--color-text)]">
-                    UTM campaign
-                  </label>
+                  <label className="text-sm text-(--color-text)">UTM campaign</label>
                   <Input
                     placeholder="spring_sale"
                     value={utm.campaign}
                     onChange={(e) => updateUtm("campaign", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) placeholder:text-(--color-subtle) focus-visible:ring-1 focus-visible:ring-(--color-accent) focus-visible:ring-offset-0"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm text-[color:var(--color-text)]">
+                  <label className="text-sm text-(--color-text)">
                     UTM term (optional)
                   </label>
                   <Input
                     placeholder="keyword"
                     value={utm.term}
                     onChange={(e) => updateUtm("term", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) placeholder:text-(--color-subtle) focus-visible:ring-1 focus-visible:ring-(--color-accent) focus-visible:ring-offset-0"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm text-[color:var(--color-text)]">
+                  <label className="text-sm text-(--color-text)">
                     UTM content (optional)
                   </label>
                   <Input
                     placeholder="banner_variant_a"
                     value={utm.content}
                     onChange={(e) => updateUtm("content", e.target.value)}
-                    className="h-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[color:var(--color-text)] placeholder:text-[color:var(--color-subtle)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-0"
+                    className="h-10 rounded-2xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) placeholder:text-(--color-subtle) focus-visible:ring-1 focus-visible:ring-(--color-accent) focus-visible:ring-offset-0"
                   />
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-[color:var(--color-subtle)]">
+              <p className="text-sm text-(--color-subtle)">
                 Turn on UTM parameters to append tracking tags to your
                 destination URL automatically.
               </p>
             )}
           </Card>
 
-          {/* Footer actions */}
           <div className="flex justify-end gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
-              className="h-10 rounded-full border border-[var(--color-border)] bg-transparent px-4 text-sm font-medium text-[color:var(--color-text)] hover:bg-[var(--color-surface)]"
+              className="h-10 rounded-full border border-(--color-border) bg-transparent px-4 text-sm font-medium text-(--color-text) hover:bg-(--color-surface)"
               onClick={() => router.push("/links")}
             >
               Cancel
@@ -692,23 +684,19 @@ export function CreateLinkPage({ workspaceId }: CreateLinkPageProps) {
             <Button
               type="submit"
               disabled={isPending}
-              className="h-10 rounded-full bg-[var(--color-accent)] px-6 text-sm font-semibold text-[color:var(--color-text)] disabled:opacity-70"
+              className="h-10 rounded-full bg-(--color-accent) px-6 text-sm font-semibold text-(--color-text) disabled:opacity-70"
             >
               {isPending ? "Creating…" : "Create your link"}
             </Button>
           </div>
         </form>
 
-        {/* --------------------------------------------------- */}
-        {/* SUCCESS POPUP                                       */}
-        {/* --------------------------------------------------- */}
         {successOpen && createdLinkId && (
-          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40">
+          <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/40">
             <div
               className="relative mx-4 w-full max-w-3xl rounded-[40px] px-8 py-10 text-center sm:px-12 sm:py-12"
               style={{ backgroundColor: "#004233" }}
             >
-              {/* Close X – ALWAYS goes to link page */}
               <button
                 type="button"
                 onClick={handleGoToLinkPage}

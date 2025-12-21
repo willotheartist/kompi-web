@@ -15,11 +15,15 @@ function isRedirectError(error: unknown): boolean {
 
 // GET /api/tools
 // Returns: { toolIds: string[] }
-export async function GET(_req: Request) {
+export async function GET(req: Request) {
   try {
     const user = await requireUser();
 
-    const workspace = await getActiveWorkspace(user.id, null);
+    // respect workspaceId from querystring
+    const url = new URL(req.url);
+    const workspaceId = url.searchParams.get("workspaceId");
+
+    const workspace = await getActiveWorkspace(user.id, workspaceId);
     if (!workspace) {
       return NextResponse.json(
         { error: "WORKSPACE_NOT_FOUND", message: "Workspace not found" },
@@ -32,10 +36,13 @@ export async function GET(_req: Request) {
       select: { toolId: true },
     });
 
-    return NextResponse.json({ toolIds: tools.map((t) => t.toolId) });
+    // ✅ tiny cache so sidebar/nav isn't paying a full roundtrip every nav
+    const res = NextResponse.json({ toolIds: tools.map((t) => t.toolId) });
+    res.headers.set("Cache-Control", "private, max-age=30");
+    return res;
   } catch (error: unknown) {
     if (isRedirectError(error)) {
-      throw error; // let Next redirect to /signin for unauthenticated users
+      throw error;
     }
 
     console.error("TOOLS_GET_ERROR", error);

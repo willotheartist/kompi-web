@@ -1,0 +1,211 @@
+[
+  {
+    "slug": "utm-builder",
+    "cluster": "utm",
+    "hub": "utm-builder",
+    "intent": "learn",
+    "primaryKeyword": "utm builder",
+    "secondaryKeywords": [
+      "utm parameters",
+      "utm tags",
+      "what are utm parameters",
+      "utm tracking"
+    ],
+    "entity": { "type": "channel", "value": "UTM" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true,
+    "publishedAt": "2025-12-21",
+    "updatedAt": "2025-12-21"
+  },
+
+  { "slug": "utm-builder-instagram", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for instagram",
+    "secondaryKeywords": ["instagram utm parameters", "utm tags for instagram bio link", "utm for instagram stories"],
+    "entity": { "type": "channel", "value": "Instagram" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-tiktok", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for tiktok",
+    "secondaryKeywords": ["tiktok utm parameters", "utm tags for tiktok bio link", "utm for tiktok ads"],
+    "entity": { "type": "channel", "value": "TikTok" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-youtube", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for youtube",
+    "secondaryKeywords": ["youtube utm parameters", "utm tags for youtube description", "utm tracking for youtube links"],
+    "entity": { "type": "channel", "value": "YouTube" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-linkedin", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for linkedin",
+    "secondaryKeywords": ["linkedin utm parameters", "utm tags for linkedin posts", "utm tracking for linkedin ads"],
+    "entity": { "type": "channel", "value": "LinkedIn" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-facebook", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for facebook",
+    "secondaryKeywords": ["facebook utm parameters", "utm tags for facebook posts", "utm tracking for facebook links"],
+    "entity": { "type": "channel", "value": "Facebook" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-x", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for x",
+    "secondaryKeywords": ["twitter utm parameters", "utm tags for x posts", "utm tracking for twitter links"],
+    "entity": { "type": "channel", "value": "X" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-pinterest", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for pinterest",
+    "secondaryKeywords": ["pinterest utm parameters", "utm tags for pinterest pins", "utm tracking for pinterest links"],
+    "entity": { "type": "channel", "value": "Pinterest" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-reddit", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for reddit",
+    "secondaryKeywords": ["reddit utm parameters", "utm tags for reddit posts", "utm tracking for reddit links"],
+    "entity": { "type": "channel", "value": "Reddit" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+
+  { "slug": "utm-builder-newsletter", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for newsletters",
+    "secondaryKeywords": ["email utm parameters", "utm tags for newsletter links", "utm for email campaigns"],
+    "entity": { "type": "channel", "value": "Newsletter" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-mailchimp", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm builder for mailchimp",
+    "secondaryKeywords": ["mailchimp utm parameters", "utm tags for mailchimp links", "track mailchimp campaigns with utm"],
+    "entity": { "type": "channel", "value": "Mailchimp" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-klaviyo", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm builder for klaviyo",
+    "secondaryKeywords": ["klaviyo utm parameters", "utm tags for klaviyo emails", "track klaviyo clicks with utm"],
+    "entity": { "type": "channel", "value": "Klaviyo" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-hubspot-email", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm builder for hubspot email",
+    "secondaryKeywords": ["hubspot utm parameters", "utm tags for hubspot campaigns", "track hubspot emails with utm"],
+    "entity": { "type": "channel", "value": "HubSpot Email" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+
+  { "slug": "utm-builder-whatsapp", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for whatsapp",
+    "secondaryKeywords": ["whatsapp utm parameters", "utm tags for whatsapp links", "utm tracking for whatsapp campaigns"],
+    "entity": { "type": "channel", "value": "WhatsApp" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-sms", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for sms",
+    "secondaryKeywords": ["sms utm parameters", "utm tags for sms links", "track sms campaigns with utm"],
+    "entity": { "type": "channel", "value": "SMS" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-telegram", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm builder for telegram",
+    "secondaryKeywords": ["telegram utm parameters", "utm tags for telegram links", "track telegram campaigns with utm"],
+    "entity": { "type": "channel", "value": "Telegram" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+
+  { "slug": "utm-builder-google-ads", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm builder for google ads",
+    "secondaryKeywords": ["google ads utm parameters", "utm tags for ppc campaigns", "utm tracking for google ads"],
+    "entity": { "type": "channel", "value": "Google Ads" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-meta-ads", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm builder for meta ads",
+    "secondaryKeywords": ["facebook ads utm parameters", "instagram ads utm parameters", "utm tracking for meta ads"],
+    "entity": { "type": "channel", "value": "Meta Ads" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-tiktok-ads", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm builder for tiktok ads",
+    "secondaryKeywords": ["tiktok ads utm parameters", "utm tags for tiktok ads", "track tiktok ads with utm"],
+    "entity": { "type": "channel", "value": "TikTok Ads" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-builder-linkedin-ads", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm builder for linkedin ads",
+    "secondaryKeywords": ["linkedin ads utm parameters", "utm tags for linkedin ads", "track linkedin ads with utm"],
+    "entity": { "type": "channel", "value": "LinkedIn Ads" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+
+  { "slug": "utm-builder-shopify", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm builder for shopify",
+    "secondaryKeywords": ["shopify utm parameters", "utm tags for shopify campaigns", "track shopify marketing with utm"],
+    "entity": { "type": "channel", "value": "Shopify" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+
+  { "slug": "utm-builder-eventbrite", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm builder for eventbrite",
+    "secondaryKeywords": ["eventbrite utm parameters", "utm tags for event links", "track event signups with utm"],
+    "entity": { "type": "channel", "value": "Eventbrite" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+
+  { "slug": "utm-builder-qr-codes", "cluster": "utm", "hub": "utm-builder", "intent": "track",
+    "primaryKeyword": "utm parameters for qr codes",
+    "secondaryKeywords": ["utm tracking qr code", "utm tags for qr code campaigns", "track qr code scans with utm"],
+    "entity": { "type": "channel", "value": "QR Codes" },
+    "kompiTools": ["/tools/utm-builder", "/qr-code/dynamic", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+
+  { "slug": "utm-source-medium-campaign", "cluster": "utm", "hub": "utm-builder", "intent": "learn",
+    "primaryKeyword": "utm source medium campaign explained",
+    "secondaryKeywords": ["utm source vs medium", "utm campaign naming", "utm parameters explained"],
+    "entity": { "type": "channel", "value": "UTM Basics" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-content-term", "cluster": "utm", "hub": "utm-builder", "intent": "learn",
+    "primaryKeyword": "utm content and utm term explained",
+    "secondaryKeywords": ["utm content examples", "utm term examples", "utm content vs utm term"],
+    "entity": { "type": "channel", "value": "UTM Fields" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+  { "slug": "utm-naming-convention", "cluster": "utm", "hub": "utm-builder", "intent": "do",
+    "primaryKeyword": "utm naming convention",
+    "secondaryKeywords": ["utm naming best practices", "utm campaign naming convention", "how to name utm parameters"],
+    "entity": { "type": "channel", "value": "Naming" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  },
+
+  { "slug": "utm-mistakes", "cluster": "utm", "hub": "utm-builder", "intent": "fix",
+    "primaryKeyword": "common utm mistakes",
+    "secondaryKeywords": ["utm not showing in analytics", "utm tracking not working", "why utm parameters fail"],
+    "entity": { "type": "channel", "value": "Troubleshooting" },
+    "kompiTools": ["/tools/utm-builder", "/features/url-shortener", "/links"],
+    "index": true, "publishedAt": "2025-12-21", "updatedAt": "2025-12-21"
+  }
+]

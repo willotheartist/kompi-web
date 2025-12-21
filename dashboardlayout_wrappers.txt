@@ -1,0 +1,48 @@
+src/app/analytics/page.tsx:26:      <DashboardLayout>
+src/app/analytics/page.tsx:37:    <DashboardLayout>
+src/app/(dashboard)/layout.tsx:9:  return <DashboardLayout>{children}</DashboardLayout>;
+src/app/(dashboard)/links/[id]/page.tsx:162:    <DashboardLayout>
+src/app/dashboard/page.tsx:29:      <DashboardLayout>
+src/app/dashboard/page.tsx:58:    <DashboardLayout>
+src/app/(dashboard)/links/[id]/edit/page.tsx:34:    <DashboardLayout>
+src/app/dashboard/subscribers/layout.tsx:10:  return <DashboardLayout>{children}</DashboardLayout>;
+src/app/(dashboard)/links/new/page.tsx:23:      <DashboardLayout>
+src/app/(dashboard)/links/new/page.tsx:30:    <DashboardLayout>
+src/app/dashboard/support/layout.tsx:17:      <DashboardLayout>{children}</DashboardLayout>
+src/app/dashboard/tools/random-number-generator/RandomNumberGeneratorClient.tsx:26:      <DashboardLayout pageTitle="Random number generator">
+src/app/dashboard/tools/username-generator/UsernameGeneratorClient.tsx:27:      <DashboardLayout pageTitle="Username generator">
+src/app/dashboard/contact-forms/layout.tsx:10:  return <DashboardLayout>{children}</DashboardLayout>;
+src/app/dashboard/tools/word-counter/WordCounterClient.tsx:27:      <DashboardLayout pageTitle="Word counter">
+src/app/dashboard/tools/pdf-converter/PdfConverterClient.tsx:26:      <DashboardLayout pageTitle="PDF link converter">
+src/app/dashboard/growth/layout.tsx:11:      <DashboardLayout>{children}</DashboardLayout>
+src/app/dashboard/tools/hourly-rate-calculator/HourlyRateCalculatorClient.tsx:26:      <DashboardLayout pageTitle="Hourly rate calculator">
+src/app/dashboard/tools/utm-builder/UtmBuilderClient.tsx:26:      <DashboardLayout pageTitle="UTM builder">
+src/app/dashboard/qr-menus/page.tsx:34:    <DashboardLayout>
+src/app/dashboard/tools/password-generator/PasswordGeneratorClient.tsx:9:    <DashboardLayout>
+src/app/dashboard/tools/whatsapp-link-generator/WhatsappLinkGeneratorClient.tsx:9:    <DashboardLayout>
+src/app/dashboard/qr-menus/[id]/page.tsx:9:    <DashboardLayout>
+src/app/dashboard/tools/case-converter/CaseConverterClient.tsx:27:      <DashboardLayout pageTitle="Case converter">
+src/app/dashboard/tools/tiktok-caption-generator/TikTokCaptionGeneratorClient.tsx:25:      <DashboardLayout pageTitle="TikTok caption generator">
+src/app/dashboard/tools/tiktok-bio-generator/TikTokBioGeneratorClient.tsx:25:      <DashboardLayout pageTitle="TikTok bio generator">
+src/app/dashboard/qr-menus/new/page.tsx:8:    <DashboardLayout>
+src/app/dashboard/kr-codes/your/page.tsx:152:    <DashboardLayout>
+src/app/dashboard/tools/pdf-to-image/PdfToImageClient.tsx:26:      <DashboardLayout pageTitle="PDF to image">
+src/app/dashboard/tools/hashtag-generator/HashtagGeneratorClient.tsx:25:      <DashboardLayout pageTitle="Hashtag generator">
+src/app/dashboard/settings/layout.tsx:15:      <DashboardLayout>{children}</DashboardLayout>
+src/app/dashboard/tools/instagram-bio-generator/InstagramBioGeneratorClient.tsx:22:      <DashboardLayout pageTitle="Instagram bio generator">
+src/app/dashboard/tools/instagram-caption-generator/InstagramCaptionGeneratorClient.tsx:25:      <DashboardLayout pageTitle="Instagram caption generator">
+src/app/dashboard/tools/page.tsx:147:      <DashboardLayout pageTitle="Tools marketplace">
+src/app/dashboard/tools/brand-color-extractor/BrandColorExtractorClient.tsx:8:    <DashboardLayout pageTitle="Brand color extractor">
+src/app/dashboard/k-cards/layout.tsx:8:  return <DashboardLayout>{children}</DashboardLayout>;
+src/app/dashboard/tools/image-to-pdf/ImageToPdfClient.tsx:26:      <DashboardLayout pageTitle="Image to PDF">
+src/app/dashboard/tools/profit-margin-calculator/ProfitMarginCalculatorClient.tsx:25:      <DashboardLayout pageTitle="Profit margin calculator">
+src/app/dashboard/tools/barcode-generator/page.tsx:8:      <DashboardLayout pageTitle="Barcode generator">
+src/app/dashboard/tools/barcode-generator/BarcodeGeneratorClient.tsx:8:    <DashboardLayout pageTitle="Barcode generator">
+src/app/dashboard/tools/color-palette-generator/ColorPaletteGeneratorClient.tsx:25:      <DashboardLayout pageTitle="Color palette generator">
+src/app/k-cards/page.tsx:23:    <DashboardLayout>
+src/app/dashboard/tools/character-counter/CharacterCounterClient.tsx:26:      <DashboardLayout pageTitle="Character counter">
+src/app/dashboard/tools/youtube-title-generator/YoutubeTitleGeneratorClient.tsx:26:      <DashboardLayout pageTitle="YouTube title generator">
+src/app/dashboard/tools/json-formatter/JsonFormatterClient.tsx:25:      <DashboardLayout pageTitle="JSON formatter">
+src/app/kr-codes/page.tsx:17:      <DashboardLayout>
+src/app/kr-codes/[id]/page.tsx:102:      <DashboardLayout>
+src/app/kr-codes/[id]/page.tsx:113:    <DashboardLayout>

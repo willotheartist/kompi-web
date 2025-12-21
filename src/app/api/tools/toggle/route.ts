@@ -29,10 +29,7 @@ export async function POST(req: Request) {
       return new NextResponse("toolId is required", { status: 400 });
     }
 
-    const workspace = await getActiveWorkspace(
-      user.id,
-      body.workspaceId ?? null,
-    );
+    const workspace = await getActiveWorkspace(user.id, body.workspaceId ?? null);
     if (!workspace) {
       return NextResponse.json(
         { error: "WORKSPACE_NOT_FOUND", message: "Workspace not found" },
@@ -40,8 +37,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const desiredEnabled =
-      typeof body.enabled === "boolean" ? body.enabled : true;
+    const desiredEnabled = typeof body.enabled === "boolean" ? body.enabled : true;
 
     const record = await prisma.workspaceTool.upsert({
       where: {
@@ -62,7 +58,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ workspace, tool: record });
   } catch (error: unknown) {
-    // ⬇️ this is the important part
     if (isRedirectError(error)) {
       throw error; // let Next.js handle /signin redirect properly
     }

@@ -1,8 +1,9 @@
+// src/app/dashboard/tools/page.tsx
 "use client";
 
 import * as React from "react";
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { TOOL_DEFINITIONS } from "@/lib/tools-config";
 import { ToolCard } from "@/components/tools/ToolCard";
@@ -11,9 +12,11 @@ type EnabledState = Record<string, boolean>;
 
 function ToolsContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [enabled, setEnabled] = useState<EnabledState>({});
   const [loading, setLoading] = useState<boolean>(true);
+
+  const workspaceId = searchParams?.get("workspaceId") ?? "default";
+  const storageKey = `kompi:enabledTools:${workspaceId}`;
 
   // Load enabled tools for this workspace
   useEffect(() => {
@@ -24,7 +27,8 @@ function ToolsContent() {
         const qs = params.toString();
         const url = qs ? `/api/tools?${qs}` : "/api/tools";
 
-        const res = await fetch(url, { cache: "no-store" });
+        // ✅ remove no-store
+        const res = await fetch(url);
         if (!res.ok) return;
 
         const json = await res.json();
@@ -33,6 +37,14 @@ function ToolsContent() {
           map[id] = true;
         });
         setEnabled(map);
+
+        // ✅ keep sidebar instant on refresh
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(json.toolIds ?? []));
+          window.dispatchEvent(new Event("kompi:tools-updated"));
+        } catch {
+          // ignore
+        }
       } catch (error) {
         console.error("TOOLS_PAGE_LOAD_ERROR", error);
       } finally {
@@ -40,7 +52,7 @@ function ToolsContent() {
       }
     }
     load();
-  }, [searchParams]);
+  }, [searchParams, storageKey]);
 
   async function handleToggle(id: string) {
     const next = !enabled[id];
@@ -53,7 +65,7 @@ function ToolsContent() {
 
     try {
       const params = new URLSearchParams(searchParams?.toString() ?? "");
-      const workspaceId = params.get("workspaceId");
+      const ws = params.get("workspaceId");
 
       const res = await fetch("/api/tools/toggle", {
         method: "POST",
@@ -63,7 +75,7 @@ function ToolsContent() {
         body: JSON.stringify({
           toolId: id,
           enabled: next,
-          workspaceId,
+          workspaceId: ws,
         }),
       });
 
@@ -77,8 +89,18 @@ function ToolsContent() {
         return;
       }
 
-      // Refresh layout + sidebar so nav picks up the new tools
-      router.refresh();
+      // ✅ update persisted list so sidebar updates instantly without router.refresh()
+      try {
+        const nextEnabled = { ...enabled, [id]: next };
+        const nextToolIds = Object.entries(nextEnabled)
+          .filter(([, v]) => v)
+          .map(([k]) => k);
+
+        localStorage.setItem(storageKey, JSON.stringify(nextToolIds));
+        window.dispatchEvent(new Event("kompi:tools-updated"));
+      } catch {
+        // ignore
+      }
     } catch (error) {
       console.error("TOOLS_TOGGLE_ERROR", error);
       // revert optimistic change on error
@@ -92,9 +114,7 @@ function ToolsContent() {
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-6 sm:mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Explore tools
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Explore tools</h1>
         <p className="mt-1 text-sm text-muted-foreground max-w-xl">
           Add Kompi tools to your workspace so they&apos;re always one click away
           while you&apos;re working on links, QR codes, menus, and more.

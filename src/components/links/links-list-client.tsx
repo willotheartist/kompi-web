@@ -1,6 +1,7 @@
+// src/components/links/links-list-client.tsx
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import React, { useDeferredValue, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,10 +24,11 @@ import {
   Copy,
   Eye,
   Check,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
-const FREE_LINK_LIMIT = 20; // Free plan link limit; Creator plan has higher limits.
+const FREE_LINK_LIMIT = 20;
 
 export type LinkListItem = {
   id: string;
@@ -37,29 +39,246 @@ export type LinkListItem = {
   createdLabel: string;
   isActive: boolean;
   title?: string | null;
+  createdAtIso: string;
 };
+
+type Cursor = { before: string; beforeId: string } | null;
 
 type LinksListClientProps = {
   links: LinkListItem[];
   workspaceId?: string;
   onToggleActive?: (linkId: string, nextActive: boolean) => void;
+  initialCursor?: Cursor;
+  pageSize?: number;
 };
+
+function getHost(targetUrl: string): string | null {
+  try {
+    return new URL(targetUrl).hostname;
+  } catch {
+    return null;
+  }
+}
+
+function Favicon({ host, title }: { host: string | null; title: string }) {
+  if (!host) {
+    return (
+      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-(--color-border) bg-(--color-bg)">
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-(--color-accent) text-[11px] font-semibold text-(--color-text)">
+          →
+        </span>
+      </div>
+    );
+  }
+
+  const src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
+    host
+  )}&sz=64`;
+
+  return (
+    <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-(--color-border) bg-(--color-bg)">
+      <img
+        src={src}
+        alt={`${title} favicon`}
+        className="h-6 w-6"
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = "none";
+        }}
+      />
+    </div>
+  );
+}
+
+type RowProps = {
+  link: LinkListItem;
+  isPending: boolean;
+  isCopied: boolean;
+  onToggleActive: (id: string, next: boolean) => void;
+  onCopy: (id: string, url: string) => void;
+};
+
+const LinkRow = React.memo(function LinkRow({
+  link,
+  isPending,
+  isCopied,
+  onToggleActive,
+  onCopy,
+}: RowProps) {
+  const composedShortUrl =
+    link.shortUrl ??
+    (link.code
+      ? `${typeof window !== "undefined" ? window.location.origin : ""}/r/${
+          link.code
+        }`
+      : "");
+
+  const host = getHost(link.targetUrl);
+
+  const displayTitle =
+    link.title?.trim() ||
+    (host && link.code ? `${host} – ${link.code}` : host || link.code || "untitled");
+
+  return (
+    <article
+      className={cn(
+        "wf-dashboard-table-card group rounded-3xl border border-(--color-border) bg-white",
+        "transition-colors hover:bg-(--color-bg)"
+      )}
+    >
+      <div className="flex items-stretch gap-4 px-5 py-4 md:px-6">
+        <div className="flex items-center justify-center">
+          <Favicon host={host} title={displayTitle} />
+        </div>
+
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="truncate text-[15px] font-semibold text-(--color-text)">
+              {displayTitle}
+            </h2>
+
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide border",
+                link.isActive
+                  ? "border-(--color-accent) bg-(--color-accent-soft) text-(--color-text)"
+                  : "border-(--color-border) bg-(--color-bg) text-(--color-subtle)"
+              )}
+            >
+              {link.isActive ? "ACTIVE" : "INACTIVE"}
+            </span>
+          </div>
+
+          {composedShortUrl && (
+            <div className="flex flex-wrap items-center gap-2 text-[13px]">
+              <a
+                href={composedShortUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-(--color-text) underline decoration-(--color-accent) underline-offset-4 hover:decoration-2"
+              >
+                {composedShortUrl}
+              </a>
+            </div>
+          )}
+
+          <div className="flex items-start gap-1.5 text-[13px] text-(--color-subtle)">
+            <CornerDownRight className="mt-0.5 h-3.5 w-3.5" />
+            <span className="truncate">{link.targetUrl}</span>
+          </div>
+
+          <div className="mt-1.5 flex flex-wrap gap-4 text-[12px] text-(--color-subtle)">
+            <span className="inline-flex items-center gap-1">
+              <MousePointer2 className="h-3.5 w-3.5" />
+              <span className="font-medium text-(--color-text)">
+                {link.clicks ?? 0}
+              </span>
+              <span className="opacity-80">engagements</span>
+            </span>
+
+            <span className="inline-flex items-center gap-1">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span className="opacity-80">{link.createdLabel}</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-1">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={link.isActive}
+            disabled={isPending}
+            onClick={() => onToggleActive(link.id, !link.isActive)}
+            className={cn(
+              "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors",
+              link.isActive
+                ? "border-transparent bg-(--color-accent)"
+                : "border-(--color-border) bg-(--color-bg)",
+              isPending && "cursor-not-allowed opacity-60"
+            )}
+          >
+            <span
+              className={cn(
+                "inline-block h-4 w-4 rounded-full bg-(--color-surface) transition-transform",
+                link.isActive ? "translate-x-4" : "translate-x-1"
+              )}
+            />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!composedShortUrl) return;
+              onCopy(link.id, composedShortUrl);
+            }}
+            className={cn(
+              "inline-flex h-8 w-8 items-center justify-center rounded-full border text-(--color-text)",
+              "border-(--color-border) bg-(--color-surface)",
+              "transition-colors hover:bg-(--color-bg)"
+            )}
+            aria-label={isCopied ? "Copied" : "Copy short link"}
+          >
+            {isCopied ? (
+              <Check className="h-4 w-4 text-(--color-accent)" />
+            ) : (
+              <Copy className="h-4 w-4 text-(--color-subtle)" />
+            )}
+          </button>
+
+          {/* 👇 Disable prefetch for each row (mass-prefetch can slow the page) */}
+          <Link
+            prefetch={false}
+            href={`/links/${link.id}`}
+            className={cn(
+              "inline-flex h-8 w-8 items-center justify-center rounded-full border",
+              "border-(--color-accent) bg-(--color-accent-soft) transition-colors hover:bg-(--color-accent)"
+            )}
+            aria-label="View analytics"
+          >
+            <Eye className="h-4 w-4" />
+          </Link>
+
+          <LinkActionsMenu
+            id={link.id}
+            shortUrl={composedShortUrl}
+            className={cn(
+              "inline-flex h-8 w-8 items-center justify-center rounded-full border text-(--color-text)",
+              "border-(--color-border) bg-(--color-surface) transition-colors hover:bg-(--color-bg)"
+            )}
+          />
+        </div>
+      </div>
+    </article>
+  );
+});
 
 export function LinksListClient({
   links,
   workspaceId,
   onToggleActive,
+  initialCursor = null,
+  pageSize = 50,
 }: LinksListClientProps) {
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
+
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">(
     "all"
   );
 
+  const [items, setItems] = useState<LinkListItem[]>(links ?? []);
+  const [cursor, setCursor] = useState<Cursor>(initialCursor);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState<boolean>(!!initialCursor);
+
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let out = links;
+    const q = deferredQuery.trim().toLowerCase();
+    let out = items;
 
     if (statusFilter === "active") out = out.filter((l) => l.isActive);
     if (statusFilter === "inactive") out = out.filter((l) => !l.isActive);
@@ -75,7 +294,7 @@ export function LinksListClient({
         title.includes(q)
       );
     });
-  }, [links, query, statusFilter]);
+  }, [items, deferredQuery, statusFilter]);
 
   if (!links) {
     return (
@@ -87,12 +306,16 @@ export function LinksListClient({
     );
   }
 
-  const usedLinks = links.length;
+  const usedLinks = items.length;
   const isAtLimit = usedLinks >= FREE_LINK_LIMIT;
   const noLinksAtAll = usedLinks === 0;
 
   const handleToggleActive = (linkId: string, nextActive: boolean) => {
     if (onToggleActive) return onToggleActive(linkId, nextActive);
+
+    setItems((prev) =>
+      prev.map((l) => (l.id === linkId ? { ...l, isActive: nextActive } : l))
+    );
 
     startTransition(async () => {
       try {
@@ -105,44 +328,125 @@ export function LinksListClient({
         if (!res.ok) {
           const msg = await res.text().catch(() => "");
           toast.error(msg || "Could not update link");
+          setItems((prev) =>
+            prev.map((l) =>
+              l.id === linkId ? { ...l, isActive: !nextActive } : l
+            )
+          );
           return;
         }
 
         toast.success(nextActive ? "Link enabled" : "Link disabled");
-        window.location.reload();
       } catch (err) {
         console.error(err);
         toast.error("Something went wrong updating this link");
+        setItems((prev) =>
+          prev.map((l) =>
+            l.id === linkId ? { ...l, isActive: !nextActive } : l
+          )
+        );
       }
     });
   };
 
+  const handleCopy = (id: string, url: string) => {
+    navigator.clipboard?.writeText(url).then(() => {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 1200);
+    });
+  };
+
+  async function loadMore() {
+    if (!workspaceId) return;
+    if (!cursor || loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    try {
+      const params = new URLSearchParams();
+      params.set("workspaceId", workspaceId);
+      params.set("limit", String(pageSize));
+      params.set("before", cursor.before);
+      params.set("beforeId", cursor.beforeId);
+
+      const res = await fetch(`/api/links?${params.toString()}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        toast.error("Could not load more links");
+        return;
+      }
+
+      const json = (await res.json()) as {
+        links: Array<{
+          id: string;
+          code: string | null;
+          targetUrl: string;
+          clicks: number | null;
+          createdAt: string;
+          isActive: boolean;
+          title?: string | null;
+        }>;
+        nextCursor: Cursor;
+      };
+
+      const more: LinkListItem[] = (json.links ?? []).map((link) => {
+        const composedShortUrl =
+          link.code && typeof window !== "undefined"
+            ? `${window.location.origin}/r/${link.code}`
+            : link.code
+            ? `/r/${link.code}`
+            : null;
+
+        const createdLabel = link.createdAt
+          ? new Date(link.createdAt).toISOString().slice(0, 10)
+          : "";
+
+        return {
+          id: link.id,
+          code: link.code ?? null,
+          shortUrl: composedShortUrl,
+          targetUrl: link.targetUrl,
+          clicks: link.clicks ?? 0,
+          createdLabel,
+          isActive: link.isActive ?? true,
+          title: link.title ?? null,
+          createdAtIso: link.createdAt,
+        };
+      });
+
+      setItems((prev) => [...prev, ...more]);
+      setCursor(json.nextCursor ?? null);
+      setHasMore(!!json.nextCursor);
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not load more links");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   return (
     <div className={cn("wf-dashboard-main space-y-6")}>
-      {/* -------------------------------------------------- */}
-      {/* HERO HEADER */}
-      {/* -------------------------------------------------- */}
       <header className="wf-dashboard-header">
-        <div className="w-full rounded-[32px] bg-[#006476] px-6 py-6 sm:px-10 sm:py-8">
+        <div className="w-full rounded-4xl bg-[#006476] px-6 py-6 sm:px-10 sm:py-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            {/* Left content */}
             <div className="flex flex-1 flex-col gap-5 lg:flex-row lg:items-center">
-              {/* Image */}
               <div className="flex justify-start lg:items-center lg:justify-center">
                 <div className="relative h-20 w-20 sm:h-24 sm:w-24">
                   <div className="absolute -left-4 top-3 h-16 w-14 rounded-2xl bg-[#F5FF47]" />
-                  <div className="relative h-full w-full rounded-2xl overflow-hidden bg-[#FF5A4A]">
+                  <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#FF5A4A]">
                     <img
                       src="/kompi-business.png"
                       alt="Kompi hero"
                       className="h-full w-full object-cover"
                       draggable={false}
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Title + filters */}
               <div className="flex-1 space-y-3">
                 <div className="space-y-1">
                   <p
@@ -166,15 +470,15 @@ export function LinksListClient({
                   </p>
                 </div>
 
-                {/* Filters + search + create button */}
                 <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center">
-                  {/* Status Filter */}
                   <div className="inline-flex w-full max-w-xs items-center rounded-full bg-white p-1 text-sm lg:max-w-[320px]">
                     {["all", "active", "inactive"].map((v) => (
                       <button
                         key={v}
                         type="button"
-                        onClick={() => setStatusFilter(v as "all" | "active" | "inactive")}
+                        onClick={() =>
+                          setStatusFilter(v as "all" | "active" | "inactive")
+                        }
                         className={cn(
                           "flex-1 rounded-full px-4 py-2 transition",
                           statusFilter === v
@@ -187,7 +491,6 @@ export function LinksListClient({
                     ))}
                   </div>
 
-                  {/* Search + Create */}
                   <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
                     <Input
                       value={query}
@@ -201,6 +504,7 @@ export function LinksListClient({
                       disabled={noLinksAtAll}
                     />
 
+                    {/* 👇 Disable prefetch; this page is heavy + you don’t want eager loading */}
                     <Button
                       asChild
                       disabled={isAtLimit}
@@ -211,14 +515,15 @@ export function LinksListClient({
                         fontFamily: '"Inter Tight", sans-serif',
                       }}
                     >
-                      <Link href="/links/new">Create link</Link>
+                      <Link prefetch={false} href="/links/new">
+                        Create link
+                      </Link>
                     </Button>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Usage text */}
             <div className="mt-2 text-right lg:mt-0">
               <p
                 className="text-xs sm:text-sm"
@@ -238,16 +543,13 @@ export function LinksListClient({
         </div>
       </header>
 
-      {/* -------------------------------------------------- */}
-      {/* EMPTY STATE */}
-      {/* -------------------------------------------------- */}
       {noLinksAtAll ? (
         <section className="wf-dashboard-content flex min-h-[48vh] items-center justify-center">
           <Card className="wf-dashboard-empty-state mx-auto w-full max-w-lg rounded-3xl bg-white px-6 py-8 text-center">
-            <h2 className="text-lg font-semibold text-[color:var(--color-text)]">
+            <h2 className="text-lg font-semibold text-(--color-text)">
               Ready to create your first link?
             </h2>
-            <p className="mt-1 text-sm text-[color:var(--color-subtle)]">
+            <p className="mt-1 text-sm text-(--color-subtle)">
               Spin up a clean short link and start tracking clicks in seconds.
             </p>
 
@@ -271,204 +573,43 @@ export function LinksListClient({
           </Card>
         </section>
       ) : (
-        /* -------------------------------------------------- */
-        /* LIST                                                 */
-        /* -------------------------------------------------- */
         <section className="wf-dashboard-content space-y-4">
           {filtered.length === 0 ? (
-            <Card className="wf-dashboard-inline-notice rounded-2xl bg-white p-4 text-sm text-[color:var(--color-subtle)]">
+            <Card className="wf-dashboard-inline-notice rounded-2xl bg-white p-4 text-sm text-(--color-subtle)">
               No links found. Try a different search or filter.
             </Card>
           ) : (
-            filtered.map((link) => {
-              const isCopied = copiedId === link.id;
-              const composedShortUrl =
-                link.shortUrl ??
-                (link.code
-                  ? `${
-                      typeof window !== "undefined"
-                        ? window.location.origin
-                        : ""
-                    }/r/${link.code}`
-                  : "");
+            filtered.map((link) => (
+              <LinkRow
+                key={link.id}
+                link={link}
+                isPending={isPending}
+                isCopied={copiedId === link.id}
+                onToggleActive={handleToggleActive}
+                onCopy={handleCopy}
+              />
+            ))
+          )}
 
-              let host: string | null = null;
-              try {
-                host = new URL(link.targetUrl).hostname;
-              } catch {
-                host = null;
-              }
-
-              const displayTitle =
-                link.title?.trim() ||
-                (host && link.code
-                  ? `${host} – ${link.code}`
-                  : host || link.code || "untitled");
-
-              const faviconStyle =
-                host
-                  ? {
-                      backgroundImage: `url(https://${host}/favicon.ico)`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }
-                  : undefined;
-
-              return (
-                <article
-                  key={link.id}
-                  className={cn(
-                    "wf-dashboard-table-card group rounded-3xl border border-[color:var(--color-border)] bg-white",
-                    "transition-colors hover:bg-[color:var(--color-bg)]"
-                  )}
-                >
-                  <div className="flex items-stretch gap-4 px-5 py-4 md:px-6">
-                    {/* Left icon */}
-                    <div className="flex items-center justify-center">
-                      <div
-                        className="flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
-                        style={faviconStyle}
-                      >
-                        {!host && (
-                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[color:var(--color-accent)] text-[11px] font-semibold text-[color:var(--color-text)]">
-                            →
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Middle content */}
-                    <div className="min-w-0 flex-1 space-y-1.5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="truncate text-[15px] font-semibold text-[color:var(--color-text)]">
-                          {displayTitle}
-                        </h2>
-
-                        <span
-                          className={cn(
-                            "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide border",
-                            link.isActive
-                              ? "border-[color:var(--color-accent)] bg-[color:var(--color-accent-soft)] text-[color:var(--color-text)]"
-                              : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-subtle)]"
-                          )}
-                        >
-                          {link.isActive ? "ACTIVE" : "INACTIVE"}
-                        </span>
-                      </div>
-
-                      {composedShortUrl && (
-                        <div className="flex flex-wrap items-center gap-2 text-[13px]">
-                          <a
-                            href={composedShortUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="font-medium text-[color:var(--color-text)] underline decoration-[color:var(--color-accent)] underline-offset-4 hover:decoration-2"
-                          >
-                            {composedShortUrl}
-                          </a>
-                        </div>
-                      )}
-
-                      <div className="flex items-start gap-1.5 text-[13px] text-[color:var(--color-subtle)]">
-                        <CornerDownRight className="mt-[2px] h-[14px] w-[14px]" />
-                        <span className="truncate">{link.targetUrl}</span>
-                      </div>
-
-                      <div className="mt-1.5 flex flex-wrap gap-4 text-[12px] text-[color:var(--color-subtle)]">
-                        <span className="inline-flex items-center gap-1">
-                          <MousePointer2 className="h-[14px] w-[14px]" />
-                          <span className="font-medium text-[color:var(--color-text)]">
-                            {link.clicks ?? 0}
-                          </span>
-                          <span className="opacity-80">engagements</span>
-                        </span>
-
-                        <span className="inline-flex items-center gap-1">
-                          <CalendarDays className="h-[14px] w-[14px]" />
-                          <span className="opacity-80">{link.createdLabel}</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Right actions */}
-                    <div className="flex items-center gap-2 pt-1">
-                      {/* Toggle */}
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={link.isActive}
-                        disabled={isPending}
-                        onClick={() =>
-                          handleToggleActive(link.id, !link.isActive)
-                        }
-                        className={cn(
-                          "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors",
-                          link.isActive
-                            ? "border-transparent bg-[color:var(--color-accent)]"
-                            : "border-[color:var(--color-border)] bg-[color:var(--color-bg)]",
-                          isPending && "cursor-not-allowed opacity-60"
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "inline-block h-4 w-4 rounded-full bg-[color:var(--color-surface)] transition-transform",
-                            link.isActive ? "translate-x-4" : "translate-x-1"
-                          )}
-                        />
-                      </button>
-
-                      {/* Copy */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!composedShortUrl) return;
-                          navigator.clipboard
-                            ?.writeText(composedShortUrl)
-                            .then(() => {
-                              setCopiedId(link.id);
-                              setTimeout(() => setCopiedId(null), 1200);
-                            });
-                        }}
-                        className={cn(
-                          "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
-                          "border-[color:var(--color-border)] bg-[color:var(--color-surface)]",
-                          "transition-colors hover:bg-[color:var(--color-bg)]"
-                        )}
-                        aria-label={isCopied ? "Copied" : "Copy short link"}
-                      >
-                        {isCopied ? (
-                          <Check className="h-4 w-4 text-[color:var(--color-accent)]" />
-                        ) : (
-                          <Copy className="h-4 w-4 text-[color:var(--color-subtle)]" />
-                        )}
-                      </button>
-
-                      {/* Analytics */}
-                      <Link
-                        href={`/links/${link.id}`}
-                        className={cn(
-                          "inline-flex h-8 w-8 items-center justify-center rounded-full border",
-                          "border-[color:var(--color-accent)] bg-[color:var(--color-accent-soft)] transition-colors hover:bg-[color:var(--color-accent)]"
-                        )}
-                        aria-label="View analytics"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Link>
-
-                      {/* More actions */}
-                      <LinkActionsMenu
-                        id={link.id}
-                        shortUrl={composedShortUrl}
-                        className={cn(
-                          "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
-                          "border-[color:var(--color-border)] bg-[color:var(--color-surface)] transition-colors hover:bg-[color:var(--color-bg)]"
-                        )}
-                      />
-                    </div>
-                  </div>
-                </article>
-              );
-            })
+          {workspaceId && hasMore && (
+            <div className="flex justify-center pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full"
+                onClick={loadMore}
+                disabled={loadingMore}
+              >
+                {loadingMore ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading…
+                  </span>
+                ) : (
+                  "Load more"
+                )}
+              </Button>
+            </div>
           )}
         </section>
       )}

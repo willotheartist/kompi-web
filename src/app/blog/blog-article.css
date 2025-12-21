@@ -41,6 +41,11 @@
   overflow: visible;
 }
 
+/* ✅ Critical: allow grid children to shrink (prevents overflow into sidebar) */
+.k-grid > *{
+  min-width: 0;
+}
+
 @media (min-width: 1024px){
   .k-grid{
     grid-template-columns: minmax(0, 720px) 300px;
@@ -53,6 +58,9 @@
   max-width: 720px;
   margin: 0 auto;
   padding: 48px 20px 72px;
+
+  /* extra safety: never paint outside column */
+  min-width: 0;
 }
 
 .k-article header{
@@ -108,6 +116,9 @@
   font-family: ui-serif, Charter, "Bitstream Charter", "Sitka Text", Georgia, serif;
   font-size: 20px;
   line-height: 1.75;
+
+  /* ✅ default safety for long words */
+  overflow-wrap: break-word;
 }
 
 .k-content p{
@@ -172,6 +183,48 @@
   color: rgba(0,0,0,.75);
 }
 
+/* ✅ Scrollable URL/query “chips” (created by AutoLinkedContent) */
+.k-scrollline{
+  margin: 14px 0 18px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(0,0,0,.04);
+  border-radius: 14px;
+  padding: 12px 14px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  max-width: 100%;
+}
+
+.k-scrollline code{
+  display: block;
+  white-space: nowrap;
+  min-width: max-content;
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.55;
+
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Optional: a small scrollbar that looks intentional */
+.k-scrollline::-webkit-scrollbar{
+  height: 8px;
+}
+.k-scrollline::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,.18);
+  border-radius: 999px;
+}
+.k-scrollline::-webkit-scrollbar-track{
+  background: rgba(0,0,0,.06);
+  border-radius: 999px;
+}
+
 .k-related{
   margin-top: 52px;
   padding-top: 24px;
@@ -217,6 +270,10 @@
   background: rgba(0,0,0,.05);
   padding: .12em .35em;
   border-radius: 6px;
+
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .k-content pre{
@@ -225,6 +282,7 @@
   border-radius: 14px;
   background: rgba(0,0,0,.05);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .k-content pre code{
@@ -295,6 +353,10 @@
   padding: 8px 10px;
   border-radius: 12px;
   border: 1px solid transparent;
+
+  /* ✅ prevent long labels from overflowing */
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .k-panel a:hover{
@@ -360,6 +422,8 @@
   border-radius: 16px;
   padding: 14px 14px;
   background: #fff;
+
+  min-width: 0;
 }
 
 .k-example h5{
@@ -384,6 +448,8 @@
   margin: 2px 0 0;
   font: 400 14px/1.55 ui-sans-serif, system-ui;
   color: rgba(0,0,0,.78);
+
+  overflow-wrap: anywhere;
 }
 
 .k-playbook{

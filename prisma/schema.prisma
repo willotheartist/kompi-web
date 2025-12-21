@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,25 +12,20 @@ datasource db {
 /// NextAuth models (keep these!)
 /// ----------------------------
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  image     String?
-  name      String?
-
-  // Email + password auth (null for Google-only users)
-  passwordHash String?
-
-  // Marketing consent (for “I agree to receive updates”)
-  marketingOptIn Boolean @default(false)
-
-  accounts   Account[]
-  kCards     KCard[]
-  workspaces Workspace[]
-  krCodes    KRCode[]
-  sessions   Session[]
-  menus      Menu[]
+  id             String      @id @default(cuid())
+  email          String      @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  image          String?
+  name           String?
+  passwordHash   String?
+  marketingOptIn Boolean     @default(false)
+  accounts       Account[]
+  kCards         KCard[]
+  krCodes        KRCode[]
+  menus          Menu[]
+  sessions       Session[]
+  workspaces     Workspace[]
 
   @@index([email])
 }
@@ -50,8 +43,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -62,8 +54,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -89,87 +80,91 @@ model PasswordResetToken {
   @@index([email])
 }
 
-/// ---------------------------
-/// App models
-/// ----------------------------
-
-enum Plan {
-  FREE
-  CREATOR
-}
-
 model Workspace {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ownerId   String
-
-  bioPages         BioPage[]
-  links            Link[]
-  krCodes          KRCode[]
-  subscriberLists  SubscriberList[]
-  contactForms     ContactForm[]
-  discountCodes    DiscountCode[]
-  courses          Course[]
-  loyaltyStamps    LoyaltyStamp[]
-  engagementEvents EngagementEvent[]
-  tools            WorkspaceTool[]
-
-  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-
-  plan Plan @default(FREE)
-
-  // Billing / Stripe
+  id                   String            @id @default(cuid())
+  name                 String
+  slug                 String            @unique
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  ownerId              String
+  plan                 Plan              @default(FREE)
   stripeCustomerId     String?
   stripeSubscriptionId String?
+  bioPages             BioPage[]
+  contactForms         ContactForm[]
+  courses              Course[]
+  discountCodes        DiscountCode[]
+  engagementEvents     EngagementEvent[]
+  krCodes              KRCode[]
+  links                Link[]
+  loyaltyStamps        LoyaltyStamp[]
+  subscriberLists      SubscriberList[]
+  owner                User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tools                WorkspaceTool[]
 
   @@index([ownerId])
   @@index([slug])
 }
 
 model ClickEvent {
-  id        String   @id @default(cuid())
-  linkId    String
-  createdAt DateTime @default(now())
-  ip        String?
-  referer   String?
-  userAgent String?
+  id           String   @id @default(cuid())
+  linkId       String
+  createdAt    DateTime @default(now())
+  ip           String?
+  referer      String?
+  referrerHost String?
+  userAgent    String?
 
-  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  // UTMs
+  utmCampaign  String?
+  utmContent   String?
+  utmMedium    String?
+  utmSource    String?
+  utmTerm      String?
+
+  // Geo
+  country      String?  // ISO2 like "GB"
+  region       String?  // optional: "England" / "CA"
+  city         String?  // optional
+
+  link         Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
 
   @@index([linkId, createdAt])
+  @@index([utmCampaign])
+  @@index([utmSource])
+  @@index([utmMedium])
+  @@index([referrerHost])
+  @@index([country])
 }
 
-model BioPage {
-  id          String   @id @default(cuid())
-  workspaceId String
-  slug        String   @unique
-  title       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  theme       Json?
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+model BioPage {
+  id          String    @id @default(cuid())
+  workspaceId String
+  slug        String    @unique
+  title       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  theme       Json?
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
 }
 
 model KRCode {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   workspaceId String
   userId      String
   title       String?
   destination String
   shortCodeId String?
   style       Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   type        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([userId])
@@ -178,69 +173,46 @@ model KRCode {
 model KCard {
   id        String   @id @default(cuid())
   userId    String
-  slug      String?  @unique
-  isPublic  Boolean  @default(true)
   data      Json
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isPublic  Boolean  @default(true)
+  slug      String?  @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Menu {
-  id     String @id @default(cuid())
-  userId String
-
-  title       String
-  slug        String  @unique
-  description String?
-
-  // Branding
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  slug          String   @unique
+  description   String?
   logoUrl       String?
   accentHex     String?
+  sections      Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
   backgroundHex String?
-
-  // Menu structure
-  sections Json
-
-  scanCount Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-}
-
-/// ---------------------------
-/// Link Types
-/// ---------------------------
-enum LinkType {
-  DEFAULT
-  DOWNLOAD
-  BOOKING
-  COMMUNITY
-  COURSE
-  OTHER
+  scanCount     Int      @default(0)
+  user          User     @relation(fields: [userId], references: [id])
 }
 
 model Link {
   id          String       @id @default(cuid())
   code        String?      @unique
-  title       String?
   targetUrl   String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   isActive    Boolean      @default(true)
   workspaceId String
   clicks      Int          @default(0)
+  title       String?
+  config      Json?
+  type        LinkType     @default(DEFAULT)
   events      ClickEvent[]
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  type   LinkType @default(DEFAULT)
-  config Json?
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([code])
@@ -251,30 +223,28 @@ model Link {
 /// Subscribers
 /// ---------------------------
 model SubscriberList {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   workspaceId String
   name        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-
-  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now())
   subscribers Subscriber[]
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
 }
 
 model Subscriber {
-  id         String   @id @default(cuid())
-  listId     String
-  email      String?
-  phone      String?
-  sourceSlug String?
-  sourceType String?
-  tags       String[]
-  createdAt  DateTime @default(now())
-
-  list          SubscriberList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  id            String         @id @default(cuid())
+  listId        String
+  email         String?
+  phone         String?
+  sourceSlug    String?
+  sourceType    String?
+  tags          String[]
+  createdAt     DateTime       @default(now())
   loyaltyStamps LoyaltyStamp[]
+  list          SubscriberList @relation(fields: [listId], references: [id], onDelete: Cascade)
 
   @@index([listId])
   @@index([email])
@@ -284,60 +254,47 @@ model Subscriber {
 /// Contact Forms
 /// ---------------------------
 model ContactForm {
-  id          String  @id @default(cuid())
-  workspaceId String
-  title       String
-  description String?
-
-  includeName    Boolean @default(true)
-  includeMessage Boolean @default(true)
-  includePhone   Boolean @default(false)
-  includeSubject Boolean @default(false)
-
-  subjectOptions String[] @default([])
-  tags           String[] @default([])
-
-  buttonLabel        String?
-  successMessage     String?
-  notificationsEmail String?
-
-  autoReplySubject String?
-  autoReplyBody    String?
-
-  accentHex    String?
-  themeLayout  String?
-  themeFont    String?
-  themeCorners String?
-
-  spamHoneypotEnabled Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  workspace   Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  submissions ContactSubmission[]
+  id                  String              @id @default(cuid())
+  workspaceId         String
+  title               String
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  accentHex           String?
+  autoReplyBody       String?
+  autoReplySubject    String?
+  buttonLabel         String?
+  description         String?
+  includeMessage      Boolean             @default(true)
+  includeName         Boolean             @default(true)
+  includePhone        Boolean             @default(false)
+  includeSubject      Boolean             @default(false)
+  notificationsEmail  String?
+  spamHoneypotEnabled Boolean             @default(true)
+  subjectOptions      String[]            @default([])
+  successMessage      String?
+  tags                String[]            @default([])
+  themeCorners        String?
+  themeFont           String?
+  themeLayout         String?
+  workspace           Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  submissions         ContactSubmission[]
 
   @@index([workspaceId])
 }
 
 model ContactSubmission {
-  id     String @id @default(cuid())
-  formId String
-
-  name    String?
-  email   String?
-  phone   String?
-  subject String?
-
-  message String
-
-  tags String[] @default([])
-  meta Json?
-
-  isSpam    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  form ContactForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+  id        String      @id @default(cuid())
+  formId    String
+  name      String?
+  email     String?
+  message   String
+  meta      Json?
+  createdAt DateTime    @default(now())
+  isSpam    Boolean     @default(false)
+  phone     String?
+  subject   String?
+  tags      String[]    @default([])
+  form      ContactForm @relation(fields: [formId], references: [id], onDelete: Cascade)
 
   @@index([formId, createdAt])
 }
@@ -355,8 +312,7 @@ model DiscountCode {
   expiresAt        DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, code])
   @@index([workspaceId])
@@ -366,16 +322,15 @@ model DiscountCode {
 /// Courses & Lessons
 /// ---------------------------
 model Course {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   workspaceId String
-  slug        String   @unique
+  slug        String    @unique
   title       String
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  lessons   Lesson[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
 
   @@index([workspaceId])
 }
@@ -389,8 +344,7 @@ model Lesson {
   isLocked  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([courseId, order])
 }
@@ -399,16 +353,15 @@ model Lesson {
 /// Loyalty Stamps
 /// ---------------------------
 model LoyaltyStamp {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   workspaceId   String
   subscriberId  String
-  visits        Int       @default(0)
+  visits        Int        @default(0)
   lastScannedAt DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now())
-
-  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  subscriber Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @default(now())
+  subscriber    Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  workspace     Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([subscriberId])
@@ -418,14 +371,13 @@ model LoyaltyStamp {
 /// Engagement Events
 /// ---------------------------
 model EngagementEvent {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   workspaceId String
   type        String
   value       String?
   context     Json?
-  createdAt   DateTime @default(now())
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, type, createdAt])
 }
@@ -433,11 +385,9 @@ model EngagementEvent {
 model KCardLinkClick {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-
-  kcardId String
-  linkId  String
-  url     String
-
+  kcardId   String
+  linkId    String
+  url       String
   referer   String?
   userAgent String?
 
@@ -446,43 +396,53 @@ model KCardLinkClick {
 }
 
 model WorkspaceTool {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   workspaceId String
   toolId      String
-  enabled     Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  enabled     Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, toolId])
   @@index([workspaceId])
 }
 
 model KCardMessage {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  kcardId     String
+  ownerId     String
+  intentKey   String?
+  intentLabel String?
+  name        String?
+  email       String?
+  phone       String?
+  message     String?
+  isSpam      Boolean  @default(false)
+  ipHash      String?
+  userAgent   String?
+  meta        Json?
+  workspaceId String?
 
-  // Routing
-  kcardId String
-  ownerId String // the KCard owner's userId
-
-  // Intent / options
-  intentKey   String? // e.g. "hire_me"
-  intentLabel String? // e.g. "We want to hire you"
-
-  // Visitor fields
-  name    String?
-  email   String?
-  phone   String?
-  message String?
-
-  // Anti-spam / meta
-  isSpam    Boolean @default(false)
-  ipHash    String?
-  userAgent String?
-  meta      Json?
-
+  @@index([workspaceId, createdAt])
   @@index([kcardId, createdAt])
   @@index([ownerId, createdAt])
+}
+
+enum Plan {
+  FREE
+  CREATOR
+}
+
+/// ---------------------------
+/// Link Types
+/// ---------------------------
+enum LinkType {
+  DEFAULT
+  DOWNLOAD
+  BOOKING
+  COMMUNITY
+  COURSE
+  OTHER
 }

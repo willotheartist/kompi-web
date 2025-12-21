@@ -60,6 +60,39 @@ function labelFromHref(href: string) {
   return raw.length ? raw : "Related article";
 }
 
+type CTAConfig = {
+  buttonHref: string;
+  buttonLabel: string;
+  body: string;
+  footLink?: { href: string; label: string };
+};
+
+function getCTA(cluster?: string): CTAConfig {
+  if (cluster === "utm") {
+    return {
+      buttonHref: "/tools/utm-builder",
+      buttonLabel: "Open UTM builder",
+      body: "Build consistent UTMs, then shorten and track clicks inside Kompi.",
+      footLink: { href: "/features/url-shortener", label: "Add a short link →" },
+    };
+  }
+
+  if (cluster === "bio") {
+    return {
+      buttonHref: "/links",
+      buttonLabel: "Create a link in bio",
+      body: "Make a clean bio link page and track clicks. Keep one primary CTA, then iterate based on results.",
+      footLink: { href: "/features/url-shortener", label: "Track each link →" },
+    };
+  }
+
+  return {
+    buttonHref: "/qr-code/dynamic",
+    buttonLabel: "Create a dynamic QR",
+    body: "Editable destination + tracking. Use one QR per placement to learn what actually works.",
+  };
+}
+
 export default async function PSEOPage({ params }: { params: ParamsPromise }) {
   const { slug } = await params;
 
@@ -68,6 +101,11 @@ export default async function PSEOPage({ params }: { params: ParamsPromise }) {
 
   const siblings = getSiblingPages(input);
   const built = buildPSEOPage(input, siblings);
+
+  const isUTM = input.cluster === "utm";
+  const isBio = input.cluster === "bio";
+
+  const cta = getCTA(input.cluster);
 
   const currentUrl = `/blog/${input.slug}`;
   const absoluteUrl = `${BASE_URL}${currentUrl}`;
@@ -162,8 +200,11 @@ export default async function PSEOPage({ params }: { params: ParamsPromise }) {
                 <section>
                   <h2>Examples you can copy</h2>
                   <p>
-                    Use these as starting points. Keep one QR per placement, measure results for a
-                    week, then iterate.
+                    {isUTM
+                      ? "Use these as starting points. Keep your naming consistent, measure results for a week, then iterate."
+                      : isBio
+                      ? "Use these as starting points. Keep one primary call-to-action, track clicks for a week, then iterate."
+                      : "Use these as starting points. Keep one QR per placement, measure results for a week, then iterate."}
                   </p>
 
                   <div className="k-examples">
@@ -227,9 +268,11 @@ export default async function PSEOPage({ params }: { params: ParamsPromise }) {
             <div className="k-sticky">
               <div className="k-panel">
                 <h4>Try Kompi</h4>
-                <Link className="k-btn" href="/qr-code/dynamic">
-                  Create a dynamic QR
+
+                <Link className="k-btn" href={cta.buttonHref}>
+                  {cta.buttonLabel}
                 </Link>
+
                 <div
                   style={{
                     marginTop: 10,
@@ -238,9 +281,14 @@ export default async function PSEOPage({ params }: { params: ParamsPromise }) {
                     lineHeight: 1.5,
                   }}
                 >
-                  Editable destination + tracking. Use one QR per placement to learn what actually
-                  works.
+                  {cta.body}
                 </div>
+
+                {cta.footLink ? (
+                  <div style={{ marginTop: 10, fontSize: 13 }}>
+                    <Link href={cta.footLink.href}>{cta.footLink.label}</Link>
+                  </div>
+                ) : null}
               </div>
 
               <div className="k-panel">
@@ -259,9 +307,12 @@ export default async function PSEOPage({ params }: { params: ParamsPromise }) {
               <div className="k-panel">
                 <h4>More tools</h4>
                 <div style={{ display: "grid", gap: 8, fontSize: 13 }}>
+                  <Link href="/links">Link in bio</Link>
+                  <Link href="/features/url-shortener">URL shortener</Link>
+                  <Link href="/tools/utm-builder">UTM builder</Link>
+                  <Link href="/qr-code/dynamic">Dynamic QR</Link>
                   <Link href="/qr-menus">QR menus</Link>
                   <Link href="/qr-code/with-logo">QR with logo</Link>
-                  <Link href="/features/url-shortener">URL shortener</Link>
                 </div>
               </div>
             </div>

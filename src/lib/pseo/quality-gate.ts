@@ -43,6 +43,10 @@ function estimateConceptUnits(page: BuiltPSEOPage): number {
     "decision-table",
     "failure-cases",
     "checkpoint",
+
+    // ✅ UTM-specific sections
+    "utm-presets",
+    "utm-naming",
   ];
 
   for (const id of conceptSections) {
