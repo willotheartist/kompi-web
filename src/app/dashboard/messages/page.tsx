@@ -1,3 +1,4 @@
+//src/app/dashboard/messages/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -85,14 +86,14 @@ export default function MessagesPage() {
                 <div className="flex items-start justify-between gap-6">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
-                      <div className="text-[42px] leading-[1] font-semibold tracking-[-0.03em] text-[#050505]">
+                      <div className="text-[42px] leading-none font-semibold tracking-[-0.03em] text-[#050505]">
                         {displayName}
                       </div>
 
                       {displayEmail && (
                         <a
                           href={`mailto:${displayEmail}`}
-                          className="truncate text-[40px] leading-[1] font-medium tracking-[-0.03em] text-[#9AA7FF] hover:opacity-80"
+                          className="truncate text-[40px] leading-none font-medium tracking-[-0.03em] text-[#9AA7FF] hover:opacity-80"
                         >
                           {displayEmail}
                         </a>

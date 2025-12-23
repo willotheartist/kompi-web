@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 21/12/2025, 15:20:00*
+*Generated on: 23/12/2025, 14:33:31*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 620 |
-| 📁 Total Folders | 282 |
+| 📄 Total Files | 627 |
+| 📁 Total Folders | 284 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,10 +26,10 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 344 files (55.5%)
-- 🔷 **.ts** (TypeScript files): 93 files (15.0%)
-- 🖼️ **.png** (PNG images): 84 files (13.5%)
-- 📄 **.sql** (Other files): 24 files (3.9%)
+- ⚛️ **.tsx** (React TypeScript files): 350 files (55.8%)
+- 🔷 **.ts** (TypeScript files): 94 files (15.0%)
+- 🖼️ **.png** (PNG images): 85 files (13.6%)
+- 📄 **.sql** (Other files): 24 files (3.8%)
 - 🎨 **.css** (Stylesheets): 11 files (1.8%)
 - ⚙️ **.json** (JSON files): 8 files (1.3%)
 - 📄 **.mjs** (Other files): 7 files (1.1%)
@@ -51,7 +51,6 @@
 - 📄 **.py** (Other files): 1 files (0.2%)
 - 📄 **.sh** (Other files): 1 files (0.2%)
 - 📄 **.gz** (Other files): 1 files (0.2%)
-- 📜 **.js** (JavaScript files): 1 files (0.2%)
 - 📄 **.bak_py** (Other files): 1 files (0.2%)
 - 📄 **.pre_pro_text** (Other files): 1 files (0.2%)
 - 📄 **.bak_sidebar_modern** (Other files): 1 files (0.2%)
@@ -72,23 +71,22 @@
 
 ### By Category
 
-- **React**: 344 files (55.5%)
-- **Assets**: 94 files (15.2%)
-- **TypeScript**: 93 files (15.0%)
-- **Other**: 61 files (9.8%)
+- **React**: 350 files (55.8%)
+- **Assets**: 95 files (15.2%)
+- **TypeScript**: 94 files (15.0%)
+- **Other**: 61 files (9.7%)
 - **Config**: 11 files (1.8%)
 - **Styles**: 11 files (1.8%)
 - **Docs**: 3 files (0.5%)
 - **DevOps**: 2 files (0.3%)
-- **JavaScript**: 1 files (0.2%)
 
 ### 📁 Largest Directories
 
-- **root**: 620 files
-- **src**: 471 files
-- **src/app**: 244 files
-- **src/components**: 186 files
-- **public**: 94 files
+- **root**: 627 files
+- **src**: 477 files
+- **src/app**: 249 files
+- **src/components**: 187 files
+- **public**: 95 files
 
 ## 🌳 Directory Structure
 
@@ -252,6 +250,8 @@ kompi-web/
 │   │   ├── 🖼️ three.png
 │   │   └── 🖼️ two.png
 │   ├── 📂 uploads/
+│   │   ├── 📂 avatars/
+│   │   │   └── 🖼️ cmi5s886t0000hnv8iw0v0hxe-1766404469259.png
 │   │   └── 📂 krcodes/
 │   │   │   └── 🖼️ cmiadm2e00003js049itq83xr.png
 │   ├── 🎨 vercel.svg
@@ -285,14 +285,31 @@ kompi-web/
 ├── 📁 src/
 │   ├── 🚀 app/
 │   │   ├── 📂 (dashboard)/
+│   │   │   ├── 📂 analytics/
+│   │   │   │   ├── ⚛️ loading.tsx
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 kr-codes/
+│   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   ├── 📂 edit/
+│   │   │   │   │   │   ├── ⚛️ loading.tsx
+│   │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   │   ├── ⚛️ loading.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── ⚛️ loading.tsx
+│   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   └── 📂 your/
+│   │   │   │   │   ├── ⚛️ loading.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── ⚛️ layout.tsx
-│   │   │   └── 📂 links/
+│   │   │   ├── 📂 links/
 │   │   │   │   ├── 📂 [id]/
 │   │   │   │   │   ├── 📂 edit/
 │   │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 new/
 │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── 📂 messages/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 (seo)/
 │   │   │   ├── 📂 barcode-generator/
@@ -315,8 +332,6 @@ kompi-web/
 │   │   │   └── 📂 whatsapp-link-generator/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 [handle]/
-│   │   │   └── ⚛️ page.tsx
-│   │   ├── 📂 analytics/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 🔌 api/
 │   │   │   ├── 📂 auth/
@@ -400,6 +415,8 @@ kompi-web/
 │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 settings/
 │   │   │   │   └── 📂 profile/
+│   │   │   │   │   ├── 📂 avatar/
+│   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 stripe/
 │   │   │   │   └── 📂 webhook/
@@ -475,10 +492,6 @@ kompi-web/
 │   │   │   │   ├── 📂 messages/
 │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   └── ⚛️ page.tsx
-│   │   │   ├── 📂 kr-codes/
-│   │   │   │   ├── ⚛️ page.tsx
-│   │   │   │   └── 📂 your/
-│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 links/
 │   │   │   │   └── 📂 new/
 │   │   │   │   │   └── ⚛️ page.tsx
@@ -610,13 +623,6 @@ kompi-web/
 │   │   ├── 📂 kompi-suite/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 kr-codes/
-│   │   │   ├── 📂 [id]/
-│   │   │   │   ├── 📂 edit/
-│   │   │   │   │   └── ⚛️ page.tsx
-│   │   │   │   └── ⚛️ page.tsx
-│   │   │   ├── 📂 page.jsrtener/
-│   │   │   │   └── 📜 page.js
-│   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 KR-Codes-QR-Code-Generator/
 │   │   │   ├── 🎨 kr-codes.css
 │   │   │   └── ⚛️ page.tsx
@@ -752,6 +758,7 @@ kompi-web/
 │   │   │   ├── ⚛️ contact-form-card.tsx
 │   │   │   └── ⚛️ contact-form-inline.tsx
 │   │   ├── 📂 dashboard/
+│   │   │   ├── ⚛️ account-menu.tsx
 │   │   │   ├── ⚛️ character-counter-widget.tsx
 │   │   │   ├── ⚛️ color-palette-generator-widget.tsx
 │   │   │   ├── ⚛️ contact-links-widget.tsx
@@ -1017,7 +1024,6 @@ kompi-web/
 - 🖼️ Assets: JPEG images
 - ⚛️ React: React TypeScript files
 - 🎨 Styles: Stylesheets
-- 📜 JavaScript: JavaScript files
 
 ### Importance Levels
 - 🔴 Critical: Essential project files

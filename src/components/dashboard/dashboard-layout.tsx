@@ -1,13 +1,12 @@
 // src/components/dashboard/dashboard-layout.tsx
 "use client";
 
-import { Suspense, useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Suspense, useState, useEffect, useMemo } from "react";
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Home,
@@ -19,7 +18,6 @@ import {
   QrCode,
   Rocket,
   Globe2,
-  ChevronDown,
   Wrench,
   IdCard,
   UtensilsCrossed,
@@ -27,7 +25,7 @@ import {
   KeyRound,
 } from "lucide-react";
 import { getToolById } from "@/lib/tools-config";
-import { CreateWorkspaceModal } from "@/components/workspaces/create-workspace-modal";
+import { AccountMenu } from "@/components/dashboard/account-menu";
 
 type NavChild = {
   href: string;
@@ -56,7 +54,7 @@ const baseNavGroups: NavGroup[] = [
         href: "/k-cards",
         label: "K-Cards",
         icon: IdCard,
-        children: [{ href: "/dashboard/k-cards/messages", label: "Messages" }],
+        children: [{ href: "/messages", label: "Messages" }],
       },
       {
         href: "/dashboard/qr-menus",
@@ -67,7 +65,7 @@ const baseNavGroups: NavGroup[] = [
         href: "/kr-codes",
         label: "KR Codes",
         icon: QrCode,
-        children: [{ href: "/dashboard/kr-codes/your", label: "Your QR codes" }],
+        children: [{ href: "/kr-codes/your", label: "Your QR codes" }],
       },
     ],
   },
@@ -78,8 +76,9 @@ const baseNavGroups: NavGroup[] = [
       { href: "/dashboard/growth", label: "Growth", icon: Rocket },
     ],
   },
+  // Single-workspace mode: don't label anything "Workspace" in the UI.
   {
-    section: "Workspace",
+    section: "Settings",
     items: [
       {
         href: "/dashboard/settings/domains",
@@ -97,14 +96,10 @@ const baseNavGroups: NavGroup[] = [
 
 type ToolId = Parameters<typeof getToolById>[0];
 
-type Workspace = {
-  id: string;
-  name: string;
-};
-
 /**
  * ------------------------------------------------------------------
- * Module-scope caches so we don't refetch on every navigation.
+ * Module-scope cache so we don't refetch on every navigation.
+ * Single-workspace mode uses one key: "default".
  * ------------------------------------------------------------------
  */
 const toolsCache = new Map<
@@ -112,13 +107,8 @@ const toolsCache = new Map<
   { ts: number; value: ToolId[]; inflight?: Promise<ToolId[]> }
 >();
 
-const workspacesCache: {
-  ts: number;
-  value: Workspace[];
-  inflight?: Promise<Workspace[]>;
-} = { ts: 0, value: [] };
-
 const CACHE_TTL_MS = 60_000;
+const WORKSPACE_KEY = "default";
 
 /* ---------------- helpers ---------------- */
 
@@ -187,7 +177,10 @@ export function DashboardLayout({
 
       <div className="wf-dashboard-main flex min-w-0 flex-1 flex-col">
         <div
-          className={cn("wf-dashboard-topbar-shell sticky top-0 z-40", "backdrop-blur-md")}
+          className={cn(
+            "wf-dashboard-topbar-shell sticky top-0 z-40",
+            "backdrop-blur-md"
+          )}
           style={{
             backgroundColor: "var(--color-surface)",
             borderBottom: "1px solid var(--color-border)",
@@ -224,20 +217,18 @@ function SidebarInner({
   setCollapsed: (v: boolean) => void;
 }) {
   const pathname = usePathname() ?? "/";
-  const searchParams = useSearchParams();
 
-  const workspaceId = searchParams?.get("workspaceId") ?? "default";
-  const storageKey = `kompi:enabledTools:${workspaceId}`;
+  // Single-workspace mode: stable key
+  const storageKey = `kompi:enabledTools:${WORKSPACE_KEY}`;
 
-  // ✅ derive initial state lazily (avoids setState-in-effect lint)
-  const [toolIds, setToolIds] = useState<ToolId[]>(() => {
-    if (typeof window === "undefined") return [];
-    return parseToolIds(window.localStorage.getItem(storageKey));
-  });
+  /**
+   * ✅ HYDRATION FIX:
+   * Never read localStorage in the first render (server vs client mismatch).
+   * Start empty, then populate in an effect.
+   */
+  const [toolIds, setToolIds] = useState<ToolId[]>([]);
 
-  // ✅ When switching workspaces, refresh tool ids for the new key
-  // IMPORTANT: lint rule bans synchronous setState inside effect,
-  // so we schedule it asynchronously.
+  // Load from localStorage after mount
   useEffect(() => {
     let cancelled = false;
 
@@ -274,9 +265,8 @@ function SidebarInner({
     };
   }, [storageKey]);
 
-  // Only compute the querystring once per render
-  const qs = useMemo(() => searchParams?.toString() ?? "", [searchParams]);
-  const toolsUrl = useMemo(() => (qs ? `/api/tools?${qs}` : "/api/tools"), [qs]);
+  // Single-workspace mode: do not forward querystring workspaceId to API
+  const toolsUrl = "/api/tools";
 
   // Network load (deduped + cached)
   useEffect(() => {
@@ -285,7 +275,7 @@ function SidebarInner({
     async function loadTools() {
       try {
         const now = Date.now();
-        const cached = toolsCache.get(workspaceId);
+        const cached = toolsCache.get(WORKSPACE_KEY);
 
         // ✅ use in-memory cache (fastest)
         if (cached && now - cached.ts < CACHE_TTL_MS) {
@@ -308,7 +298,7 @@ function SidebarInner({
           })
           .catch(() => []);
 
-        toolsCache.set(workspaceId, {
+        toolsCache.set(WORKSPACE_KEY, {
           ts: now,
           value: cached?.value ?? [],
           inflight,
@@ -318,11 +308,12 @@ function SidebarInner({
         if (cancelled) return;
 
         setToolIds((prev) => {
-          const same = prev.length === next.length && prev.every((v, i) => v === next[i]);
+          const same =
+            prev.length === next.length && prev.every((v, i) => v === next[i]);
           return same ? prev : next;
         });
 
-        toolsCache.set(workspaceId, { ts: Date.now(), value: next });
+        toolsCache.set(WORKSPACE_KEY, { ts: Date.now(), value: next });
 
         try {
           localStorage.setItem(storageKey, JSON.stringify(next));
@@ -338,7 +329,7 @@ function SidebarInner({
     return () => {
       cancelled = true;
     };
-  }, [workspaceId, storageKey, toolsUrl]);
+  }, [storageKey]);
 
   const toolsItems: NavItem[] = useMemo(() => {
     return [
@@ -362,14 +353,22 @@ function SidebarInner({
   }, [toolIds]);
 
   const navGroups: NavGroup[] = useMemo(() => {
-    return [baseNavGroups[0], baseNavGroups[1], { section: "Tools", items: toolsItems }, baseNavGroups[2]];
+    return [
+      baseNavGroups[0],
+      baseNavGroups[1],
+      { section: "Tools", items: toolsItems },
+      baseNavGroups[2],
+    ];
   }, [toolsItems]);
 
   return (
     <motion.aside
       animate={{ width: collapsed ? 80 : 240 }}
       transition={{ duration: 0.22, ease: "easeInOut" }}
-      className={cn("wf-dashboard-sidebar", "sticky left-0 top-0 flex h-screen flex-col justify-between")}
+      className={cn(
+        "wf-dashboard-sidebar",
+        "sticky left-0 top-0 flex h-screen flex-col justify-between"
+      )}
       style={{
         backgroundColor: "var(--color-surface)",
         borderRight: "1px solid var(--color-border)",
@@ -387,12 +386,26 @@ function SidebarInner({
         >
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <Image src="/Kompi..svg" alt="Kompi" width={112} height={24} priority className="h-6 w-28" />
+              <Image
+                src="/Kompi..svg"
+                alt="Kompi"
+                width={112}
+                height={24}
+                priority
+                className="h-6 w-28"
+              />
             </div>
           )}
 
           {collapsed && (
-            <Image src="/Kompiwhite.svg" alt="Kompi" width={24} height={24} priority className="h-6 w-6" />
+            <Image
+              src="/Kompiwhite.svg"
+              alt="Kompi"
+              width={24}
+              height={24}
+              priority
+              className="h-6 w-6"
+            />
           )}
           <span className="sr-only">Kompi</span>
         </Link>
@@ -402,7 +415,9 @@ function SidebarInner({
           {navGroups.map((group) => (
             <div key={group.section} className="flex flex-col gap-1.5">
               {!collapsed && (
-                <h2 className="px-2.5 text-[11px] font-medium text-(--color-subtle)">{group.section}</h2>
+                <h2 className="px-2.5 text-[11px] font-medium text-(--color-subtle)">
+                  {group.section}
+                </h2>
               )}
 
               <div className="flex flex-col gap-1">
@@ -423,14 +438,18 @@ function SidebarInner({
                         className={cn(
                           "wf-dashboard-nav-item group flex items-center rounded-lg px-2.5 py-1 text-sm font-medium transition",
                           collapsed ? "justify-center" : "gap-1.5",
-                          active ? "bg-[#f6f6f6] text-(--color-text)" : "text-(--color-subtle) hover:bg-[#f6f6f6]"
+                          active
+                            ? "bg-[#f6f6f6] text-(--color-text)"
+                            : "text-(--color-subtle) hover:bg-[#f6f6f6]"
                         )}
                       >
                         {!collapsed && (
                           <span
                             className="wf-dashboard-nav-accent mr-1 h-5 w-0.5 rounded-1px"
                             style={{
-                              backgroundColor: active ? "var(--color-accent)" : "transparent",
+                              backgroundColor: active
+                                ? "var(--color-accent)"
+                                : "transparent",
                             }}
                             aria-hidden="true"
                           />
@@ -442,17 +461,26 @@ function SidebarInner({
                       </Link>
 
                       {children && !collapsed && (
-                        <div className="ml-5 flex flex-col gap-0.5 border-l pl-3" style={{ borderColor: "var(--color-border)" }}>
+                        <div
+                          className="ml-5 flex flex-col gap-0.5 border-l pl-3"
+                          style={{ borderColor: "var(--color-border)" }}
+                        >
                           {children.map((child: NavChild) => {
                             const childIsActive = pathname.startsWith(child.href);
                             return (
                               <Link
                                 key={child.href}
                                 href={child.href}
-                                className={cn("wf-dashboard-nav-subitem flex items-center rounded-xl px-2.5 py-1 text-sm font-medium transition")}
+                                className={cn(
+                                  "wf-dashboard-nav-subitem flex items-center rounded-xl px-2.5 py-1 text-sm font-medium transition"
+                                )}
                                 style={{
-                                  color: childIsActive ? "var(--color-text)" : "var(--color-subtle)",
-                                  backgroundColor: childIsActive ? "var(--color-accent-soft)" : "transparent",
+                                  color: childIsActive
+                                    ? "var(--color-text)"
+                                    : "var(--color-subtle)",
+                                  backgroundColor: childIsActive
+                                    ? "var(--color-accent-soft)"
+                                    : "transparent",
                                 }}
                               >
                                 {child.label}
@@ -509,133 +537,6 @@ function Topbar(props: Parameters<typeof TopbarInner>[0]) {
 }
 
 function TopbarInner({ pageTitle }: { pageTitle?: string }) {
-  const { data } = useSession();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const email = data?.user?.email ?? "";
-  const name = data?.user?.name ?? "";
-  const display = name || email || "User";
-  const initial = (display?.trim()?.[0] ?? "U").toUpperCase();
-
-  const planLabel = "Free";
-
-  const [open, setOpen] = useState(false);
-  const menuRef = useOutsideClose<HTMLDivElement>(open, () => setOpen(false));
-
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [wsLoading, setWsLoading] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
-
-  const activeWorkspaceIdFromUrl = searchParams?.get("workspaceId") ?? null;
-
-  // ✅ Only fetch when the dropdown is opened (huge win)
-  const ensureWorkspacesLoaded = useCallback(async () => {
-    if (wsLoading) return;
-    if (workspaces.length > 0) return;
-
-    const now = Date.now();
-
-    // fast path: module cache
-    if (workspacesCache.value.length && now - workspacesCache.ts < CACHE_TTL_MS) {
-      setWorkspaces(workspacesCache.value);
-      return;
-    }
-
-    // dedupe inflight
-    if (workspacesCache.inflight) {
-      const next = await workspacesCache.inflight;
-      setWorkspaces(next);
-      return;
-    }
-
-    setWsLoading(true);
-    try {
-      const inflight: Promise<Workspace[]> = fetch("/api/workspaces")
-        .then(async (res) => {
-          if (!res.ok) return [];
-          const json: unknown = await res.json();
-          if (!json || typeof json !== "object") return [];
-          const wss = (json as Record<string, unknown>).workspaces;
-          if (!Array.isArray(wss)) return [];
-          return wss.filter((w): w is Workspace => {
-            if (!w || typeof w !== "object") return false;
-            const rec = w as Record<string, unknown>;
-            return typeof rec.id === "string" && typeof rec.name === "string";
-          });
-        })
-        .catch(() => []);
-
-      workspacesCache.inflight = inflight;
-      const next = await inflight;
-
-      workspacesCache.ts = Date.now();
-      workspacesCache.value = next;
-      workspacesCache.inflight = undefined;
-
-      setWorkspaces(next);
-    } finally {
-      setWsLoading(false);
-    }
-  }, [wsLoading, workspaces.length]);
-
-  // After creation modal closes, refresh cache once
-  useEffect(() => {
-    if (createOpen) return;
-
-    const t = setTimeout(async () => {
-      try {
-        const res = await fetch("/api/workspaces");
-        if (!res.ok) return;
-        const json: unknown = await res.json();
-
-        let next: Workspace[] = [];
-        if (json && typeof json === "object") {
-          const wss = (json as Record<string, unknown>).workspaces;
-          if (Array.isArray(wss)) {
-            next = wss.filter((w): w is Workspace => {
-              if (!w || typeof w !== "object") return false;
-              const rec = w as Record<string, unknown>;
-              return typeof rec.id === "string" && typeof rec.name === "string";
-            });
-          }
-        }
-
-        setWorkspaces(next);
-        workspacesCache.ts = Date.now();
-        workspacesCache.value = next;
-        workspacesCache.inflight = undefined;
-      } catch {
-        // ignore
-      }
-    }, 250);
-
-    return () => clearTimeout(t);
-  }, [createOpen]);
-
-  const activeWorkspace: Workspace | null = useMemo(() => {
-    if (!workspaces.length) return null;
-    if (activeWorkspaceIdFromUrl) {
-      const byId = workspaces.find((w) => w.id === activeWorkspaceIdFromUrl);
-      if (byId) return byId;
-    }
-    return workspaces[0] ?? null;
-  }, [workspaces, activeWorkspaceIdFromUrl]);
-
-  const buildUrlWithWorkspace = (id: string) => {
-    const params = new URLSearchParams(searchParams?.toString() ?? "");
-    params.set("workspaceId", id);
-    const qs = params.toString();
-    return qs ? `${pathname}?${qs}` : pathname;
-  };
-
-  const handleWorkspaceSwitch = (id: string) => {
-    const next = buildUrlWithWorkspace(id);
-    router.push(next);
-    setOpen(false);
-  };
-
   return (
     <div className="flex h-16 items-center justify-between gap-4">
       <div className="flex min-w-0 flex-col">
@@ -651,222 +552,9 @@ function TopbarInner({ pageTitle }: { pageTitle?: string }) {
         </h1>
       </div>
 
-      <div className="relative" ref={menuRef}>
-        <button
-          type="button"
-          onClick={async () => {
-            const next = !open;
-            setOpen(next);
-            if (next) await ensureWorkspacesLoaded();
-          }}
-          className="inline-flex items-center gap-2 text-sm font-medium"
-          style={{
-            backgroundColor: "transparent",
-            border: "none",
-            color: "var(--color-text)",
-          }}
-          aria-label="Open account menu"
-        >
-          <span className="max-w-40 truncate">{display}</span>
-
-          <span
-            className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide"
-            style={{
-              backgroundColor: "var(--color-accent-soft)",
-              border: "1px solid var(--color-border)",
-              color: "var(--color-text)",
-            }}
-          >
-            {planLabel}
-          </span>
-
-          <div className="flex items-center gap-1">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold"
-              style={{
-                backgroundColor: "var(--color-bg)",
-                border: "1px solid var(--color-accent)",
-                color: "var(--color-text)",
-              }}
-            >
-              {initial}
-            </div>
-            <ChevronDown className="h-4 w-4" style={{ color: "var(--color-subtle)" }} />
-          </div>
-        </button>
-
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0, y: -6, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6, scale: 0.98 }}
-              transition={{ duration: 0.16 }}
-              className="wf-dashboard-account-menu absolute right-0 z-50 mt-2 w-80 rounded-2xl p-1.5"
-              style={{
-                backgroundColor: "var(--color-surface)",
-                border: "1px solid var(--color-border)",
-              }}
-              role="menu"
-            >
-              <div className="flex items-center gap-3 px-3 py-3">
-                <div
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
-                  style={{
-                    backgroundColor: "var(--color-bg)",
-                    color: "var(--color-text)",
-                  }}
-                >
-                  {initial}
-                </div>
-                <div className="flex min-w-0 flex-col">
-                  <span className="text-xs" style={{ color: "var(--color-subtle)" }}>
-                    Signed in as
-                  </span>
-                  <span className="truncate text-sm font-medium">{display}</span>
-                </div>
-              </div>
-
-              <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
-
-              <div className="px-3 py-2">
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <span className="text-[11px] uppercase tracking-[0.16em]" style={{ color: "var(--color-subtle)" }}>
-                    Workspace
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setCreateOpen(true)}
-                    className="text-[11px] font-medium underline-offset-2 hover:underline"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    + New
-                  </button>
-                </div>
-
-                <div className="max-h-40 space-y-1 overflow-auto">
-                  {wsLoading && (
-                    <div className="text-xs" style={{ color: "var(--color-subtle)" }}>
-                      Loading workspaces…
-                    </div>
-                  )}
-
-                  {!wsLoading && workspaces.length === 0 && (
-                    <div className="text-xs" style={{ color: "var(--color-subtle)" }}>
-                      No workspaces yet.
-                    </div>
-                  )}
-
-                  {!wsLoading &&
-                    workspaces.map((ws) => {
-                      const isActive = ws.id === activeWorkspace?.id;
-                      return (
-                        <button
-                          key={ws.id}
-                          type="button"
-                          onClick={() => handleWorkspaceSwitch(ws.id)}
-                          className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-sm transition"
-                          style={{
-                            backgroundColor: isActive ? "var(--color-accent-soft)" : "transparent",
-                            color: "var(--color-text)",
-                          }}
-                        >
-                          <span className="truncate">{ws.name}</span>
-                          {isActive && (
-                            <span className="text-[11px] uppercase tracking-wide" style={{ color: "var(--color-subtle)" }}>
-                              Active
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                </div>
-              </div>
-
-              <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
-
-              <MenuItem href="/dashboard/settings/profile" label="Account" onClick={() => setOpen(false)} />
-              <MenuItem href="/dashboard/settings" label="Workspace settings" onClick={() => setOpen(false)} />
-              <MenuItem href="/pricing" label="Upgrade" onClick={() => setOpen(false)} />
-
-              <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
-
-              <MenuItem href="/dashboard/support" label="Ask a question" onClick={() => setOpen(false)} />
-              <MenuItem href="/dashboard/support" label="Help topics" onClick={() => setOpen(false)} />
-              <MenuItem href="/dashboard/support" label="Share feedback" onClick={() => setOpen(false)} />
-
-              <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
-
-              <button
-                className={cn(
-                  "wf-dashboard-account-menu-signout w-full rounded-lg px-2.5 py-2 text-left text-sm font-medium transition"
-                )}
-                style={{ color: "var(--color-subtle)" }}
-                onClick={() => {
-                  setOpen(false);
-                  signOut({ callbackUrl: "/" });
-                }}
-              >
-                Log out
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <CreateWorkspaceModal open={createOpen} onOpenChange={setCreateOpen} />
-      </div>
+      <AccountMenu />
     </div>
   );
-}
-
-function MenuItem({
-  href,
-  label,
-  onClick,
-}: {
-  href: string;
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className={cn("wf-dashboard-account-menu-item block rounded-lg px-2.5 py-2 text-sm transition")}
-      role="menuitem"
-      style={{ color: "var(--color-text)" }}
-    >
-      <span>{label}</span>
-    </Link>
-  );
-}
-
-/* ---------------- utils ---------------- */
-
-function useOutsideClose<T extends HTMLElement>(open: boolean, onClose: () => void) {
-  const ref = useRef<T | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    function onDoc(e: MouseEvent) {
-      if (!ref.current) return;
-      if (!ref.current.contains(e.target as Node)) onClose();
-    }
-
-    function onEsc(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-
-    document.addEventListener("mousedown", onDoc);
-    document.addEventListener("keydown", onEsc);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("keydown", onEsc);
-    };
-  }, [open, onClose]);
-
-  return ref;
 }
 
 export default DashboardLayout;

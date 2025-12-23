@@ -1,5 +1,3 @@
-// src/app/analytics/page.tsx
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { AnalyticsOverview } from "@/components/analytics/analytics-overview";
 import { getAnalyticsOverviewForWorkspace } from "@/lib/analytics-overview";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
@@ -22,20 +20,12 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
   const workspace = await getActiveWorkspace(user.id, workspaceId);
 
   if (!workspace) {
-    return (
-      <DashboardLayout>
-        <CreateWorkspaceEmpty />
-      </DashboardLayout>
-    );
+    return <CreateWorkspaceEmpty />;
   }
 
   const overview = await getAnalyticsOverviewForWorkspace({
     workspaceId: workspace.id,
   });
 
-  return (
-    <DashboardLayout>
-      <AnalyticsOverview data={overview} />
-    </DashboardLayout>
-  );
+  return <AnalyticsOverview data={overview} />;
 }

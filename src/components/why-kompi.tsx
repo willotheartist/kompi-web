@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 
 type Persona = {
@@ -188,7 +188,7 @@ export default function KompiWho6() {
           {pages.map((group, pageIndex) => (
             <div
               key={pageIndex}
-              className="flex w-full flex-shrink-0 gap-6"
+              className="flex w-full shrink-0 gap-6"
               style={{ scrollSnapAlign: "start" }}
             >
               {group.map((persona, indexInGroup) => {
@@ -236,7 +236,7 @@ export default function KompiWho6() {
                           )}
                         </div>
 
-                        <p className="mt-3 max-w-[260px] md:max-w-[240px] text-[15px] leading-[1.7] text-neutral-800">
+                        <p className="mt-3 max-w-[260px] md:max-w-60 text-[15px] leading-[1.7] text-neutral-800">
                           {persona.subtitle}
                         </p>
                       </div>

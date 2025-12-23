@@ -1,38 +1,26 @@
-//src/components/settings/profile-settings-client.tsx
+// src/components/settings/profile-settings-client.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type ProfileResponse = {
   id: string;
   name: string | null;
   email: string;
   image: string | null;
-  // phone?: string | null;
 };
 
 export function ProfileSettingsClient() {
-  const { update: refreshSession } = useSession();
+  const { update } = useSession();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avatarSaving, setAvatarSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -40,6 +28,7 @@ export function ProfileSettingsClient() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [timeZone, setTimeZone] = useState<string | undefined>(undefined);
+
   const [avatarFileName, setAvatarFileName] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
@@ -52,27 +41,17 @@ export function ProfileSettingsClient() {
       try {
         setLoading(true);
         const res = await fetch("/api/settings/profile");
-        if (!res.ok) {
-          throw new Error(`Error ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`Error ${res.status}`);
         const data: ProfileResponse = await res.json();
         if (cancelled) return;
 
         setName(data.name ?? "");
         setEmail(data.email ?? "");
-        // If you later persist image URLs, you can surface them here:
-        if (data.image) {
-          setAvatarPreview(data.image);
-        }
-        // setPhone(data.phone ?? "");
-      } catch (_err) {
-        if (!cancelled) {
-          setError("Could not load profile. Please try again.");
-        }
+        setAvatarPreview(data.image ?? null);
+      } catch {
+        if (!cancelled) setError("Could not load profile. Please try again.");
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
@@ -92,47 +71,77 @@ export function ProfileSettingsClient() {
 
       const res = await fetch("/api/settings/profile", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          // phone,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
       });
 
-      if (!res.ok) {
-        throw new Error(`Error ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Error ${res.status}`);
 
       setSaved(true);
 
-      // 🔁 Refresh NextAuth session so Topbar shows the new name immediately
-      await refreshSession?.();
-    } catch (_err) {
+      // ✅ push into NextAuth token/session instantly
+      await update?.({ name });
+    } catch {
       setError("Could not save changes. Please try again.");
     } finally {
       setSaving(false);
     }
   }
 
-  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setError(null);
+    setSaved(false);
     setAvatarFileName(file.name);
 
-    // Revoke old preview URL if it existed
+    // local preview immediately
+    const localUrl = URL.createObjectURL(file);
     setAvatarPreview((prev) => {
-      if (prev && prev.startsWith("blob:")) {
-        URL.revokeObjectURL(prev);
-      }
-      return URL.createObjectURL(file);
+      if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return localUrl;
     });
 
-    // TODO: later – send file to an upload API and persist URL on User.image
-    console.log("Selected avatar file:", file.name);
+    // ✅ upload + persist
+    try {
+      setAvatarSaving(true);
+
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const res = await fetch("/api/settings/avatar", {
+        method: "POST",
+        body: fd,
+      });
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(msg || `Upload failed (${res.status})`);
+      }
+
+      const json = (await res.json()) as { image?: string };
+      const imageUrl = json.image;
+
+      if (!imageUrl) throw new Error("Upload succeeded but no image URL returned.");
+
+      // swap preview to persisted URL
+      setAvatarPreview(imageUrl);
+
+      // ✅ update NextAuth token/session so Topbar shows immediately
+      await update?.({ image: imageUrl });
+
+      setSaved(true);
+    } catch (err) {
+      console.error("AVATAR_UPLOAD_ERROR", err);
+      setError("Could not upload avatar. Please try another image.");
+    } finally {
+      setAvatarSaving(false);
+    }
   }
+
+  const initial =
+    (name?.trim()?.[0]?.toUpperCase() || email?.trim()?.[0]?.toUpperCase() || "U");
 
   return (
     <form
@@ -140,19 +149,13 @@ export function ProfileSettingsClient() {
       className="wf-settings-profile flex flex-1 flex-col gap-6"
       style={{ color: "var(--color-text)" }}
     >
-      {/* Header */}
       <header className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold tracking-tight">Profile</h1>
-        <p
-          className="text-sm max-w-xl"
-          style={{ color: "var(--color-subtle)" }}
-        >
-          Manage your personal account details. This is tied to your Kompi
-          login, not a specific workspace.
+        <p className="text-sm max-w-xl" style={{ color: "var(--color-subtle)" }}>
+          Manage your personal account details. This is tied to your Kompi login, not a specific workspace.
         </p>
       </header>
 
-      {/* Alerts */}
       {error && (
         <div
           className="rounded-xl px-3 py-2 text-xs"
@@ -189,36 +192,33 @@ export function ProfileSettingsClient() {
       >
         <CardHeader>
           <CardTitle className="text-base">Profile image</CardTitle>
-          <CardDescription
-            style={{ color: "var(--color-subtle)" }}
-          >
+          <CardDescription style={{ color: "var(--color-subtle)" }}>
             This avatar is shown in the dashboard and navigation.
           </CardDescription>
         </CardHeader>
+
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div
             className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-lg font-medium"
             style={{
               backgroundColor: "var(--color-bg)",
               color: "var(--color-text)",
+              border: "1px solid var(--color-border)",
             }}
           >
             {avatarPreview ? (
-              // Simple img for blob URL/remote URL preview
               <img
                 src={avatarPreview}
                 alt={name || email || "Profile image"}
                 className="h-full w-full object-cover"
+                referrerPolicy="no-referrer"
               />
             ) : (
-              (name?.trim()?.[0]?.toUpperCase() ||
-                email?.trim()?.[0]?.toUpperCase() ||
-                "U")
+              initial
             )}
           </div>
 
           <div className="space-y-2 text-sm">
-            {/* Hidden native file input */}
             <input
               ref={fileInputRef}
               type="file"
@@ -227,10 +227,10 @@ export function ProfileSettingsClient() {
               onChange={handleAvatarChange}
             />
 
-            {/* Custom upload button: accent pill + dark plus chip */}
             <Button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              disabled={loading || saving || avatarSaving}
               className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium"
               style={{
                 backgroundColor: "var(--color-accent)",
@@ -243,33 +243,24 @@ export function ProfileSettingsClient() {
                 className="flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold"
                 style={{
                   backgroundColor: "var(--color-bg)",
-                  // Set your dark green via token on body/theme so this picks it up
                   color: "var(--color-text)",
                 }}
               >
                 +
               </span>
-              <span>
-                {avatarFileName ? "Change profile image" : "Upload profile image"}
-              </span>
+              <span>{avatarSaving ? "Uploading..." : avatarFileName ? "Change profile image" : "Upload profile image"}</span>
             </Button>
 
             {avatarFileName && (
-              <p
-                className="text-[11px]"
-                style={{ color: "var(--color-subtle)" }}
-              >
+              <p className="text-[11px]" style={{ color: "var(--color-subtle)" }}>
                 Selected: {avatarFileName}
               </p>
             )}
 
-            <p
-              className="text-xs"
-              style={{ color: "var(--color-subtle)" }}
-            >
-              Avatar uploads will be wired to the backend in a later step. For now
-              this image only lives in your current browser session.
+            <p className="text-xs" style={{ color: "var(--color-subtle)" }}>
+              Uploads are now persisted to your account and will appear across the dashboard.
             </p>
+
             <Button variant="outline" size="sm" type="button" disabled>
               Remove photo
             </Button>
@@ -287,12 +278,11 @@ export function ProfileSettingsClient() {
       >
         <CardHeader>
           <CardTitle className="text-base">Basic information</CardTitle>
-          <CardDescription
-            style={{ color: "var(--color-subtle)" }}
-          >
+          <CardDescription style={{ color: "var(--color-subtle)" }}>
             Update how you appear in Kompi products and communication.
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1">
@@ -307,23 +297,14 @@ export function ProfileSettingsClient() {
                 disabled={loading || saving}
               />
             </div>
+
             <div className="space-y-1">
               <label className="text-sm font-medium" htmlFor="email">
                 Email
               </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@kompi.app"
-                value={email}
-                disabled
-              />
-              <p
-                className="text-xs"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                Email is managed via your sign-in method. Changes will be
-                supported in a later update.
+              <Input id="email" type="email" placeholder="you@kompi.app" value={email} disabled />
+              <p className="text-xs" style={{ color: "var(--color-subtle)" }}>
+                Email is managed via your sign-in method. Changes will be supported in a later update.
               </p>
             </div>
           </div>
@@ -341,47 +322,26 @@ export function ProfileSettingsClient() {
                 onChange={(e) => setPhone(e.target.value)}
                 disabled={loading || saving}
               />
-              <p
-                className="text-xs"
-                style={{ color: "var(--color-subtle)" }}
-              >
-                Used only for important account notifications. We never share
-                this with third parties.
+              <p className="text-xs" style={{ color: "var(--color-subtle)" }}>
+                Used only for important account notifications. We never share this with third parties.
               </p>
             </div>
 
             <div className="space-y-1">
               <label className="text-sm font-medium">Time zone</label>
-              <Select
-                value={timeZone}
-                onValueChange={(v) => setTimeZone(v)}
-                disabled={loading || saving}
-              >
+              <Select value={timeZone} onValueChange={(v) => setTimeZone(v)} disabled={loading || saving}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your time zone" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Europe/London">
-                    Europe / London
-                  </SelectItem>
-                  <SelectItem value="Europe/Berlin">
-                    Europe / Berlin
-                  </SelectItem>
-                  <SelectItem value="America/New_York">
-                    America / New York
-                  </SelectItem>
-                  <SelectItem value="America/Los_Angeles">
-                    America / Los Angeles
-                  </SelectItem>
-                  <SelectItem value="Asia/Singapore">
-                    Asia / Singapore
-                  </SelectItem>
+                  <SelectItem value="Europe/London">Europe / London</SelectItem>
+                  <SelectItem value="Europe/Berlin">Europe / Berlin</SelectItem>
+                  <SelectItem value="America/New_York">America / New York</SelectItem>
+                  <SelectItem value="America/Los_Angeles">America / Los Angeles</SelectItem>
+                  <SelectItem value="Asia/Singapore">Asia / Singapore</SelectItem>
                 </SelectContent>
               </Select>
-              <p
-                className="text-xs"
-                style={{ color: "var(--color-subtle)" }}
-              >
+              <p className="text-xs" style={{ color: "var(--color-subtle)" }}>
                 We&apos;ll use this for analytics and reporting later.
               </p>
             </div>

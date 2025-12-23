@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 type KolorCard = {
@@ -97,11 +97,11 @@ export default function KolorKards() {
   const loopCards = useMemo(() => [...cards, ...cards], []);
 
   return (
-    <section className="w-full min-h-[80vh] py-16 bg-[var(--color-bg)]">
+    <section className="w-full min-h-[80vh] py-16 bg-(--color-bg)">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col items-center text-center gap-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--color-subtle)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-subtle)">
             What Kompi Does
           </p>
 
@@ -109,7 +109,7 @@ export default function KolorKards() {
             role="heading"
             aria-level={2}
             style={{ letterSpacing: "-0.04em" }}
-            className="font-semibold text-[color:var(--color-text)]
+            className="font-semibold text-(--color-text)
                        text-[32px] leading-[1.05]
                        sm:text-[44px]
                        md:text-[54px]"
@@ -119,7 +119,7 @@ export default function KolorKards() {
             <span> Does</span>
           </div>
 
-          <p className="max-w-2xl text-[15px] leading-[1.7] text-[color:var(--color-subtle)]">
+          <p className="max-w-2xl text-[15px] leading-[1.7] text-(--color-subtle)">
             Your essential toolkit for sharing, tracking, and growing online.
           </p>
         </div>
@@ -128,8 +128,8 @@ export default function KolorKards() {
       {/* Auto-scrolling track */}
       <div className="mt-10 relative overflow-x-hidden overflow-y-visible">
         {/* fade edges */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[var(--color-bg)] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[var(--color-bg)] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-linear-to-r from-(--color-bg) to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-linear-to-l from-(--color-bg) to-transparent" />
 
         {shouldReduceMotion ? (
           // manual scroll if reduced motion is enabled
@@ -161,7 +161,7 @@ export default function KolorKards() {
 function KolorCardItem({ card }: { card: KolorCard }) {
   return (
     <article
-      className="group flex min-w-[260px] max-w-sm flex-col rounded-[32px] px-6 py-6 sm:px-7 sm:py-7 
+      className="group flex min-w-[260px] max-w-sm flex-col rounded-4xl px-6 py-6 sm:px-7 sm:py-7 
                  shadow-[0_1px_0_rgba(15,15,15,0.08)] border border-black/5
                  transition-transform duration-300 ease-out hover:-translate-y-1"
       style={{ backgroundColor: card.bg }}

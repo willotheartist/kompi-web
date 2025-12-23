@@ -86,7 +86,7 @@ export default function KPromo() {
               delay: i * 0.25, // luxe stagger
             }}
             viewport={{ once: true }}
-            className="w-[260px] h-[520px] rounded-[32px] overflow-hidden shadow-none flex flex-col"
+            className="w-[260px] h-[520px] rounded-4xl overflow-hidden shadow-none flex flex-col"
             style={{
               background: card.color,
               color: card.text,

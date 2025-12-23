@@ -164,7 +164,7 @@ export default function KompiDoes() {
                     {/* Left image block */}
                     <div className="md:col-span-5">
                       <div className="relative overflow-hidden rounded-[1.75rem] bg-white/10 ring-1 ring-white/15">
-                        <div className="relative aspect-[4/3] w-full">
+                        <div className="relative aspect-4/3 w-full">
                           <Image
                             src={s.imageSrc}
                             alt={s.imageAlt}

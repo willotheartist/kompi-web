@@ -13,7 +13,8 @@ function isRedirectError(error: unknown): boolean {
 }
 
 // POST /api/tools/toggle
-// Body: { toolId: string; enabled?: boolean; workspaceId?: string }
+// Body: { toolId: string; enabled?: boolean }
+// NOTE: workspaceId is intentionally ignored in single-workspace mode.
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
     const body = (await req.json().catch(() => ({}))) as {
       toolId?: string;
       enabled?: boolean;
-      workspaceId?: string | null;
+      workspaceId?: string | null; // ignored
     };
 
     const toolId = (body.toolId ?? "").toString().trim();
@@ -29,7 +30,8 @@ export async function POST(req: Request) {
       return new NextResponse("toolId is required", { status: 400 });
     }
 
-    const workspace = await getActiveWorkspace(user.id, body.workspaceId ?? null);
+    // ✅ single-workspace mode: always resolve (and auto-create) the user's default workspace
+    const workspace = await getActiveWorkspace(user.id, null);
     if (!workspace) {
       return NextResponse.json(
         { error: "WORKSPACE_NOT_FOUND", message: "Workspace not found" },

@@ -164,7 +164,7 @@ function FaqRow({
           transition: { duration: 1.05, ease: easing, delay: index * 0.02 },
         },
       }}
-      className="rounded-[32px] md:rounded-[40px] border border-[#1e2330]"
+      className="rounded-4xl md:rounded-[40px] border border-[#1e2330]"
       style={{ backgroundColor: "#1e2330", color: "#e3f2ff" }}
     >
       <button

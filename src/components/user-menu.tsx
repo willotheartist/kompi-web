@@ -5,14 +5,17 @@ import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 
+// Feature flag for re-introducing multi-workspaces later.
+// Default: off.
+const MULTI_WORKSPACES_ENABLED =
+  process.env.NEXT_PUBLIC_MULTI_WORKSPACES === "true";
+
 export function UserMenu() {
   const { data, status } = useSession();
   const [open, setOpen] = useState(false);
 
   if (status === "loading") {
-    return (
-      <div className="h-8 w-24 rounded-full bg-neutral-100 animate-pulse" />
-    );
+    return <div className="h-8 w-24 rounded-full bg-neutral-100 animate-pulse" />;
   }
 
   if (!data?.user) {
@@ -31,7 +34,7 @@ export function UserMenu() {
     <div className="relative flex items-center gap-2">
       <div className="hidden sm:flex flex-col items-end leading-tight">
         <span className="text-[10px] text-neutral-500">Logged in as</span>
-        <span className="text-xs font-medium text-neutral-900 truncate max-w-[160px]">
+        <span className="text-xs font-medium text-neutral-900 truncate max-w-40">
           {email}
         </span>
       </div>
@@ -53,6 +56,7 @@ export function UserMenu() {
             <p className="font-medium truncate">{name}</p>
             <p className="text-[10px] text-neutral-500 truncate">{email}</p>
           </div>
+
           <div className="py-1">
             <Link
               href="/settings/profile"
@@ -61,6 +65,7 @@ export function UserMenu() {
             >
               Profile
             </Link>
+
             <Link
               href="/settings"
               className="block w-full px-3 py-1.5 text-left hover:bg-neutral-50"
@@ -68,6 +73,10 @@ export function UserMenu() {
             >
               Settings
             </Link>
+
+            {/* Workspace UI intentionally hidden unless flag enabled */}
+            {MULTI_WORKSPACES_ENABLED ? null : null}
+
             <Link
               href="/support"
               className="block w-full px-3 py-1.5 text-left hover:bg-neutral-50"
@@ -75,6 +84,7 @@ export function UserMenu() {
             >
               Support
             </Link>
+
             <button
               type="button"
               className="block w-full px-3 py-1.5 text-left hover:bg-neutral-50 text-red-600"

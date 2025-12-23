@@ -56,8 +56,8 @@ export function GoProBanner({ onGoProClick }: GoProBannerProps) {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-40 bg-[var(--color-surface)] 
-                 border-t border-[var(--color-border)] shadow-sm"
+      className="fixed inset-x-0 bottom-0 z-40 bg-(--color-surface) 
+                 border-t border-(--color-border) shadow-sm"
       style={{
         fontFamily:
           '"Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -65,10 +65,10 @@ export function GoProBanner({ onGoProClick }: GoProBannerProps) {
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 md:px-6">
         <div className="flex flex-col md:flex-row md:items-center md:gap-2">
-          <p className="text-xs font-medium tracking-wide text-[var(--color-subtle)] uppercase">
+          <p className="text-xs font-medium tracking-wide text-(--color-subtle) uppercase">
             Kompi Pro
           </p>
-          <p className="text-sm text-[var(--color-text)]">
+          <p className="text-sm text-(--color-text)">
             Unlock more tools to help your links{" "}
             <span
               className="italic"
@@ -88,8 +88,8 @@ export function GoProBanner({ onGoProClick }: GoProBannerProps) {
             type="button"
             onClick={handleClick}
             disabled={loading}
-            className="bg-[var(--color-accent)] text-[var(--color-text)] 
-                       hover:bg-[var(--color-accent)] rounded-full px-5 py-2 
+            className="bg-(--color-accent) text-(--color-text) 
+                       hover:bg-(--color-accent) rounded-full px-5 py-2 
                        text-sm font-medium shadow-sm"
           >
             {loading ? "Redirecting…" : "⚡ Go Pro"}
