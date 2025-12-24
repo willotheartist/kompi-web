@@ -81,8 +81,8 @@ export function qualityReport(page: BuiltPSEOPage): { pass: boolean; reasons: st
   if (!page.sections.some((s) => s.id === "decision-table")) reasons.push("missing-decision-table");
   if (!page.sections.some((s) => s.id === "checkpoint")) reasons.push("missing-checkpoint");
 
-  // ✅ Make internal linking threshold realistic for early clusters
-  if ((page.internalLinks || []).length < 6) reasons.push("internalLinks<6");
+  // ✅ Make internal linking threshold realistic early
+  if ((page.internalLinks || []).length < 2) reasons.push("internalLinks<2");
 
   // Bullets: slightly less strict (still forces structured, useful content)
   const faqs = sectionById(page, "faqs");

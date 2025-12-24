@@ -1,21 +1,33 @@
 // src/app/(dashboard)/kr-codes/[id]/loading.tsx
-export default function LoadingKrCodeAnalytics() {
-  return (
-    <main className="wf-dashboard-main w-full bg-(--color-bg)">
-      <section className="wf-dashboard-content mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10 pt-8">
-        <div className="flex items-center justify-between gap-3">
-          <div className="space-y-2">
-            <div className="h-7 w-56 rounded-xl bg-border/30" />
-            <div className="h-4 w-80 rounded-xl bg-border/25" />
-          </div>
-          <div className="h-8 w-20 rounded-full bg-border/25" />
-        </div>
+import { Skeleton } from "@/components/ui/skeleton";
 
-        <div className="space-y-4">
-          <div className="h-24 w-full rounded-2xl bg-border/20" />
-          <div className="h-40 w-full rounded-2xl bg-border/20" />
-        </div>
-      </section>
+export default function Loading() {
+  return (
+    <main className="wf-dashboard-main w-full">
+      <div className="bg-[#EEF2F7]">
+        <section className="wf-dashboard-content mx-auto w-full max-w-6xl px-3 pb-12 pt-8 md:px-6">
+          <div className="mb-6 space-y-2">
+            <Skeleton className="h-4 w-24 rounded-full" />
+            <Skeleton className="h-10 w-72 rounded-2xl" />
+            <Skeleton className="h-4 w-64 rounded-full" />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Skeleton className="h-44 w-full rounded-[26px]" />
+            <Skeleton className="h-44 w-full rounded-[26px]" />
+            <Skeleton className="h-44 w-full rounded-[26px]" />
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+            <Skeleton className="h-80 w-full rounded-[28px]" />
+            <Skeleton className="h-80 w-full rounded-[28px]" />
+          </div>
+
+          <div className="mt-6">
+            <Skeleton className="h-96 w-full rounded-[28px]" />
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

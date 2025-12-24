@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 23/12/2025, 14:33:31*
+*Generated on: 24/12/2025, 12:40:27*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 627 |
-| 📁 Total Folders | 284 |
+| 📄 Total Files | 629 |
+| 📁 Total Folders | 285 |
 | 🌳 Max Depth | 6 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,11 +26,11 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 350 files (55.8%)
-- 🔷 **.ts** (TypeScript files): 94 files (15.0%)
-- 🖼️ **.png** (PNG images): 85 files (13.6%)
+- ⚛️ **.tsx** (React TypeScript files): 351 files (55.8%)
+- 🔷 **.ts** (TypeScript files): 95 files (15.1%)
+- 🖼️ **.png** (PNG images): 85 files (13.5%)
 - 📄 **.sql** (Other files): 24 files (3.8%)
-- 🎨 **.css** (Stylesheets): 11 files (1.8%)
+- 🎨 **.css** (Stylesheets): 11 files (1.7%)
 - ⚙️ **.json** (JSON files): 8 files (1.3%)
 - 📄 **.mjs** (Other files): 7 files (1.1%)
 - 🎨 **.svg** (SVG images): 7 files (1.1%)
@@ -71,20 +71,20 @@
 
 ### By Category
 
-- **React**: 350 files (55.8%)
-- **Assets**: 95 files (15.2%)
-- **TypeScript**: 94 files (15.0%)
+- **React**: 351 files (55.8%)
+- **TypeScript**: 95 files (15.1%)
+- **Assets**: 95 files (15.1%)
 - **Other**: 61 files (9.7%)
-- **Config**: 11 files (1.8%)
-- **Styles**: 11 files (1.8%)
+- **Config**: 11 files (1.7%)
+- **Styles**: 11 files (1.7%)
 - **Docs**: 3 files (0.5%)
 - **DevOps**: 2 files (0.3%)
 
 ### 📁 Largest Directories
 
-- **root**: 627 files
-- **src**: 477 files
-- **src/app**: 249 files
+- **root**: 629 files
+- **src**: 479 files
+- **src/app**: 251 files
 - **src/components**: 187 files
 - **public**: 95 files
 
@@ -299,7 +299,8 @@ kompi-web/
 │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   └── 📂 your/
 │   │   │   │   │   ├── ⚛️ loading.tsx
-│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   │   └── ⚛️ your-client-actions.tsx
 │   │   │   ├── ⚛️ layout.tsx
 │   │   │   ├── 📂 links/
 │   │   │   │   ├── 📂 [id]/
@@ -394,7 +395,9 @@ kompi-web/
 │   │   │   │   │   ├── 🔷 route.ts
 │   │   │   │   │   ├── 📂 style/
 │   │   │   │   │   │   └── 🔷 route.ts
-│   │   │   │   │   └── 📂 svg/
+│   │   │   │   │   ├── 📂 svg/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   └── 📂 thumb.png/
 │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 links/

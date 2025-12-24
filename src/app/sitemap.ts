@@ -2,8 +2,9 @@
 import type { MetadataRoute } from "next";
 import { TOOL_DEFINITIONS } from "@/lib/tools-config";
 
-import { getAllPSEOPages, getSiblingPages } from "@/lib/pseo/dataset";
-import { buildPSEOPage } from "@/lib/pseo/page-builder";
+import { getAllPSEOPages } from "@/lib/pseo/dataset";
+
+export const dynamic = "force-dynamic";
 
 function parseISODateOrFallback(value: unknown, fallback: Date): Date {
   if (typeof value !== "string") return fallback;
@@ -69,15 +70,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  // PSEO blog pages (quality-gated)
+  // PSEO blog pages (dataset-controlled)
+  // IMPORTANT: Do NOT gate sitemap on quality heuristics — it prevents discovery.
   const inputs = getAllPSEOPages();
 
   for (const input of inputs) {
-    const siblings = getSiblingPages(input);
-    const built = buildPSEOPage(input, siblings);
-
-    // Exclude pages failing gate (noindex in metadata anyway)
-    if (!built.index) continue;
+    if (!input.index) continue;
 
     const pseoLastModified = parseISODateOrFallback(
       input.updatedAt ?? input.publishedAt,
