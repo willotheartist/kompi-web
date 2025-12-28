@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode, CSSProperties } from "react";
 import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import { motion } from "framer-motion";
@@ -83,7 +82,7 @@ export default function HomePage() {
         {/* NEW: Explicit definition block (Pillar 1: brand clarity for Google + humans) */}
         <section className="wf-section">
           <div className="wf-container">
-            <p className="text-sm text-[var(--color-subtle)] max-w-3xl">
+            <p className="text-sm text-(--color-subtle) max-w-3xl">
               <strong>Kompi</strong> is a web app for smart links, QR codes, and
               share pages. Create short links, build bio pages, generate QR
               experiences, and track what works with real-time analytics — all
@@ -95,6 +94,8 @@ export default function HomePage() {
         {/* KPromo – Clickable world carousel */}
         <KPromo />
         <InfoScreenOne />
+          {/* KBenefits – case-study style band */}
+        <KBenefits />
         <KolorKards />
         <Faces />
 
@@ -106,9 +107,6 @@ export default function HomePage() {
 
         {/* Personas – Who Kompi is for */}
         <PersonasSection />
-
-        {/* KBenefits – case-study style band */}
-        <KBenefits />
 
         {/* Analytics focus */}
         <AnalyticsSection />
@@ -134,46 +132,6 @@ export default function HomePage() {
 
 /* Layout primitives */
 
-function _Section({
-  children,
-  className,
-  style,
-}: {
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
-}) {
-  const cls = ["wf-section", className].filter(Boolean).join(" ");
-  return (
-    <section className={cls} style={style}>
-      {children}
-    </section>
-  );
-}
 
-function _Container({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  const cls = ["wf-container", className].filter(Boolean).join(" ");
-  return <div className={cls}>{children}</div>;
-}
 
-function _Heading({
-  as: Tag = "h1",
-  children,
-  align = "left",
-  className,
-}: {
-  as?: "h1" | "h2" | "h3";
-  children: ReactNode;
-  align?: "left" | "center";
-  className?: string;
-}) {
-  const alignClass = align === "center" ? "wf-heading-center" : "";
-  const cls = ["wf-heading", alignClass, className].filter(Boolean).join(" ");
-  return <Tag className={cls}>{children}</Tag>;
-}
+

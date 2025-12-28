@@ -1,6 +1,6 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 24/12/2025, 12:40:27*
+*Generated on: 26/12/2025, 18:56:28*
 
 ## 📋 Quick Overview
 
