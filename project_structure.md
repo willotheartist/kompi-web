@@ -1,14 +1,14 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 26/12/2025, 18:56:28*
+*Generated on: 04/02/2026, 10:32:58*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 629 |
-| 📁 Total Folders | 285 |
-| 🌳 Max Depth | 6 levels |
+| 📄 Total Files | 662 |
+| 📁 Total Folders | 307 |
+| 🌳 Max Depth | 7 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
 ## ⭐ Important Files
@@ -26,16 +26,16 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 351 files (55.8%)
-- 🔷 **.ts** (TypeScript files): 95 files (15.1%)
-- 🖼️ **.png** (PNG images): 85 files (13.5%)
-- 📄 **.sql** (Other files): 24 files (3.8%)
+- ⚛️ **.tsx** (React TypeScript files): 368 files (55.6%)
+- 🔷 **.ts** (TypeScript files): 109 files (16.5%)
+- 🖼️ **.png** (PNG images): 85 files (12.8%)
+- 📄 **.sql** (Other files): 25 files (3.8%)
 - 🎨 **.css** (Stylesheets): 11 files (1.7%)
-- ⚙️ **.json** (JSON files): 8 files (1.3%)
+- ⚙️ **.json** (JSON files): 8 files (1.2%)
 - 📄 **.mjs** (Other files): 7 files (1.1%)
 - 🎨 **.svg** (SVG images): 7 files (1.1%)
+- 📄 **.mp4** (Other files): 4 files (0.6%)
 - 📄 **.bak_lintfix** (Other files): 4 files (0.6%)
-- 📄 **.mp4** (Other files): 3 files (0.5%)
 - 📖 **.md** (Markdown files): 2 files (0.3%)
 - 🖼️ **.ico** (Icon files): 2 files (0.3%)
 - 🚫 **.gitignore** (Git ignore): 1 files (0.2%)
@@ -71,10 +71,10 @@
 
 ### By Category
 
-- **React**: 351 files (55.8%)
-- **TypeScript**: 95 files (15.1%)
-- **Assets**: 95 files (15.1%)
-- **Other**: 61 files (9.7%)
+- **React**: 368 files (55.6%)
+- **TypeScript**: 109 files (16.5%)
+- **Assets**: 95 files (14.4%)
+- **Other**: 63 files (9.5%)
 - **Config**: 11 files (1.7%)
 - **Styles**: 11 files (1.7%)
 - **Docs**: 3 files (0.5%)
@@ -82,11 +82,11 @@
 
 ### 📁 Largest Directories
 
-- **root**: 629 files
-- **src**: 479 files
-- **src/app**: 251 files
+- **root**: 662 files
+- **src**: 510 files
+- **src/app**: 275 files
 - **src/components**: 187 files
-- **public**: 95 files
+- **public**: 96 files
 
 ## 🌳 Directory Structure
 
@@ -156,6 +156,8 @@ kompi-web/
 │   │   │   └── 📄 migration.sql
 │   │   ├── 📂 20251221014443_add_click_geo_and_referrerhost/
 │   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20251228230557_add_builder_v0/
+│   │   │   └── 📄 migration.sql
 │   │   └── ⚙️ migration_lock.toml
 │   └── 📄 schema.prisma
 ├── 📖 project_structure.md
@@ -216,6 +218,7 @@ kompi-web/
 │   ├── 🖼️ kompisix.png
 │   ├── 🖼️ kompithree.png
 │   ├── 🖼️ kompitwo.png
+│   ├── 📄 kompivideo.mp4
 │   ├── 🎨 Kompiwhite.svg
 │   ├── 🖼️ kr-dashboard-card.png
 │   ├── 📂 kroptions/
@@ -288,6 +291,20 @@ kompi-web/
 │   │   │   ├── 📂 analytics/
 │   │   │   │   ├── ⚛️ loading.tsx
 │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 builder/
+│   │   │   │   ├── 📂 [siteId]/
+│   │   │   │   │   ├── 📂 edit/
+│   │   │   │   │   │   ├── ⚛️ BuilderEditorClient.tsx
+│   │   │   │   │   │   ├── ⚛️ error.tsx
+│   │   │   │   │   │   ├── ⚛️ loading.tsx
+│   │   │   │   │   │   ├── ⚛️ not-found.tsx
+│   │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   │   ├── ⚛️ loading.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── 📂 new/
+│   │   │   │   │   ├── ⚛️ BriefCaptureClient.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 kr-codes/
 │   │   │   │   ├── 📂 [id]/
 │   │   │   │   │   ├── 📂 edit/
@@ -310,8 +327,14 @@ kompi-web/
 │   │   │   │   ├── 📂 new/
 │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   └── ⚛️ page.tsx
-│   │   │   └── 📂 messages/
+│   │   │   ├── 📂 messages/
 │   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── 📂 preview/
+│   │   │   │   ├── 📂 [siteId]/
+│   │   │   │   │   ├── 📂 [pageKey]/
+│   │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   └── ⚛️ layout.tsx
 │   │   ├── 📂 (seo)/
 │   │   │   ├── 📂 barcode-generator/
 │   │   │   │   └── ⚛️ page.tsx
@@ -357,6 +380,22 @@ kompi-web/
 │   │   │   │   ├── 📂 links/
 │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 builder/
+│   │   │   │   ├── 📂 health/
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   ├── 📄 pages/
+│   │   │   │   │   └── 📂 [id]/
+│   │   │   │   │   │   └── 📂 reorder-sections/
+│   │   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   ├── 📂 sections/
+│   │   │   │   │   └── 📂 [id]/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   └── 📂 sites/
+│   │   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   │   ├── 📂 publish/
+│   │   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 contact-forms/
 │   │   │   │   ├── 📂 [id]/
 │   │   │   │   │   ├── 🔷 route.ts
@@ -681,6 +720,14 @@ kompi-web/
 │   │   │   ├── ⚛️ page.tsx
 │   │   │   └── ⚛️ ResetPasswordClient.tsx
 │   │   ├── 🔷 robots.ts
+│   │   ├── 📂 s/
+│   │   │   ├── 🔷 _loadSnapshot.ts
+│   │   │   ├── ⚛️ _publicRenderer.tsx
+│   │   │   ├── 📂 [slug]/
+│   │   │   │   ├── 📂 [pageKey]/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── ⚛️ layout.tsx
 │   │   ├── 📂 signin/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 signup/
@@ -967,6 +1014,14 @@ kompi-web/
 │   │   ├── 🔷 analytics-overview.ts
 │   │   ├── 🔷 auth.ts
 │   │   ├── 🔷 blog-route-index.ts
+│   │   ├── 📂 builder/
+│   │   │   ├── 🔷 authz.ts
+│   │   │   ├── 🔷 buildSnapshot.ts
+│   │   │   ├── 🔷 default-site.ts
+│   │   │   ├── 🔷 ensure-workspace.ts
+│   │   │   ├── 🔷 sectionSchemas.ts
+│   │   │   ├── 🔷 types.ts
+│   │   │   └── 🔷 validateSection.ts
 │   │   ├── 🔷 email.ts
 │   │   ├── 🔷 fonts.ts
 │   │   ├── 🔷 plan-limits.ts
