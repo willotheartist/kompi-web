@@ -20,6 +20,7 @@ import {
   QrCode,
   Link2,
   Tag,
+  MessageSquare,
 } from "lucide-react";
 import { FeaturesMegaMenu } from "@/components/features-megamenu";
 import { ToolsMegaMenu } from "@/components/tools-megamenu";
@@ -42,13 +43,11 @@ export function Navbar() {
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   useEffect(() => {
-    // Initialize the ignore window once on mount to avoid hydration issues
     if (ignoreScrollUntil.current === null) {
       ignoreScrollUntil.current = Date.now() + 150;
     }
 
     const handleScroll = () => {
-      // Ignore scroll for first ~150ms to prevent hydration hiding navbar
       if (
         ignoreScrollUntil.current !== null &&
         Date.now() < ignoreScrollUntil.current
@@ -56,7 +55,6 @@ export function Navbar() {
         return;
       }
 
-      // ✅ If any megamenu is open, don't auto-hide the navbar on scroll
       const menuOpen =
         document.documentElement.getAttribute("data-megamenu-open") === "1";
 
@@ -90,6 +88,7 @@ export function Navbar() {
   const activeColor = ACTIVE_BLUE_CLASS;
 
   const isPricing = pathname?.startsWith("/pricing");
+  const isChat = pathname?.startsWith("/chat") || pathname?.startsWith("/dashboard/chat");
 
   return (
     <>
@@ -110,7 +109,6 @@ export function Navbar() {
             "flex items-center justify-between gap-4 md:gap-6",
           ].join(" ")}
         >
-          {/* LOGO */}
           <Link href="/" className="wf-nav-logo">
             <Image
               src="/Kompi..svg"
@@ -122,11 +120,17 @@ export function Navbar() {
             />
           </Link>
 
-          {/* NAV (DESKTOP) */}
           <nav className="hidden md:flex items-center gap-6 lg:gap-8">
             <div className="wf-nav-link-wrap">
               <FeaturesMegaMenu />
             </div>
+
+            <Link
+              href="/chat"
+              className={[linkBase, isChat ? activeColor : inactiveColor].join(" ")}
+            >
+              Chat
+            </Link>
 
             <div className="wf-nav-link-wrap">
               <ToolsMegaMenu />
@@ -144,7 +148,6 @@ export function Navbar() {
             </Link>
           </nav>
 
-          {/* RIGHT CTAs (DESKTOP) */}
           <div className="hidden md:flex items-center gap-2.5">
             <Link
               href="/signin"
@@ -169,7 +172,6 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* MOBILE: hamburger */}
           <div className="md:hidden flex items-center gap-2">
             <button
               type="button"
@@ -241,7 +243,6 @@ function MobileNavSubLink({
   );
 }
 
-/** Linktree-style full-screen mobile menu */
 function MobileNav({
   open,
   onClose,
@@ -254,14 +255,12 @@ function MobileNav({
   const [expanded, setExpanded] = useState<MobileSectionId | null>(null);
 
   useEffect(() => {
-    // When opened, reset accordion state (defer to satisfy react-hooks/set-state-in-effect)
     if (!open) return;
     const raf = requestAnimationFrame(() => setExpanded(null));
     return () => cancelAnimationFrame(raf);
   }, [open]);
 
   useEffect(() => {
-    // Close ONLY when the route actually changes while the sheet is open.
     if (!open) {
       lastPathRef.current = pathname ?? "";
       return;
@@ -275,7 +274,6 @@ function MobileNav({
     lastPathRef.current = next;
   }, [pathname, open, onClose]);
 
-  // lock scroll when open
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -297,14 +295,12 @@ function MobileNav({
       ].join(" ")}
       aria-hidden={!open}
     >
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Sheet */}
       <div
         className={[
           "absolute inset-x-0 top-0",
@@ -312,7 +308,6 @@ function MobileNav({
           "bg-(--color-bg) text-(--color-text)",
         ].join(" ")}
       >
-        {/* Top bar */}
         <div className="mx-auto w-full max-w-2xl px-5 pt-5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -358,9 +353,20 @@ function MobileNav({
             </div>
           </div>
 
-          {/* Menu content */}
           <div className="mt-8">
-            {/* Features */}
+            <Link href="/chat" onClick={onClose} className="block" style={{ textDecoration: "none" }}>
+              <div
+                className="w-full flex items-center justify-between py-5 text-left"
+                style={{ borderBottom: "1px solid var(--color-border)" }}
+              >
+                <span className="flex items-center gap-3 text-[22px] font-semibold tracking-tight">
+                  <MessageSquare className="h-6 w-6 opacity-70" />
+                  Chat
+                </span>
+                <ChevronRight className="h-6 w-6 opacity-60" />
+              </div>
+            </Link>
+
             <MobileNavRow
               label="Features"
               onClick={() => toggle("features")}
@@ -379,6 +385,12 @@ function MobileNav({
                   href="/kompi-suite"
                   icon={Sparkles}
                   title="Kompi Suite"
+                  onClick={onClose}
+                />
+                <MobileNavSubLink
+                  href="/chat"
+                  icon={MessageSquare}
+                  title="Kompi Chat"
                   onClick={onClose}
                 />
                 <MobileNavSubLink
@@ -426,7 +438,6 @@ function MobileNav({
               </div>
             )}
 
-            {/* Tools */}
             <MobileNavRow
               label="Tools"
               onClick={() => toggle("tools")}
@@ -480,7 +491,6 @@ function MobileNav({
               </div>
             )}
 
-            {/* Customers */}
             <MobileNavRow
               label="Customers"
               onClick={() => toggle("customers")}
@@ -540,7 +550,6 @@ function MobileNav({
               </div>
             )}
 
-            {/* Pricing */}
             <Link href="/pricing" onClick={onClose} className="block" style={{ textDecoration: "none" }}>
               <div
                 className="w-full flex items-center justify-between py-5 text-left"
@@ -561,7 +570,6 @@ function MobileNav({
   );
 }
 
-/** Customers mega menu (persona-based, desktop only) */
 function CustomersMegaMenu() {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -630,7 +638,6 @@ function CustomersMegaMenu() {
     closeTimer.current = setTimeout(() => setOpen(false), 150);
   };
 
-  // Close on click-outside / Esc
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
@@ -650,7 +657,6 @@ function CustomersMegaMenu() {
     };
   }, [open]);
 
-  // Close whenever the route changes (avoid setState directly in effect)
   useEffect(() => {
     clearCloseTimer();
     const t = setTimeout(() => setOpen(false), 0);
@@ -664,7 +670,6 @@ function CustomersMegaMenu() {
       onMouseEnter={openNow}
       onMouseLeave={scheduleClose}
     >
-      {/* Trigger */}
       <button
         type="button"
         className={[
@@ -682,7 +687,6 @@ function CustomersMegaMenu() {
         />
       </button>
 
-      {/* Panel (animated; stays mounted) */}
       <div
         onMouseEnter={openNow}
         onMouseLeave={scheduleClose}
@@ -704,7 +708,6 @@ function CustomersMegaMenu() {
           `,
         ].join(" ")}
       >
-        {/* Customer list */}
         <div className="border-r border-(--color-border) bg-(--color-bg) p-4 md:p-5">
           <div className="flex items-center gap-2 px-1 pb-3">
             <span className="h-4 w-0.5 rounded-full bg-(--color-accent)" />
@@ -742,7 +745,6 @@ function CustomersMegaMenu() {
           </div>
         </div>
 
-        {/* Featured story / CTA */}
         <div className="p-4 md:p-5">
           <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface)">
             <div className="relative aspect-4/3 w-full">

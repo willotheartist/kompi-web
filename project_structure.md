@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 04/02/2026, 10:32:58*
+*Generated on: 11/03/2026, 17:22:06*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 662 |
-| 📁 Total Folders | 307 |
+| 📄 Total Files | 677 |
+| 📁 Total Folders | 325 |
 | 🌳 Max Depth | 7 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,66 +26,66 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 368 files (55.6%)
-- 🔷 **.ts** (TypeScript files): 109 files (16.5%)
-- 🖼️ **.png** (PNG images): 85 files (12.8%)
-- 📄 **.sql** (Other files): 25 files (3.8%)
-- 🎨 **.css** (Stylesheets): 11 files (1.7%)
+- ⚛️ **.tsx** (React TypeScript files): 376 files (55.5%)
+- 🔷 **.ts** (TypeScript files): 115 files (17.0%)
+- 🖼️ **.png** (PNG images): 85 files (12.6%)
+- 📄 **.sql** (Other files): 26 files (3.8%)
+- 🎨 **.css** (Stylesheets): 11 files (1.6%)
 - ⚙️ **.json** (JSON files): 8 files (1.2%)
-- 📄 **.mjs** (Other files): 7 files (1.1%)
-- 🎨 **.svg** (SVG images): 7 files (1.1%)
+- 📄 **.mjs** (Other files): 7 files (1.0%)
+- 🎨 **.svg** (SVG images): 7 files (1.0%)
 - 📄 **.mp4** (Other files): 4 files (0.6%)
 - 📄 **.bak_lintfix** (Other files): 4 files (0.6%)
 - 📖 **.md** (Markdown files): 2 files (0.3%)
 - 🖼️ **.ico** (Icon files): 2 files (0.3%)
-- 🚫 **.gitignore** (Git ignore): 1 files (0.2%)
-- 📄 **.** (Other files): 1 files (0.2%)
-- 🐳 **.dockerfile** (Docker files): 1 files (0.2%)
-- 📄 **.txt** (Text files): 1 files (0.2%)
-- ⚙️ **.yml** (YAML files): 1 files (0.2%)
-- 📄 **.patch** (Other files): 1 files (0.2%)
-- ⚙️ **.yaml** (YAML files): 1 files (0.2%)
-- ⚙️ **.toml** (TOML files): 1 files (0.2%)
-- 📄 **.prisma** (Other files): 1 files (0.2%)
-- 🖼️ **.jpg** (JPEG images): 1 files (0.2%)
-- 📄 **.py** (Other files): 1 files (0.2%)
-- 📄 **.sh** (Other files): 1 files (0.2%)
-- 📄 **.gz** (Other files): 1 files (0.2%)
-- 📄 **.bak_py** (Other files): 1 files (0.2%)
-- 📄 **.pre_pro_text** (Other files): 1 files (0.2%)
-- 📄 **.bak_sidebar_modern** (Other files): 1 files (0.2%)
-- 📄 **.bak_sidebar_typo2** (Other files): 1 files (0.2%)
-- 📄 **.bak_sidebar_typography** (Other files): 1 files (0.2%)
-- 📄 **.bak_variant** (Other files): 1 files (0.2%)
-- 📄 **.bak_contactfix** (Other files): 1 files (0.2%)
-- 📄 **.fix-onavatarclear** (Other files): 1 files (0.2%)
-- 📄 **.header-social** (Other files): 1 files (0.2%)
-- 📄 **.header-v2** (Other files): 1 files (0.2%)
-- 📄 **.pre-kcards-modal** (Other files): 1 files (0.2%)
-- 📄 **.fix_button_block** (Other files): 1 files (0.2%)
-- 📄 **.fix_limit_block** (Other files): 1 files (0.2%)
-- 📄 **.fix_links_copy2** (Other files): 1 files (0.2%)
-- 📄 **.pre_pro_copy** (Other files): 1 files (0.2%)
-- 📄 **.bak_lintfix2** (Other files): 1 files (0.2%)
-- 📄 **.tsbuildinfo** (Other files): 1 files (0.2%)
+- 🚫 **.gitignore** (Git ignore): 1 files (0.1%)
+- 📄 **.** (Other files): 1 files (0.1%)
+- 🐳 **.dockerfile** (Docker files): 1 files (0.1%)
+- 📄 **.txt** (Text files): 1 files (0.1%)
+- ⚙️ **.yml** (YAML files): 1 files (0.1%)
+- 📄 **.patch** (Other files): 1 files (0.1%)
+- ⚙️ **.yaml** (YAML files): 1 files (0.1%)
+- ⚙️ **.toml** (TOML files): 1 files (0.1%)
+- 📄 **.prisma** (Other files): 1 files (0.1%)
+- 🖼️ **.jpg** (JPEG images): 1 files (0.1%)
+- 📄 **.py** (Other files): 1 files (0.1%)
+- 📄 **.sh** (Other files): 1 files (0.1%)
+- 📄 **.gz** (Other files): 1 files (0.1%)
+- 📄 **.bak_py** (Other files): 1 files (0.1%)
+- 📄 **.pre_pro_text** (Other files): 1 files (0.1%)
+- 📄 **.bak_sidebar_modern** (Other files): 1 files (0.1%)
+- 📄 **.bak_sidebar_typo2** (Other files): 1 files (0.1%)
+- 📄 **.bak_sidebar_typography** (Other files): 1 files (0.1%)
+- 📄 **.bak_variant** (Other files): 1 files (0.1%)
+- 📄 **.bak_contactfix** (Other files): 1 files (0.1%)
+- 📄 **.fix-onavatarclear** (Other files): 1 files (0.1%)
+- 📄 **.header-social** (Other files): 1 files (0.1%)
+- 📄 **.header-v2** (Other files): 1 files (0.1%)
+- 📄 **.pre-kcards-modal** (Other files): 1 files (0.1%)
+- 📄 **.fix_button_block** (Other files): 1 files (0.1%)
+- 📄 **.fix_limit_block** (Other files): 1 files (0.1%)
+- 📄 **.fix_links_copy2** (Other files): 1 files (0.1%)
+- 📄 **.pre_pro_copy** (Other files): 1 files (0.1%)
+- 📄 **.bak_lintfix2** (Other files): 1 files (0.1%)
+- 📄 **.tsbuildinfo** (Other files): 1 files (0.1%)
 
 ### By Category
 
-- **React**: 368 files (55.6%)
-- **TypeScript**: 109 files (16.5%)
-- **Assets**: 95 files (14.4%)
-- **Other**: 63 files (9.5%)
-- **Config**: 11 files (1.7%)
-- **Styles**: 11 files (1.7%)
-- **Docs**: 3 files (0.5%)
+- **React**: 376 files (55.5%)
+- **TypeScript**: 115 files (17.0%)
+- **Assets**: 95 files (14.0%)
+- **Other**: 64 files (9.5%)
+- **Config**: 11 files (1.6%)
+- **Styles**: 11 files (1.6%)
+- **Docs**: 3 files (0.4%)
 - **DevOps**: 2 files (0.3%)
 
 ### 📁 Largest Directories
 
-- **root**: 662 files
-- **src**: 510 files
-- **src/app**: 275 files
-- **src/components**: 187 files
+- **root**: 677 files
+- **src**: 524 files
+- **src/app**: 288 files
+- **src/components**: 188 files
 - **public**: 96 files
 
 ## 🌳 Directory Structure
@@ -157,6 +157,8 @@ kompi-web/
 │   │   ├── 📂 20251221014443_add_click_geo_and_referrerhost/
 │   │   │   └── 📄 migration.sql
 │   │   ├── 📂 20251228230557_add_builder_v0/
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📂 20260311115021_add_kompi_chat_foundation/
 │   │   │   └── 📄 migration.sql
 │   │   └── ⚙️ migration_lock.toml
 │   └── 📄 schema.prisma
@@ -396,6 +398,18 @@ kompi-web/
 │   │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   │   └── 🔷 route.ts
 │   │   │   │   │   └── 🔷 route.ts
+│   │   │   ├── 📂 chat/
+│   │   │   │   ├── 🌐 public/
+│   │   │   │   │   └── 📂 [token]/
+│   │   │   │   │   │   ├── 📂 message/
+│   │   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   ├── 📂 sources/
+│   │   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   │   └── 🔷 route.ts
+│   │   │   │   └── 📂 widget/
+│   │   │   │   │   └── 🔷 route.ts
 │   │   │   ├── 📂 contact-forms/
 │   │   │   │   ├── 📂 [id]/
 │   │   │   │   │   ├── 🔷 route.ts
@@ -491,8 +505,17 @@ kompi-web/
 │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 qr-codes/
 │   │   │   │   └── ⚛️ page.tsx
+│   │   │   ├── 📂 url-link-shortener-tool/
+│   │   │   │   └── ⚛️ page.tsx
 │   │   │   └── 📂 utm/
 │   │   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 chat/
+│   │   │   ├── 📂 embed/
+│   │   │   │   └── 📂 [token]/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   └── ⚛️ page.tsx
+│   │   ├── 📂 chat-widget.js/
+│   │   │   └── 🔷 route.ts
 │   │   ├── 📂 claim/
 │   │   │   └── ⚛️ page.tsx
 │   │   ├── 📂 customers/
@@ -516,6 +539,14 @@ kompi-web/
 │   │   │   │   ├── ⚛️ page.tsx
 │   │   │   │   └── ⚛️ SmallBusinessCustomersClient.tsx
 │   │   ├── 📂 dashboard/
+│   │   │   ├── 📂 chat/
+│   │   │   │   ├── 📂 install/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   ├── 📂 sources/
+│   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   └── 📂 widget/
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   ├── 📂 contact-forms/
 │   │   │   │   ├── 📂 [id]/
 │   │   │   │   │   └── ⚛️ page.tsx
@@ -801,6 +832,8 @@ kompi-web/
 │   │   │   ├── ⚛️ ArticleTOC.tsx
 │   │   │   ├── 🎨 playbook.css
 │   │   │   └── ⚛️ Playbook.tsx
+│   │   ├── 📂 chat/
+│   │   │   └── ⚛️ chat-embed-client.tsx
 │   │   ├── 📂 claim/
 │   │   │   ├── ⚛️ claim-handle-hero.tsx
 │   │   │   └── ⚛️ claim-handle-inline.tsx

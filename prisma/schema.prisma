@@ -31,7 +31,7 @@ model User {
 }
 
 model Account {
-  id                String  @id @default(cuid())
+  id                String @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -43,7 +43,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -105,7 +105,8 @@ model Workspace {
   /// ---------------------------
   /// Kompi Builder (Sites)
   /// ---------------------------
-  builderSites          BuilderSite[]
+  builderSites BuilderSite[]
+  chatWidgets  ChatWidget[]
 
   @@index([ownerId])
   @@index([slug])
@@ -120,17 +121,17 @@ model ClickEvent {
   referrerHost String?
   userAgent    String?
 
-  utmCampaign  String?
-  utmContent   String?
-  utmMedium    String?
-  utmSource    String?
-  utmTerm      String?
+  utmCampaign String?
+  utmContent  String?
+  utmMedium   String?
+  utmSource   String?
+  utmTerm     String?
 
-  country      String?
-  region       String?
-  city         String?
+  country String?
+  region  String?
+  city    String?
 
-  link         Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
 
   @@index([linkId, createdAt])
   @@index([utmCampaign])
@@ -201,19 +202,19 @@ model Menu {
 }
 
 model Link {
-  id          String       @id @default(cuid())
-  code        String?      @unique
+  id          String    @id @default(cuid())
+  code        String?   @unique
   targetUrl   String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  isActive    Boolean      @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isActive    Boolean   @default(true)
   workspaceId String
-  clicks      Int          @default(0)
+  clicks      Int       @default(0)
   title       String?
   config      Json?
-  type        LinkType     @default(DEFAULT)
+  type        LinkType  @default(DEFAULT)
   events      ClickEvent[]
-  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([code])
@@ -435,23 +436,23 @@ model KCardMessage {
 /// Kompi Builder (V0)
 /// ---------------------------
 model BuilderSite {
-  id            String   @id @default(cuid())
-  workspaceId   String
-  name          String
-  slug          String   @unique
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  brand         Json?
-  navigation    Json?
-  globalCta     Json?
+  brand      Json?
+  navigation Json?
+  globalCta  Json?
 
-  isPublished   Boolean  @default(false)
-  publishedAt   DateTime?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
 
-  pages         BuilderPage[]
-  snapshots     BuilderPublishedSnapshot[]
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  pages      BuilderPage[]
+  snapshots  BuilderPublishedSnapshot[]
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([slug])
@@ -459,17 +460,17 @@ model BuilderSite {
 }
 
 model BuilderPage {
-  id        String           @id @default(cuid())
+  id        String          @id @default(cuid())
   siteId    String
   type      BuilderPageType
   title     String?
   path      String?
   order     Int
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
-  sections  BuilderSection[]
-  site      BuilderSite       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  sections BuilderSection[]
+  site     BuilderSite      @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@unique([siteId, type])
   @@index([siteId, order])
@@ -486,23 +487,146 @@ model BuilderSection {
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
-  page      BuilderPage        @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  page BuilderPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
 
   @@index([pageId, order])
   @@index([type])
 }
 
 model BuilderPublishedSnapshot {
-  id        String     @id @default(cuid())
+  id        String   @id @default(cuid())
   siteId    String
-  createdAt DateTime   @default(now())
+  createdAt DateTime @default(now())
   data      Json
-  version   Int        @default(1)
+  version   Int      @default(1)
 
-  site      BuilderSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site BuilderSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@index([siteId, createdAt])
   @@index([siteId, version])
+}
+
+/// ---------------------------
+/// Kompi Chat
+/// ---------------------------
+model ChatWidget {
+  id             String           @id @default(cuid())
+  workspaceId     String
+  name           String           @default("Kompi Chat")
+  siteName       String?
+  siteUrl        String?
+  publicToken    String           @unique
+  status         ChatWidgetStatus @default(DRAFT)
+  welcomeMessage String?
+  placeholder    String?
+  fallbackReply  String?
+  tone           String?
+  primaryColor   String?
+  accentColor    String?
+  allowedDomains String[]         @default([])
+  installVersion Int              @default(1)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  sources        ChatSource[]
+  conversations  ChatConversation[]
+  leads          ChatLead[]
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ChatSource {
+  id        String         @id @default(cuid())
+  widgetId  String
+  type      ChatSourceType @default(URL)
+  label     String?
+  value     String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  widget    ChatWidget     @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+
+  @@index([widgetId])
+  @@index([type])
+}
+
+model ChatConversation {
+  id           String                 @id @default(cuid())
+  widgetId     String
+  visitorToken String
+  visitorName  String?
+  visitorEmail String?
+  visitorPhone String?
+  leadCaptured Boolean                @default(false)
+  domain       String?
+  userAgent    String?
+  status       ChatConversationStatus @default(OPEN)
+  meta         Json?
+  startedAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  widget       ChatWidget             @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  messages     ChatMessage[]
+  leads        ChatLead[]
+
+  @@unique([widgetId, visitorToken])
+  @@index([widgetId, updatedAt])
+  @@index([visitorEmail])
+  @@index([visitorPhone])
+}
+
+model ChatMessage {
+  id             String          @id @default(cuid())
+  conversationId String
+  role           ChatMessageRole
+  content        String
+  meta           Json?
+  createdAt      DateTime        @default(now())
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model ChatLead {
+  id             String            @id @default(cuid())
+  widgetId       String
+  conversationId String?
+  name           String?
+  email          String?
+  phone          String?
+  message        String?
+  source         String?
+  createdAt      DateTime          @default(now())
+  widget         ChatWidget        @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  conversation   ChatConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([widgetId, createdAt])
+  @@index([conversationId])
+  @@index([email])
+}
+
+enum ChatWidgetStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+}
+
+enum ChatSourceType {
+  URL
+  TEXT
+  FAQ
+}
+
+enum ChatConversationStatus {
+  OPEN
+  CLOSED
+  LEAD
+}
+
+enum ChatMessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
 }
 
 enum BuilderPageType {
