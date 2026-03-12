@@ -4,7 +4,6 @@ import {
   Plus,
   Search,
   ExternalLink,
-  MessageSquare,
   Database,
   Bot,
   Code2,
@@ -13,6 +12,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { KompiChatPreview } from "@/components/chat/KompiChatPreview";
 
 export const dynamic = "force-dynamic";
 
@@ -170,6 +170,7 @@ export default async function DashboardChatPage() {
             lastMessage: conversation.messages[0]?.content || "No messages yet.",
             messages: messageCount,
             createdAt: conversation.updatedAt,
+            leadCaptured: conversation.leadCaptured,
           };
         })
       )
@@ -431,7 +432,7 @@ export default async function DashboardChatPage() {
                     return (
                       <Link
                         key={conversation.id}
-                        href="/dashboard/chat/conversations"
+                        href={`/dashboard/chat/conversations/${conversation.id}`}
                         className="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-[14px] border border-[#ededf0] bg-[#fafafb] p-3 transition hover:border-[#e4e4e7] hover:bg-white"
                       >
                         <div
@@ -442,8 +443,15 @@ export default async function DashboardChatPage() {
                         </div>
 
                         <div className="min-w-0">
-                          <div className="text-[12px] font-semibold leading-tight text-[#111]">
-                            {conversation.visitorName}
+                          <div className="flex items-center gap-2">
+                            <div className="text-[12px] font-semibold leading-tight text-[#111]">
+                              {conversation.visitorName}
+                            </div>
+                            {conversation.leadCaptured ? (
+                              <span className="rounded-full bg-[#EEF8F1] px-2 py-0.5 text-[9px] font-semibold text-[#2D8A52]">
+                                Lead
+                              </span>
+                            ) : null}
                           </div>
                           <div className="truncate text-[11px] text-[#76767e]">
                             {conversation.lastMessage}
@@ -482,34 +490,20 @@ export default async function DashboardChatPage() {
                   </div>
                 </div>
 
-                <div className="rounded-[20px] bg-[#0e0e10] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
-                  <div className="mb-3 flex items-center justify-between border-b border-white/10 px-1 pb-3">
-                    <div className="text-[12px] font-semibold text-white">
-                      {widget?.name || "Kompi Chat"}
-                    </div>
-                    <div className="h-2 w-2 rounded-full bg-[#4ade80]" />
-                  </div>
-
-                  <div className="mb-2 max-w-[85%] rounded-[16px] rounded-bl-[6px] bg-white/10 px-3.5 py-2.5 text-[12px] leading-[1.55] text-white/80">
-                    {widget?.welcomeMessage || "Hi — how can I help you today?"}
-                  </div>
-
-                  <div
-                    className="mb-2 ml-auto max-w-[85%] rounded-[16px] rounded-br-[6px] px-3.5 py-2.5 text-[12px] font-medium leading-[1.55] text-[#111]"
-                    style={{ background: widget?.primaryColor || "#C4C8FF" }}
-                  >
-                    What services do you offer?
-                  </div>
-
-                  <div className="mb-2 max-w-[85%] rounded-[16px] rounded-bl-[6px] bg-white/10 px-3.5 py-2.5 text-[12px] leading-[1.55] text-white/80">
-                    {widget?.fallbackReply ||
-                      "I can help with pricing, services, timelines, or guide you to the right next step."}
-                  </div>
-
-                  <div className="mt-1 rounded-[12px] border border-white/10 bg-white/5 px-3 py-2.5 text-[11px] text-white/35">
-                    {widget?.placeholder || "Ask a question…"}
-                  </div>
-                </div>
+                <KompiChatPreview
+                  widgetName={widget?.name || "Kompi Chat"}
+                  siteName={widget?.siteName || "Your site"}
+                  primaryColor={widget?.primaryColor || "#C4C8FF"}
+                  accentColor={widget?.accentColor || "#111111"}
+                  welcomeMessage={widget?.welcomeMessage || "Hi — how can I help you today?"}
+                  fallbackReply={
+                    widget?.fallbackReply ||
+                    "I can help with pricing, services, timelines, or guide you to the right next step."
+                  }
+                  placeholder={widget?.placeholder || "Ask a question…"}
+                  status={(widget?.status as "ACTIVE" | "DRAFT" | "PAUSED") ?? "DRAFT"}
+                  showDeviceFrame
+                />
               </KCardInner>
             </KCard>
           </div>

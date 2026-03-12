@@ -1,13 +1,13 @@
 # 📁 kompi-web - Project Structure
 
-*Generated on: 11/03/2026, 17:22:06*
+*Generated on: 12/03/2026, 13:20:12*
 
 ## 📋 Quick Overview
 
 | Metric | Value |
 |--------|-------|
-| 📄 Total Files | 677 |
-| 📁 Total Folders | 325 |
+| 📄 Total Files | 682 |
+| 📁 Total Folders | 328 |
 | 🌳 Max Depth | 7 levels |
 | 🛠️ Tech Stack | React, Next.js, TypeScript, CSS, Node.js, Docker |
 
@@ -26,9 +26,9 @@
 
 ### By File Type
 
-- ⚛️ **.tsx** (React TypeScript files): 376 files (55.5%)
-- 🔷 **.ts** (TypeScript files): 115 files (17.0%)
-- 🖼️ **.png** (PNG images): 85 files (12.6%)
+- ⚛️ **.tsx** (React TypeScript files): 381 files (55.9%)
+- 🔷 **.ts** (TypeScript files): 115 files (16.9%)
+- 🖼️ **.png** (PNG images): 85 files (12.5%)
 - 📄 **.sql** (Other files): 26 files (3.8%)
 - 🎨 **.css** (Stylesheets): 11 files (1.6%)
 - ⚙️ **.json** (JSON files): 8 files (1.2%)
@@ -71,10 +71,10 @@
 
 ### By Category
 
-- **React**: 376 files (55.5%)
-- **TypeScript**: 115 files (17.0%)
-- **Assets**: 95 files (14.0%)
-- **Other**: 64 files (9.5%)
+- **React**: 381 files (55.9%)
+- **TypeScript**: 115 files (16.9%)
+- **Assets**: 95 files (13.9%)
+- **Other**: 64 files (9.4%)
 - **Config**: 11 files (1.6%)
 - **Styles**: 11 files (1.6%)
 - **Docs**: 3 files (0.4%)
@@ -82,10 +82,10 @@
 
 ### 📁 Largest Directories
 
-- **root**: 677 files
-- **src**: 524 files
-- **src/app**: 288 files
-- **src/components**: 188 files
+- **root**: 682 files
+- **src**: 529 files
+- **src/app**: 291 files
+- **src/components**: 190 files
 - **public**: 96 files
 
 ## 🌳 Directory Structure
@@ -540,9 +540,15 @@ kompi-web/
 │   │   │   │   └── ⚛️ SmallBusinessCustomersClient.tsx
 │   │   ├── 📂 dashboard/
 │   │   │   ├── 📂 chat/
+│   │   │   │   ├── 📂 conversations/
+│   │   │   │   │   ├── 📂 [id]/
+│   │   │   │   │   │   └── ⚛️ page.tsx
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 install/
 │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── ⚛️ page.tsx
+│   │   │   │   ├── 📂 settings/
+│   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   ├── 📂 sources/
 │   │   │   │   │   └── ⚛️ page.tsx
 │   │   │   │   └── 📂 widget/
@@ -833,7 +839,9 @@ kompi-web/
 │   │   │   ├── 🎨 playbook.css
 │   │   │   └── ⚛️ Playbook.tsx
 │   │   ├── 📂 chat/
-│   │   │   └── ⚛️ chat-embed-client.tsx
+│   │   │   ├── ⚛️ chat-embed-client.tsx
+│   │   │   ├── ⚛️ KompiChatAdminShell.tsx
+│   │   │   └── ⚛️ KompiChatPreview.tsx
 │   │   ├── 📂 claim/
 │   │   │   ├── ⚛️ claim-handle-hero.tsx
 │   │   │   └── ⚛️ claim-handle-inline.tsx

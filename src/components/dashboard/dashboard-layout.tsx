@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,11 +17,7 @@ import {
   QrCode,
   Rocket,
   Globe2,
-  Wrench,
   IdCard,
-  UtensilsCrossed,
-  Hammer,
-  KeyRound,
   MessageSquare,
   Bot,
   Database,
@@ -29,7 +25,6 @@ import {
   MessagesSquare,
   Sparkles,
 } from "lucide-react";
-import { getToolById } from "@/lib/tools-config";
 import { AccountMenu } from "@/components/dashboard/account-menu";
 
 type NavChild = {
@@ -50,7 +45,7 @@ type NavGroup = {
   items: NavItem[];
 };
 
-const baseNavGroups: NavGroup[] = [
+const navGroups: NavGroup[] = [
   {
     section: "My Kompi",
     items: [
@@ -77,11 +72,6 @@ const baseNavGroups: NavGroup[] = [
         label: "K-Cards",
         icon: IdCard,
         children: [{ href: "/messages", label: "Messages" }],
-      },
-      {
-        href: "/dashboard/qr-menus",
-        label: "QR Menus",
-        icon: UtensilsCrossed,
       },
       {
         href: "/kr-codes",
@@ -114,36 +104,6 @@ const baseNavGroups: NavGroup[] = [
     ],
   },
 ];
-
-type ToolId = Parameters<typeof getToolById>[0];
-
-const toolsCache = new Map<
-  string,
-  { ts: number; value: ToolId[]; inflight?: Promise<ToolId[]> }
->();
-
-const CACHE_TTL_MS = 60_000;
-const WORKSPACE_KEY = "default";
-
-function parseToolIds(raw: string | null): ToolId[] {
-  if (!raw) return [];
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    const strings = parsed.filter((x): x is string => typeof x === "string");
-    return strings as ToolId[];
-  } catch {
-    return [];
-  }
-}
-
-function parseToolIdsFromApi(json: unknown): ToolId[] {
-  if (!json || typeof json !== "object") return [];
-  const toolIds = (json as Record<string, unknown>).toolIds;
-  if (!Array.isArray(toolIds)) return [];
-  const strings = toolIds.filter((x): x is string => typeof x === "string");
-  return strings as ToolId[];
-}
 
 function AnimatedIcon({
   Icon,
@@ -225,135 +185,6 @@ function SidebarInner({
   setCollapsed: (v: boolean) => void;
 }) {
   const pathname = usePathname() ?? "/";
-  const storageKey = `kompi:enabledTools:${WORKSPACE_KEY}`;
-  const [toolIds, setToolIds] = useState<ToolId[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const t = window.setTimeout(() => {
-      if (cancelled) return;
-      try {
-        setToolIds(parseToolIds(localStorage.getItem(storageKey)));
-      } catch {
-        setToolIds([]);
-      }
-    }, 0);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(t);
-    };
-  }, [storageKey]);
-
-  useEffect(() => {
-    const onToolsUpdated = () => {
-      setToolIds(() => {
-        try {
-          return parseToolIds(localStorage.getItem(storageKey));
-        } catch {
-          return [];
-        }
-      });
-    };
-
-    window.addEventListener("kompi:tools-updated", onToolsUpdated);
-    return () => {
-      window.removeEventListener("kompi:tools-updated", onToolsUpdated);
-    };
-  }, [storageKey]);
-
-  const toolsUrl = "/api/tools";
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadTools() {
-      try {
-        const now = Date.now();
-        const cached = toolsCache.get(WORKSPACE_KEY);
-
-        if (cached && now - cached.ts < CACHE_TTL_MS) {
-          setToolIds(cached.value);
-          return;
-        }
-
-        if (cached?.inflight) {
-          const next = await cached.inflight;
-          if (!cancelled) setToolIds(next);
-          return;
-        }
-
-        const inflight: Promise<ToolId[]> = fetch(toolsUrl)
-          .then(async (res) => {
-            if (!res.ok) return [];
-            const json: unknown = await res.json();
-            return parseToolIdsFromApi(json);
-          })
-          .catch(() => []);
-
-        toolsCache.set(WORKSPACE_KEY, {
-          ts: now,
-          value: cached?.value ?? [],
-          inflight,
-        });
-
-        const next = await inflight;
-        if (cancelled) return;
-
-        setToolIds((prev) => {
-          const same =
-            prev.length === next.length && prev.every((v, i) => v === next[i]);
-          return same ? prev : next;
-        });
-
-        toolsCache.set(WORKSPACE_KEY, { ts: Date.now(), value: next });
-
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(next));
-        } catch {
-          // ignore
-        }
-      } catch (error) {
-        console.error("TOOLS_NAV_LOAD_ERROR", error);
-      }
-    }
-
-    loadTools();
-    return () => {
-      cancelled = true;
-    };
-  }, [storageKey]);
-
-  const toolsItems: NavItem[] = useMemo(() => {
-    return [
-      {
-        href: "/dashboard/tools",
-        label: "Tools",
-        icon: Hammer,
-      },
-      ...toolIds
-        .map((id) => getToolById(id))
-        .filter((t): t is NonNullable<typeof t> => Boolean(t))
-        .map((tool) => {
-          const icon = tool.id === "password-generator" ? KeyRound : Wrench;
-          return {
-            href: tool.dashboardPath,
-            label: tool.name,
-            icon,
-          };
-        }),
-    ];
-  }, [toolIds]);
-
-  const navGroups: NavGroup[] = useMemo(() => {
-    return [
-      baseNavGroups[0],
-      baseNavGroups[1],
-      { section: "Tools", items: toolsItems },
-      baseNavGroups[2],
-    ];
-  }, [toolsItems]);
 
   return (
     <motion.aside
@@ -514,7 +345,7 @@ function SidebarInner({
                   Pro workspace
                 </div>
                 <div className="text-[10px] uppercase tracking-[0.16em] text-[#85858f]">
-                  Premium tools enabled
+                  Core workspace active
                 </div>
               </div>
               <div className="rounded-full bg-[#C4C8FF] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#111]">

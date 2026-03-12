@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Bot,
   Sparkles,
@@ -9,8 +10,17 @@ import {
   Copy,
   RefreshCw,
   Plus,
+  CheckCircle2,
+  Orbit,
+  ShieldCheck,
+  ExternalLink,
+  Radio,
+  MessageSquareText,
+  PaintBucket,
+  LockKeyhole,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { KompiChatPreview } from "@/components/chat/KompiChatPreview";
 
 type WidgetPayload = {
   id?: string;
@@ -54,7 +64,7 @@ function KCard({
 }) {
   return (
     <div
-      className={`overflow-hidden rounded-[22px] border border-[#e4e4e7] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.045)] ${className}`}
+      className={`overflow-hidden rounded-[24px] border border-[#e4e4e7] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.04)] ${className}`}
     >
       {children}
     </div>
@@ -68,7 +78,98 @@ function KCardInner({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={`p-4 ${className}`}>{children}</div>;
+  return <div className={`p-5 ${className}`}>{children}</div>;
+}
+
+function SectionHeader({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="mb-5 flex items-start gap-3">
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#EEF1FF] text-[#5568A4]">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div>
+        <div className="text-[14px] font-bold tracking-[-0.02em] text-[#111]">
+          {title}
+        </div>
+        <div className="mt-0.5 text-[11px] leading-5 text-[#76767e]">
+          {description}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-medium text-[#111]">{label}</label>
+      {children}
+      {hint ? <p className="mt-2 text-[11px] leading-5 text-[#7a7a84]">{hint}</p> : null}
+    </div>
+  );
+}
+
+function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      className={`h-11 w-full rounded-[16px] border border-[#e4e4e7] bg-[#FBFBFD] px-3 text-sm text-[#111] outline-none transition focus:border-[#C4C8FF] focus:ring-4 focus:ring-[#C4C8FF]/20 ${
+        props.className || ""
+      }`}
+    />
+  );
+}
+
+function StatusPill({ status }: { status: WidgetPayload["status"] }) {
+  const map = {
+    ACTIVE: "bg-[#EEF8F1] text-[#2D8A52]",
+    DRAFT: "bg-[#F3F4F6] text-[#6B7280]",
+    PAUSED: "bg-[#FFF4DD] text-[#A27017]",
+  } as const;
+
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold ${map[status]}`}>
+      {status}
+    </span>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+}) {
+  return (
+    <div className="rounded-[18px] border border-[#e4e4e7] bg-[#fafafb] p-4">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8a8a94]">
+        {label}
+      </div>
+      <div className="mt-2 text-[22px] font-bold tracking-[-0.04em] text-[#111]">
+        {value}
+      </div>
+      {sub ? <div className="mt-1 text-[11px] text-[#7a7a84]">{sub}</div> : null}
+    </div>
+  );
 }
 
 export default function DashboardChatWidgetPage() {
@@ -172,23 +273,54 @@ export default function DashboardChatWidgetPage() {
     }
   }
 
+  const readinessChecks = useMemo(
+    () => [
+      {
+        ok: form.status === "ACTIVE",
+        label: "Widget is active",
+      },
+      {
+        ok: form.allowedDomains.length > 0,
+        label: "Allowed domains added",
+      },
+      {
+        ok: Boolean((form.siteName || "").trim()),
+        label: "Site identity filled in",
+      },
+      {
+        ok: Boolean((form.welcomeMessage || "").trim()),
+        label: "Welcome message ready",
+      },
+    ],
+    [form]
+  );
+
+  const readiness = readinessChecks.filter((item) => item.ok).length;
+  const readinessPct = Math.round((readiness / readinessChecks.length) * 100);
+
   const subtitle = useMemo(() => {
     const parts = [
-      form.siteName || "Your site",
+      form.siteName || "No site linked yet",
       form.status.toLowerCase(),
       form.allowedDomains.length
         ? `${form.allowedDomains.length} domain${form.allowedDomains.length > 1 ? "s" : ""}`
-        : null,
+        : "no domain lock",
     ].filter(Boolean);
 
     return parts.join(" · ");
   }, [form]);
 
+  const tokenPreview = form.publicToken
+    ? `${form.publicToken.slice(0, 12)}…${form.publicToken.slice(-6)}`
+    : "Generated on first save";
+
+  const cleanSiteUrl = (form.siteUrl || "").trim();
+
   return (
     <DashboardLayout
       pageEyebrow="Kompi Chat"
       pageTitle="Widget"
-      pageDescription="Control the widget identity, tone, colors, and allowed domains from the main dashboard."
+      pageDescription="Control identity, tone, colours, and domain rules from one clean setup panel."
     >
       <div className="space-y-[14px]">
         <div className="flex flex-wrap items-center gap-2">
@@ -201,13 +333,21 @@ export default function DashboardChatWidgetPage() {
             Refresh
           </button>
 
-          <a
+          <Link
             href="/dashboard/chat/sources"
             className="inline-flex h-10 items-center gap-2 rounded-full border border-black/8 bg-white px-4 text-[13px] font-semibold text-[#111] transition hover:bg-[#f8f8fb]"
           >
             <Plus className="h-4 w-4" />
             Add source
-          </a>
+          </Link>
+
+          <Link
+            href="/dashboard/chat/install"
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-black/8 bg-white px-4 text-[13px] font-semibold text-[#111] transition hover:bg-[#f8f8fb]"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Open install
+          </Link>
         </div>
 
         {loading ? (
@@ -217,23 +357,74 @@ export default function DashboardChatWidgetPage() {
             </KCardInner>
           </KCard>
         ) : (
-          <form onSubmit={handleSubmit} className="grid gap-[14px] xl:grid-cols-[1.1fr_380px]">
+          <form
+            onSubmit={handleSubmit}
+            className="grid gap-[14px] xl:grid-cols-[minmax(0,1fr)_400px]"
+          >
             <div className="grid gap-[14px]">
               <KCard>
                 <KCardInner>
-                  <div className="mb-5 flex items-center gap-3">
-                    <div className="grid h-10 w-10 place-items-center rounded-full bg-[#EEF1FF] text-[#5568A4]">
-                      <Bot className="h-4 w-4" />
+                  <div className="flex flex-col gap-5">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8a8a94]">
+                          Widget studio
+                        </div>
+                        <div className="mt-1 text-[24px] font-semibold tracking-[-0.05em] text-[#111]">
+                          {form.name || "Kompi Chat"}
+                        </div>
+                        <div className="mt-1 text-[12px] text-[#6f6f78]">{subtitle}</div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <StatusPill status={form.status} />
+                        <button
+                          type="submit"
+                          disabled={saving}
+                          className="inline-flex h-10 items-center rounded-[12px] bg-[#111] px-4 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                        >
+                          {saving ? "Saving…" : "Save"}
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-[14px] font-bold tracking-[-0.02em] text-[#111]">
-                        Core identity
-                      </div>
-                      <div className="text-[11px] text-[#76767e]">
-                        Name, site, status, and visual basics.
-                      </div>
+
+                    <div className="grid gap-3 sm:grid-cols-4">
+                      <MiniStat
+                        label="Readiness"
+                        value={`${readiness}/4`}
+                        sub={`${readinessPct}% launch ready`}
+                      />
+                      <MiniStat
+                        label="Domains"
+                        value={String(form.allowedDomains.length)}
+                        sub={
+                          form.allowedDomains.length
+                            ? "Scoped install"
+                            : "Open / unsecured"
+                        }
+                      />
+                      <MiniStat
+                        label="Tone"
+                        value={form.tone ? form.tone[0].toUpperCase() + form.tone.slice(1) : "—"}
+                        sub="Current reply style"
+                      />
+                      <MiniStat
+                        label="Token"
+                        value={form.publicToken ? "Live" : "Pending"}
+                        sub={form.publicToken ? "Public token ready" : "Save to generate"}
+                      />
                     </div>
                   </div>
+                </KCardInner>
+              </KCard>
+
+              <KCard>
+                <KCardInner>
+                  <SectionHeader
+                    icon={Bot}
+                    title="Core identity"
+                    description="Define what the visitor sees, what site this belongs to, and whether it is actually live."
+                  />
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Widget name">
@@ -244,7 +435,7 @@ export default function DashboardChatWidgetPage() {
                       />
                     </Field>
 
-                    <Field label="Status">
+                    <Field label="Status" hint="Only Active widgets are publicly available.">
                       <select
                         value={form.status}
                         onChange={(e) =>
@@ -282,22 +473,17 @@ export default function DashboardChatWidgetPage() {
 
               <KCard>
                 <KCardInner>
-                  <div className="mb-5 flex items-center gap-3">
-                    <div className="grid h-10 w-10 place-items-center rounded-full bg-[#EEF1FF] text-[#5568A4]">
-                      <Sparkles className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-bold tracking-[-0.02em] text-[#111]">
-                        Assistant behaviour
-                      </div>
-                      <div className="text-[11px] text-[#76767e]">
-                        How it sounds and replies.
-                      </div>
-                    </div>
-                  </div>
+                  <SectionHeader
+                    icon={MessageSquareText}
+                    title="Assistant behaviour"
+                    description="Tune first impression, visitor guidance, and fallback quality."
+                  />
 
                   <div className="grid gap-4">
-                    <Field label="Welcome message">
+                    <Field
+                      label="Welcome message"
+                      hint="First assistant message shown inside the widget."
+                    >
                       <textarea
                         rows={3}
                         value={form.welcomeMessage ?? ""}
@@ -316,7 +502,10 @@ export default function DashboardChatWidgetPage() {
                       />
                     </Field>
 
-                    <Field label="Fallback reply">
+                    <Field
+                      label="Fallback reply"
+                      hint="Used when the assistant cannot confidently match the question to your sources."
+                    >
                       <textarea
                         rows={4}
                         value={form.fallbackReply ?? ""}
@@ -356,22 +545,14 @@ export default function DashboardChatWidgetPage() {
 
               <KCard>
                 <KCardInner>
-                  <div className="mb-5 flex items-center gap-3">
-                    <div className="grid h-10 w-10 place-items-center rounded-full bg-[#EEF1FF] text-[#5568A4]">
-                      <Palette className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-bold tracking-[-0.02em] text-[#111]">
-                        Color system
-                      </div>
-                      <div className="text-[11px] text-[#76767e]">
-                        The look and feel of the widget itself.
-                      </div>
-                    </div>
-                  </div>
+                  <SectionHeader
+                    icon={PaintBucket}
+                    title="Colour system"
+                    description="Keep the widget aligned to the client brand without overcomplicating it."
+                  />
 
                   <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Primary color">
+                    <Field label="Primary colour">
                       <div className="flex gap-2">
                         <input
                           type="color"
@@ -391,7 +572,7 @@ export default function DashboardChatWidgetPage() {
                       </div>
                     </Field>
 
-                    <Field label="Text / accent color">
+                    <Field label="Text / accent colour">
                       <div className="flex gap-2">
                         <input
                           type="color"
@@ -416,35 +597,45 @@ export default function DashboardChatWidgetPage() {
 
               <KCard>
                 <KCardInner>
-                  <div className="mb-5 flex items-center gap-3">
-                    <div className="grid h-10 w-10 place-items-center rounded-full bg-[#EEF1FF] text-[#5568A4]">
-                      <Globe className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-bold tracking-[-0.02em] text-[#111]">
-                        Allowed domains
-                      </div>
-                      <div className="text-[11px] text-[#76767e]">
-                        Comma-separated hostnames where the widget can run.
-                      </div>
-                    </div>
-                  </div>
-
-                  <textarea
-                    rows={3}
-                    value={form.allowedDomains.join(", ")}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        allowedDomains: e.target.value
-                          .split(",")
-                          .map((v) => v.trim())
-                          .filter(Boolean),
-                      }))
-                    }
-                    placeholder="example.com, www.example.com"
-                    className="w-full rounded-[18px] border border-[#e4e4e7] bg-[#FBFBFD] px-3 py-2.5 text-sm text-[#111] outline-none transition focus:border-[#C4C8FF] focus:ring-4 focus:ring-[#C4C8FF]/20"
+                  <SectionHeader
+                    icon={Globe}
+                    title="Allowed domains"
+                    description="Lock the widget to approved hostnames so the install feels controlled and client-safe."
                   />
+
+                  <Field
+                    label="Approved hostnames"
+                    hint="Comma-separated only. Example: example.com, app.example.com"
+                  >
+                    <textarea
+                      rows={3}
+                      value={form.allowedDomains.join(", ")}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          allowedDomains: e.target.value
+                            .split(",")
+                            .map((v) => v.trim())
+                            .filter(Boolean),
+                        }))
+                      }
+                      placeholder="example.com, www.example.com"
+                      className="w-full rounded-[18px] border border-[#e4e4e7] bg-[#FBFBFD] px-3 py-2.5 text-sm text-[#111] outline-none transition focus:border-[#C4C8FF] focus:ring-4 focus:ring-[#C4C8FF]/20"
+                    />
+                  </Field>
+
+                  {form.allowedDomains.length > 0 ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {form.allowedDomains.map((domain) => (
+                        <span
+                          key={domain}
+                          className="inline-flex rounded-full border border-[#e4e4e7] bg-[#fafafb] px-3 py-1.5 text-[12px] font-medium text-[#3d3d45]"
+                        >
+                          {domain}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                 </KCardInner>
               </KCard>
 
@@ -454,7 +645,7 @@ export default function DashboardChatWidgetPage() {
                     notice?.ok ? "text-[#245A3F]" : "text-red-600"
                   }`}
                 >
-                  {notice?.text || ""}
+                  {notice?.text || "Save changes when you're ready."}
                 </div>
 
                 <button
@@ -470,57 +661,181 @@ export default function DashboardChatWidgetPage() {
             <div className="grid gap-[14px] self-start">
               <KCard>
                 <KCardInner>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8a8a94]">
-                    Public token
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8a8a94]">
+                        Widget access
+                      </div>
+                      <div className="mt-1 text-[14px] font-semibold text-[#111]">
+                        Public token
+                      </div>
+                      <div className="mt-1 text-[12px] text-[#6f6f78]">
+                        Used by the launcher script to connect the live widget.
+                      </div>
+                    </div>
+                    <div className="rounded-full bg-[#EEF8F1] px-2.5 py-1 text-[10px] font-semibold text-[#2D8A52]">
+                      Public
+                    </div>
                   </div>
 
-                  <div className="mt-3 rounded-[16px] border border-[#e4e4e7] bg-[#FAFAF7] px-4 py-4 font-mono text-[13px] break-all text-[#6c6c75]">
-                    {form.publicToken || "Generated on first save."}
+                  <div className="rounded-[16px] border border-[#e4e4e7] bg-[#FAFAF7] px-4 py-4">
+                    <div className="text-[11px] uppercase tracking-[0.14em] text-[#8a8a94]">
+                      Token preview
+                    </div>
+                    <div className="mt-2 break-all font-mono text-[13px] text-[#555760]">
+                      {tokenPreview}
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={copyToken}
-                    disabled={!form.publicToken}
-                    className="mt-3 inline-flex items-center gap-2 rounded-[12px] border border-[#e4e4e7] bg-white px-4 py-2 text-sm font-semibold text-[#111] transition hover:bg-[#f7f7fb] disabled:opacity-50"
-                  >
-                    <Copy className="h-4 w-4" />
-                    {copied ? "Copied" : "Copy token"}
-                  </button>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={copyToken}
+                      disabled={!form.publicToken}
+                      className="inline-flex items-center justify-center gap-2 rounded-[12px] border border-[#e4e4e7] bg-white px-4 py-2 text-sm font-semibold text-[#111] transition hover:bg-[#f7f7fb] disabled:opacity-50"
+                    >
+                      <Copy className="h-4 w-4" />
+                      {copied ? "Copied" : "Copy token"}
+                    </button>
+
+                    <Link
+                      href="/dashboard/chat/install"
+                      className="inline-flex items-center justify-center gap-2 rounded-[12px] border border-[#e4e4e7] bg-white px-4 py-2 text-sm font-semibold text-[#111] transition hover:bg-[#f7f7fb]"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Open install
+                    </Link>
+                  </div>
                 </KCardInner>
               </KCard>
 
               <KCard>
                 <KCardInner>
-                  <div className="mb-[14px]">
-                    <div className="text-[13px] font-bold tracking-[-0.02em] text-[#111]">
-                      Live preview
+                  <div className="mb-4 flex items-start gap-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-[#EEF1FF] text-[#5568A4]">
+                      <Radio className="h-4 w-4" />
                     </div>
-                    <div className="mt-0.5 text-[10.5px] text-[#76767e]">{subtitle}</div>
+                    <div>
+                      <div className="text-[14px] font-bold tracking-[-0.02em] text-[#111]">
+                        Launch readiness
+                      </div>
+                      <div className="text-[11px] text-[#76767e]">
+                        A quick operator view before install.
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="max-w-[86%] rounded-[18px] rounded-bl-[8px] bg-[#F4F4F1] px-4 py-3 text-sm leading-6 text-[#222]">
-                      {form.welcomeMessage || "Hi — how can I help you today?"}
+                  <div className="rounded-[18px] border border-[#e4e4e7] bg-[#fafafb] p-4">
+                    <div className="flex items-end justify-between gap-3">
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8a8a94]">
+                          Score
+                        </div>
+                        <div className="mt-2 text-[26px] font-bold tracking-[-0.05em] text-[#111]">
+                          {readiness}/4
+                        </div>
+                      </div>
+                      <div className="text-[12px] font-medium text-[#6f6f78]">
+                        {readinessPct}% ready
+                      </div>
                     </div>
 
-                    <div
-                      className="ml-auto max-w-[84%] rounded-[18px] rounded-br-[8px] px-4 py-3 text-sm leading-6"
-                      style={{
-                        backgroundColor: form.primaryColor || "#C4C8FF",
-                        color: form.accentColor || "#111111",
-                      }}
-                    >
-                      What services do you offer?
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#e8e8ed]">
+                      <div
+                        className="h-full rounded-full bg-[#6670D6] transition-all"
+                        style={{ width: `${readinessPct}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3">
+                    {readinessChecks.map((item) => (
+                      <div
+                        key={item.label}
+                        className="flex items-center gap-3 rounded-[16px] border border-[#e4e4e7] bg-[#fafafb] px-4 py-3"
+                      >
+                        <CheckCircle2
+                          className={`h-4 w-4 ${
+                            item.ok ? "text-[#2D8A52]" : "text-[#b0b0b8]"
+                          }`}
+                        />
+                        <div className="text-[13px] font-medium text-[#111]">
+                          {item.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </KCardInner>
+              </KCard>
+
+              <KCard>
+                <KCardInner>
+                  <div className="mb-4 flex items-start gap-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-[#EEF1FF] text-[#5568A4]">
+                      <Orbit className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-bold tracking-[-0.02em] text-[#111]">
+                        Live preview
+                      </div>
+                      <div className="text-[11px] text-[#76767e]">
+                        What visitors will actually see.
+                      </div>
+                    </div>
+                  </div>
+
+                  <KompiChatPreview
+                    widgetName={form.name || "Kompi Chat"}
+                    siteName={form.siteName || "Your site"}
+                    primaryColor={form.primaryColor || "#C4C8FF"}
+                    accentColor={form.accentColor || "#111111"}
+                    welcomeMessage={form.welcomeMessage || "Hi — how can I help you today?"}
+                    fallbackReply={
+                      form.fallbackReply ||
+                      "I can help answer common questions and guide visitors toward the right next step."
+                    }
+                    placeholder={form.placeholder || "Ask a question…"}
+                    status={form.status}
+                    showDeviceFrame
+                  />
+                </KCardInner>
+              </KCard>
+
+              <KCard>
+                <KCardInner>
+                  <div className="mb-4 flex items-start gap-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-[#EEF1FF] text-[#5568A4]">
+                      <LockKeyhole className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-bold tracking-[-0.02em] text-[#111]">
+                        Deployment notes
+                      </div>
+                      <div className="text-[11px] text-[#76767e]">
+                        The bits that most affect perceived quality.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3">
+                    <div className="rounded-[16px] border border-[#e4e4e7] bg-[#fafafb] p-4">
+                      <div className="text-[12px] font-semibold text-[#111]">
+                        Best performing setup
+                      </div>
+                      <p className="mt-1 text-[12px] leading-6 text-[#6f6f78]">
+                        Active widget, scoped domains, a short welcome message, and
+                        real knowledge sources.
+                      </p>
                     </div>
 
-                    <div className="max-w-[90%] rounded-[18px] rounded-bl-[8px] bg-[#F4F4F1] px-4 py-3 text-sm leading-6 text-[#222]">
-                      {form.fallbackReply ||
-                        "I can help answer common questions and guide visitors toward the right next step."}
-                    </div>
-
-                    <div className="rounded-[16px] border border-[#e4e4e7] bg-[#FCFCFA] px-4 py-3 text-[13px] text-[#6f6f78]">
-                      {form.placeholder || "Ask a question…"}
+                    <div className="rounded-[16px] border border-[#e4e4e7] bg-[#fafafb] p-4">
+                      <div className="text-[12px] font-semibold text-[#111]">
+                        Avoid
+                      </div>
+                      <p className="mt-1 text-[12px] leading-6 text-[#6f6f78]">
+                        Generic fallback copy, empty site identity, and open domain
+                        installs that feel unfinished.
+                      </p>
                     </div>
                   </div>
                 </KCardInner>
@@ -528,16 +843,23 @@ export default function DashboardChatWidgetPage() {
 
               <KCard className="bg-[#111] text-white">
                 <KCardInner>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                    Positioning
+                  <div className="flex items-start gap-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-white/8 text-white">
+                      <ShieldCheck className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
+                        Quality note
+                      </div>
+                      <div className="mt-2 text-[20px] font-semibold tracking-[-0.04em] text-white">
+                        Premium chat feels configured, not improvised.
+                      </div>
+                      <p className="mt-3 text-[13px] leading-6 text-white/72">
+                        Tight copy, scoped installs, brand fit, and knowledge-backed
+                        replies are what justify a premium monthly fee.
+                      </p>
+                    </div>
                   </div>
-                  <div className="mt-2 text-[20px] font-semibold tracking-[-0.04em] text-white">
-                    This should feel like a product, not a plugin.
-                  </div>
-                  <p className="mt-3 text-[13px] leading-6 text-white/72">
-                    Tight copy, clean tone, proper domains, and sharp source
-                    context are what make the chat feel expensive.
-                  </p>
                 </KCardInner>
               </KCard>
             </div>
@@ -545,31 +867,5 @@ export default function DashboardChatWidgetPage() {
         )}
       </div>
     </DashboardLayout>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label className="mb-2 block text-sm font-medium text-[#111]">{label}</label>
-      {children}
-    </div>
-  );
-}
-
-function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      {...props}
-      className={`h-11 w-full rounded-[16px] border border-[#e4e4e7] bg-[#FBFBFD] px-3 text-sm text-[#111] outline-none transition focus:border-[#C4C8FF] focus:ring-4 focus:ring-[#C4C8FF]/20 ${
-        props.className || ""
-      }`}
-    />
   );
 }

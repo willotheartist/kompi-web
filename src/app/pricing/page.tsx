@@ -3,17 +3,32 @@
 
 import { useState, Fragment } from "react";
 import Link from "next/link";
-import AutoLinkedContent from "@/components/seo/AutoLinkedContent";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { FooterCTA } from "@/components/footer-cta";
-import WhyKompi from "@/components/why-kompi";
 import { GoProBanner } from "@/components/GoProBanner";
 import GoProModal from "@/components/modals/GoProModal";
+import {
+  MessageSquare,
+  QrCode,
+  CreditCard,
+  Link2,
+  Check,
+  ChevronDown,
+  Sparkles,
+  Shield,
+  Zap,
+  Globe,
+  BarChart3,
+  Palette,
+  Users,
+  Headphones,
+} from "lucide-react";
 import "./pricing.css";
 
+/* ─────────────────────────────────────────────
+   Types
+   ───────────────────────────────────────────── */
 type BillingPeriod = "monthly" | "yearly";
-type PlanId = "free" | "creator" | "suite";
+type PlanId = "free" | "pro" | "business";
 
 type Plan = {
   id: PlanId;
@@ -22,244 +37,259 @@ type Plan = {
   monthly: number;
   yearly: number;
   cta: string;
+  href: string;
   highlighted?: boolean;
-  bestFor: string;
+  badge?: string;
   features: string[];
-  comingSoon?: boolean;
 };
 
+/* ─────────────────────────────────────────────
+   Plans
+   ───────────────────────────────────────────── */
 const plans: Plan[] = [
   {
     id: "free",
     name: "Free",
-    tagline: "For individuals testing ideas.",
+    tagline: "For individuals and creators getting started.",
     monthly: 0,
     yearly: 0,
-    cta: "Start for free",
-    bestFor: "Creators getting started",
+    cta: "Start free",
+    href: "/signup",
     features: [
       "1 workspace",
-      "Up to 10 active short links",
+      "Up to 10 short links",
       "1 Link-in-Bio page",
+      "Basic Kompi Codes™ (QR)",
+      "1 K-Card (basic profile)",
       "Basic click analytics",
-      "Standard Kompi Codes™ (QR generator)",
-      "K-Cards (basic profile)",
-      "Link shortener",
-      "Kompi branding on public pages",
+      "Kompi Chat — 50 messages/mo",
+      "Kompi branding on pages",
       "Standard email support",
-      "Access to selected tools",
+      "Access to free tools",
     ],
   },
   {
-    id: "creator",
-    name: "Creator",
-    tagline: "For solo creators & growing brands.",
-    monthly: 9.99,
-    yearly: 119.88,
-    cta: "Choose Creator",
+    id: "pro",
+    name: "Pro",
+    tagline: "For creators, freelancers, and growing brands.",
+    monthly: 29.99,
+    yearly: 287.88,
+    cta: "Start Pro",
+    href: "/signin",
     highlighted: true,
-    bestFor: "Creators, freelancers, personal brands",
+    badge: "Most popular",
     features: [
-      "Up to 5 workspaces",
+      "Up to 10 workspaces",
       "Unlimited short links",
       "Unlimited Link-in-Bio pages",
-      "Advanced analytics (UTM, referrers, devices)",
+      "Branded Kompi Codes™ (logo, styles)",
+      "Unlimited K-Cards with themes",
+      "Advanced analytics (UTM, geo, devices)",
+      "Kompi Chat — unlimited messages",
+      "Kompi Chat — remove branding",
       "Custom branding (logo, colors)",
-      "Branded Kompi Codes™ (QR styles)",
-      "K-Cards with themes & layouts",
-      "Smart UTM builder",
       "Remove Kompi branding",
+      "Smart UTM builder",
       "Priority email support",
-      "All Kompi tools included",
+      "All Kompi tools",
     ],
   },
   {
-    id: "suite",
-    name: "Kompi Suite",
-    tagline: "All Kompi tools. One powerful suite.",
-    monthly: 19.99,
-    yearly: 239.88,
-    cta: "Coming soon",
-    bestFor: "Power users & multi-tool creators",
-    comingSoon: true,
+    id: "business",
+    name: "Business",
+    tagline: "For agencies, teams, and serious operations.",
+    monthly: 299.99,
+    yearly: 2879.88,
+    cta: "Talk to us",
+    href: "/signin",
+    badge: "Best value at scale",
     features: [
-      "Everything in Creator",
-      "Full Kompi tools suite (PDFs, images, docs)",
-      "Advanced generators & converters",
-      "Cross-tool analytics",
-      "Workspace-level permissions",
-      "Early access to new tools",
-      "Suite-only experiments",
-      "Priority support",
+      "Everything in Pro",
+      "Unlimited workspaces",
+      "Custom domains",
+      "Kompi Chat — multi-widget",
+      "Kompi Chat — custom AI training",
+      "White-label K-Cards",
+      "Team members & permissions",
+      "Workspace-level analytics",
+      "Dedicated onboarding",
+      "Landing page builder",
+      "API access",
+      "Priority phone & chat support",
+      "Custom invoicing",
     ],
   },
 ];
 
+/* ─────────────────────────────────────────────
+   Core products (hero strip)
+   ───────────────────────────────────────────── */
+const coreProducts = [
+  {
+    icon: MessageSquare,
+    name: "Kompi Chat",
+    desc: "AI chat widget for your website",
+  },
+  {
+    icon: QrCode,
+    name: "KR Codes™",
+    desc: "Branded QR codes that convert",
+  },
+  {
+    icon: CreditCard,
+    name: "K-Cards",
+    desc: "Digital business cards & bios",
+  },
+  {
+    icon: Link2,
+    name: "URL Shortener",
+    desc: "Smart links with analytics",
+  },
+];
+
+/* ─────────────────────────────────────────────
+   Feature comparison
+   ───────────────────────────────────────────── */
 const featureSections = [
   {
-    title: "Link management",
+    title: "Kompi Chat",
     rows: [
-      "Active short links",
-      "Workspaces",
-      "Link-in-Bio pages",
-      "Bulk link creation",
-      "Smart redirect rules",
+      { feature: "Chat widget", free: "1 widget", pro: "1 widget", business: "Multi-widget" },
+      { feature: "Messages per month", free: "50", pro: "Unlimited", business: "Unlimited" },
+      { feature: "Knowledge sources", free: "3", pro: "Unlimited", business: "Unlimited" },
+      { feature: "Lead capture", free: "✓", pro: "✓", business: "✓" },
+      { feature: "Custom AI training", free: "—", pro: "—", business: "✓" },
+      { feature: "Remove chat branding", free: "—", pro: "✓", business: "✓" },
     ],
   },
   {
-    title: "Branding & domains",
+    title: "KR Codes™ (QR)",
     rows: [
-      "Custom Link-in-Bio themes",
-      "Remove Kompi branding",
-      "Branded QR codes (Kompi Codes™)",
-      "Custom domains",
+      { feature: "QR code generator", free: "Standard", pro: "Branded", business: "Premium" },
+      { feature: "Logo in QR", free: "—", pro: "✓", business: "✓" },
+      { feature: "Style customisation", free: "Basic", pro: "Full", business: "Full" },
+      { feature: "Dynamic QR codes", free: "—", pro: "✓", business: "✓" },
+      { feature: "Scan analytics", free: "Basic", pro: "Advanced", business: "Advanced" },
     ],
   },
   {
-    title: "Analytics",
+    title: "K-Cards",
     rows: [
-      "Basic click counts",
-      "UTM & referrer analytics",
-      "Device / browser insights",
-      "Export & reporting",
+      { feature: "Digital cards", free: "1", pro: "Unlimited", business: "Unlimited" },
+      { feature: "Theme presets", free: "Basic", pro: "All themes", business: "All + custom" },
+      { feature: "Contact form", free: "✓", pro: "✓", business: "✓" },
+      { feature: "Social links", free: "✓", pro: "✓", business: "✓" },
+      { feature: "White-label", free: "—", pro: "—", business: "✓" },
     ],
   },
   {
-    title: "Collaboration & support",
-    rows: ["Team members", "Priority support", "Early feature access"],
+    title: "Links & shortener",
+    rows: [
+      { feature: "Short links", free: "10", pro: "Unlimited", business: "Unlimited" },
+      { feature: "Link-in-Bio pages", free: "1", pro: "Unlimited", business: "Unlimited" },
+      { feature: "Custom domains", free: "—", pro: "—", business: "✓" },
+      { feature: "Smart redirects", free: "—", pro: "—", business: "✓" },
+      { feature: "UTM builder", free: "Basic", pro: "Advanced", business: "Advanced" },
+    ],
+  },
+  {
+    title: "Analytics & branding",
+    rows: [
+      { feature: "Click analytics", free: "Basic", pro: "Advanced", business: "Full" },
+      { feature: "UTM & referrer tracking", free: "—", pro: "✓", business: "✓" },
+      { feature: "Geo & device insights", free: "—", pro: "✓", business: "✓" },
+      { feature: "Custom branding", free: "—", pro: "✓", business: "✓" },
+      { feature: "Remove Kompi branding", free: "—", pro: "✓", business: "✓" },
+    ],
+  },
+  {
+    title: "Workspace & support",
+    rows: [
+      { feature: "Workspaces", free: "1", pro: "10", business: "Unlimited" },
+      { feature: "Team members", free: "1", pro: "1", business: "Up to 10" },
+      { feature: "API access", free: "—", pro: "—", business: "✓" },
+      { feature: "Support", free: "Email", pro: "Priority email", business: "Priority + phone" },
+      { feature: "Onboarding", free: "Self-serve", pro: "Self-serve", business: "Dedicated" },
+    ],
   },
 ];
 
-const toolSections = [
+/* ─────────────────────────────────────────────
+   FAQ
+   ───────────────────────────────────────────── */
+const faqs = [
   {
-    title: "QR & Links",
-    tools: [
-      "QR Code Generator",
-      "Barcode Generator",
-      "UTM Builder",
-      "WhatsApp Link Generator",
-      "Link Shortener",
-    ],
+    q: "Do I need a credit card to sign up?",
+    a: "No. The Free plan is completely free — no card required. You only enter payment details when you choose to upgrade.",
   },
   {
-    title: "Content & Social",
-    tools: [
-      "TikTok Caption Generator",
-      "TikTok Bio Generator",
-      "Instagram Caption Generator",
-      "Instagram Bio Generator",
-      "YouTube Title Generator",
-      "Hashtag Generator",
-      "Username Generator",
-    ],
+    q: "Can I switch plans later?",
+    a: "Yes. You can upgrade, downgrade, or cancel at any time from your dashboard. Changes take effect immediately.",
   },
   {
-    title: "Text & Dev Helpers",
-    tools: [
-      "Case Converter",
-      "Word Counter",
-      "Character Counter",
-      "JSON Formatter",
-      "Password Generator",
-      "Random Number Generator",
-    ],
+    q: "What happens if I exceed my free plan limits?",
+    a: "You'll see a prompt to upgrade. We never delete your data — your links, cards, and chat history stay safe.",
   },
   {
-    title: "Design & Color",
-    tools: ["Brand Color Extractor", "Color Palette Generator"],
+    q: "Is there a discount for yearly billing?",
+    a: "Yes — yearly billing saves you roughly 20% compared to monthly. The discount is applied automatically when you switch.",
   },
   {
-    title: "PDF & Images",
-    tools: ["PDF Converter", "PDF to Image", "Image to PDF", "PDF Merge", "PDF Split"],
+    q: "Can I try Pro features before committing?",
+    a: "We offer a 14-day free trial on Pro. Start with full access, then decide if it's right for you.",
   },
   {
-    title: "Business",
-    tools: ["Hourly Rate Calculator", "Profit Margin Calculator"],
+    q: "What payment methods do you accept?",
+    a: "We accept all major credit and debit cards via Stripe. Business plan customers can also request custom invoicing.",
   },
-] as const;
+  {
+    q: "Do you offer refunds?",
+    a: "Yes. If you're not happy within the first 14 days, contact support for a full refund — no questions asked.",
+  },
+  {
+    q: "What's included in Kompi Chat?",
+    a: "An AI-powered chat widget you install on any website. It answers questions using your knowledge sources, captures leads, and guides visitors. Free gets 50 messages/month, Pro is unlimited.",
+  },
+];
 
+/* ─────────────────────────────────────────────
+   Helpers
+   ───────────────────────────────────────────── */
 function formatPrice(plan: Plan, period: BillingPeriod): string {
-  if (plan.id === "free") return "$0";
-  if (plan.comingSoon) return "Coming soon";
-
-  if (period === "monthly") return `$${plan.monthly.toFixed(2)}`;
-  const monthlyEquivalent = plan.yearly / 12;
-  return `$${monthlyEquivalent.toFixed(2)}`;
+  if (plan.id === "free") return "£0";
+  if (period === "monthly") return `£${plan.monthly.toFixed(2)}`;
+  return `£${(plan.yearly / 12).toFixed(2)}`;
 }
 
 function subLabel(plan: Plan, period: BillingPeriod): string {
-  if (plan.id === "free") return "Always free";
-  if (plan.comingSoon) return "Launching soon";
-
-  if (period === "monthly") return "Billed monthly";
-  return `Billed yearly ($${plan.yearly.toFixed(2)})`;
+  if (plan.id === "free") return "Free forever";
+  if (period === "monthly") return "per month";
+  return `per month · billed yearly (£${plan.yearly.toFixed(2)})`;
 }
 
-function cell(planId: PlanId, row: string): string {
-  switch (row) {
-    case "Active short links":
-      return planId === "free" ? "10" : "Unlimited";
-
-    case "Workspaces":
-      if (planId === "free") return "1";
-      if (planId === "creator") return "5";
-      return "Unlimited";
-
-    case "Link-in-Bio pages":
-      return planId === "free" ? "1" : "Unlimited";
-
-    case "Bulk link creation":
-      return planId === "free" ? "—" : "✓";
-
-    case "Smart redirect rules":
-      return planId === "suite" ? "✓" : "—";
-
-    case "Custom Link-in-Bio themes":
-      return planId === "free" ? "Basic" : "Advanced";
-
-    case "Remove Kompi branding":
-      return planId === "free" ? "—" : "✓";
-
-    case "Branded QR codes (Kompi Codes™)":
-      if (planId === "free") return "Standard";
-      if (planId === "creator") return "Branded";
-      return "Premium";
-
-    case "Custom domains":
-      return planId === "suite" ? "✓" : "—";
-
-    case "Basic click counts":
-      return "✓";
-
-    case "UTM & referrer analytics":
-      return planId === "free" ? "—" : "✓";
-
-    case "Device / browser insights":
-      if (planId === "suite") return "✓";
-      if (planId === "creator") return "Lite";
-      return "—";
-
-    case "Export & reporting":
-      return planId === "suite" ? "✓" : "—";
-
-    case "Team members":
-      if (planId === "free") return "1";
-      if (planId === "creator") return "1";
-      return "Up to 5";
-
-    case "Priority support":
-      if (planId === "creator") return "Email";
-      if (planId === "suite") return "Priority";
-      return "—";
-
-    case "Early feature access":
-      return planId === "suite" ? "✓" : "—";
-
-    default:
-      return "—";
-  }
+/* ─────────────────────────────────────────────
+   FAQ Accordion item
+   ───────────────────────────────────────────── */
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="wf-faq-item" data-open={open}>
+      <button
+        type="button"
+        className="wf-faq-trigger"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span>{q}</span>
+        <ChevronDown className="wf-faq-chevron" />
+      </button>
+      {open && <div className="wf-faq-answer">{a}</div>}
+    </div>
+  );
 }
 
+/* ═════════════════════════════════════════════
+   PAGE
+   ═════════════════════════════════════════════ */
 export default function PricingPage() {
   const [billing, setBilling] = useState<BillingPeriod>("monthly");
   const [showProModal, setShowProModal] = useState(false);
@@ -269,172 +299,137 @@ export default function PricingPage() {
       <main className="wf-pricing-page">
         <GoProBanner onGoProClick={() => setShowProModal(true)} />
 
+        {/* ── HERO ── */}
         <section className="wf-section wf-pricing-hero">
           <div className="wf-pricing-container">
             <div className="wf-pricing-frame">
               <div className="wf-pricing-hero-shell">
                 <p className="wf-pricing-eyebrow">Pricing</p>
                 <h1 className="wf-pricing-hero-heading">
-                  Membership pricing for growing brands.
+                  Simple pricing for every stage of growth.
                 </h1>
+                <p className="wf-pricing-hero-body">
+                  Start free. Upgrade when you need more power. Every plan
+                  includes Kompi Chat, KR Codes™, K-Cards, and the full link
+                  shortener.
+                </p>
 
-                <AutoLinkedContent
-                  text="Start free. When you're ready, unlock K-Cards, link shortener, QR code generator and studio-grade analytics in one place."
-                  currentUrl="/pricing"
-                  className="wf-pricing-hero-body"
-                />
-
+                {/* Billing toggle */}
                 <div className="wf-billing-toggle">
                   <button
                     type="button"
                     onClick={() => setBilling("monthly")}
-                    className={
-                      "wf-billing-toggle-btn" +
-                      (billing === "monthly"
-                        ? " wf-billing-toggle-btn-active"
-                        : "")
-                    }
+                    className={`wf-billing-toggle-btn${billing === "monthly" ? " wf-billing-toggle-btn-active" : ""}`}
                   >
                     Monthly
                   </button>
                   <button
                     type="button"
                     onClick={() => setBilling("yearly")}
-                    className={
-                      "wf-billing-toggle-btn wf-billing-toggle-btn-right" +
-                      (billing === "yearly"
-                        ? " wf-billing-toggle-btn-active"
-                        : "")
-                    }
+                    className={`wf-billing-toggle-btn wf-billing-toggle-btn-right${billing === "yearly" ? " wf-billing-toggle-btn-active" : ""}`}
                   >
                     <span>Yearly</span>
-                    <span className="wf-billing-toggle-pill">
-                      save up to 20%
-                    </span>
+                    <span className="wf-billing-toggle-pill">save 20%</span>
                   </button>
                 </div>
               </div>
 
-              <div className="grid gap-5 md:grid-cols-3 wf-pricing-plans-grid">
-                {plans.map((plan) => {
-                  const price = formatPrice(plan, billing);
-                  const label = subLabel(plan, billing);
+              {/* ── Plan cards ── */}
+              <div className="wf-pricing-plans-grid">
+                {plans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className={`wf-plan-card${plan.highlighted ? " wf-plan-card-highlighted" : ""}`}
+                  >
+                    {/* Badge */}
+                    {plan.badge && (
+                      <div className="wf-plan-badge">{plan.badge}</div>
+                    )}
 
-                  const highlightClass = plan.highlighted
-                    ? "wf-plan-card-highlighted"
-                    : "wf-plan-card-standard";
+                    <h2 className="wf-plan-name">{plan.name}</h2>
+                    <p className="wf-plan-tagline">{plan.tagline}</p>
 
-                  return (
-                    <Card
-                      key={plan.id}
-                      className={[
-                        "wf-plan-card",
-                        highlightClass,
-                        "flex flex-col",
-                      ].join(" ")}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <h2 className="wf-plan-title">{plan.name}</h2>
-                        {plan.highlighted && (
-                          <div className="wf-plan-pill">Popular</div>
-                        )}
-                        {plan.comingSoon && (
-                          <div className="wf-plan-pill">Coming soon</div>
+                    {/* Price */}
+                    <div className="wf-plan-price-block">
+                      <div className="wf-plan-price-row">
+                        <span className="wf-plan-price">
+                          {formatPrice(plan, billing)}
+                        </span>
+                        {plan.id !== "free" && (
+                          <span className="wf-plan-price-suffix">/mo</span>
                         )}
                       </div>
-
-                      <p className="wf-plan-tagline">{plan.tagline}</p>
-
-                      <div className="wf-plan-price-block">
-                        <div className="wf-plan-price-row">
-                          <span className="wf-plan-price">{price}</span>
-                          {!plan.comingSoon && (
-                            <span className="wf-plan-price-suffix">
-                              /month
-                            </span>
-                          )}
-                        </div>
-                        <div className="wf-plan-price-sub">{label}</div>
-                        <div className="wf-plan-price-best">
-                          Best for: {plan.bestFor}
-                        </div>
-                      </div>
-
-                      <Button
-                        size="sm"
-                        className={
-                          "wf-plan-cta" +
-                          (plan.highlighted
-                            ? " wf-plan-cta-primary"
-                            : " wf-plan-cta-secondary") +
-                          (plan.comingSoon ? " wf-plan-cta-disabled" : "")
-                        }
-                        asChild={!plan.comingSoon}
-                        disabled={plan.comingSoon}
-                      >
-                        {plan.comingSoon ? (
-                          <span>{plan.cta}</span>
-                        ) : (
-                          <Link href="/signin">{plan.cta}</Link>
-                        )}
-                      </Button>
-
-                      <ul className="wf-plan-features">
-                        {plan.features.map((f) => (
-                          <li key={f} className="wf-plan-feature-row">
-                            <span className="wf-plan-feature-dot" />
-                            <span>{f}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </Card>
-                  );
-                })}
-              </div>
-
-              {/* Tools included */}
-              <div className="wf-tools-shell">
-                <div className="wf-tools-header">
-                  <h3 className="wf-tools-title">All Kompi tools</h3>
-                  <p className="wf-tools-sub">
-                    Creator includes the full tool set today. Kompi Suite adds premium upgrades (coming soon).
-                  </p>
-                </div>
-
-                <div className="wf-tools-grid">
-                  {toolSections.map((section) => (
-                    <div key={section.title} className="wf-tools-card">
-                      <p className="wf-tools-card-title">{section.title}</p>
-                      <div className="wf-tools-pills">
-                        {section.tools.map((t) => (
-                          <span key={t} className="wf-tool-pill">
-                            {t}
-                          </span>
-                        ))}
+                      <div className="wf-plan-price-sub">
+                        {subLabel(plan, billing)}
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    {/* CTA */}
+                    <Link
+                      href={plan.href}
+                      className={`wf-plan-cta${plan.highlighted ? " wf-plan-cta-primary" : ""}`}
+                    >
+                      {plan.cta}
+                    </Link>
+
+                    {/* Features */}
+                    <div className="wf-plan-divider" />
+                    <p className="wf-plan-features-title">
+                      {plan.id === "free"
+                        ? "What's included:"
+                        : plan.id === "pro"
+                          ? "Everything in Free, plus:"
+                          : "Everything in Pro, plus:"}
+                    </p>
+                    <ul className="wf-plan-features">
+                      {plan.features.map((f) => (
+                        <li key={f} className="wf-plan-feature-row">
+                          <Check className="wf-plan-check" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
 
+              {/* ── Core products strip ── */}
+              <div className="wf-products-strip">
+                <p className="wf-products-strip-label">
+                  Every plan includes these core products
+                </p>
+                <div className="wf-products-strip-grid">
+                  {coreProducts.map((p) => {
+                    const Icon = p.icon;
+                    return (
+                      <div key={p.name} className="wf-product-chip">
+                        <div className="wf-product-chip-icon">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="wf-product-chip-name">{p.name}</div>
+                          <div className="wf-product-chip-desc">{p.desc}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
+        {/* ── COMPARISON TABLE ── */}
         <section className="wf-section wf-pricing-compare">
           <div className="wf-pricing-container">
             <div className="wf-compare-shell">
               <div className="wf-compare-header">
                 <div>
-                  <h3 className="wf-compare-title">Compare plans</h3>
+                  <h3 className="wf-compare-title">Compare plans in detail</h3>
                   <p className="wf-compare-body">
-                    See what unlocks as you grow — from simple links to a full suite.
+                    See exactly what you get at each level — broken down by
+                    product.
                   </p>
-                </div>
-                <div className="wf-compare-tags">
-                  <span>Free → Launch</span>
-                  <span>Creator → Grow</span>
-                  <span>Kompi Suite → Power</span>
                 </div>
               </div>
 
@@ -444,8 +439,8 @@ export default function PricingPage() {
                     <tr>
                       <th className="wf-compare-th-feature">Feature</th>
                       <th className="wf-compare-th">Free</th>
-                      <th className="wf-compare-th">Creator</th>
-                      <th className="wf-compare-th">Kompi Suite</th>
+                      <th className="wf-compare-th wf-compare-th-highlight">Pro</th>
+                      <th className="wf-compare-th">Business</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -457,20 +452,15 @@ export default function PricingPage() {
                           </td>
                         </tr>
                         {section.rows.map((row) => (
-                          <tr
-                            key={section.title + row}
-                            className="wf-compare-row"
-                          >
-                            <td className="wf-compare-cell-feature">{row}</td>
-                            <td className="wf-compare-cell">
-                              {cell("free", row)}
+                          <tr key={row.feature} className="wf-compare-row">
+                            <td className="wf-compare-cell-feature">
+                              {row.feature}
                             </td>
-                            <td className="wf-compare-cell">
-                              {cell("creator", row)}
+                            <td className="wf-compare-cell">{row.free}</td>
+                            <td className="wf-compare-cell wf-compare-cell-highlight">
+                              {row.pro}
                             </td>
-                            <td className="wf-compare-cell">
-                              {cell("suite", row)}
-                            </td>
+                            <td className="wf-compare-cell">{row.business}</td>
                           </tr>
                         ))}
                       </Fragment>
@@ -482,12 +472,30 @@ export default function PricingPage() {
           </div>
         </section>
 
-        <section className="wf-section wf-pricing-why">
+        {/* ── FAQ ── */}
+        <section className="wf-section wf-pricing-faq">
           <div className="wf-pricing-container">
-            <WhyKompi />
+            <div className="wf-faq-shell">
+              <div className="wf-faq-header">
+                <h3 className="wf-faq-title">Frequently asked questions</h3>
+                <p className="wf-faq-subtitle">
+                  Can't find what you need?{" "}
+                  <Link href="/dashboard/support" className="wf-faq-link">
+                    Contact support
+                  </Link>
+                </p>
+              </div>
+
+              <div className="wf-faq-list">
+                {faqs.map((faq) => (
+                  <FaqItem key={faq.q} q={faq.q} a={faq.a} />
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
+        {/* ── Bottom CTA ── */}
         <FooterCTA />
       </main>
 

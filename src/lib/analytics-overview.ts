@@ -37,11 +37,12 @@ export type AnalyticsOverviewData = {
     linkClicksPct: number;
     contactSubmissionsPct: number;
     subscribersPct: number;
+    kcardMessagesPct: number;
   };
 
   topDate:
     | {
-        date: string; // yyyy-MM-dd
+        date: string;
         count: number;
       }
     | null;
@@ -65,6 +66,48 @@ export type AnalyticsOverviewData = {
     lastClickAt: string | null;
     utmCampaignTop: string | null;
   }[];
+
+  chat: {
+    hasWidget: boolean;
+    widget: {
+      id: string | null;
+      name: string | null;
+      siteName: string | null;
+      status: "ACTIVE" | "DRAFT" | "PAUSED" | null;
+      publicToken: string | null;
+      sourcesCount: number;
+      allowedDomainsCount: number;
+    };
+
+    totals: {
+      conversations: number;
+      messages: number;
+      leads: number;
+      messagesToday: number;
+      sources: number;
+    };
+
+    previousPeriod: {
+      conversations: number;
+      messages: number;
+      leads: number;
+    };
+
+    growth: {
+      conversationsPct: number;
+      messagesPct: number;
+      leadsPct: number;
+    };
+
+    recentConversations: Array<{
+      id: string;
+      visitorName: string;
+      lastMessage: string;
+      messageCount: number;
+      updatedAt: string;
+      status: string;
+    }>;
+  };
 };
 
 type GetOverviewArgs = {
@@ -77,10 +120,13 @@ function classifyDevice(userAgent: string | null | undefined): string {
   if (!userAgent) return "Unknown";
   const ua = userAgent.toLowerCase();
 
-  // bots first (some bots include "mobile")
-  if (ua.includes("bot") || ua.includes("spider") || ua.includes("crawl")) return "Bot";
+  if (ua.includes("bot") || ua.includes("spider") || ua.includes("crawl")) {
+    return "Bot";
+  }
   if (ua.includes("ipad") || ua.includes("tablet")) return "Tablet";
-  if (ua.includes("iphone") || ua.includes("android") || ua.includes("mobile")) return "Mobile";
+  if (ua.includes("iphone") || ua.includes("android") || ua.includes("mobile")) {
+    return "Mobile";
+  }
   return "Desktop";
 }
 
@@ -101,7 +147,10 @@ function tidyCountryBucket(v: string | null | undefined): string {
   return "UNKNOWN";
 }
 
-function tidyReferrerKey(referrerHost: string | null | undefined, referer: string | null | undefined): string {
+function tidyReferrerKey(
+  referrerHost: string | null | undefined,
+  referer: string | null | undefined
+): string {
   const host = (referrerHost ?? "").trim();
   if (host) return host.replace(/^www\./i, "").toLowerCase();
 
@@ -109,11 +158,10 @@ function tidyReferrerKey(referrerHost: string | null | undefined, referer: strin
   if (!raw) return "direct";
   if (raw === "about:blank") return "direct";
 
-  // app-style referers
   if (/^(android-app|ios-app):\/\//i.test(raw)) return "app";
 
-  // Try parsing as URL; if it's a bare host, prefix https://
   const maybeUrl = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+
   try {
     const url = new URL(maybeUrl);
     const h = (url.hostname || "").replace(/^www\./i, "").toLowerCase();
@@ -163,7 +211,6 @@ export async function getAnalyticsOverviewForWorkspace({
   const prevTo = endOfDay(subDays(fromDate, 1));
   const prevFrom = startOfDay(subDays(prevTo, daySpan - 1));
 
-  // ---- Click events for current period ----
   const clickEvents = await prisma.clickEvent.findMany({
     where: {
       createdAt: { gte: fromDate, lte: toDate },
@@ -182,7 +229,6 @@ export async function getAnalyticsOverviewForWorkspace({
     },
   });
 
-  // ---- Click events for previous period ----
   const prevLinkClicks = await prisma.clickEvent.count({
     where: {
       createdAt: { gte: prevFrom, lte: prevTo },
@@ -199,6 +245,7 @@ export async function getAnalyticsOverviewForWorkspace({
     prevContactSubmissions,
     prevSubscribers,
     prevKcardMessages,
+    chatWidget,
   ] = await Promise.all([
     countContactSubmissions(workspaceId, fromDate, toDate),
     countSubscribers(workspaceId, fromDate, toDate),
@@ -207,22 +254,34 @@ export async function getAnalyticsOverviewForWorkspace({
     countContactSubmissions(workspaceId, prevFrom, prevTo),
     countSubscribers(workspaceId, prevFrom, prevTo),
     countKcardMessages(workspaceId, prevFrom, prevTo),
+
+    prisma.chatWidget.findFirst({
+      where: { workspaceId },
+      orderBy: { createdAt: "asc" },
+      include: {
+        _count: {
+          select: {
+            sources: true,
+            leads: true,
+            conversations: true,
+          },
+        },
+      },
+    }),
   ]);
 
   const totalEngagements = linkClicks + contactSubmissions + subscribers + kcardMessages;
   const prevTotalEngagements =
     prevLinkClicks + prevContactSubmissions + prevSubscribers + prevKcardMessages;
 
-  // ---- Timeseries (full range with zeros) ----
   const timeseriesMap = new Map<string, number>();
   for (const ev of clickEvents) {
-    // Use ISO date slice to stay stable across timezones
     const key = ev.createdAt.toISOString().slice(0, 10);
     timeseriesMap.set(key, (timeseriesMap.get(key) ?? 0) + 1);
   }
 
   const timeseries: { date: string; count: number }[] = [];
-  for (let i = 0; i < daySpan; i++) {
+  for (let i = 0; i < daySpan; i += 1) {
     const d = addDays(fromDate, i);
     const key = fmt(d, "yyyy-MM-dd");
     timeseries.push({ date: key, count: timeseriesMap.get(key) ?? 0 });
@@ -233,15 +292,16 @@ export async function getAnalyticsOverviewForWorkspace({
       ? null
       : timeseries.reduce((top, cur) => (cur.count > top.count ? cur : top), timeseries[0]);
 
-  // ---- Device breakdown ----
   const deviceMap = new Map<string, number>();
   for (const ev of clickEvents) {
     const device = classifyDevice(ev.userAgent);
     deviceMap.set(device, (deviceMap.get(device) ?? 0) + 1);
   }
-  const byDevice = Array.from(deviceMap.entries()).map(([device, count]) => ({ device, count }));
+  const byDevice = Array.from(deviceMap.entries()).map(([device, count]) => ({
+    device,
+    count,
+  }));
 
-  // ---- Referrer breakdown ----
   const referrerMap = new Map<string, number>();
   for (const ev of clickEvents) {
     const key = tidyReferrerKey(ev.referrerHost, ev.referer);
@@ -252,7 +312,6 @@ export async function getAnalyticsOverviewForWorkspace({
     .slice(0, 10)
     .map(([referrer, count]) => ({ referrer, count }));
 
-  // ---- Countries (include UNKNOWN bucket so UI never shows "no data") ----
   const countryMap = new Map<string, number>();
   for (const ev of clickEvents) {
     const bucket = tidyCountryBucket(ev.country);
@@ -264,7 +323,6 @@ export async function getAnalyticsOverviewForWorkspace({
     .slice(0, 12)
     .map(([country, count]) => ({ country, count }));
 
-  // ---- UTMs ----
   const campaignMap = new Map<string, number>();
   const sourceMap = new Map<string, number>();
   const mediumMap = new Map<string, number>();
@@ -273,6 +331,7 @@ export async function getAnalyticsOverviewForWorkspace({
     const camp = tidyUtm(ev.utmCampaign);
     const src = tidyUtm(ev.utmSource);
     const med = tidyUtm(ev.utmMedium);
+
     campaignMap.set(camp, (campaignMap.get(camp) ?? 0) + 1);
     sourceMap.set(src, (sourceMap.get(src) ?? 0) + 1);
     mediumMap.set(med, (mediumMap.get(med) ?? 0) + 1);
@@ -293,7 +352,6 @@ export async function getAnalyticsOverviewForWorkspace({
     .slice(0, 12)
     .map(([medium, count]) => ({ medium, count }));
 
-  // ---- Top links ----
   const linkCounts = new Map<string, number>();
   const linkLastClick = new Map<string, Date>();
   const linkCampaignTop = new Map<string, Map<string, number>>();
@@ -302,10 +360,14 @@ export async function getAnalyticsOverviewForWorkspace({
     linkCounts.set(ev.linkId, (linkCounts.get(ev.linkId) ?? 0) + 1);
 
     const last = linkLastClick.get(ev.linkId);
-    if (!last || ev.createdAt > last) linkLastClick.set(ev.linkId, ev.createdAt);
+    if (!last || ev.createdAt > last) {
+      linkLastClick.set(ev.linkId, ev.createdAt);
+    }
 
     const c = tidyUtm(ev.utmCampaign);
-    if (!linkCampaignTop.has(ev.linkId)) linkCampaignTop.set(ev.linkId, new Map());
+    if (!linkCampaignTop.has(ev.linkId)) {
+      linkCampaignTop.set(ev.linkId, new Map());
+    }
     const m = linkCampaignTop.get(ev.linkId)!;
     m.set(c, (m.get(c) ?? 0) + 1);
   }
@@ -330,6 +392,7 @@ export async function getAnalyticsOverviewForWorkspace({
 
       const campaignCounts = linkCampaignTop.get(id);
       let utmCampaignTop: string | null = null;
+
       if (campaignCounts && campaignCounts.size) {
         const best = Array.from(campaignCounts.entries()).sort((a, b) => b[1] - a[1])[0];
         utmCampaignTop = best ? best[0] : null;
@@ -347,10 +410,129 @@ export async function getAnalyticsOverviewForWorkspace({
     })
     .filter((x) => x.targetUrl);
 
+  let chatTotals = {
+    conversations: 0,
+    messages: 0,
+    leads: 0,
+    messagesToday: 0,
+    sources: chatWidget?._count.sources ?? 0,
+  };
+
+  let chatPrevious = {
+    conversations: 0,
+    messages: 0,
+    leads: 0,
+  };
+
+  let recentConversations: AnalyticsOverviewData["chat"]["recentConversations"] = [];
+
+  if (chatWidget) {
+    const todayStart = startOfDay(new Date());
+
+    const [
+      conversationsCurrent,
+      conversationsPrev,
+      messagesCurrent,
+      messagesPrev,
+      leadsCurrent,
+      leadsPrev,
+      messagesToday,
+      recentConversationsRaw,
+    ] = await Promise.all([
+      prisma.chatConversation.count({
+        where: {
+          widgetId: chatWidget.id,
+          startedAt: { gte: fromDate, lte: toDate },
+        },
+      }),
+      prisma.chatConversation.count({
+        where: {
+          widgetId: chatWidget.id,
+          startedAt: { gte: prevFrom, lte: prevTo },
+        },
+      }),
+      prisma.chatMessage.count({
+        where: {
+          conversation: { widgetId: chatWidget.id },
+          createdAt: { gte: fromDate, lte: toDate },
+        },
+      }),
+      prisma.chatMessage.count({
+        where: {
+          conversation: { widgetId: chatWidget.id },
+          createdAt: { gte: prevFrom, lte: prevTo },
+        },
+      }),
+      prisma.chatLead.count({
+        where: {
+          widgetId: chatWidget.id,
+          createdAt: { gte: fromDate, lte: toDate },
+        },
+      }),
+      prisma.chatLead.count({
+        where: {
+          widgetId: chatWidget.id,
+          createdAt: { gte: prevFrom, lte: prevTo },
+        },
+      }),
+      prisma.chatMessage.count({
+        where: {
+          conversation: { widgetId: chatWidget.id },
+          createdAt: { gte: todayStart },
+        },
+      }),
+      prisma.chatConversation.findMany({
+        where: { widgetId: chatWidget.id },
+        orderBy: { updatedAt: "desc" },
+        take: 5,
+        include: {
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
+          _count: {
+            select: {
+              messages: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    chatTotals = {
+      conversations: conversationsCurrent,
+      messages: messagesCurrent,
+      leads: leadsCurrent,
+      messagesToday,
+      sources: chatWidget._count.sources,
+    };
+
+    chatPrevious = {
+      conversations: conversationsPrev,
+      messages: messagesPrev,
+      leads: leadsPrev,
+    };
+
+    recentConversations = recentConversationsRaw.map((conversation) => ({
+      id: conversation.id,
+      visitorName: conversation.visitorName || "Anonymous visitor",
+      lastMessage: conversation.messages[0]?.content || "No messages yet.",
+      messageCount: conversation._count.messages,
+      updatedAt: conversation.updatedAt.toISOString(),
+      status: String(conversation.status),
+    }));
+  }
+
   return {
     dateRange: { from: fromDate, to: toDate },
     totalEngagements,
-    totals: { linkClicks, contactSubmissions, subscribers, kcardMessages },
+
+    totals: {
+      linkClicks,
+      contactSubmissions,
+      subscribers,
+      kcardMessages,
+    },
 
     previousPeriod: {
       from: prevFrom,
@@ -369,6 +551,7 @@ export async function getAnalyticsOverviewForWorkspace({
       linkClicksPct: pctGrowth(linkClicks, prevLinkClicks),
       contactSubmissionsPct: pctGrowth(contactSubmissions, prevContactSubmissions),
       subscribersPct: pctGrowth(subscribers, prevSubscribers),
+      kcardMessagesPct: pctGrowth(kcardMessages, prevKcardMessages),
     },
 
     topDate,
@@ -380,5 +563,28 @@ export async function getAnalyticsOverviewForWorkspace({
     byUtmSource,
     byUtmMedium,
     topLinks,
+
+    chat: {
+      hasWidget: Boolean(chatWidget),
+      widget: {
+        id: chatWidget?.id ?? null,
+        name: chatWidget?.name ?? null,
+        siteName: chatWidget?.siteName ?? null,
+        status: chatWidget?.status ?? null,
+        publicToken: chatWidget?.publicToken ?? null,
+        sourcesCount: chatWidget?._count.sources ?? 0,
+        allowedDomainsCount: Array.isArray(chatWidget?.allowedDomains)
+          ? chatWidget.allowedDomains.length
+          : 0,
+      },
+      totals: chatTotals,
+      previousPeriod: chatPrevious,
+      growth: {
+        conversationsPct: pctGrowth(chatTotals.conversations, chatPrevious.conversations),
+        messagesPct: pctGrowth(chatTotals.messages, chatPrevious.messages),
+        leadsPct: pctGrowth(chatTotals.leads, chatPrevious.leads),
+      },
+      recentConversations,
+    },
   };
 }

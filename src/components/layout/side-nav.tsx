@@ -27,14 +27,12 @@ const myKompiItems: NavItem[] = [
   { label: "Overview", href: "/", icon: LayoutDashboard },
   { label: "Links", href: "/links", icon: Link2 },
   { label: "K-Cards", href: "/k-cards", icon: LayoutGrid },
-  { label: "QR Menus", href: "/qr-menus", icon: LayoutGrid },
   { label: "Kompi Codes™ (KR)", href: "/kr-codes", icon: QrCode },
   { label: "Bio Pages", href: "/bio-pages", icon: LayoutTemplate },
 ];
 
 const growItems: NavItem[] = [
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
-  // keep existing /campaigns route but present as "Growth"
   { label: "Growth", href: "/campaigns", icon: Rocket },
 ];
 
@@ -56,7 +54,6 @@ export function SideNav() {
         "font-sans text-sm"
       )}
     >
-      {/* Brand */}
       <Link
         href="/"
         className="flex items-center gap-3 px-1.5 py-1.5"
@@ -73,7 +70,6 @@ export function SideNav() {
         <span className="sr-only">Kompi</span>
       </Link>
 
-      {/* Create new */}
       <Link
         href="/links/new"
         className={cn(
@@ -89,7 +85,6 @@ export function SideNav() {
         Create new
       </Link>
 
-      {/* Nav sections */}
       <nav className="flex flex-col gap-5 text-sm font-medium">
         <NavSection title="My Kompi">
           {myKompiItems.map((item) => (
@@ -110,7 +105,6 @@ export function SideNav() {
         </NavSection>
       </nav>
 
-      {/* User */}
       <div className="mt-auto flex items-center gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-bg) px-3 py-3">
         <div className="flex h-8 w-8 items-center justify-center rounded-[999px] bg-(--color-surface) text-xs font-semibold text-(--color-text)">
           U
@@ -136,7 +130,6 @@ type NavSectionProps = {
 function NavSection({ title, children }: NavSectionProps) {
   return (
     <div className="space-y-2">
-      {/* Section header – same family as new page headers */}
       <h2 className="px-2 text-xs font-semibold text-(--color-subtle)">
         {title}
       </h2>
@@ -152,10 +145,7 @@ type NavItemRowProps = {
 
 function NavItemRow({ item, pathname }: NavItemRowProps) {
   const Icon = item.icon;
-  const active =
-    item.href === "/"
-      ? pathname === "/"
-      : pathname?.startsWith(item.href);
+  const active = item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
 
   return (
     <li>
@@ -184,9 +174,7 @@ function NavItemRow({ item, pathname }: NavItemRowProps) {
         <span
           className={cn(
             "truncate",
-            active
-              ? "font-accent italic font-medium" // Instrument Serif Italic
-              : "font-sans font-medium"          // Inter Tight
+            active ? "font-accent italic font-medium" : "font-sans font-medium"
           )}
         >
           {item.label}
