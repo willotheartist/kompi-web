@@ -53,8 +53,9 @@ const FAQS = [
 ];
 
 export const metadata: Metadata = {
-  title: TITLE,
-  description: DESCRIPTION,
+  title: "How Kompi Was Built: Smart Links, QR Codes and Digital Identity Software by Wall & Fifth",
+  description:
+    "A technical case study of how Kompi was designed and engineered by Wall & Fifth using Next.js, React, PostgreSQL, Prisma, NextAuth, Stripe and event-level analytics.",
   keywords: KEYWORDS,
   alternates: { canonical: CANONICAL_URL },
   openGraph: {
@@ -63,6 +64,8 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
     siteName: "Kompi",
+    publishedTime: "2026-09-08",
+    modifiedTime: "2026-09-08",
   },
   twitter: {
     card: "summary",
@@ -140,7 +143,7 @@ export default function Page() {
 
       <main className="bg-white text-neutral-900">
         <header className="border-b border-black/10 bg-linear-to-b from-[#F7F7F4] to-white pt-24 md:pt-28">
-          <div className="mx-auto max-w-5xl px-6 py-12 md:py-18">
+          <div className="mx-auto max-w-5xl px-6 py-12 md:py-16">
             <div className="mb-6 flex flex-wrap items-center gap-2 text-sm font-medium text-neutral-600">
               <Link href="/blog" className="underline underline-offset-4">
                 Kompi Blog
@@ -162,6 +165,9 @@ export default function Page() {
                 Wall & Fifth
               </a>{" "}
               as a custom production software platform rather than a collection of disconnected tools.
+            </p>
+            <p className="mt-4 max-w-4xl text-sm leading-relaxed text-neutral-500">
+              Technical details in this case study reflect the Kompi production codebase as reviewed on 8 September 2026.
             </p>
           </div>
         </header>
