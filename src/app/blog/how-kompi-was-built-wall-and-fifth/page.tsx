@@ -87,16 +87,8 @@ export default function Page() {
     description: DESCRIPTION,
     datePublished: published,
     dateModified: modified,
-    author: {
-      "@type": "Organization",
-      name: "Kompi",
-      url: SITE_URL,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Kompi",
-      url: SITE_URL,
-    },
+    author: { "@type": "Organization", name: "Kompi", url: SITE_URL },
+    publisher: { "@type": "Organization", name: "Kompi", url: SITE_URL },
     about: {
       "@type": "SoftwareApplication",
       name: "Kompi",
@@ -141,168 +133,180 @@ export default function Page() {
     <>
       <Navbar />
 
-      <main className="bg-white text-neutral-900">
-        <header className="border-b border-black/10 bg-linear-to-b from-[#F7F7F4] to-white pt-24 md:pt-28">
-          <div className="mx-auto max-w-5xl px-6 py-12 md:py-16">
-            <div className="mb-6 flex flex-wrap items-center gap-2 text-sm font-medium text-neutral-600">
-              <Link href="/blog" className="underline underline-offset-4">
-                Kompi Blog
-              </Link>
-              <span aria-hidden="true">•</span>
-              <time dateTime={published}>8 September 2026</time>
-              <span aria-hidden="true">•</span>
-              <span>Technical case study</span>
+      <main className="bg-[#f7f7f3] text-[#111111]">
+        <header className="overflow-hidden border-b border-[#e2e2dc] bg-[#f7f7f3] pt-24 md:pt-28">
+          <div className="mx-auto max-w-6xl px-6 pb-16 pt-12 md:px-8 md:pb-24 md:pt-16">
+            <div className="grid items-end gap-12 lg:grid-cols-[1.25fr_0.75fr]">
+              <div>
+                <p className="wf-eyebrow tracking-[0.22em] text-xs">KOMPI / BUILD STORY</p>
+                <h1 className="mt-6 max-w-4xl text-[clamp(3.6rem,7vw,7rem)] font-normal leading-[0.94] tracking-[-0.055em]">
+                  How Kompi was
+                  <br />
+                  <span className="wf-serif-accent">built</span>.
+                </h1>
+              </div>
+
+              <div className="lg:pb-2">
+                <p className="max-w-xl text-lg font-normal leading-[1.65] text-[#595959] md:text-xl">
+                  Smart links, QR experiences, K-Cards and analytics — designed as one calm,
+                  connected product by{" "}
+                  <a
+                    href={WALL_AND_FIFTH_URL}
+                    className="text-[#111111] underline decoration-1 underline-offset-4"
+                  >
+                    Wall & Fifth
+                  </a>
+                  .
+                </p>
+                <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs uppercase tracking-[0.16em] text-[#6b6b6b]">
+                  <Link href="/blog" className="transition hover:text-black">Kompi Blog</Link>
+                  <span className="h-1 w-1 rounded-full bg-[#d4ff3e]" />
+                  <time dateTime={published}>8 September 2026</time>
+                  <span className="h-1 w-1 rounded-full bg-[#d4ff3e]" />
+                  <span>Technical case study</span>
+                </div>
+              </div>
             </div>
-
-            <h1 className="max-w-5xl text-4xl font-extrabold tracking-tight text-neutral-950 md:text-6xl">
-              {TITLE}
-            </h1>
-
-            <p className="mt-7 max-w-4xl text-lg leading-relaxed text-neutral-700 md:text-xl">
-              Kompi is a web application for smart links, QR experiences, digital profile cards and measurable sharing.
-              The product was designed and built by{" "}
-              <a href={WALL_AND_FIFTH_URL} className="font-semibold text-neutral-950 underline underline-offset-4">
-                Wall & Fifth
-              </a>{" "}
-              as a custom production software platform rather than a collection of disconnected tools.
-            </p>
-            <p className="mt-4 max-w-4xl text-sm leading-relaxed text-neutral-500">
-              Technical details in this case study reflect the Kompi production codebase as reviewed on 8 September 2026.
-            </p>
           </div>
         </header>
 
-        <div className="mx-auto max-w-5xl space-y-16 px-6 py-12 md:py-16">
-          <section className="rounded-3xl border border-black/10 bg-[#FFF5A8] p-7 md:p-9">
-            <div className="text-sm font-bold uppercase tracking-[0.16em] text-neutral-700">The short version</div>
-            <p className="mt-4 text-xl font-semibold leading-relaxed text-neutral-950 md:text-2xl">
-              Kompi runs on Next.js and React, uses PostgreSQL through Prisma for its application data, NextAuth for sign-in,
-              Stripe for billing, and a dedicated event model for link and campaign analytics. The same product architecture
-              connects short links, KR/QR codes, K-Cards, workspaces and growth tooling inside one account.
-            </p>
+        <div className="mx-auto max-w-6xl px-6 py-14 md:px-8 md:py-20">
+          <section className="grid gap-8 border-b border-[#d8d8d1] pb-16 md:grid-cols-[0.72fr_1.28fr] md:gap-14 md:pb-24">
+            <div>
+              <p className="wf-eyebrow tracking-[0.2em] text-xs">THE SHORT VERSION</p>
+            </div>
+            <div>
+              <p className="max-w-4xl text-2xl font-normal leading-[1.45] tracking-[-0.02em] text-[#1a1a1a] md:text-4xl">
+                Kompi is a custom production application built on Next.js and React, with PostgreSQL,
+                Prisma, NextAuth, Stripe and first-party event data underneath it.
+              </p>
+              <div className="mt-8 inline-flex rounded-full bg-[#d4ff3e] px-4 py-2 text-sm font-medium">
+                One account. Multiple ways to share. One analytics layer.
+              </div>
+            </div>
           </section>
 
-          <Section title="The product brief: make sharing measurable">
+          <ArticleSection label="01 / PRODUCT" title="Make sharing measurable">
             <p>
               A short link looks simple from the outside. A production link platform is not. It has to create and manage destinations,
               redirect quickly, preserve campaign context, record useful events, separate data between workspaces, protect authenticated
-              areas and give users a dashboard that turns raw activity into something understandable.
+              areas and turn activity into something a person can actually understand.
             </p>
             <p>
               Kompi was built around that broader product problem. Links are one layer; the application also connects{" "}
-              <Link href="/kr-codes" className="underline underline-offset-4">KR Codes</Link>,{" "}
-              <Link href="/k-cards" className="underline underline-offset-4">K-Cards</Link>,{" "}
-              <Link href="/analytics" className="underline underline-offset-4">analytics</Link>, QR experiences and workspace-level tools.
-              That shared foundation is what allows a user to create something once, share it in different formats and still understand
-              what happened afterwards.
+              <Link href="/kr-codes" className="article-link">KR Codes</Link>,{" "}
+              <Link href="/k-cards" className="article-link">K-Cards</Link>,{" "}
+              <Link href="/analytics" className="article-link">analytics</Link>, QR experiences and workspace-level tools.
             </p>
-          </Section>
+          </ArticleSection>
 
-          <Section title="The application architecture">
+          <ArticleSection label="02 / ARCHITECTURE" title="A product system, not a pile of features">
             <p>
-              The current Kompi codebase is a custom Next.js 16 application running React 19. The application layer is written in
-              TypeScript and uses the Next.js App Router for public marketing pages, authenticated product routes and API endpoints.
+              The current Kompi codebase is a custom Next.js 16 application running React 19. TypeScript and the Next.js App Router
+              handle the public marketing site, authenticated product routes and API endpoints, while PostgreSQL and Prisma provide the
+              persistent application layer.
             </p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <FactCard title="Frontend and application layer">
-                Next.js 16, React 19, TypeScript, Tailwind CSS, Radix UI components and Framer Motion provide the interface and route structure.
-              </FactCard>
-              <FactCard title="Data layer">
-                PostgreSQL is the primary database, with Prisma providing the schema, relations and application client.
-              </FactCard>
-              <FactCard title="Authentication">
-                NextAuth supports Google sign-in and email/password credentials while authenticated product routes are protected through middleware.
-              </FactCard>
-              <FactCard title="Billing and product analytics">
-                Stripe is integrated for paid plans and subscriptions, while PostHog is included for product analytics alongside Kompi's first-party event models.
-              </FactCard>
+
+            <div className="mt-10 grid border-y border-[#d8d8d1] md:grid-cols-2">
+              <SystemItem number="01" title="Application">
+                Next.js 16, React 19, TypeScript, Tailwind CSS, Radix UI and Framer Motion.
+              </SystemItem>
+              <SystemItem number="02" title="Data">
+                PostgreSQL as the primary database, modelled and accessed through Prisma.
+              </SystemItem>
+              <SystemItem number="03" title="Identity">
+                NextAuth with Google sign-in and email/password credentials, protected by route middleware.
+              </SystemItem>
+              <SystemItem number="04" title="Commercial layer">
+                Stripe for billing and subscriptions, with PostHog plus Kompi's own event models for analytics.
+              </SystemItem>
             </div>
-          </Section>
+          </ArticleSection>
 
-          <Section title="A data model built around workspaces, not isolated features">
+          <ArticleSection label="03 / DATA MODEL" title="Everything starts with a workspace">
             <p>
-              One of the important architectural decisions is that Kompi's main product objects share a workspace model. A workspace can own
-              links, bio pages, KR codes, forms, subscriber lists, engagement events and additional tools. This makes the account the centre of
-              the product rather than forcing every feature into a separate silo.
+              Kompi's main product objects share a workspace model. A workspace can own links, bio pages, KR codes, forms,
+              subscriber lists, engagement events and additional tools. The account is the centre of the product instead of each
+              feature living in its own silo.
             </p>
             <p>
-              The database schema also models K-Cards, QR menus, contact submissions, courses, loyalty activity, builder sites and Kompi Chat
-              entities. That matters because features can evolve while keeping authentication, ownership and account structure consistent.
+              The schema also models K-Cards, QR menus, contact submissions, courses, loyalty activity, builder sites and Kompi Chat.
+              Features can expand without having to reinvent authentication, ownership or account structure every time.
             </p>
-          </Section>
+          </ArticleSection>
 
-          <Section title="How Kompi's link and analytics engine works">
+          <ArticleSection label="04 / ANALYTICS" title="The redirect is part of the product">
             <p>
-              Each Kompi link stores its destination, short code, status, workspace relationship and aggregate click count. Individual click
-              events can then capture more useful context including UTM source, medium, campaign, content and term, along with referrer and
-              geographic fields.
+              Each Kompi link stores its destination, short code, status, workspace relationship and aggregate click count. Individual
+              click events can capture UTM source, medium, campaign, content and term, plus referrer and geographic context.
             </p>
             <p>
-              Public redirect requests are handled differently from protected dashboard traffic. At the edge, Kompi can read Vercel-provided
-              country, region and city headers and pass that context into the redirect request. The result is a redirect layer designed for both
-              speed and measurement rather than simply forwarding one URL to another.
+              Public redirects are handled differently from protected dashboard traffic. At the edge, Kompi can read Vercel-provided
+              country, region and city headers and pass that context into the redirect request. The result is infrastructure designed
+              for measurement as well as speed.
             </p>
-            <div className="rounded-3xl border border-black/10 bg-neutral-950 p-7 text-white md:p-9">
-              <div className="text-sm font-bold uppercase tracking-[0.16em] text-white/60">Why this matters</div>
-              <p className="mt-4 text-xl leading-relaxed text-white/90">
-                A marketer can use different links or campaign parameters for different placements and still analyse them inside the same product.
-                That turns the redirect itself into useful first-party infrastructure.
-              </p>
-            </div>
-          </Section>
 
-          <Section title="QR codes, KR Codes and K-Cards use the same product foundation">
-            <p>
-              Kompi's QR functionality is not treated as a separate image generator bolted onto the website. KR Code records can hold a destination,
-              style information and workspace ownership. K-Cards have their own public slugs and structured data, while click and message events can
-              be associated back to the relevant card or workspace.
-            </p>
-            <p>
-              That shared architecture is what makes the product more useful than a one-off QR generator: a physical scan, a digital profile card
-              and a short link can all lead back into the same account, analytics and growth workflow.
-            </p>
-          </Section>
-
-          <Section title="Building the public site and the product together">
-            <p>
-              Kompi also has a substantial public content layer: product pages, customer pages, free tools, QR guides and a structured blog. The
-              same Next.js application therefore has to serve two very different jobs — a crawlable public website and a protected SaaS dashboard.
-            </p>
-            <p>
-              Public pages use canonical metadata, index/follow directives and structured data where appropriate. The site also generates a sitemap
-              for core routes, tools and programmatic SEO pages. Keeping this work in the product codebase means product launches and search pages can
-              share the same components, routes and deployment pipeline.
-            </p>
-          </Section>
-
-          <Section title="What Wall & Fifth built">
-            <p>
-              The work by{" "}
-              <a href={WALL_AND_FIFTH_URL} className="font-semibold underline underline-offset-4">
-                Wall & Fifth
-              </a>{" "}
-              covered the product as a complete software system: interface design, product structure, authenticated dashboard flows, database-backed
-              features, link infrastructure, QR experiences, analytics, billing integration and the public-facing web application.
-            </p>
-            <p>
-              The useful distinction is that Kompi is not a marketing site pretending to be software. It is a production application with its own
-              users, workspaces, persistent product objects, authentication, billing, event data and public redirect behaviour. That is the kind of
-              full-stack product build Wall & Fifth specialises in.
-            </p>
-            <a
-              href={WALL_AND_FIFTH_URL}
-              className="inline-flex rounded-2xl bg-black px-5 py-3 font-semibold text-white transition hover:opacity-85"
-            >
-              Visit Wall & Fifth
-            </a>
-          </Section>
-
-          <Section title="The stack at a glance">
-            <div className="overflow-hidden rounded-3xl border border-black/10">
-              <div className="grid grid-cols-2 border-b border-black/10 bg-neutral-50 px-5 py-3 text-sm font-bold text-neutral-700">
-                <div>Layer</div>
-                <div>Kompi implementation</div>
+            <div className="mt-10 grid gap-0 overflow-hidden rounded-[28px] bg-[#111111] text-white md:grid-cols-[0.7fr_1.3fr]">
+              <div className="border-b border-white/10 p-7 md:border-b-0 md:border-r md:p-9">
+                <p className="text-xs uppercase tracking-[0.2em] text-white/50">WHY IT MATTERS</p>
               </div>
+              <div className="p-7 md:p-9">
+                <p className="text-xl font-normal leading-[1.55] text-white/90 md:text-2xl">
+                  Different placements can use different links or campaign parameters while still feeding one coherent analytics view.
+                </p>
+              </div>
+            </div>
+          </ArticleSection>
+
+          <ArticleSection label="05 / PHYSICAL + DIGITAL" title="QR, KR Codes and K-Cards share the same foundation">
+            <p>
+              Kompi's QR functionality is not a separate image generator bolted onto a website. KR Code records can hold a destination,
+              style information and workspace ownership. K-Cards have public slugs and structured data, while click and message events
+              can be associated back to the relevant card or workspace.
+            </p>
+            <p>
+              A physical scan, a digital profile card and a short link can all return to the same account, analytics and growth workflow.
+            </p>
+          </ArticleSection>
+
+          <ArticleSection label="06 / PUBLIC WEB" title="The marketing site and the SaaS live together">
+            <p>
+              Kompi has a substantial public content layer: product pages, customer pages, free tools, QR guides and a structured blog.
+              The same Next.js application therefore serves two jobs — a crawlable public website and a protected SaaS dashboard.
+            </p>
+            <p>
+              Public pages use canonical metadata, index/follow directives and structured data where appropriate, while the sitemap
+              covers core routes, tools and programmatic SEO pages. Product and acquisition work can share the same components and deployment pipeline.
+            </p>
+          </ArticleSection>
+
+          <section className="my-20 overflow-hidden rounded-[34px] bg-[#d4ff3e] px-7 py-10 md:my-28 md:px-12 md:py-14">
+            <div className="grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:items-end">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-black/55">BUILT BY WALL & FIFTH</p>
+                <h2 className="mt-4 text-4xl font-normal leading-[1] tracking-[-0.04em] md:text-6xl">
+                  Product design through to
+                  <br />
+                  <span className="wf-serif-accent">production software</span>.
+                </h2>
+              </div>
+              <div>
+                <p className="text-lg font-normal leading-[1.65] text-black/70">
+                  Wall & Fifth's work on Kompi covered interface design, product structure, authenticated dashboard flows,
+                  database-backed features, link infrastructure, QR experiences, analytics, billing integration and the public web application.
+                </p>
+                <a
+                  href={WALL_AND_FIFTH_URL}
+                  className="wf-btn-primary mt-8 !bg-black !text-white"
+                >
+                  Visit Wall & Fifth
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <ArticleSection label="07 / STACK" title="The stack at a glance">
+            <div className="mt-8 border-t border-[#d8d8d1]">
               {[
                 ["Application", "Next.js 16 + React 19 + TypeScript"],
                 ["Database", "PostgreSQL"],
@@ -314,42 +318,57 @@ export default function Page() {
                 ["QR", "QR generation and styling libraries + Kompi KR Code models"],
                 ["Deployment", "Vercel-compatible Next.js architecture"],
               ].map(([layer, implementation]) => (
-                <div key={layer} className="grid grid-cols-2 border-b border-black/10 px-5 py-4 last:border-b-0">
-                  <div className="font-semibold text-neutral-950">{layer}</div>
-                  <div className="text-neutral-700">{implementation}</div>
+                <div
+                  key={layer}
+                  className="grid gap-2 border-b border-[#d8d8d1] py-5 md:grid-cols-[0.55fr_1.45fr] md:gap-8"
+                >
+                  <div className="text-xs uppercase tracking-[0.16em] text-[#777]">{layer}</div>
+                  <div className="text-base font-normal text-[#222] md:text-lg">{implementation}</div>
                 </div>
               ))}
             </div>
-          </Section>
+          </ArticleSection>
 
-          <section id="faq" className="space-y-7">
-            <div>
-              <div className="text-sm font-bold uppercase tracking-[0.16em] text-neutral-500">FAQ</div>
-              <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-neutral-950 md:text-4xl">Questions about the Kompi build</h2>
-            </div>
-            <div className="space-y-4">
-              {FAQS.map((item) => (
-                <article key={item.q} className="rounded-3xl border border-black/10 bg-white p-6 md:p-7">
-                  <h3 className="text-xl font-bold text-neutral-950">{item.q}</h3>
-                  <p className="mt-3 leading-relaxed text-neutral-700">{item.a}</p>
-                </article>
-              ))}
+          <section id="faq" className="border-t border-[#d8d8d1] py-20 md:py-28">
+            <div className="grid gap-12 md:grid-cols-[0.72fr_1.28fr] md:gap-14">
+              <div>
+                <p className="wf-eyebrow tracking-[0.2em] text-xs">FAQ</p>
+                <h2 className="mt-5 max-w-md text-4xl font-normal leading-[1.04] tracking-[-0.04em] md:text-5xl">
+                  Questions about the <span className="wf-serif-accent">build</span>.
+                </h2>
+              </div>
+              <div className="divide-y divide-[#d8d8d1] border-y border-[#d8d8d1]">
+                {FAQS.map((item) => (
+                  <article key={item.q} className="py-7 md:py-8">
+                    <h3 className="text-lg font-medium tracking-[-0.01em] text-[#111] md:text-xl">{item.q}</h3>
+                    <p className="mt-3 max-w-3xl text-base font-normal leading-[1.7] text-[#626262]">{item.a}</p>
+                  </article>
+                ))}
+              </div>
             </div>
           </section>
 
-          <section className="rounded-3xl border border-black/10 bg-[#F7F7F4] p-7 md:p-9">
-            <h2 className="text-2xl font-extrabold tracking-tight text-neutral-950">Explore the product</h2>
-            <p className="mt-3 max-w-3xl leading-relaxed text-neutral-700">
-              See Kompi's live product pages for the user-facing side of the platform, or visit Wall & Fifth for custom product design and software development.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/features/url-shortener" className="rounded-2xl border border-black/10 bg-white px-4 py-2.5 font-semibold">Smart links</Link>
-              <Link href="/kr-codes" className="rounded-2xl border border-black/10 bg-white px-4 py-2.5 font-semibold">KR Codes</Link>
-              <Link href="/k-cards" className="rounded-2xl border border-black/10 bg-white px-4 py-2.5 font-semibold">K-Cards</Link>
-              <Link href="/analytics" className="rounded-2xl border border-black/10 bg-white px-4 py-2.5 font-semibold">Analytics</Link>
-              <a href={WALL_AND_FIFTH_URL} className="rounded-2xl bg-black px-4 py-2.5 font-semibold text-white">Wall & Fifth</a>
+          <section className="border-t border-[#d8d8d1] py-16 md:py-20">
+            <div className="grid gap-8 md:grid-cols-[0.72fr_1.28fr] md:gap-14">
+              <p className="wf-eyebrow tracking-[0.2em] text-xs">EXPLORE KOMPI</p>
+              <div>
+                <h2 className="text-3xl font-normal tracking-[-0.035em] md:text-4xl">See the product in action.</h2>
+                <div className="mt-8 flex flex-wrap gap-2.5">
+                  <PillLink href="/features/url-shortener">Smart links</PillLink>
+                  <PillLink href="/kr-codes">KR Codes</PillLink>
+                  <PillLink href="/k-cards">K-Cards</PillLink>
+                  <PillLink href="/analytics">Analytics</PillLink>
+                  <a href={WALL_AND_FIFTH_URL} className="rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white">
+                    Wall & Fifth
+                  </a>
+                </div>
+              </div>
             </div>
           </section>
+
+          <p className="pb-4 text-xs leading-relaxed text-[#8a8a84]">
+            Technical details in this case study reflect the Kompi production codebase as reviewed on 8 September 2026.
+          </p>
         </div>
       </main>
 
@@ -368,20 +387,55 @@ export default function Page() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function ArticleSection({
+  label,
+  title,
+  children,
+}: {
+  label: string;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="space-y-5">
-      <h2 className="text-3xl font-extrabold tracking-tight text-neutral-950 md:text-4xl">{title}</h2>
-      <div className="space-y-5 text-base leading-relaxed text-neutral-700 md:text-lg">{children}</div>
+    <section className="grid gap-8 border-b border-[#d8d8d1] py-16 md:grid-cols-[0.72fr_1.28fr] md:gap-14 md:py-24">
+      <div>
+        <p className="text-xs uppercase tracking-[0.2em] text-[#777]">{label}</p>
+        <h2 className="mt-5 max-w-md text-3xl font-normal leading-[1.08] tracking-[-0.035em] md:text-5xl">{title}</h2>
+      </div>
+      <div className="space-y-6 text-base font-normal leading-[1.78] text-[#606060] md:text-lg [&_.article-link]:text-[#111] [&_.article-link]:underline [&_.article-link]:decoration-1 [&_.article-link]:underline-offset-4">
+        {children}
+      </div>
     </section>
   );
 }
 
-function FactCard({ title, children }: { title: string; children: React.ReactNode }) {
+function SystemItem({
+  number,
+  title,
+  children,
+}: {
+  number: string;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="rounded-3xl border border-black/10 bg-neutral-50 p-6">
-      <h3 className="text-lg font-bold text-neutral-950">{title}</h3>
-      <p className="mt-2 leading-relaxed text-neutral-700">{children}</p>
+    <div className="border-b border-[#d8d8d1] py-7 md:min-h-48 md:border-b-0 md:border-r md:p-8 md:odd:border-b md:even:border-r-0 md:even:border-b">
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="text-lg font-medium tracking-[-0.015em]">{title}</h3>
+        <span className="text-xs tracking-[0.16em] text-[#999]">{number}</span>
+      </div>
+      <p className="mt-5 max-w-md text-sm font-normal leading-[1.7] text-[#676767] md:text-base">{children}</p>
     </div>
+  );
+}
+
+function PillLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="rounded-full border border-[#d4d4cd] bg-white px-5 py-2.5 text-sm font-medium transition hover:border-black"
+    >
+      {children}
+    </Link>
   );
 }
