@@ -56,10 +56,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Tools hub
     { url: `${baseUrl}/tools`, lastModified, changeFrequency: "weekly", priority: 0.75 },
 
-    // Blog hub + manually routed case study
+    // Blog hub + manually routed editorial articles
     { url: `${baseUrl}/blog`, lastModified, changeFrequency: "weekly", priority: 0.8 },
     {
       url: `${baseUrl}/blog/how-kompi-was-built-wall-and-fifth`,
+      lastModified: new Date("2026-09-08"),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/how-to-build-a-smart-link-platform`,
       lastModified: new Date("2026-09-08"),
       changeFrequency: "monthly",
       priority: 0.7,
