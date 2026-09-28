@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
 import { checkUrlSafety } from "@/lib/url-safety";
+import { checkLinkCreationAllowed } from "@/lib/abuse";
 
 const FREE_LINK_LIMIT = 20;
 const CREATOR_LINK_LIMIT = 1_000_000;
@@ -131,6 +132,9 @@ export async function POST(req: Request) {
     if (!targetUrl) {
       return new NextResponse("Target URL is required", { status: 400 });
     }
+
+    const blocked = await checkLinkCreationAllowed(user);
+    if (blocked) return new NextResponse(blocked, { status: 429 });
 
     const safety = await checkUrlSafety(targetUrl);
     if (!safety.ok) {

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { checkUrlSafety } from "@/lib/url-safety";
 import { z } from "zod";
 
 type RouteContext = {
@@ -194,6 +195,16 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     // If not, update the KRCode.destination directly.
     if (finalUrl) {
       if (existing.shortCodeId) {
+        const safety = await checkUrlSafety(finalUrl);
+        if (!safety.ok) {
+          return new NextResponse(
+            safety.reason === "unsafe"
+              ? "This destination has been flagged as unsafe."
+              : "Enter a valid http(s) URL",
+            { status: 400 },
+          );
+        }
+
         await prisma.link.update({
           where: { id: existing.shortCodeId },
           data: {

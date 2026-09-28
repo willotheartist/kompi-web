@@ -122,7 +122,7 @@ export async function GET(req: Request, ctx: RouteContext) {
   const { code } = await ctx.params;
 
   const link = await prisma.link.findFirst({
-    where: { code, isActive: true },
+    where: { code, isActive: true, workspace: { owner: { bannedAt: null } } },
     select: {
       id: true,
       targetUrl: true,

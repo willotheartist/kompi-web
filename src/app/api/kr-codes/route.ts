@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { checkUrlSafety } from "@/lib/url-safety";
+import { checkLinkCreationAllowed } from "@/lib/abuse";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
 
 const APP_URL =
@@ -175,6 +177,19 @@ export async function POST(req: Request) {
     let qrDestination = finalUrl;
 
     if (body.createShortLink) {
+      const blocked = await checkLinkCreationAllowed(user);
+      if (blocked) return new NextResponse(blocked, { status: 429 });
+
+      const safety = await checkUrlSafety(finalUrl);
+      if (!safety.ok) {
+        return new NextResponse(
+          safety.reason === "unsafe"
+            ? "This destination has been flagged as unsafe."
+            : "Enter a valid http(s) URL",
+          { status: 400 },
+        );
+      }
+
       let code: string;
       while (true) {
         const candidate = generateCode();

@@ -20,6 +20,8 @@ model User {
   name           String?
   passwordHash   String?
   marketingOptIn Boolean     @default(false)
+  bannedAt       DateTime?
+  bannedReason   String?
   accounts       Account[]
   kCards         KCard[]
   krCodes        KRCode[]

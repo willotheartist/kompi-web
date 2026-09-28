@@ -97,10 +97,11 @@ export const authOptions: NextAuthOptions = {
             name: true,
             image: true,
             passwordHash: true,
+            bannedAt: true,
           },
         });
 
-        if (!user || !user.passwordHash) {
+        if (!user || !user.passwordHash || user.bannedAt) {
           return null;
         }
 
@@ -122,6 +123,16 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
 
   callbacks: {
+    async signIn({ user }) {
+      const email = user.email?.trim().toLowerCase();
+      if (!email) return true;
+      const existing = await prisma.user.findUnique({
+        where: { email },
+        select: { bannedAt: true },
+      });
+      return !existing?.bannedAt;
+    },
+
     async jwt({ token, user, trigger, session }) {
       const t: TokenWithUser = token as TokenWithUser;
 
@@ -213,6 +224,7 @@ export async function requireUser() {
 
   if (userId) {
     const byId = await prisma.user.findUnique({ where: { id: userId } });
+    if (byId?.bannedAt) redirect("/signin?error=AccessDenied");
     if (byId) {
       // ✅ ensure default workspace exists for all users
       const ws = await prisma.workspace.findFirst({
@@ -239,6 +251,7 @@ export async function requireUser() {
   if (!user) {
     user = await prisma.user.create({ data: { email } });
   }
+  if (user.bannedAt) redirect("/signin?error=AccessDenied");
 
   // ✅ ensure default workspace exists
   const ws = await prisma.workspace.findFirst({

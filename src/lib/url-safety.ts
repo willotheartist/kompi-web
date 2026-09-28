@@ -10,6 +10,44 @@ const THREAT_TYPES = ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"];
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const cache = new Map<string, { unsafe: boolean; expires: number }>();
 
+// Free dynamic-DNS and tunnelling services. They're rarely used for legitimate
+// short-link destinations and are a favourite for throwaway phishing pages.
+const BLOCKED_HOST_SUFFIXES = [
+  // afraid.org FreeDNS
+  "twilightparadox.com",
+  "mooo.com",
+  "chickenkiller.com",
+  "strangled.net",
+  "crabdance.com",
+  "jumpingcrab.com",
+  "ignorelist.com",
+  // other dynamic DNS
+  "duckdns.org",
+  "ddns.net",
+  "hopto.org",
+  "zapto.org",
+  "sytes.net",
+  "no-ip.org",
+  "no-ip.biz",
+  "dynu.net",
+  // tunnels
+  "ngrok.io",
+  "ngrok.app",
+  "ngrok-free.app",
+  "ngrok-free.dev",
+  "trycloudflare.com",
+  "loca.lt",
+  "serveo.net",
+  "localhost.run",
+];
+
+function isBlockedHost(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/\.$/, "");
+  // Raw IPv4 / IPv6 destinations
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.startsWith("[")) return true;
+  return BLOCKED_HOST_SUFFIXES.some((d) => host === d || host.endsWith(`.${d}`));
+}
+
 export type UrlSafetyResult =
   | { ok: true }
   | { ok: false; reason: "invalid" | "unsafe" };
@@ -59,6 +97,7 @@ async function isFlaggedByWebRisk(url: string): Promise<boolean> {
 export async function checkUrlSafety(raw: string): Promise<UrlSafetyResult> {
   const url = parseHttpUrl(raw);
   if (!url) return { ok: false, reason: "invalid" };
+  if (isBlockedHost(url.hostname)) return { ok: false, reason: "unsafe" };
   if (await isFlaggedByWebRisk(url.toString())) {
     return { ok: false, reason: "unsafe" };
   }
