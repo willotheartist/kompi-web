@@ -1,10 +1,11 @@
 // src/lib/url-safety.ts
-// Guards user-supplied destination URLs against Google Safe Browsing so Kompi
-// short links can't be used to forward people to phishing/malware sites.
+// Guards user-supplied destination URLs against Google Web Risk (the commercial
+// Safe Browsing API) so Kompi short links can't be used to forward people to
+// phishing/malware sites.
 // Requires GOOGLE_SAFE_BROWSING_API_KEY; without it only the scheme check runs.
 
-const SAFE_BROWSING_ENDPOINT =
-  "https://safebrowsing.googleapis.com/v4/threatMatches:find";
+const WEB_RISK_ENDPOINT = "https://webrisk.googleapis.com/v1/uris:search";
+const THREAT_TYPES = ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"];
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const cache = new Map<string, { unsafe: boolean; expires: number }>();
@@ -23,7 +24,7 @@ function parseHttpUrl(raw: string): URL | null {
   }
 }
 
-async function isFlaggedBySafeBrowsing(url: string): Promise<boolean> {
+async function isFlaggedByWebRisk(url: string): Promise<boolean> {
   const key = process.env.GOOGLE_SAFE_BROWSING_API_KEY;
   if (!key) {
     console.warn("URL_SAFETY: GOOGLE_SAFE_BROWSING_API_KEY not set, skipping lookup");
@@ -34,23 +35,9 @@ async function isFlaggedBySafeBrowsing(url: string): Promise<boolean> {
   if (cached && cached.expires > Date.now()) return cached.unsafe;
 
   try {
-    const res = await fetch(`${SAFE_BROWSING_ENDPOINT}?key=${key}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client: { clientId: "kompi", clientVersion: "1.0" },
-        threatInfo: {
-          threatTypes: [
-            "MALWARE",
-            "SOCIAL_ENGINEERING",
-            "UNWANTED_SOFTWARE",
-            "POTENTIALLY_HARMFUL_APPLICATION",
-          ],
-          platformTypes: ["ANY_PLATFORM"],
-          threatEntryTypes: ["URL"],
-          threatEntries: [{ url }],
-        },
-      }),
+    const params = new URLSearchParams({ uri: url, key });
+    for (const t of THREAT_TYPES) params.append("threatTypes", t);
+    const res = await fetch(`${WEB_RISK_ENDPOINT}?${params}`, {
       signal: AbortSignal.timeout(2500),
     });
 
@@ -59,8 +46,8 @@ async function isFlaggedBySafeBrowsing(url: string): Promise<boolean> {
       return false;
     }
 
-    const data = (await res.json()) as { matches?: unknown[] };
-    const unsafe = Array.isArray(data.matches) && data.matches.length > 0;
+    const data = (await res.json()) as { threat?: { threatTypes?: string[] } };
+    const unsafe = (data.threat?.threatTypes?.length ?? 0) > 0;
     cache.set(url, { unsafe, expires: Date.now() + CACHE_TTL_MS });
     return unsafe;
   } catch (error) {
@@ -72,7 +59,7 @@ async function isFlaggedBySafeBrowsing(url: string): Promise<boolean> {
 export async function checkUrlSafety(raw: string): Promise<UrlSafetyResult> {
   const url = parseHttpUrl(raw);
   if (!url) return { ok: false, reason: "invalid" };
-  if (await isFlaggedBySafeBrowsing(url.toString())) {
+  if (await isFlaggedByWebRisk(url.toString())) {
     return { ok: false, reason: "unsafe" };
   }
   return { ok: true };
