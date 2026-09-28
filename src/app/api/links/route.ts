@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
+import { checkUrlSafety } from "@/lib/url-safety";
 
 const FREE_LINK_LIMIT = 20;
 const CREATOR_LINK_LIMIT = 1_000_000;
@@ -129,6 +130,16 @@ export async function POST(req: Request) {
 
     if (!targetUrl) {
       return new NextResponse("Target URL is required", { status: 400 });
+    }
+
+    const safety = await checkUrlSafety(targetUrl);
+    if (!safety.ok) {
+      return new NextResponse(
+        safety.reason === "unsafe"
+          ? "This destination has been flagged as unsafe and can't be shortened."
+          : "Enter a valid http(s) URL",
+        { status: 400 }
+      );
     }
 
     const workspace =

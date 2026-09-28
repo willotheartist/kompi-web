@@ -1,6 +1,7 @@
 // src/app/r/[code]/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { checkUrlSafety } from "@/lib/url-safety";
 
 function normalizeTargetUrl(raw: string): string {
   const trimmed = raw.trim();
@@ -192,6 +193,19 @@ export async function GET(req: Request, ctx: RouteContext) {
 
   const target = normalizeTargetUrl(link.targetUrl);
   if (!target) return new NextResponse("Invalid target", { status: 500 });
+
+  const safety = await checkUrlSafety(target);
+  if (!safety.ok) {
+    if (safety.reason === "unsafe") {
+      await prisma.link
+        .update({ where: { id: link.id }, data: { isActive: false } })
+        .catch((err) => console.error("Failed to disable unsafe link", err));
+    }
+    return new NextResponse(
+      "This link has been disabled because its destination was flagged as unsafe.",
+      { status: 410 }
+    );
+  }
 
   return NextResponse.redirect(target, 302);
 }

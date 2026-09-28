@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { checkUrlSafety } from "@/lib/url-safety";
 
 async function getUserLink(userId: string, id: string) {
   return prisma.link.findFirst({
@@ -64,7 +65,18 @@ export async function PATCH(
     }
 
     if (typeof body.targetUrl === "string") {
-      data.targetUrl = body.targetUrl;
+      const trimmed = body.targetUrl.trim();
+      const targetUrl = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+      const safety = await checkUrlSafety(targetUrl);
+      if (!safety.ok) {
+        return new NextResponse(
+          safety.reason === "unsafe"
+            ? "This destination has been flagged as unsafe."
+            : "Enter a valid http(s) URL",
+          { status: 400 }
+        );
+      }
+      data.targetUrl = targetUrl;
     }
 
     if (typeof body.url === "string") {
