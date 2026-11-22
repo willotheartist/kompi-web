@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import sharp from 'sharp';
 import jsQR from 'jsqr';
-import { DEFAULT_KR_STYLE, KR_PRESETS, KRStyleSchema, presetStyle, normalizeKRStyle, designChecks } from '../src/lib/kr-design';
+import { DEFAULT_KR_STYLE, KR_PRESETS, KRStyleSchema, presetStyle, normalizeHexColor, normalizeKRStyle, designChecks } from '../src/lib/kr-design';
 import { renderKRSvg } from '../src/lib/kr-render';
 import { buildKRContent, readKRContent } from '../src/lib/kr-content';
 
@@ -11,6 +11,18 @@ async function decode(svg: string) {
   return jsQR(new Uint8ClampedArray(data),info.width,info.height)?.data;
 }
 const payloads = ['https://kompi.app/r/AbC123','https://example.com/a-longer-destination?utm_source=business-card&utm_campaign=launch','WIFI:T:WPA;S:Studio;P:correct-horse;H:true;;'];
+test('custom hex colours survive save validation, reload and export',()=>{
+  for (const input of ['2A1F1C','#2A1F1C','2a1f1c','  #2a1f1c  ']) assert.equal(normalizeHexColor(input),'#2A1F1C');
+  assert.equal(normalizeHexColor('#abc'),'#AABBCC');
+  for (const input of ['', '12', '12345', 'GGGGGG', '##2A1F1C']) assert.equal(normalizeHexColor(input),null);
+  const saved=KRStyleSchema.parse({fg:'2a1f1c',eyeColor:'  #135647  ',bg:'fff',frameColor:'293341'});
+  const restored=normalizeKRStyle(JSON.parse(JSON.stringify(saved)));
+  assert.equal(restored.fg,'#2A1F1C');assert.equal(restored.eyeColor,'#135647');
+  assert.equal(restored.bg,'#FFFFFF');assert.equal(restored.frameColor,'#293341');
+  const svg=renderKRSvg(payloads[0],restored);
+  assert.ok(svg.includes('fill="#2A1F1C"'));assert.ok(svg.includes('fill="#135647"'));
+  assert.equal(KRStyleSchema.safeParse({eyeColor:'wrong'}).success,false);
+});
 for (const preset of KR_PRESETS) for (const width of [256,512]) {
   test(`${preset.name} at ${width}px decodes real content`,async()=>{
     for (const payload of payloads) assert.equal(await decode(renderKRSvg(payload,presetStyle(preset),width)),payload);

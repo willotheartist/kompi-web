@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Check, CheckCheck, ChevronDown, Download, FileText, Globe2, Grid2X2, ImagePlus, Info, LayoutTemplate, Loader2, Mail, MapPin, MessageCircle, Palette, Phone, Plus, QrCode, RotateCcw, ScanLine, Settings2, ShieldCheck, Smartphone, Type, UserRound, Wifi, X } from "lucide-react";
-import { DEFAULT_KR_STYLE, KR_PRESETS, designChecks, normalizeKRStyle, presetStyle, type KRStyle } from "@/lib/kr-design";
+import { DEFAULT_KR_STYLE, KR_PRESETS, designChecks, normalizeHexColor, normalizeKRStyle, presetStyle, type KRStyle } from "@/lib/kr-design";
 import { renderKRSvg } from "@/lib/kr-render";
 import { buildKRContent, isWebType, KR_TYPES, readKRContent, type KRContent, type KRType } from "@/lib/kr-content";
 import styles from "./qr-studio.module.css";
@@ -28,13 +28,32 @@ export function QRArtwork({value,design,className=""}: {value:string;design:KRSt
 function Field({label,children,hint}: {label:string;children:ReactNode;hint?:string}) {
   return <label className={styles.field}><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>;
 }
-function ColorField({label,value,onChange}: {label:string;value:string;onChange:(value:string)=>void}) {
-  const [text,setText]=useState(value);
-  useEffect(()=>setText(value),[value]);
-  return <div className={styles.field}><span>{label}</span><div className={styles.colorInput}>
-    <input type="color" aria-label={`${label} picker`} value={value === "transparent" ? "#FFFFFF" : value} onChange={e=>onChange(e.target.value.toUpperCase())}/>
-    <input aria-label={`${label} hex`} value={text} maxLength={7} onChange={e=>{setText(e.target.value);if (/^#[a-f0-9]{6}$/i.test(e.target.value)) onChange(e.target.value.toUpperCase());}} onBlur={()=>setText(value)}/>
-  </div></div>;
+function ColorField({label,value,onChange,onValidityChange}: {label:string;value:string;onChange:(value:string)=>void;onValidityChange:(label:string,valid:boolean)=>void}) {
+  const inputId=useId();
+  const [text,setText]=useState(value.replace(/^#/, ""));
+  const [invalid,setInvalid]=useState(false);
+  useEffect(()=>{setText(value.replace(/^#/, ""));setInvalid(false);onValidityChange(label,true);},[value,label,onValidityChange]);
+  useEffect(()=>()=>onValidityChange(label,true),[label,onValidityChange]);
+  function commit() {
+    if (text === "transparent" && value === "transparent") return;
+    const hex=normalizeHexColor(text);
+    setInvalid(!hex);onValidityChange(label,Boolean(hex));
+    if (hex) {setText(hex.slice(1));if (hex!==value) onChange(hex);}
+  }
+  return <div className={styles.field}><label htmlFor={inputId}>{label}</label><div className={styles.colorInput} data-invalid={invalid || undefined}>
+    <input type="color" aria-label={`${label} picker`} value={value === "transparent" ? "#FFFFFF" : value} onChange={e=>{const hex=e.target.value.toUpperCase();setText(hex.slice(1));setInvalid(false);onValidityChange(label,true);if(hex!==value)onChange(hex);}}/>
+    <span className={styles.hexPrefix} aria-hidden="true">#</span>
+    <input id={inputId} aria-label={`${label} hex`} aria-invalid={invalid} aria-describedby={`${inputId}-hint`} value={text} maxLength={32} placeholder="2A1F1C" autoComplete="off" autoCorrect="off" spellCheck={false} onChange={e=>{
+      const next=e.target.value.trim().replace(/^#/, "").toUpperCase();
+      setText(next);setInvalid(false);
+      const hex=normalizeHexColor(next);onValidityChange(label,Boolean(hex));
+      // Apply complete six-digit values immediately; shorthand commits on Enter or blur.
+      if (next.length===6 && hex && hex!==value) onChange(hex);
+    }} onBlur={commit} onKeyDown={e=>{
+      if(e.key==="Enter"){e.preventDefault();commit();}
+      if(e.key==="Escape"){e.preventDefault();setText(value.replace(/^#/, ""));setInvalid(false);onValidityChange(label,true);}
+    }}/>
+  </div><small id={`${inputId}-hint`} className={invalid ? styles.colorError : undefined}>{invalid ? "Enter a valid 3- or 6-digit hex code." : "Hex code · paste with or without #"}</small></div>;
 }
 function ShapeSample({kind}: {kind:string}) {
   return <span className={styles.shapeSample} data-shape={kind} aria-hidden="true">{Array.from({length:9},(_,i)=><i key={i}/>)}</span>;
@@ -74,6 +93,9 @@ export default function QRStudio() {
   const [loadingCode,setLoadingCode]=useState(Boolean(codeId));
   const [history,setHistory]=useState<KRStyle[]>([]); const [restored,setRestored]=useState(false);
   const [draftStatus,setDraftStatus]=useState(""); const [logoLoading,setLogoLoading]=useState(false);
+  const [invalidColors,setInvalidColors]=useState<Record<string,boolean>>({});
+  const colorValidity=useCallback((label:string,valid:boolean)=>setInvalidColors(current=>current[label]===!valid ? current : {...current,[label]:!valid}),[]);
+  const hasInvalidColors=Object.values(invalidColors).some(Boolean);
   const uploadRef=useRef<HTMLInputElement>(null);
   const built=useMemo(()=>buildKRContent(type,content),[type,content]);
   const snapshot=JSON.stringify({title,type,content,design});
@@ -134,6 +156,7 @@ export default function QRStudio() {
   function changeType(next:KRType) {setType(next);setShowTypes(false);setTab("content");setError("");}
   async function saveCode() {
     setError("");setNotice("");
+    if (hasInvalidColors) {setError("Finish entering a valid colour before saving.");setTab("customize");return;}
     if (codeId && !saved) {setError("Reload this saved code before making changes.");return;}
     if (!built.value || built.error || tooLong) {setError(tooLong ? "Shorten this content before saving." : built.error || "Add a destination first.");setTab("content");return;}
     if (auth === "guest") {window.location.href=`/signin?callbackUrl=${encodeURIComponent(`/kr-codes${codeId ? `?krcodeId=${codeId}` : ""}`)}`;return;}
@@ -160,6 +183,7 @@ export default function QRStudio() {
     } catch(err) {setError(err instanceof Error ? err.message : "Could not add this logo.");} finally {URL.revokeObjectURL(url);setLogoLoading(false);}
   }
   async function exportCode() {
+    if (hasInvalidColors) {setError("Finish entering a valid colour before exporting.");setTab("customize");return;}
     if (!built.value || tooLong) {setError(built.error || "Shorten your content before exporting.");setTab("content");return;}
     setExporting(true);setError("");
     try {await downloadDesign(qrValue,design,format,title || "kompi-code");setNotice("Download prepared. Test your code with a phone before printing.");}
@@ -197,11 +221,11 @@ export default function QRStudio() {
           </>}
           {tab === "customize" && <>
             <div className={styles.sectionHeading}><div><h2>The details make it yours.</h2><p>Every change appears in your preview.</p></div><button className={styles.iconButton} title="Undo design change" aria-label="Undo design change" disabled={!history.length} onClick={()=>{setDesign(history[history.length-1]);setHistory(h=>h.slice(0,-1));setPreset("");}}><RotateCcw size={17}/></button></div>
-            <section className={styles.controlSection}><h3>Colours</h3><div className={styles.twoColumns}><ColorField label="Code" value={design.fg} onChange={fg=>update({fg,eyeColor:fg})}/><ColorField label="Background" value={design.bg} onChange={bg=>update({bg})}/></div><div className={styles.paletteRow}>{["#111111","#334155","#2545AD","#354B36","#793A2B","#15565B"].map(c=><button key={c} aria-label={`Use ${c} ink`} aria-pressed={design.fg===c} style={{background:c}} onClick={()=>update({fg:c,eyeColor:c,frameColor:c})}>{design.fg===c && <Check size={13}/>}</button>)}<span>Quick palette</span></div></section>
+            <section className={styles.controlSection}><h3>Colours</h3><div className={styles.twoColumns}><ColorField onValidityChange={colorValidity} label="Code" value={design.fg} onChange={fg=>update({fg})}/><ColorField onValidityChange={colorValidity} label="Background" value={design.bg} onChange={bg=>update({bg})}/></div><div className={styles.paletteRow}>{["#111111","#334155","#2545AD","#354B36","#793A2B","#15565B"].map(c=><button key={c} aria-label={`Use ${c} ink`} aria-pressed={design.fg===c} style={{background:c}} onClick={()=>update({fg:c})}>{design.fg===c && <Check size={13}/>}</button>)}<span>Code palette</span></div></section>
             <section className={styles.controlSection}><h3>Code pattern</h3><div className={styles.shapeGrid}>{dotStyles.map(s=><button key={s.id} aria-pressed={design.dotsType===s.id} onClick={()=>update({dotsType:s.id})}><ShapeSample kind={s.id}/><span>{s.name}</span></button>)}</div></section>
-            <section className={styles.controlSection}><h3>Corner details</h3><div className={styles.twoColumns}><Field label="Outer shape"><div className={styles.segmented}>{[{id:"square",name:"Square"},{id:"extra-rounded",name:"Soft"},{id:"dot",name:"Round"}].map(s=><button key={s.id} aria-label={`${s.name} outer corners`} aria-pressed={design.cornersSquareType===s.id} onClick={()=>update({cornersSquareType:s.id as KRStyle["cornersSquareType"]})}><span className={styles.eyeSample} data-shape={s.id}/></button>)}</div></Field><Field label="Inner shape"><div className={styles.segmented}>{["square","rounded","dot"].map(s=><button key={s} aria-label={`${s} inner corners`} aria-pressed={design.cornersDotType===s} onClick={()=>update({cornersDotType:s as KRStyle["cornersDotType"]})}><span className={styles.innerSample} data-shape={s}/></button>)}</div></Field></div><ColorField label="Corner colour" value={design.eyeColor} onChange={eyeColor=>update({eyeColor})}/></section>
+            <section className={styles.controlSection}><h3>Corner details</h3><div className={styles.twoColumns}><Field label="Outer shape"><div className={styles.segmented}>{[{id:"square",name:"Square"},{id:"extra-rounded",name:"Soft"},{id:"dot",name:"Round"}].map(s=><button key={s.id} aria-label={`${s.name} outer corners`} aria-pressed={design.cornersSquareType===s.id} onClick={()=>update({cornersSquareType:s.id as KRStyle["cornersSquareType"]})}><span className={styles.eyeSample} data-shape={s.id}/></button>)}</div></Field><Field label="Inner shape"><div className={styles.segmented}>{["square","rounded","dot"].map(s=><button key={s} aria-label={`${s} inner corners`} aria-pressed={design.cornersDotType===s} onClick={()=>update({cornersDotType:s as KRStyle["cornersDotType"]})}><span className={styles.innerSample} data-shape={s}/></button>)}</div></Field></div><ColorField onValidityChange={colorValidity} label="Corner colour" value={design.eyeColor} onChange={eyeColor=>update({eyeColor})}/></section>
             <section className={styles.controlSection}><div className={styles.row}><h3>Your logo</h3><span className={styles.subtle}>Optional</span></div><input ref={uploadRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={uploadLogo} className={styles.hidden}/>{design.logoUrl ? <div className={styles.uploadedLogo}><img src={design.logoUrl} alt="Uploaded logo"/><div><strong>Logo added</strong><span>High error correction enabled</span></div><button className={styles.iconButton} aria-label="Remove logo" onClick={()=>update({logoUrl:null,logoEnabled:false})}><X size={18}/></button></div> : <button className={styles.uploadArea} disabled={logoLoading} onClick={()=>uploadRef.current?.click()}>{logoLoading ? <Loader2 size={22} className={styles.spinner}/> : <ImagePlus size={22}/>}<strong>{logoLoading ? "Preparing logo…" : "Upload your logo"}</strong><span>PNG, JPG or WebP · up to 5 MB</span></button>}{design.logoUrl && <Field label="Logo size"><input type="range" min="12" max="22" value={design.logoSize*100} onChange={e=>update({logoSize:Number(e.target.value)/100})}/></Field>}</section>
-            <section className={styles.controlSection}><h3>Give it a frame</h3><div className={styles.frameGrid}>{frames.map(f=><button key={f.id} aria-pressed={design.frameVariant===f.id} onClick={()=>update({frameVariant:f.id})}><span className={styles.frameSample} data-frame={f.id}><QrCode size={24}/>{f.id!=="none" && f.id!=="outline" && <i/>}</span><span>{f.name}</span></button>)}</div>{design.frameVariant!=="none" && <div className={styles.twoColumns}>{design.frameVariant!=="outline" && <Field label="Call to action"><input value={design.frameLabel} maxLength={40} onChange={e=>update({frameLabel:e.target.value})}/></Field>}<ColorField label="Frame colour" value={design.frameColor} onChange={frameColor=>update({frameColor})}/></div>}</section>
+            <section className={styles.controlSection}><h3>Give it a frame</h3><div className={styles.frameGrid}>{frames.map(f=><button key={f.id} aria-pressed={design.frameVariant===f.id} onClick={()=>update({frameVariant:f.id})}><span className={styles.frameSample} data-frame={f.id}><QrCode size={24}/>{f.id!=="none" && f.id!=="outline" && <i/>}</span><span>{f.name}</span></button>)}</div>{design.frameVariant!=="none" && <div className={styles.twoColumns}>{design.frameVariant!=="outline" && <Field label="Call to action"><input value={design.frameLabel} maxLength={40} onChange={e=>update({frameLabel:e.target.value})}/></Field>}<ColorField onValidityChange={colorValidity} label="Frame colour" value={design.frameColor} onChange={frameColor=>update({frameColor})}/></div>}</section>
             <details className={styles.advanced}><summary>Advanced settings <ChevronDown size={16}/></summary><Field label="Error correction" hint={design.logoEnabled ? "High is used automatically when a logo is added." : "More redundancy helps with print and wear."}><select value={design.logoEnabled ? "H" : design.ecLevel} disabled={design.logoEnabled} onChange={e=>update({ecLevel:e.target.value as KRStyle["ecLevel"]})}><option value="M">Balanced</option><option value="Q">High</option><option value="H">Maximum</option><option value="L">Light</option></select></Field><Field label={`Quiet zone · ${Math.max(4,design.margin)} modules`} hint="A clear four-module margin is always preserved."><input type="range" min="4" max="10" value={Math.max(4,design.margin)} onChange={e=>update({margin:Number(e.target.value)})}/></Field></details>
             <button className={styles.fullTextButton} onClick={()=>{setHistory(h=>[...h.slice(-19),design]);setDesign(DEFAULT_KR_STYLE);setPreset("signature");}}><RotateCcw size={16}/> Reset design</button>
           </>}
@@ -225,12 +249,12 @@ export default function QRStudio() {
             <Field label="Export width" hint={format === "svg" ? "SVG stays sharp at any size." : "Frames with a label are taller than the selected width."}><select value={design.size} onChange={e=>update({size:Number(e.target.value)})}>{[512,1024,2048,4096].map(size=><option value={size} key={size}>{size} px{size===1024 ? " · recommended" : ""}</option>)}</select></Field>
             <div className={styles.infoBox}><Info size={18}/><p>{saved?.shortCodeId ? "Your download uses the saved Kompi link, so scans are tracked and the destination stays editable." : isWebType(type) ? "This download contains your destination directly. Save to Kompi first if you want scan analytics and an editable destination." : "Your details are stored directly in this code. Scans are not tracked. Download a new copy if you change the content."}</p></div>
             {saved && dirty && <div className={styles.warning}>You have unsaved changes. Save first to keep your workspace and download in sync.</div>}
-            <button className={styles.primaryButton} onClick={exportCode} disabled={exporting || !built.value || tooLong || (Boolean(saved) && dirty)}>{exporting ? <Loader2 size={18} className={styles.spinner}/> : <Download size={18}/>} Download {format.toUpperCase()}</button>
+            <button className={styles.primaryButton} onClick={exportCode} disabled={exporting || hasInvalidColors || !built.value || tooLong || (Boolean(saved) && dirty)}>{exporting ? <Loader2 size={18} className={styles.spinner}/> : <Download size={18}/>} Download {format.toUpperCase()}</button>
             <div className={styles.printChecklist}><h3>A quick check before you print</h3><p><Check size={16}/> Scan with your phone and check the destination.</p><p><Check size={16}/> Keep the clear space around your code.</p><p><Check size={16}/> Test at the actual printed size and distance.</p></div>
             {saved && <Link className={styles.fullTextButton} href={`/kr-codes/${saved.id}`}><ScanLine size={17}/> View code details and analytics</Link>}
           </>}
         </div>
-        <footer className={styles.editorFooter}><span><CheckCheck size={15}/>{saved ? dirty ? "Unsaved changes" : "Saved to your workspace" : draftStatus || "Your design starts here"}</span><button className={styles.primaryButton} onClick={saveCode} disabled={saving || loadingCode || (Boolean(codeId) && !saved) || auth==="checking" || (Boolean(saved) && !dirty)}>{saving && <Loader2 size={16} className={styles.spinner}/>} {actionLabel}</button></footer>
+        <footer className={styles.editorFooter}><span><CheckCheck size={15}/>{saved ? dirty ? "Unsaved changes" : "Saved to your workspace" : draftStatus || "Your design starts here"}</span><button className={styles.primaryButton} onClick={saveCode} disabled={saving || hasInvalidColors || loadingCode || (Boolean(codeId) && !saved) || auth==="checking" || (Boolean(saved) && !dirty)}>{saving && <Loader2 size={16} className={styles.spinner}/>} {actionLabel}</button></footer>
       </section>
       <aside className={styles.previewColumn}>
         <div className={styles.previewCanvas}>

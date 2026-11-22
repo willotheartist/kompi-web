@@ -1,6 +1,16 @@
 import { z } from "zod";
 
-const color = z.string().regex(/^#[0-9a-f]{6}$/i);
+export function normalizeHexColor(value: string): string | null {
+  const hex = value.trim().replace(/^#/, "");
+  if (/^[0-9a-f]{6}$/i.test(hex)) return `#${hex.toUpperCase()}`;
+  if (/^[0-9a-f]{3}$/i.test(hex)) return `#${hex.split("").map(c => c + c).join("").toUpperCase()}`;
+  return null;
+}
+
+const color = z.preprocess(
+  value => typeof value === "string" ? normalizeHexColor(value) ?? value : value,
+  z.string().regex(/^#[0-9A-F]{6}$/),
+);
 const logo = z.string().max(700_000).refine((v) =>
   /^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(v) ||
   /^\/uploads\/krcodes\/[a-z0-9_-]+\.(png|jpg|jpeg|webp)$/i.test(v),
