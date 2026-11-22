@@ -57,12 +57,18 @@ export function renderKRSvg(value: string, rawStyle: unknown, width?: number): s
     const dot=s.cornersDotType === "dot" ? coreSize/2 : s.cornersDotType === "rounded" ? .8 : 0;
     eyeShapes.push(`<rect x="${n(px+coreOffset)}" y="${n(py+coreOffset)}" width="${coreSize}" height="${coreSize}" rx="${dot}"/>`);
   }
-  const frameBackground = frame ? `<rect x="0" y="0" width="${extent}" height="${height}" rx="${s.frameVariant === "ticket" ? 1 : 2.5}" fill="${s.frameColor}"/><rect x="${pad}" y="${pad+top}" width="${base}" height="${base}" rx="1.2" fill="${s.bg === "transparent" ? "#FFFFFF" : s.bg}"/>` : "";
+  const frameRadius=s.frameVariant === "ticket" ? 1 : 2.5;
+  // A frame is a ring, so its interior remains clear when transparency is enabled.
+  const frameBackground = frame ? `<path fill="${s.frameColor}" fill-rule="evenodd" d="${roundedPath(0,0,extent,height,[frameRadius,frameRadius,frameRadius,frameRadius])}${roundedPath(pad,pad+top,base,base,[1.2,1.2,1.2,1.2])}"/><rect x="${pad}" y="${pad+top}" width="${base}" height="${base}" rx="1.2" fill="${background}"/>` : "";
   const labelY=s.frameVariant === "label-top" ? 4.3 : extent+3;
   const caption=label ? `<text x="${extent/2}" y="${labelY}" text-anchor="middle" font-family="Arial, sans-serif" font-weight="600" font-size="${Math.min(2.65, (extent-5)/Math.max(1,s.frameLabel.length)*1.5)}" letter-spacing=".15" fill="#FFFFFF">${xml(s.frameLabel)}</text>` : "";
   const logoSide=count*s.logoSize, logoX=ox+(count-logoSide)/2,logoY=oy+(count-logoSide)/2;
-  const logoMarkup=logo ? `${s.logoBgTransparent ? `<rect x="${n(logoX-.65)}" y="${n(logoY-.65)}" width="${n(logoSide+1.3)}" height="${n(logoSide+1.3)}" rx=".7" fill="${s.bg === "transparent" ? "#FFFFFF" : s.bg}"/>` : ""}<image href="${xml(logo)}" x="${n(logoX)}" y="${n(logoY)}" width="${n(logoSide)}" height="${n(logoSide)}" preserveAspectRatio="xMidYMid meet"/>` : "";
+  const clearLogo=Boolean(logo && s.logoBgTransparent && s.bg === "transparent");
+  // Clip the code under transparent logos instead of painting a white patch.
+  const clipId=`kr-logo-${[count,extent,height,logoX,logoY,logoSide].map(n).join("-").replace(/\./g,"_")}`;
+  const logoClip=clearLogo ? `<defs><clipPath id="${clipId}"><path clip-rule="evenodd" d="M0 0H${extent}V${height}H0Z${roundedPath(logoX-.65,logoY-.65,logoSide+1.3,logoSide+1.3,[.7,.7,.7,.7])}"/></clipPath></defs>` : "";
+  const logoMarkup=logo ? `${s.logoBgTransparent && !clearLogo ? `<rect x="${n(logoX-.65)}" y="${n(logoY-.65)}" width="${n(logoSide+1.3)}" height="${n(logoSide+1.3)}" rx=".7" fill="${background}"/>` : ""}<image href="${xml(logo)}" x="${n(logoX)}" y="${n(logoY)}" width="${n(logoSide)}" height="${n(logoSide)}" preserveAspectRatio="xMidYMid meet"/>` : "";
   const outputWidth=width ?? s.size;
   // Paint the body as one compound path so shared module edges have no raster seams.
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${outputWidth}" height="${Math.round(outputWidth*height/extent)}" viewBox="0 0 ${extent} ${height}" role="img" aria-label="QR code"><rect width="${extent}" height="${height}" fill="${background}"/>${frameBackground}<path fill="${s.fg}" d="${contours.join("")}"/><g fill="${s.eyeColor}">${eyeShapes.join("")}</g>${logoMarkup}${caption}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${outputWidth}" height="${Math.round(outputWidth*height/extent)}" viewBox="0 0 ${extent} ${height}" role="img" aria-label="QR code"><rect width="${extent}" height="${height}" fill="${background}"/>${frameBackground}${logoClip}<g${clearLogo ? ` clip-path="url(#${clipId})"` : ""}><path fill="${s.fg}" d="${contours.join("")}"/><g fill="${s.eyeColor}">${eyeShapes.join("")}</g></g>${logoMarkup}${caption}</svg>`;
 }

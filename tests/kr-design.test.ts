@@ -5,6 +5,7 @@ import jsQR from 'jsqr';
 import { DEFAULT_KR_STYLE, KR_PRESETS, KRStyleSchema, presetStyle, normalizeHexColor, normalizeKRStyle, designChecks } from '../src/lib/kr-design';
 import { renderKRSvg } from '../src/lib/kr-render';
 import { buildKRContent, readKRContent } from '../src/lib/kr-content';
+import { KRLogoUploadSchema, mergeKRLogos, readDeviceLogos, recentDeviceLogos } from '../src/lib/kr-logos';
 
 async function decode(svg: string) {
   const {data,info} = await sharp(Buffer.from(svg)).ensureAlpha().raw().toBuffer({resolveWithObject:true});
@@ -22,6 +23,38 @@ test('custom hex colours survive save validation, reload and export',()=>{
   const svg=renderKRSvg(payloads[0],restored);
   assert.ok(svg.includes('fill="#2A1F1C"'));assert.ok(svg.includes('fill="#135647"'));
   assert.equal(KRStyleSchema.safeParse({eyeColor:'wrong'}).success,false);
+});
+test('transparent backgrounds preserve alpha with every frame and a logo',async()=>{
+  const logo=await sharp({create:{width:64,height:64,channels:4,background:'#135647'}}).png().toBuffer();
+  for (const frameVariant of ['none','outline','label-bottom','label-top','ticket'] as const) {
+    for (const logoUrl of [null,`data:image/png;base64,${logo.toString('base64')}`]) {
+      const style={...DEFAULT_KR_STYLE,bg:'transparent',frameVariant,logoUrl,logoEnabled:Boolean(logoUrl)};
+      const restored=normalizeKRStyle(JSON.parse(JSON.stringify(KRStyleSchema.parse(style))));
+      assert.equal(restored.bg,'transparent');
+      const svg=renderKRSvg(payloads[0],restored,512);
+      const {data,info}=await sharp(Buffer.from(svg)).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+      // The inner quiet zone must be transparent even inside a solid frame.
+      const y=frameVariant==='label-top'?Math.round(info.height*.23):Math.round(info.height*.1);
+      assert.equal(data[(y*info.width+Math.round(info.width*.1))*4+3],0,`${frameVariant}: clear quiet zone`);
+      if(logoUrl){
+        // No opaque white logo backing is allowed in a transparent export.
+        for(let i=0;i<data.length;i+=4) assert.ok(!(data[i]===255&&data[i+1]===255&&data[i+2]===255&&data[i+3]===255&&Math.floor(i/4/info.width)<info.height*.75&&Math.floor(i/4/info.width)>info.height*.25),`${frameVariant}: white patch behind logo`);
+      }
+      const white=await sharp(Buffer.from(svg)).flatten({background:'#FFFFFF'}).png().toBuffer();
+      const {data:pixels,info:flat}=await sharp(white).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+      assert.equal(jsQR(new Uint8ClampedArray(pixels),flat.width,flat.height)?.data,payloads[0],`${frameVariant}: scan on light background`);
+    }
+  }
+});
+test('reusable logos survive browser storage and reject active content',()=>{
+  const a={id:'one',name:'Brand.png',dataUrl:'data:image/png;base64,YQ==',source:'device' as const};
+  const b={...a,id:'two',name:'Second.png',dataUrl:'data:image/png;base64,Yg=='};
+  assert.deepEqual(readDeviceLogos(JSON.stringify([a,b])),[a,b]);
+  assert.equal(mergeKRLogos([a],[{...a,id:'duplicate'},b]).length,2);
+  assert.equal(recentDeviceLogos(Array.from({length:20},(_,i)=>({...a,id:String(i),dataUrl:`data:image/png;base64,${i}`}))).length,12);
+  for(const dataUrl of ['javascript:alert(1)','data:image/svg+xml;base64,PHN2Zz4=','https://example.com/logo.png'])assert.equal(KRLogoUploadSchema.safeParse({...a,dataUrl}).success,false);
+  assert.deepEqual(readDeviceLogos('broken'),[]);
+  assert.deepEqual(readDeviceLogos(JSON.stringify([{...a,dataUrl:'javascript:alert(1)'}])),[]);
 });
 for (const preset of KR_PRESETS) for (const width of [256,512]) {
   test(`${preset.name} at ${width}px decodes real content`,async()=>{
