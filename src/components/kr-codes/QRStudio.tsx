@@ -1,12 +1,13 @@
 "use client";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Check, CheckCheck, ChevronDown, Download, FileText, Globe2, Grid2X2, Info, LayoutTemplate, Loader2, Mail, MapPin, MessageCircle, Palette, Phone, Plus, QrCode, RotateCcw, ScanLine, Settings2, ShieldCheck, Smartphone, Type, UserRound, Wifi, X } from "lucide-react";
 import { DEFAULT_KR_STYLE, KR_PRESETS, designChecks, normalizeHexColor, normalizeKRStyle, presetStyle, type KRStyle } from "@/lib/kr-design";
 import { getKRExportDetails, renderKRSvg } from "@/lib/kr-render";
 import { DEFAULT_KR_EXPORT_WIDTH, KR_EXPORT_DPI, KR_EXPORT_WIDTHS, withKRPrintDensity } from "@/lib/kr-export";
 import { buildKRContent, isWebType, KR_TYPES, readKRContent, type KRContent, type KRType } from "@/lib/kr-content";
+import { KR_DRAFT_KEY, krDesignSnapshot } from "@/lib/kr-library";
 import styles from "./qr-studio.module.css";
 import QRLogoPicker from "./QRLogoPicker";
 
@@ -85,7 +86,7 @@ async function downloadDesign(value:string,design:KRStyle,format:"svg"|"png",nam
 }
 
 export default function QRStudio() {
-  const params=useSearchParams(); const codeId=params.get("krcodeId");
+  const params=useSearchParams(); const codeId=params.get("krcodeId"); const router=useRouter();
   const [design,setDesign]=useState<KRStyle>(DEFAULT_KR_STYLE);
   const [content,setContent]=useState<KRContent>({destination:""});
   const [type,setType]=useState<KRType>("url"); const [title,setTitle]=useState("");
@@ -102,11 +103,12 @@ export default function QRStudio() {
   const [loadingCode,setLoadingCode]=useState(Boolean(codeId));
   const [history,setHistory]=useState<KRStyle[]>([]); const [restored,setRestored]=useState(false);
   const [draftStatus,setDraftStatus]=useState("");
+  const operation=useRef(false),savedRef=useRef<Code|null>(null),requestId=useRef<string|null>(null),exportedAt=useRef<string|undefined>(undefined);
   const [invalidColors,setInvalidColors]=useState<Record<string,boolean>>({});
   const colorValidity=useCallback((label:string,valid:boolean)=>setInvalidColors(current=>current[label]===!valid ? current : {...current,[label]:!valid}),[]);
   const hasInvalidColors=Object.values(invalidColors).some(Boolean);
   const built=useMemo(()=>buildKRContent(type,content),[type,content]);
-  const snapshot=JSON.stringify({title,type,content,design});
+  const snapshot=krDesignSnapshot(title,type,built.value,design);
   const dirty=savedSnapshot !== snapshot;
   const qrValue=saved?.shortCodeId ? saved.destination : built.value;
   const exportDetails=useMemo(()=>{try{return getKRExportDetails(qrValue,design,exportWidth);}catch{return null;}},[qrValue,design,exportWidth]);
@@ -130,10 +132,16 @@ export default function QRStudio() {
   },[]);
   useEffect(()=>{
     if (codeId) {setRestored(true);return;}
+    if(savedRef.current){
+      savedRef.current=null;requestId.current=null;exportedAt.current=undefined;
+      setSaved(null);setSavedSnapshot("");setDesign(DEFAULT_KR_STYLE);setContent({destination:""});setType("url");setTitle("");setHistory([]);setPreset("signature");setTab("templates");setNotice("");setError("");
+    }
     try {
-      const raw=sessionStorage.getItem("kompi-qr-draft-v2");
+      const raw=sessionStorage.getItem(KR_DRAFT_KEY);
       if (raw) {
         const draft=JSON.parse(raw);
+        if(typeof draft.requestId==="string"&&/^[0-9a-f-]{36}$/i.test(draft.requestId))requestId.current=draft.requestId;
+        if(typeof draft.exportedAt==="string")exportedAt.current=draft.exportedAt;
         if (draft.design) {setDesign(normalizeKRStyle(draft.design));setPreset("");}
         if (KR_TYPES.includes(draft.type)) setType(draft.type);
         if (draft.content && typeof draft.content === "object") setContent(Object.fromEntries(Object.entries(draft.content).filter(([,v])=>typeof v === "string")) as KRContent);
@@ -148,7 +156,7 @@ export default function QRStudio() {
     const timer=setTimeout(()=>{
       try {
         // Keep network credentials and message bodies out of browser storage.
-        sessionStorage.setItem("kompi-qr-draft-v2",JSON.stringify({title,type,content:isWebType(type) ? content : {},design}));
+        sessionStorage.setItem(KR_DRAFT_KEY,JSON.stringify({title,type,content:isWebType(type) ? content : {},design,requestId:requestId.current,exportedAt:exportedAt.current,updatedAt:new Date().toISOString()}));
         setDraftStatus(type === "wifi" ? "Wi-Fi details stay in this form" : "Design saved in this tab");
       } catch {setDraftStatus("Draft stays in this session");}
     },600);
@@ -157,13 +165,14 @@ export default function QRStudio() {
   useEffect(()=>{
     if (!codeId) return;
     let cancelled=false;setLoadingCode(true);
+    if(savedRef.current?.id!==codeId){savedRef.current=null;setSaved(null);setSavedSnapshot("");}
     fetch(`/api/kr-codes/${encodeURIComponent(codeId)}`).then(async res=>{
       if (!res.ok) throw new Error(await responseMessage(res));
       const code:Code=await res.json();if (cancelled) return;
       const nextType=KR_TYPES.includes(code.type as KRType) ? code.type as KRType : "url";
       const nextContent=readKRContent(nextType,code.targetUrl || code.destination);const nextDesign=normalizeKRStyle(code.style);
-      setSaved(code);setType(nextType);setContent(nextContent);setTitle(code.title || "");setDesign(nextDesign);setPreset("");
-      setSavedSnapshot(JSON.stringify({title:code.title || "",type:nextType,content:nextContent,design:nextDesign}));
+      savedRef.current=code;setSaved(code);setType(nextType);setContent(nextContent);setTitle(code.title || "");setDesign(nextDesign);setPreset("");
+      setSavedSnapshot(krDesignSnapshot(code.title,nextType,buildKRContent(nextType,nextContent).value,nextDesign));
     }).catch(err=>{if (!cancelled) setError(err.message);}).finally(()=>{if (!cancelled) setLoadingCode(false);});
     return ()=>{cancelled=true;};
   },[codeId]);
@@ -172,32 +181,68 @@ export default function QRStudio() {
   function setField(key:string,value:string) {setContent(c=>({...c,[key]:value}));setError("");setNotice("");}
   function choosePreset(p:typeof KR_PRESETS[number]) {setHistory(h=>[...h.slice(-19),design]);setDesign(presetStyle(p,design));setPreset(p.id);setNotice("");}
   function changeType(next:KRType) {setType(next);setShowTypes(false);setTab("content");setError("");}
-  async function saveCode() {
-    setError("");setNotice("");
-    if (hasInvalidColors) {setError("Finish entering a valid colour before saving.");setTab("customize");return;}
-    if (codeId && !saved) {setError("Reload this saved code before making changes.");return;}
-    if (!built.value || built.error || tooLong) {setError(tooLong ? "Shorten this content before saving." : built.error || "Add a destination first.");setTab("content");return;}
-    if (auth === "guest") {window.location.href=`/signin?callbackUrl=${encodeURIComponent(`/kr-codes${codeId ? `?krcodeId=${codeId}` : ""}`)}`;return;}
+  async function persistCode():Promise<Code> {
+    const existing=savedRef.current || saved;
+    requestId.current ||= crypto.randomUUID();
+    if(!existing){try{sessionStorage.setItem(KR_DRAFT_KEY,JSON.stringify({title,type,content:isWebType(type)?content:{},design,requestId:requestId.current,exportedAt:exportedAt.current,updatedAt:new Date().toISOString()}));}catch{}}
+    const payload={title:title.trim() || (existing ? null : undefined),destination:built.value,type,style:design,createShortLink:isWebType(type),clientRequestId:requestId.current};
     setSaving(true);
     try {
-      const res=await fetch(saved ? `/api/kr-codes/${saved.id}` : "/api/kr-codes",{method:saved ? "PATCH" : "POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:title.trim() || (saved ? null : undefined),destination:built.value,type,style:design,createShortLink:isWebType(type)})});
-      if (res.status===401 || res.redirected) {setAuth("guest");throw new Error("Sign in to save this code to your workspace.");}
-      if (!res.ok) throw new Error(await responseMessage(res));
-      const code:Code=await res.json();setSaved(code);setSavedSnapshot(snapshot);setTab("export");setNotice(saved ? "Changes saved. Your code is ready to download." : "Your Kompi Code is ready. Choose a format to download.");
-      try {sessionStorage.removeItem("kompi-qr-draft-v2");} catch {}
+      let res=await fetch(existing ? `/api/kr-codes/${existing.id}` : "/api/kr-codes",{method:existing ? "PATCH" : "POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      if(res.status===401||res.redirected){setAuth("guest");throw new Error("Your session expired. Sign in to save this code; your design is still here.");}
+      if(!res.ok)throw new Error(await responseMessage(res));
+      let code:Code=await res.json();
+      // A retried creation may have succeeded before the first response arrived.
+      // Apply any subsequent edits to that record instead of creating a duplicate.
+      if(!existing && res.status===200){
+        res=await fetch(`/api/kr-codes/${code.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({...payload,title:title.trim()||null})});
+        if(!res.ok)throw new Error(await responseMessage(res));code=await res.json();
+      }
+      savedRef.current=code;setSaved(code);
+      setSavedSnapshot(krDesignSnapshot(code.title,code.type||type,code.targetUrl||code.destination,code.style));
+      try{sessionStorage.removeItem(KR_DRAFT_KEY);}catch{}
+      if(!codeId)router.replace(`/kr-codes?krcodeId=${encodeURIComponent(code.id)}`,{scroll:false});
+      return code;
+    } finally {setSaving(false);}
+  }
+  function validateCode() {
+    setError("");setNotice("");
+    if(hasInvalidColors){setError("Finish entering a valid colour before saving or downloading.");setTab("customize");return false;}
+    if(codeId&&!saved){setError("Reload this saved code before making changes.");return false;}
+    if(!built.value||built.error||tooLong){setError(tooLong?"Shorten this content before saving.":built.error||"Add a destination first.");setTab("content");return false;}
+    return true;
+  }
+  async function saveCode() {
+    if(operation.current||!validateCode())return;
+    if (auth === "guest") {window.location.href=`/signin?callbackUrl=${encodeURIComponent(`/kr-codes${codeId ? `?krcodeId=${codeId}` : ""}`)}`;return;}
+    if(auth!=="member"){setError("Sign-in could not be checked. Refresh and try again.");return;}
+    operation.current=true;
+    try {
+      await persistCode();setTab("export");setNotice("Saved to Your codes. Your design is ready to download.");
     } catch(err) {setError(err instanceof Error ? err.message : "Could not save your code. Please try again.");}
-    finally {setSaving(false);}
+    finally {operation.current=false;}
   }
   async function exportCode() {
-    if (hasInvalidColors) {setError("Finish entering a valid colour before exporting.");setTab("customize");return;}
-    if (!built.value || tooLong) {setError(built.error || "Shorten your content before exporting.");setTab("content");return;}
-    setExporting(true);setError("");
-    try {await downloadDesign(qrValue,design,format,title || "kompi-code",exportWidth);setNotice("Download prepared. Test your code with a phone before printing.");}
+    if(operation.current||!validateCode())return;
+    if(auth==="checking"||auth==="error"){setError("Sign-in could not be checked. Refresh before downloading so we can save your code correctly.");return;}
+    if(saved&&dirty&&auth!=="member"){setError("Sign back in to save your changes before downloading this code.");return;}
+    operation.current=true;setExporting(true);
+    try {
+      const code=auth==="member" && (!saved || dirty) ? await persistCode() : saved;
+      // Use the response's saved URL immediately; React state still holds the old preview here.
+      await downloadDesign(code?.destination || built.value,code ? normalizeKRStyle(code.style) : design,format,title||"kompi-code",exportWidth);
+      if(code)setNotice("Download prepared. This code is saved in Your codes.");
+      else{
+        exportedAt.current=new Date().toISOString();
+        try{sessionStorage.setItem(KR_DRAFT_KEY,JSON.stringify({title,type,content:isWebType(type)?content:{},design,requestId:requestId.current,exportedAt:exportedAt.current,updatedAt:exportedAt.current}));}catch{}
+        setNotice("Download prepared. Sign in to keep this design in Your codes.");
+      }
+    }
     catch(err) {setError(err instanceof Error ? err.message : "Download failed. Please try again.");}
-    finally {setExporting(false);}
+    finally {setExporting(false);operation.current=false;}
   }
   const input=(key:string,placeholder:string,inputType="text")=><input type={inputType} value={content[key] || ""} placeholder={placeholder} onChange={e=>setField(key,e.target.value)} maxLength={key==="text" ? 1800 : 1500}/>;
-  const actionLabel=saving ? "Saving…" : auth === "guest" ? "Sign in to save" : saved ? "Save changes" : "Create code";
+  const actionLabel=saving ? "Saving…" : auth === "guest" ? "Sign in to save" : saved ? "Save changes" : "Save code";
 
   return <div className={styles.studio}>
     <header className={styles.pageHeader}>
@@ -206,16 +251,17 @@ export default function QRStudio() {
     </header>
     {loadingCode && <p className={styles.message} role="status"><Loader2 size={18} className={styles.spinner}/> Loading your code…</p>}
     {error && <div className={styles.error} role="alert"><Info size={18}/><span>{error}</span><button onClick={()=>setError("")} aria-label="Dismiss error"><X size={17}/></button></div>}
-    {notice && <div className={styles.message} role="status"><CheckCheck size={18}/><span>{notice}</span><button onClick={()=>setNotice("")} aria-label="Dismiss message"><X size={17}/></button></div>}
+    {notice && <div className={styles.message} role="status"><CheckCheck size={18}/><span>{notice}</span>{saved&&<Link href="/kr-codes/your">View in library</Link>}<button onClick={()=>setNotice("")} aria-label="Dismiss message"><X size={17}/></button></div>}
     <div className={styles.workspace} aria-busy={loadingCode}>
       <section className={styles.editor}>
+        <fieldset className={styles.editorControls} disabled={saving||exporting||loadingCode}>
         <div className={styles.destinationBlock}>
           <div className={styles.row}><label htmlFor="quick-destination">{["url","file","social","app"].includes(type) ? "Where should it go?" : "What should it do?"}</label><div className={styles.typePicker}>
             <button className={styles.typeButton} onClick={()=>setShowTypes(!showTypes)} aria-expanded={showTypes} disabled={Boolean(saved)}><currentType.icon size={15}/>{currentType.label}<ChevronDown size={14}/></button>
             {showTypes && <div className={styles.typeMenu}>{types.map(t=><button key={t.id} onClick={()=>changeType(t.id)} aria-pressed={type===t.id}><t.icon size={17}/>{t.label}{type===t.id && <Check size={14}/>}</button>)}</div>}
           </div></div>
           {["url","file","social","app"].includes(type) ? <div className={styles.urlInput}><Globe2 size={18}/><input id="quick-destination" placeholder={type === "file" ? "Paste a link to your PDF or file" : "yoursite.com"} value={content.destination || ""} onChange={e=>setField("destination",e.target.value)} autoComplete="url" maxLength={1500}/>{built.value && !built.error && <Check size={17} className={styles.green}/>}</div> : <button id="quick-destination" className={styles.contentSummary} onClick={()=>setTab("content")}>{built.value ? type === "wifi" ? content.ssid : "Content added" : `Add your ${currentType.label.toLowerCase()} details`}<Settings2 size={16}/></button>}
-          <p>{isWebType(type) ? "Save to Kompi to edit the destination and track scans." : "A direct code. Its content is fixed once printed."}</p>
+          <p>{saved&&!saved.shortCodeId ? "Saved direct code. Its content is fixed once printed." : isWebType(type) ? "Save to Kompi to edit the destination and track scans." : "A direct code. Its content is fixed once printed."}</p>
         </div>
         <div className={styles.tabs} role="tablist" aria-label="QR editor">{tabs.map(t=><button key={t.id} id={`tab-${t.id}`} role="tab" aria-selected={tab===t.id} aria-controls="qr-editor-panel" tabIndex={tab===t.id ? 0 : -1} onKeyDown={e=>{if (["ArrowRight","ArrowLeft","Home","End"].includes(e.key)) {e.preventDefault();const index=tabs.findIndex(x=>x.id===tab);const next=e.key==="Home" ? 0 : e.key==="End" ? 3 : (index+(e.key==="ArrowRight" ? 1 : 3))%4;setTab(tabs[next].id);document.getElementById(`tab-${tabs[next].id}`)?.focus();}}} onClick={()=>setTab(t.id)}><t.icon size={16}/>{t.name}</button>)}</div>
         <div id="qr-editor-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className={styles.panel}>
@@ -248,7 +294,7 @@ export default function QRStudio() {
             {type === "text" && <Field label="Your text"><textarea value={content.text || ""} onChange={e=>setField("text",e.target.value)} maxLength={1800} rows={5} placeholder="What would you like to share?"/></Field>}
             {type === "wifi" && <><Field label="Network name (SSID)">{input("ssid","Your Wi-Fi name")}</Field><Field label="Security"><select value={content.security || "WPA"} onChange={e=>setField("security",e.target.value)}><option value="WPA">WPA / WPA2 / WPA3</option><option value="WEP">WEP</option><option value="nopass">Open network</option></select></Field>{content.security!=="nopass" && <Field label="Password">{input("password","Network password","password")}</Field>}<label className={styles.checkbox}><input type="checkbox" checked={content.hidden==="true"} onChange={e=>setField("hidden",String(e.target.checked))}/> Hidden network</label></>}
             {isWebType(type) && type!=="location" && <div className={styles.utm}><button aria-expanded={showUtms} onClick={()=>setShowUtms(!showUtms)}><span>Campaign tracking <small>Optional</small></span>{showUtms ? <X size={16}/> : <Plus size={16}/>}</button>{showUtms && <div className={styles.twoColumns}>{["source","medium","campaign","term","content"].map(key=><Field key={key} label={key[0].toUpperCase()+key.slice(1)}>{input(`utm_${key}`,key==="source" ? "business-card" : key==="medium" ? "qr" : "Optional")}</Field>)}</div>}</div>}
-            <div className={styles.infoBox}><Info size={18}/><p>{isWebType(type) ? "Saving creates a dynamic Kompi link. You can change its destination later without reprinting." : "This code contains your details directly. Scans aren’t tracked. If you change its content later, download and reprint it."}</p></div>
+            <div className={styles.infoBox}><Info size={18}/><p>{saved&&!saved.shortCodeId ? "This is a saved direct code. Its destination is stored in the QR itself. Changing it requires downloading and reprinting the code." : isWebType(type) ? "Saving creates a dynamic Kompi link. You can change its destination later without reprinting." : "This code contains your details directly. Scans aren’t tracked. If you change its content later, download and reprint it."}</p></div>
           </>}
           {tab === "export" && <>
             <div className={styles.sectionHeading}><div><h2>Ready to go out into the world.</h2><p>From screens to stickers. Keep it crisp.</p></div></div>
@@ -256,14 +302,15 @@ export default function QRStudio() {
             {format==="png" ? <Field label="PNG resolution" hint={exportDetails ? `${exportDetails.width.toLocaleString()} × ${exportDetails.height.toLocaleString()} px · ${(exportWidth/KR_EXPORT_DPI*2.54).toFixed(1)} cm wide at ${KR_EXPORT_DPI} DPI` : "Rendered directly from the vector artwork at your chosen resolution."}><select value={exportWidth} onChange={e=>setExportWidth(Number(e.target.value))}>{KR_EXPORT_WIDTHS.map(size=><option value={size} key={size}>{size.toLocaleString()} px{size===4096 ? " · high resolution (default)" : size===8192 ? " · large print" : size===2048 ? " · standard" : " · small file"}</option>)}</select></Field> : <p className={styles.transparencyNote}>Vector QR shapes stay sharp at any size. Open in Illustrator, Figma or your print software. An uploaded logo keeps its original image resolution.</p>}
             {format==="png" && logoEdge && exportDetails && logoEdge<exportDetails.logoPixels && <div className={styles.warning}>Your saved logo is only {logoEdge.toLocaleString()} px wide on its longest side. Upload a larger original (at least {exportDetails.logoPixels.toLocaleString()} px) for a sharp logo at this export size. The QR shapes export at full resolution.</div>}
             {design.bg === "transparent" && <p className={styles.transparencyNote}>Transparent background is included in both PNG and SVG. The checkerboard is only a preview.</p>}
-            <div className={styles.infoBox}><Info size={18}/><p>{saved?.shortCodeId ? "Your download uses the saved Kompi link, so scans are tracked and the destination stays editable." : isWebType(type) ? "This download contains your destination directly. Save to Kompi first if you want scan analytics and an editable destination." : "Your details are stored directly in this code. Scans are not tracked. Download a new copy if you change the content."}</p></div>
-            {saved && dirty && <div className={styles.warning}>You have unsaved changes. Save first to keep your workspace and download in sync.</div>}
-            <button className={styles.primaryButton} onClick={exportCode} disabled={exporting || hasInvalidColors || !built.value || tooLong || (Boolean(saved) && dirty)}>{exporting ? <Loader2 size={18} className={styles.spinner}/> : <Download size={18}/>} Download {format.toUpperCase()}</button>
+            <div className={styles.infoBox}><Info size={18}/><p>{saved?.shortCodeId ? "Saved in Your codes. Downloads use your Kompi link, so scans are tracked and the destination stays editable." : saved ? "Saved in Your codes as a direct code. Its printed destination is fixed and scans are not tracked." : auth==="member" ? isWebType(type) ? "Downloading saves this design to Your codes first, with a tracked Kompi link and an editable destination." : "Downloading saves this design to Your codes first. Its content is stored directly in the QR and scans are not tracked." : "This download contains your destination directly. Sign in to save it to Your codes and enable tracking for website links."}</p></div>
+            {saved && dirty && <p className={styles.transparencyNote}>Your changes will be saved before the download starts.</p>}
+            <button className={styles.primaryButton} onClick={exportCode} disabled={exporting || saving || hasInvalidColors || !built.value || tooLong || auth==="checking" || loadingCode || Boolean(codeId&&!saved)}>{exporting ? <Loader2 size={18} className={styles.spinner}/> : <Download size={18}/>} {exporting?saving?"Saving code…":"Preparing file…":`${auth==="member"&&(!saved||dirty)?"Save & download":"Download"} ${format.toUpperCase()}`}</button>
             <div className={styles.printChecklist}><h3>A quick check before you print</h3><p><Check size={16}/> Scan with your phone and check the destination.</p><p><Check size={16}/> Keep the clear space around your code.</p><p><Check size={16}/> Test at the actual printed size and distance.</p></div>
             {saved && <Link className={styles.fullTextButton} href={`/kr-codes/${saved.id}`}><ScanLine size={17}/> View code details and analytics</Link>}
           </>}
         </div>
         <footer className={styles.editorFooter}><span><CheckCheck size={15}/>{saved ? dirty ? "Unsaved changes" : "Saved to your workspace" : draftStatus || "Your design starts here"}</span><button className={styles.primaryButton} onClick={saveCode} disabled={saving || hasInvalidColors || loadingCode || (Boolean(codeId) && !saved) || auth==="checking" || (Boolean(saved) && !dirty)}>{saving && <Loader2 size={16} className={styles.spinner}/>} {actionLabel}</button></footer>
+        </fieldset>
       </section>
       <aside className={styles.previewColumn}>
         <div className={styles.previewCanvas}>
