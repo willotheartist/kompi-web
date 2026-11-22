@@ -25,11 +25,11 @@ export const KRStyleSchema = z.object({
 });
 export type KRStyle = Required<z.infer<typeof KRStyleSchema>>;
 export const DEFAULT_KR_STYLE: KRStyle = {
-  fg: "#292329", bg: "#FFFFFF", size: 1024, margin: 4, ecLevel: "Q",
+  fg: "#111111", bg: "#FFFFFF", size: 1024, margin: 4, ecLevel: "Q",
   logoUrl: null, logoEnabled: false, logoBgTransparent: true, logoSize: 0.18,
-  dotsType: "rounded", cornersSquareType: "extra-rounded", cornersDotType: "dot",
-  eyeColor: "#292329", frameVariant: "none", frameLabel: "SCAN ME",
-  frameColor: "#292329", cornerRadius: 0,
+  dotsType: "rounded", cornersSquareType: "extra-rounded", cornersDotType: "rounded",
+  eyeColor: "#111111", frameVariant: "none", frameLabel: "SCAN ME",
+  frameColor: "#111111", cornerRadius: 0,
 };
 
 export function normalizeKRStyle(raw: unknown): KRStyle {
@@ -48,18 +48,18 @@ export function normalizeKRStyle(raw: unknown): KRStyle {
 }
 
 export const KR_PRESETS = [
-  { id: "signature", name: "Signature", category: "Minimal", fg: "#292329", bg: "#FFFFFF", dotsType: "rounded", cornersSquareType: "extra-rounded", cornersDotType: "dot", frameVariant: "none" },
-  { id: "rose", name: "Rose", category: "Branded", fg: "#742845", bg: "#F9E8EF", dotsType: "dots", cornersSquareType: "extra-rounded", cornersDotType: "dot", frameVariant: "none" },
+  { id: "signature", name: "Signature", category: "Minimal", fg: "#111111", bg: "#FFFFFF", dotsType: "rounded", cornersSquareType: "extra-rounded", cornersDotType: "rounded", frameVariant: "none" },
+  { id: "carbon", name: "Carbon", category: "Minimal", fg: "#111111", bg: "#F0F1F2", dotsType: "extra-rounded", cornersSquareType: "extra-rounded", cornersDotType: "rounded", frameVariant: "none" },
   { id: "studio", name: "Studio", category: "Minimal", fg: "#202020", bg: "#FFFFFF", dotsType: "square", cornersSquareType: "square", cornersDotType: "square", frameVariant: "none" },
   { id: "cobalt", name: "Cobalt", category: "Branded", fg: "#2545AD", bg: "#EEF2FF", dotsType: "extra-rounded", cornersSquareType: "dot", cornersDotType: "dot", frameVariant: "none" },
   { id: "olive", name: "Olive", category: "Branded", fg: "#354B36", bg: "#F0F3E9", dotsType: "classy-rounded", cornersSquareType: "extra-rounded", cornersDotType: "rounded", frameVariant: "none" },
   { id: "dots", name: "Dotwork", category: "Minimal", fg: "#242424", bg: "#FFFFFF", dotsType: "dots", cornersSquareType: "dot", cornersDotType: "dot", frameVariant: "none" },
-  { id: "label", name: "Label", category: "Print", fg: "#292329", bg: "#FFFFFF", dotsType: "rounded", cornersSquareType: "extra-rounded", cornersDotType: "dot", frameVariant: "label-bottom" },
+  { id: "label", name: "Label", category: "Print", fg: "#111111", bg: "#FFFFFF", dotsType: "rounded", cornersSquareType: "extra-rounded", cornersDotType: "rounded", frameVariant: "label-bottom" },
   { id: "terracotta", name: "Terracotta", category: "Branded", fg: "#793A2B", bg: "#FFF0E7", dotsType: "classy", cornersSquareType: "square", cornersDotType: "rounded", frameVariant: "none" },
-  { id: "ticket", name: "Ticket", category: "Print", fg: "#532C47", bg: "#FFFFFF", dotsType: "extra-rounded", cornersSquareType: "extra-rounded", cornersDotType: "dot", frameVariant: "ticket" },
+  { id: "ticket", name: "Ticket", category: "Print", fg: "#17181A", bg: "#FFFFFF", dotsType: "extra-rounded", cornersSquareType: "extra-rounded", cornersDotType: "dot", frameVariant: "ticket" },
   { id: "outline", name: "Outline", category: "Print", fg: "#222222", bg: "#FFFFFF", dotsType: "square", cornersSquareType: "square", cornersDotType: "square", frameVariant: "outline" },
   { id: "ocean", name: "Ocean", category: "Branded", fg: "#15565B", bg: "#E9F6F3", dotsType: "classy-rounded", cornersSquareType: "dot", cornersDotType: "dot", frameVariant: "none" },
-  { id: "headline", name: "Headline", category: "Print", fg: "#343143", bg: "#FFFFFF", dotsType: "rounded", cornersSquareType: "extra-rounded", cornersDotType: "rounded", frameVariant: "label-top" },
+  { id: "headline", name: "Headline", category: "Print", fg: "#212326", bg: "#FFFFFF", dotsType: "rounded", cornersSquareType: "extra-rounded", cornersDotType: "rounded", frameVariant: "label-top" },
 ] as const;
 export function presetStyle(preset: typeof KR_PRESETS[number], current = DEFAULT_KR_STYLE): KRStyle {
   return { ...current, ...preset, eyeColor: preset.fg, frameColor: preset.fg };
