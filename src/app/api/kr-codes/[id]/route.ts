@@ -214,7 +214,8 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
       data: updateData,
     });
 
-    return NextResponse.json(updated, { status: 200 });
+    const link = updated.shortCodeId ? await prisma.link.findUnique({ where: { id: updated.shortCodeId }, select: { targetUrl: true } }) : null;
+    return NextResponse.json({ ...updated, targetUrl: link?.targetUrl ?? updated.destination }, { status: 200, headers: { "Cache-Control": "private, no-store" } });
   } catch (err) {
     if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) return NextResponse.json({ error: "Sign in to access your saved code." }, { status: 401 });
     if (err instanceof z.ZodError) return NextResponse.json({ error: "Check your content and design settings." }, { status: 400 });
