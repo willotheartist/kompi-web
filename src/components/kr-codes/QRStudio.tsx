@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Check, CheckCheck, ChevronDown, Download, FileText, Globe2, Grid2X2, Info, LayoutTemplate, Loader2, Mail, MapPin, MessageCircle, Palette, Phone, Plus, QrCode, RotateCcw, ScanLine, Settings2, ShieldCheck, Smartphone, Type, UserRound, Wifi, X } from "lucide-react";
 import { DEFAULT_KR_STYLE, KR_PRESETS, designChecks, normalizeHexColor, normalizeKRStyle, presetStyle, type KRStyle } from "@/lib/kr-design";
-import { renderKRSvg } from "@/lib/kr-render";
+import { getKRExportDetails, renderKRSvg } from "@/lib/kr-render";
+import { DEFAULT_KR_EXPORT_WIDTH, KR_EXPORT_DPI, KR_EXPORT_WIDTHS, withKRPrintDensity } from "@/lib/kr-export";
 import { buildKRContent, isWebType, KR_TYPES, readKRContent, type KRContent, type KRType } from "@/lib/kr-content";
 import styles from "./qr-studio.module.css";
 import QRLogoPicker from "./QRLogoPicker";
@@ -66,8 +67,8 @@ async function responseMessage(res: Response) {
   const text=await res.text();
   try {const json=JSON.parse(text);return json.error || json.message || "Please try again.";} catch {return text.slice(0,350) || "Please try again.";}
 }
-async function downloadDesign(value:string,design:KRStyle,format:"svg"|"png",name:string) {
-  const svgBlob=new Blob([renderKRSvg(value,design,design.size)],{type:"image/svg+xml;charset=utf-8"});
+async function downloadDesign(value:string,design:KRStyle,format:"svg"|"png",name:string,width:number) {
+  const svgBlob=new Blob([renderKRSvg(value,design,width)],{type:"image/svg+xml;charset=utf-8"});
   let blob=svgBlob;
   if (format === "png") {
     const image=new window.Image(); const source=URL.createObjectURL(svgBlob);
@@ -75,8 +76,9 @@ async function downloadDesign(value:string,design:KRStyle,format:"svg"|"png",nam
       await new Promise<void>((resolve,reject)=>{image.onload=()=>resolve();image.onerror=()=>reject(new Error("Could not render your image."));image.src=source;});
       const canvas=document.createElement("canvas");canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
       const context=canvas.getContext("2d");if (!context) throw new Error("Image export is unavailable in this browser.");
-      context.drawImage(image,0,0);
+      context.imageSmoothingQuality="high";context.drawImage(image,0,0);
       blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b ? resolve(b) : reject(new Error("Could not export PNG.")),"image/png"));
+      blob=new Blob([withKRPrintDensity(new Uint8Array(await blob.arrayBuffer()))],{type:"image/png"});
     } finally {URL.revokeObjectURL(source);}
   }
   const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`${name.replace(/[^a-z0-9_-]+/gi,"-").slice(0,80) || "kompi-code"}.${format}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -90,6 +92,9 @@ export default function QRStudio() {
   const [tab,setTab]=useState<Tab>("templates"); const [category,setCategory]=useState("All");
   const [preset,setPreset]=useState("signature"); const [scene,setScene]=useState("code");
   const [format,setFormat]=useState<"png"|"svg">("png"); const [showUtms,setShowUtms]=useState(false);
+  // Export quality is independent of saved design data, including old 1024px drafts.
+  const [exportWidth,setExportWidth]=useState(DEFAULT_KR_EXPORT_WIDTH);
+  const [logoEdge,setLogoEdge]=useState<number|null>(null);
   const [showTypes,setShowTypes]=useState(false); const [auth,setAuth]=useState<"checking"|"guest"|"member"|"error">("checking");
   const [saving,setSaving]=useState(false); const [exporting,setExporting]=useState(false);
   const [error,setError]=useState(""); const [notice,setNotice]=useState("");
@@ -104,9 +109,19 @@ export default function QRStudio() {
   const snapshot=JSON.stringify({title,type,content,design});
   const dirty=savedSnapshot !== snapshot;
   const qrValue=saved?.shortCodeId ? saved.destination : built.value;
+  const exportDetails=useMemo(()=>{try{return getKRExportDetails(qrValue,design,exportWidth);}catch{return null;}},[qrValue,design,exportWidth]);
   const checks=designChecks(design);
   const tooLong=new TextEncoder().encode(built.value).length > 1800;
   const currentType=types.find(t=>t.id===type)!;
+
+  useEffect(()=>{
+    setLogoEdge(null);
+    if(!design.logoEnabled || !design.logoUrl)return;
+    const image=new window.Image();let cancelled=false;
+    image.onload=()=>{if(!cancelled)setLogoEdge(Math.max(image.naturalWidth,image.naturalHeight));};
+    image.src=design.logoUrl;
+    return ()=>{cancelled=true;};
+  },[design.logoUrl,design.logoEnabled]);
 
   useEffect(()=>{
     const controller=new AbortController();
@@ -177,7 +192,7 @@ export default function QRStudio() {
     if (hasInvalidColors) {setError("Finish entering a valid colour before exporting.");setTab("customize");return;}
     if (!built.value || tooLong) {setError(built.error || "Shorten your content before exporting.");setTab("content");return;}
     setExporting(true);setError("");
-    try {await downloadDesign(qrValue,design,format,title || "kompi-code");setNotice("Download prepared. Test your code with a phone before printing.");}
+    try {await downloadDesign(qrValue,design,format,title || "kompi-code",exportWidth);setNotice("Download prepared. Test your code with a phone before printing.");}
     catch(err) {setError(err instanceof Error ? err.message : "Download failed. Please try again.");}
     finally {setExporting(false);}
   }
@@ -237,8 +252,9 @@ export default function QRStudio() {
           </>}
           {tab === "export" && <>
             <div className={styles.sectionHeading}><div><h2>Ready to go out into the world.</h2><p>From screens to stickers. Keep it crisp.</p></div></div>
-            <div className={styles.exportTypes}>{[{id:"png",name:"PNG",desc:"Web, social & everyday use"},{id:"svg",name:"SVG",desc:"Vector quality for any print size"}].map(f=><button key={f.id} aria-pressed={format===f.id} onClick={()=>setFormat(f.id as "png"|"svg")}><FileText size={25}/><strong>{f.name}</strong><span>{f.desc}</span>{format===f.id && <Check size={17}/>}</button>)}</div>
-            <Field label="Export width" hint={format === "svg" ? "SVG stays sharp at any size." : "Frames with a label are taller than the selected width."}><select value={design.size} onChange={e=>update({size:Number(e.target.value)})}>{[512,1024,2048,4096].map(size=><option value={size} key={size}>{size} px{size===1024 ? " · recommended" : ""}</option>)}</select></Field>
+            <div className={styles.exportTypes}>{[{id:"png",name:"PNG",desc:"High resolution · 300 DPI"},{id:"svg",name:"SVG",desc:"Vector · best for print"}].map(f=><button key={f.id} aria-pressed={format===f.id} onClick={()=>setFormat(f.id as "png"|"svg")}><FileText size={25}/><strong>{f.name}</strong><span>{f.desc}</span>{format===f.id && <Check size={17}/>}</button>)}</div>
+            {format==="png" ? <Field label="PNG resolution" hint={exportDetails ? `${exportDetails.width.toLocaleString()} × ${exportDetails.height.toLocaleString()} px · ${(exportWidth/KR_EXPORT_DPI*2.54).toFixed(1)} cm wide at ${KR_EXPORT_DPI} DPI` : "Rendered directly from the vector artwork at your chosen resolution."}><select value={exportWidth} onChange={e=>setExportWidth(Number(e.target.value))}>{KR_EXPORT_WIDTHS.map(size=><option value={size} key={size}>{size.toLocaleString()} px{size===4096 ? " · high resolution (default)" : size===8192 ? " · large print" : size===2048 ? " · standard" : " · small file"}</option>)}</select></Field> : <p className={styles.transparencyNote}>Vector QR shapes stay sharp at any size. Open in Illustrator, Figma or your print software. An uploaded logo keeps its original image resolution.</p>}
+            {format==="png" && logoEdge && exportDetails && logoEdge<exportDetails.logoPixels && <div className={styles.warning}>Your saved logo is only {logoEdge.toLocaleString()} px wide on its longest side. Upload a larger original (at least {exportDetails.logoPixels.toLocaleString()} px) for a sharp logo at this export size. The QR shapes export at full resolution.</div>}
             {design.bg === "transparent" && <p className={styles.transparencyNote}>Transparent background is included in both PNG and SVG. The checkerboard is only a preview.</p>}
             <div className={styles.infoBox}><Info size={18}/><p>{saved?.shortCodeId ? "Your download uses the saved Kompi link, so scans are tracked and the destination stays editable." : isWebType(type) ? "This download contains your destination directly. Save to Kompi first if you want scan analytics and an editable destination." : "Your details are stored directly in this code. Scans are not tracked. Download a new copy if you change the content."}</p></div>
             {saved && dirty && <div className={styles.warning}>You have unsaved changes. Save first to keep your workspace and download in sync.</div>}

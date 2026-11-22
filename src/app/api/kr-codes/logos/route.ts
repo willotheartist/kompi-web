@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
-import sharp from "sharp";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { KRLogoUploadSchema, mergeKRLogos, type ReusableKRLogo } from "@/lib/kr-logos";
+import { KRLogoUploadSchema, MAX_KR_LOGO_DATA_URL, mergeKRLogos, type ReusableKRLogo } from "@/lib/kr-logos";
+import { prepareKRLogo } from "@/lib/kr-logo-image";
 import { normalizeKRStyle } from "@/lib/kr-design";
 
 export const runtime = "nodejs";
@@ -28,9 +28,9 @@ export async function GET() {
       const hash = createHash("sha256").update(dataUrl.startsWith("data:") ? Buffer.from(dataUrl.split(",")[1],"base64") : dataUrl).digest("hex");
       if (hashes.has(hash)) return [];
       hashes.add(hash);
-      return [{id:`code-${code.id}`,name:code.title || "Saved QR logo",dataUrl:`/api/kr-codes/logos/code-${code.id}/image`,source:"code" as const}];
+      return [{id:`code-${code.id}`,name:code.title || "Saved QR logo",dataUrl:`/api/kr-codes/logos/code-${code.id}/image?thumb=1`,source:"code" as const}];
     });
-    return NextResponse.json({logos:mergeKRLogos(assets.map(asset=>({id:asset.id,name:asset.name,dataUrl:`/api/kr-codes/logos/${asset.id}/image`,source:"account"})),previous)}, {headers:privateHeaders});
+    return NextResponse.json({logos:mergeKRLogos(assets.map(asset=>({id:asset.id,name:asset.name,dataUrl:`/api/kr-codes/logos/${asset.id}/image?thumb=1`,source:"account"})),previous)}, {headers:privateHeaders});
   } catch (error) {
     if (unauthorized(error)) return NextResponse.json({error:"Sign in to see your saved logos."},{status:401,headers:privateHeaders});
     console.error("Could not load QR logos",error);
@@ -41,15 +41,10 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
-    if (Number(req.headers.get("content-length")) > 750_000) return NextResponse.json({error:"Try a smaller logo."},{status:413});
+    if (Number(req.headers.get("content-length")) > MAX_KR_LOGO_DATA_URL + 10_000) return NextResponse.json({error:"Try a smaller logo."},{status:413});
     const body = KRLogoUploadSchema.parse(await req.json());
     const input = Buffer.from(body.dataUrl.split(",")[1],"base64");
-    const image = sharp(input,{limitInputPixels:20_000_000});
-    const metadata = await image.metadata();
-    if (!metadata.format || !["png","jpeg","webp"].includes(metadata.format)) return NextResponse.json({error:"Use a PNG, JPG or WebP logo."},{status:400});
-    const bytes = await image.rotate().resize(384,384,{fit:"inside",withoutEnlargement:true}).png().toBuffer();
-    const dataUrl = `data:image/png;base64,${bytes.toString("base64")}`;
-    if (dataUrl.length > 700_000) return NextResponse.json({error:"Try a simpler or smaller logo."},{status:400});
+    const { bytes, dataUrl } = await prepareKRLogo(input);
     const hash = createHash("sha256").update(bytes).digest("hex");
     const existing = await prisma.kRLogo.findUnique({where:{userId_hash:{userId:user.id,hash}}});
     if (!existing && await prisma.kRLogo.count({where:{userId:user.id}}) >= 100) return NextResponse.json({error:"Your library has reached 100 logos. This logo can still be used in your current design."},{status:409});

@@ -8,8 +8,7 @@ function roundedPath(x: number, y: number, w: number, h: number, r: number[]) {
   return `M${n(x+a)} ${n(y)}H${n(x+w-b)}Q${n(x+w)} ${n(y)} ${n(x+w)} ${n(y+b)}V${n(y+h-c)}Q${n(x+w)} ${n(y+h)} ${n(x+w-c)} ${n(y+h)}H${n(x+d)}Q${n(x)} ${n(y+h)} ${n(x)} ${n(y+h-d)}V${n(y+a)}Q${n(x)} ${n(y)} ${n(x+a)} ${n(y)}Z`;
 }
 
-/** Shared vector renderer: preview, saved thumbnails, SVG and PNG use the same geometry. */
-export function renderKRSvg(value: string, rawStyle: unknown, width?: number): string {
+function qrLayout(value: string, rawStyle: unknown) {
   const s = normalizeKRStyle(rawStyle);
   const logo = s.logoEnabled && s.logoUrl;
   const qr = QRCode.create(value || "https://kompi.app", { errorCorrectionLevel: logo ? "H" : s.ecLevel });
@@ -24,6 +23,17 @@ export function renderKRSvg(value: string, rawStyle: unknown, width?: number): s
   const height = extent + labelHeight;
   const top = s.frameVariant === "label-top" ? labelHeight : 0;
   const ox = pad + margin, oy = pad + margin + top;
+  return { s, logo, qr, count, frame, label, pad, base, extent, height, top, ox, oy };
+}
+
+export function getKRExportDetails(value: string, rawStyle: unknown, width: number) {
+  const { s, count, extent, height, logo } = qrLayout(value, rawStyle);
+  return { width, height: Math.round(width * height / extent), logoPixels: logo ? Math.ceil(width * count * s.logoSize / extent) : 0 };
+}
+
+/** Shared vector renderer: preview, saved thumbnails, SVG and PNG use the same geometry. */
+export function renderKRSvg(value: string, rawStyle: unknown, width?: number): string {
+  const { s, logo, qr, count, frame, label, pad, base, extent, height, top, ox, oy } = qrLayout(value, rawStyle);
   const background = s.bg === "transparent" ? "none" : s.bg;
   const contours: string[] = [];
   const isEye = (x: number,y: number) => (x < 7 && y < 7) || (x >= count-7 && y < 7) || (x < 7 && y >= count-7);

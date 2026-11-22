@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Check, ImagePlus, Loader2, X } from "lucide-react";
-import { KR_LOGO_STORAGE_KEY, mergeKRLogos, readDeviceLogos, recentDeviceLogos, type ReusableKRLogo } from "@/lib/kr-logos";
+import { KR_LOGO_STORAGE_KEY, MAX_KR_LOGO_DATA_URL, MAX_KR_LOGO_EDGE, mergeKRLogos, readDeviceLogos, recentDeviceLogos, type ReusableKRLogo } from "@/lib/kr-logos";
 import styles from "./qr-studio.module.css";
 
 type Props = {auth:"checking"|"guest"|"member"|"error";logoUrl:string|null;onChange:(logoUrl:string|null)=>void};
@@ -65,10 +65,10 @@ export default function QRLogoPicker({auth,logoUrl,onChange}:Props) {
     setBusy(true);const url=URL.createObjectURL(file);
     try {
       const image=new window.Image();await new Promise<void>((resolve,reject)=>{image.onload=()=>resolve();image.onerror=()=>reject(new Error("This image could not be opened."));image.src=url;});
-      const scale=Math.min(1,384/Math.max(image.width,image.height));const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));
+      const scale=Math.min(1,MAX_KR_LOGO_EDGE/Math.max(image.naturalWidth,image.naturalHeight));const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
       const context=canvas.getContext("2d");if(!context)throw new Error("This browser could not prepare your logo.");
-      context.drawImage(image,0,0,canvas.width,canvas.height);const dataUrl=canvas.toDataURL("image/png");
-      if(dataUrl.length>700000)throw new Error("Try a simpler or smaller logo.");
+      context.imageSmoothingQuality="high";context.drawImage(image,0,0,canvas.width,canvas.height);const dataUrl=canvas.toDataURL("image/png");
+      if(dataUrl.length>MAX_KR_LOGO_DATA_URL)throw new Error("Try a simpler or smaller logo.");
       const logo:ReusableKRLogo={id:crypto.randomUUID(),name:file.name.slice(0,120),dataUrl,source:"device"};
       onChange(dataUrl);setPending(logo);
       try {await keepLogo(logo);} catch(err){setError(`Logo added to this design. ${err instanceof Error?err.message:"Could not save it for reuse."}`);}

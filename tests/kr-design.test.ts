@@ -3,7 +3,9 @@ import { test } from 'node:test';
 import sharp from 'sharp';
 import jsQR from 'jsqr';
 import { DEFAULT_KR_STYLE, KR_PRESETS, KRStyleSchema, presetStyle, normalizeHexColor, normalizeKRStyle, designChecks } from '../src/lib/kr-design';
-import { renderKRSvg } from '../src/lib/kr-render';
+import { getKRExportDetails, renderKRSvg } from '../src/lib/kr-render';
+import { DEFAULT_KR_EXPORT_WIDTH, resolveKRExportWidth, withKRPrintDensity } from '../src/lib/kr-export';
+import { prepareKRLogo } from '../src/lib/kr-logo-image';
 import { buildKRContent, readKRContent } from '../src/lib/kr-content';
 import { KRLogoUploadSchema, mergeKRLogos, readDeviceLogos, recentDeviceLogos } from '../src/lib/kr-logos';
 
@@ -12,6 +14,50 @@ async function decode(svg: string) {
   return jsQR(new Uint8ClampedArray(data),info.width,info.height)?.data;
 }
 const payloads = ['https://kompi.app/r/AbC123','https://example.com/a-longer-destination?utm_source=business-card&utm_campaign=launch','WIFI:T:WPA;S:Studio;P:correct-horse;H:true;;'];
+test('high-resolution exports ignore old preview sizes and keep vector geometry',async()=>{
+  const legacy=normalizeKRStyle({...DEFAULT_KR_STYLE,size:512,bg:'transparent',frameVariant:'label-bottom'});
+  assert.equal(DEFAULT_KR_EXPORT_WIDTH,4096);
+  for(const width of [undefined,null,'','512','999999','NaN']) assert.equal(resolveKRExportWidth(width),4096);
+  for(const width of [1024,2048,4096,8192]) {
+    assert.equal(resolveKRExportWidth(String(width)),width);
+    const svg=renderKRSvg(payloads[0],legacy,resolveKRExportWidth(width));
+    const details=getKRExportDetails(payloads[0],legacy,width);
+    assert.ok(svg.includes(`width="${width}" height="${details.height}"`));
+    assert.ok(svg.includes('<path '));assert.ok(!svg.includes('<image '));
+  }
+  const svg=renderKRSvg(payloads[0],legacy,resolveKRExportWidth());
+  const original=await sharp(Buffer.from(svg)).png().toBuffer();
+  const result=withKRPrintDensity(original);
+  const metadata=await sharp(result).metadata();
+  assert.equal(metadata.width,4096);assert.ok(metadata.height!>4096);
+  assert.equal(metadata.density,300);assert.equal(metadata.hasAlpha,true);
+  // Metadata editing must not resample the artwork or flatten transparency.
+  const [before,after]=await Promise.all([sharp(original).raw().toBuffer(),sharp(result).raw().toBuffer()]);
+  assert.deepEqual(after,before);assert.equal(after[3],0);
+  const flattened=await sharp(result).resize({width:512}).flatten({background:'#FFFFFF'}).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+  assert.equal(jsQR(new Uint8ClampedArray(flattened.data),flattened.info.width,flattened.info.height)?.data,payloads[0]);
+  const withExistingDensity=await sharp(original).withMetadata({density:96}).png().toBuffer();
+  assert.equal((await sharp(withKRPrintDensity(withExistingDensity)).metadata()).density,300);
+  assert.throws(()=>withKRPrintDensity(new Uint8Array([1,2,3])));
+});
+test('logos keep print detail through processing, save validation and browser reuse',async()=>{
+  for(const [source,expected] of [[384,384],[1536,1536],[2400,2048]]) {
+    const input=await sharp({create:{width:source,height:source/2,channels:4,background:'#135647'}}).png().toBuffer();
+    const prepared=await prepareKRLogo(input);
+    const metadata=await sharp(prepared.bytes).metadata();
+    assert.equal(metadata.width,expected);assert.equal(metadata.height,expected/2);
+    const style=normalizeKRStyle(JSON.parse(JSON.stringify(KRStyleSchema.parse({logoUrl:prepared.dataUrl,logoEnabled:true,size:8192}))));
+    assert.equal(style.logoUrl,prepared.dataUrl);assert.equal(style.size,8192);
+    const logo={id:'hires',name:'High resolution.png',dataUrl:prepared.dataUrl,source:'device' as const};
+    assert.deepEqual(readDeviceLogos(JSON.stringify(recentDeviceLogos([logo]))),[logo]);
+  }
+  // Full-size uploads must fit the recent library instead of being silently omitted.
+  const large={id:'large',name:'Large.png',dataUrl:`data:image/png;base64,${'A'.repeat(2_700_000)}`,source:'device' as const};
+  assert.equal(KRLogoUploadSchema.safeParse(large).success,true);
+  assert.equal(KRStyleSchema.safeParse({logoUrl:large.dataUrl}).success,true);
+  assert.equal(readDeviceLogos(JSON.stringify(recentDeviceLogos([large])))[0].dataUrl,large.dataUrl);
+  await assert.rejects(()=>prepareKRLogo(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>')));
+});
 test('custom hex colours survive save validation, reload and export',()=>{
   for (const input of ['2A1F1C','#2A1F1C','2a1f1c','  #2a1f1c  ']) assert.equal(normalizeHexColor(input),'#2A1F1C');
   assert.equal(normalizeHexColor('#abc'),'#AABBCC');

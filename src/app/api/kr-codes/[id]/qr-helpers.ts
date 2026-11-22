@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { normalizeKRStyle } from "@/lib/kr-design";
 import { renderKRSvg } from "@/lib/kr-render";
+import { resolveKRExportWidth } from "@/lib/kr-export";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { requireUser } from "@/lib/auth";
@@ -30,5 +31,5 @@ export async function getKrCodeLinkAndUrl(id: string, _req: Request) {
 
 export async function savedKRSvg(id: string, req: Request, thumbnail = false) {
   const { qrUrl, style } = await getKrCodeLinkAndUrl(id, req);
-  return renderKRSvg(qrUrl, style, thumbnail ? 256 : Math.max(512, style.size));
+  return renderKRSvg(qrUrl, style, thumbnail ? 256 : resolveKRExportWidth(new URL(req.url).searchParams.get("size")));
 }

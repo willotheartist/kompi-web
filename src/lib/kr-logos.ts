@@ -1,8 +1,11 @@
 import { z } from "zod";
 
+export const MAX_KR_LOGO_EDGE = 2048;
+export const MAX_KR_LOGO_DATA_URL = 2_800_000;
+
 export const KRLogoUploadSchema = z.object({
   name: z.string().trim().min(1).max(120),
-  dataUrl: z.string().max(700_000).regex(/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i),
+  dataUrl: z.string().max(MAX_KR_LOGO_DATA_URL).regex(/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i),
 });
 export type ReusableKRLogo = {
   id: string;
@@ -35,11 +38,12 @@ export function readDeviceLogos(raw: string | null): ReusableKRLogo[] {
   } catch { return []; }
 }
 
-/** Keep a bounded recent library; a large image must not evict every other logo. */
+/** Bound browser storage while leaving room for a full-resolution recent upload. */
 export function recentDeviceLogos(logos: ReusableKRLogo[]): ReusableKRLogo[] {
   let bytes = 0;
   return mergeKRLogos(logos).filter(logo => {
+    if (bytes + logo.dataUrl.length > 4_000_000) return false;
     bytes += logo.dataUrl.length;
-    return bytes <= 2_000_000;
+    return true;
   }).slice(0,12).map(logo => ({...logo,source:"device"}));
 }

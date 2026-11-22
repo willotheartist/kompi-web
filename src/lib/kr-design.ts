@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { DEFAULT_KR_EXPORT_WIDTH } from "./kr-export";
+import { MAX_KR_LOGO_DATA_URL } from "./kr-logos";
 
 export function normalizeHexColor(value: string): string | null {
   const hex = value.trim().replace(/^#/, "");
@@ -11,7 +13,7 @@ const color = z.preprocess(
   value => typeof value === "string" ? normalizeHexColor(value) ?? value : value,
   z.string().regex(/^#[0-9A-F]{6}$/),
 );
-const logo = z.string().max(700_000).refine((v) =>
+const logo = z.string().max(MAX_KR_LOGO_DATA_URL).refine((v) =>
   /^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(v) ||
   /^\/uploads\/krcodes\/[a-z0-9_-]+\.(png|jpg|jpeg|webp)$/i.test(v),
   "Upload a PNG, JPG or WebP logo.");
@@ -19,7 +21,7 @@ const logo = z.string().max(700_000).refine((v) =>
 /** One schema for create, edit, preview and export. Existing styles remain readable. */
 export const KRStyleSchema = z.object({
   fg: color.optional(), bg: z.union([color, z.literal("transparent")]).optional(),
-  size: z.number().int().min(120).max(4096).optional(),
+  size: z.number().int().min(120).max(8192).optional(),
   margin: z.number().int().min(0).max(16).optional(),
   ecLevel: z.enum(["L", "M", "Q", "H"]).optional(),
   logoUrl: logo.nullable().optional(), logoEnabled: z.boolean().optional(),
@@ -35,7 +37,7 @@ export const KRStyleSchema = z.object({
 });
 export type KRStyle = Required<z.infer<typeof KRStyleSchema>>;
 export const DEFAULT_KR_STYLE: KRStyle = {
-  fg: "#111111", bg: "#FFFFFF", size: 1024, margin: 4, ecLevel: "Q",
+  fg: "#111111", bg: "#FFFFFF", size: DEFAULT_KR_EXPORT_WIDTH, margin: 4, ecLevel: "Q",
   logoUrl: null, logoEnabled: false, logoBgTransparent: true, logoSize: 0.18,
   dotsType: "rounded", cornersSquareType: "extra-rounded", cornersDotType: "rounded",
   eyeColor: "#111111", frameVariant: "none", frameLabel: "SCAN ME",
