@@ -1,40 +1,15 @@
-// src/app/api/kr-codes/[id]/png/route.ts
-import { NextResponse } from "next/server";
-import QRCode from "qrcode";
 import sharp from "sharp";
-import { getKrCodeLinkAndUrl } from "../qr-helpers";
-
+import { savedKRSvg } from "../qr-helpers";
 export const runtime = "nodejs";
-
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const { id } = await ctx.params;
-  const url = new URL(req.url);
-  const isThumb = url.searchParams.get("thumb") === "1";
-
-  const { qrUrl, style } = await getKrCodeLinkAndUrl(id, req);
-
-  const size = isThumb ? 128 : Math.max(512, (style.size ?? 240) * 2);
-
-  const qr = await QRCode.toBuffer(qrUrl, {
-    width: size,
-    margin: style.margin ?? 2,
-    color: {
-      dark: style.fg ?? "#000",
-      light:
-        style.bg === "transparent" ? "#FFFFFF" : (style.bg ?? "#FFF"),
-    },
-    errorCorrectionLevel: style.ecLevel ?? "M",
-  });
-
-  const buffer = isThumb
-    ? await sharp(qr).resize(128, 128).png().toBuffer()
-    : qr;
-
-  return new NextResponse(buffer, {
-    headers: {
-      "Content-Type": "image/png",
-      "Cache-Control":
-        "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800",
-    },
-  });
+  try {
+    const { id } = await ctx.params;
+    const thumb = new URL(req.url).searchParams.get("thumb") === "1";
+    const svg = await savedKRSvg(id, req, thumb);
+    const bytes = await sharp(Buffer.from(svg)).png().toBuffer();
+    return new Response(new Uint8Array(bytes), { headers: {
+      "Content-Type": "image/png", "Cache-Control": "private, no-cache",
+      ...(thumb ? {} : { "Content-Disposition": `attachment; filename="kompi-${id.replace(/[^a-z0-9_-]/gi, "")}.png"` }),
+    }});
+  } catch { return new Response("Code not found or sign-in required", { status: 404 }); }
 }

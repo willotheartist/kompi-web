@@ -1,19 +1,11 @@
 // src/app/api/kr-codes/[id]/style/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { KRStyleSchema } from "@/lib/kr-design";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const StyleSchema = z.object({
-  fg: z.string().optional(),
-  bg: z.string().optional(),
-  size: z.number().int().min(120).max(1024).optional(),
-  margin: z.number().int().min(0).max(16).optional(),
-  logoUrl: z.string().url().nullable().optional(),
-  cornerRadius: z.number().int().min(0).max(40).optional(),
-  ecLevel: z.enum(["L", "M", "Q", "H"]).optional(),
-});
+const StyleSchema = KRStyleSchema;
 
 type StyleObject = {
   fg?: string;
@@ -64,9 +56,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const parsed = StyleSchema.parse(
-    await req.json().catch(() => ({})),
-  );
+  const result = StyleSchema.safeParse(await req.json().catch(() => ({})));
+  if (!result.success) return NextResponse.json({ error: "Invalid design settings" }, { status: 400 });
+  const parsed = result.data;
 
   const currentStyle = (code.style ?? {}) as StyleObject;
 

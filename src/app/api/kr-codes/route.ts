@@ -1,6 +1,7 @@
 //src/app/api/kr-codes/route.ts
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { KRStyleSchema, DEFAULT_KR_STYLE } from "@/lib/kr-design";
 import { prisma } from "@/lib/prisma";
 import { checkUrlSafety } from "@/lib/url-safety";
 import { checkLinkCreationAllowed } from "@/lib/abuse";
@@ -17,7 +18,7 @@ const FREE_QR_LIMIT = 5;
 const CREATOR_QR_LIMIT = 1000000; // effectively unlimited for Creator
 
 const BodySchema = z.object({
-  destination: z.string().min(1),
+  destination: z.string().min(1).max(4096),
   title: z.string().max(120).optional(),
   createShortLink: z.boolean().optional().default(true),
   // content type of the QR (website, file, app, social, other, etc.)
@@ -31,28 +32,10 @@ const BodySchema = z.object({
       content: z.string().optional(),
     })
     .optional(),
-  style: z
-    .object({
-      fg: z.string().optional(),
-      bg: z.string().optional(),
-      size: z.number().int().min(120).max(1024).optional(),
-      margin: z.number().int().min(0).max(16).optional(),
-      logoUrl: z.string().nullable().optional(),
-      cornerRadius: z.number().int().min(0).max(40).optional(),
-      ecLevel: z.enum(["L", "M", "Q", "H"]).optional(),
-    })
-    .optional(),
+  style: KRStyleSchema.optional(),
 });
 
-const DEFAULT_STYLE = {
-  fg: "#0EA5E9",
-  bg: "transparent",
-  size: 240,
-  margin: 2,
-  logoUrl: null as string | null,
-  cornerRadius: 0,
-  ecLevel: "M" as const,
-};
+const DEFAULT_STYLE = DEFAULT_KR_STYLE;
 
 function generateCode(len = 6) {
   const chars =
@@ -88,6 +71,9 @@ export async function GET(req: Request) {
       .map((c) => c.shortCodeId)
       .filter((id): id is string => Boolean(id));
 
+    const links = linkIds.length ? await prisma.link.findMany({ where: { id: { in: linkIds } }, select: { id: true, targetUrl: true } }) : [];
+    const targetByLink = new Map(links.map(link => [link.id, link.targetUrl]));
+
     const events =
       linkIds.length === 0
         ? []
@@ -104,6 +90,7 @@ export async function GET(req: Request) {
     const enriched: Array<KRCodeRecord & { totalClicks: number }> =
       codes.map((c) => ({
         ...c,
+        targetUrl: c.shortCodeId ? targetByLink.get(c.shortCodeId) ?? c.destination : c.destination,
         totalClicks: c.shortCodeId
           ? scansByLinkId.get(c.shortCodeId) ?? 0
           : 0,
@@ -111,8 +98,9 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ workspace, codes: enriched });
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) return new NextResponse("Unauthorized", { status: 401 });
     console.error("GET /api/kr-codes error", err);
-    return new NextResponse("Unauthorized", { status: 401 });
+    return NextResponse.json({ error: "Your codes could not be loaded. Please try again." }, { status: 500 });
   }
 }
 
@@ -232,6 +220,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json(krc, { status: 201 });
   } catch (err) {
+    if (err instanceof z.ZodError) return NextResponse.json({ error: "Check your content and design settings." }, { status: 400 });
+    if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) return new NextResponse("Sign in to save your code.", { status: 401 });
     console.error("POST /api/kr-codes error", err);
     return new NextResponse("Bad Request", { status: 400 });
   }
