@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import "@/components/kr-codes/qr-shell.css";
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -138,10 +139,12 @@ export function DashboardLayout({
   pageDescription?: string;
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
+  const qrWorkspace = pathname?.startsWith("/kr-codes");
 
   return (
     <div
-      className="flex min-h-screen"
+      className={cn("flex min-h-screen", qrWorkspace && "kr-workspace-shell")}
       style={{
         background:
           "radial-gradient(circle at top left, rgba(196,200,255,0.18), transparent 28%), linear-gradient(180deg, #f7f7f6 0%, #f1f1f1 100%)",
@@ -154,7 +157,7 @@ export function DashboardLayout({
         <div className="sticky top-0 z-40 border-b border-black/6 bg-[rgba(241,241,241,0.78)] backdrop-blur-xl">
           <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
             <Topbar
-              pageTitle={pageTitle}
+              pageTitle={pageTitle ?? (qrWorkspace ? "KR Codes" : undefined)}
               pageEyebrow={pageEyebrow}
               pageDescription={pageDescription}
             />

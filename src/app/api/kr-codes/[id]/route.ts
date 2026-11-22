@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { checkUrlSafety } from "@/lib/url-safety";
 import { z } from "zod";
+import { KRStyleSchema } from "@/lib/kr-design";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -23,19 +24,7 @@ const EditBodySchema = z.object({
       content: z.string().optional(),
     })
     .optional(),
-  style: z
-    .object({
-      fg: z.string().optional(),
-      bg: z.string().optional(),
-      size: z.number().int().min(120).max(1024).optional(),
-      margin: z.number().int().min(0).max(16).optional(),
-      logoUrl: z.string().nullable().optional(),
-      cornerRadius: z.number().int().min(0).max(40).optional(),
-      ecLevel: z.enum(["L", "M", "Q", "H"]).optional(),
-      // extra style keys from the frontend are allowed
-    })
-    .passthrough()
-    .optional(),
+  style: KRStyleSchema.optional(),
 });
 
 // --- NEW: GET /api/kr-codes/[id] (fetch single code) ---
@@ -65,7 +54,8 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       );
     }
 
-    return NextResponse.json(krcode, { status: 200 });
+    const link = krcode.shortCodeId ? await prisma.link.findUnique({ where: { id: krcode.shortCodeId }, select: { targetUrl: true } }) : null;
+    return NextResponse.json({ ...krcode, targetUrl: link?.targetUrl ?? krcode.destination }, { status: 200 });
   } catch (err) {
     console.error("GET /api/kr-codes/[id] error", err);
     return NextResponse.json(
@@ -188,7 +178,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
       // Treat PATCH style as a full replacement object coming from the client.
       // Zod already validated "style"; we just coerce it to the Prisma JSON input type.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      updateData.style = body.style as any;
+      updateData.style = { ...(existing.style && typeof existing.style === "object" ? existing.style : {}), ...body.style };
     }
 
     // If we have a short link, update its targetUrl.
@@ -226,6 +216,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
 
     return NextResponse.json(updated, { status: 200 });
   } catch (err) {
+    if (err instanceof z.ZodError) return NextResponse.json({ error: "Check your content and design settings." }, { status: 400 });
     console.error("PATCH /api/kr-codes/[id] error", err);
     return NextResponse.json(
       { error: "Failed to update KR Code" },
