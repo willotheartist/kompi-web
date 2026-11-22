@@ -98,8 +98,9 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ workspace, codes: enriched });
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) return new NextResponse("Unauthorized", { status: 401 });
     console.error("GET /api/kr-codes error", err);
-    return new NextResponse("Unauthorized", { status: 401 });
+    return NextResponse.json({ error: "Your codes could not be loaded. Please try again." }, { status: 500 });
   }
 }
 

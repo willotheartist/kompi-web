@@ -12,7 +12,7 @@ type RouteContext = {
 
 // --- shared schema for edits (all optional) ---
 const EditBodySchema = z.object({
-  destination: z.string().min(1).optional(),
+  destination: z.string().min(1).max(4096).optional(),
   title: z.string().max(120).nullable().optional(),
   type: z.string().optional(),
   utm: z
@@ -57,6 +57,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
     const link = krcode.shortCodeId ? await prisma.link.findUnique({ where: { id: krcode.shortCodeId }, select: { targetUrl: true } }) : null;
     return NextResponse.json({ ...krcode, targetUrl: link?.targetUrl ?? krcode.destination }, { status: 200 });
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) return NextResponse.json({ error: "Sign in to access your saved code." }, { status: 401 });
     console.error("GET /api/kr-codes/[id] error", err);
     return NextResponse.json(
       { error: "Failed to load KR Code" },
@@ -98,6 +99,7 @@ export async function DELETE(_req: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) return NextResponse.json({ error: "Sign in to access your saved code." }, { status: 401 });
     console.error("DELETE /api/kr-codes/[id] error", err);
     return NextResponse.json(
       { error: "Failed to delete KR Code" },
@@ -175,9 +177,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     }
 
     if (body.style) {
-      // Treat PATCH style as a full replacement object coming from the client.
-      // Zod already validated "style"; we just coerce it to the Prisma JSON input type.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // Preserve valid settings that a partial style update does not include.
       updateData.style = { ...(existing.style && typeof existing.style === "object" ? existing.style : {}), ...body.style };
     }
 
@@ -216,6 +216,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
 
     return NextResponse.json(updated, { status: 200 });
   } catch (err) {
+    if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) return NextResponse.json({ error: "Sign in to access your saved code." }, { status: 401 });
     if (err instanceof z.ZodError) return NextResponse.json({ error: "Check your content and design settings." }, { status: 400 });
     console.error("PATCH /api/kr-codes/[id] error", err);
     return NextResponse.json(

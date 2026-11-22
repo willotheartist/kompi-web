@@ -52,3 +52,15 @@ test('scan feedback checks corner contrast and reversed colours',()=>{
   assert.ok(designChecks({...DEFAULT_KR_STYLE,eyeColor:'#EEEEEE'}).warnings.length);
   assert.ok(designChecks({...DEFAULT_KR_STYLE,fg:'#FFFFFF',bg:'#000000'}).warnings.length);
 });
+test('independent eye combinations decode across pattern styles',async()=>{
+  const failures:string[]=[];
+  for (const dotsType of ['square','dots','rounded','extra-rounded','classy','classy-rounded'] as const)
+    for (const cornersSquareType of ['square','extra-rounded','dot'] as const)
+      for (const cornersDotType of ['square','rounded','dot'] as const) {
+        const style={...DEFAULT_KR_STYLE,dotsType,cornersSquareType,cornersDotType};
+        for (const payload of payloads) for (const width of [256,512]) {
+          if (await decode(renderKRSvg(payload,style,width)) !== payload) failures.push(`${dotsType}/${cornersSquareType}/${cornersDotType}/${width}/${payload}`);
+        }
+      }
+  assert.deepEqual(failures,[]);
+});

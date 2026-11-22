@@ -34,7 +34,7 @@ export function renderKRSvg(value: string, rawStyle: unknown, width?: number): s
     // Keep timing/alignment/format modules intact; style only data modules.
     const reserved = qr.modules.isReserved(y,x);
     if (reserved || s.dotsType === "square") shapes.push(`<rect x="${px}" y="${py}" width="1" height="1"/>`);
-    else if (s.dotsType === "dots") shapes.push(`<circle cx="${px+.5}" cy="${py+.5}" r=".47"/>`);
+    else if (s.dotsType === "dots") shapes.push(`<circle cx="${px+.5}" cy="${py+.5}" r=".5"/>`);
     else if (s.dotsType === "rounded") shapes.push(`<rect x="${px}" y="${py}" width="1" height="1" rx=".27"/>`);
     else {
       let radii = [.48,.48,.48,.48];
@@ -50,8 +50,11 @@ export function renderKRSvg(value: string, rawStyle: unknown, width?: number): s
     const r=s.cornersSquareType === "dot" ? 3.5 : s.cornersSquareType === "extra-rounded" ? 2.5 : 0;
     const inner = Math.max(0,r-1);
     eyeShapes.push(`<path fill-rule="evenodd" d="${roundedPath(px,py,7,7,[r,r,r,r])}${roundedPath(px+1,py+1,5,5,[inner,inner,inner,inner])}"/>`);
-    const dot=s.cornersDotType === "dot" ? 1.5 : s.cornersDotType === "rounded" ? .8 : 0;
-    eyeShapes.push(`<rect x="${px+2}" y="${py+2}" width="3" height="3" rx="${dot}"/>`);
+    // Optical sizing preserves a readable finder ratio when mixing square and round eyes.
+    const coreSize=s.cornersSquareType === "square" && s.cornersDotType === "dot" ? 3.6 : s.cornersSquareType === "dot" && s.cornersDotType === "square" ? 2.8 : 3;
+    const coreOffset=(7-coreSize)/2;
+    const dot=s.cornersDotType === "dot" ? coreSize/2 : s.cornersDotType === "rounded" ? .8 : 0;
+    eyeShapes.push(`<rect x="${n(px+coreOffset)}" y="${n(py+coreOffset)}" width="${coreSize}" height="${coreSize}" rx="${dot}"/>`);
   }
   const frameBackground = frame ? `<rect x="0" y="0" width="${extent}" height="${height}" rx="${s.frameVariant === "ticket" ? 1 : 2.5}" fill="${s.frameColor}"/><rect x="${pad}" y="${pad+top}" width="${base}" height="${base}" rx="1.2" fill="${s.bg === "transparent" ? "#FFFFFF" : s.bg}"/>` : "";
   const labelY=s.frameVariant === "label-top" ? 4.3 : extent+3;

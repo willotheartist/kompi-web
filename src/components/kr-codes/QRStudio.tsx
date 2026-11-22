@@ -94,7 +94,7 @@ export default function QRStudio() {
       const raw=sessionStorage.getItem("kompi-qr-draft-v2");
       if (raw) {
         const draft=JSON.parse(raw);
-        if (draft.design) {setDesign({...normalizeKRStyle(draft.design),logoUrl:null,logoEnabled:false});setPreset("");}
+        if (draft.design) {setDesign(normalizeKRStyle(draft.design));setPreset("");}
         if (KR_TYPES.includes(draft.type)) setType(draft.type);
         if (draft.content && typeof draft.content === "object") setContent(Object.fromEntries(Object.entries(draft.content).filter(([,v])=>typeof v === "string")) as KRContent);
         if (typeof draft.title === "string") setTitle(draft.title.slice(0,120));
@@ -107,8 +107,8 @@ export default function QRStudio() {
     if (!restored || codeId || saved) return;
     const timer=setTimeout(()=>{
       try {
-        // Do not persist network credentials, message bodies or uploaded logos in browser storage.
-        sessionStorage.setItem("kompi-qr-draft-v2",JSON.stringify({title,type,content:isWebType(type) ? content : {},design:{...design,logoUrl:null,logoEnabled:false}}));
+        // Keep network credentials and message bodies out of browser storage.
+        sessionStorage.setItem("kompi-qr-draft-v2",JSON.stringify({title,type,content:isWebType(type) ? content : {},design}));
         setDraftStatus(type === "wifi" ? "Wi-Fi details stay in this form" : "Design saved in this tab");
       } catch {setDraftStatus("Draft stays in this session");}
     },600);
@@ -134,11 +134,12 @@ export default function QRStudio() {
   function changeType(next:KRType) {setType(next);setShowTypes(false);setTab("content");setError("");}
   async function saveCode() {
     setError("");setNotice("");
+    if (codeId && !saved) {setError("Reload this saved code before making changes.");return;}
     if (!built.value || built.error || tooLong) {setError(tooLong ? "Shorten this content before saving." : built.error || "Add a destination first.");setTab("content");return;}
     if (auth === "guest") {window.location.href=`/signin?callbackUrl=${encodeURIComponent(`/kr-codes${codeId ? `?krcodeId=${codeId}` : ""}`)}`;return;}
     setSaving(true);
     try {
-      const res=await fetch(saved ? `/api/kr-codes/${saved.id}` : "/api/kr-codes",{method:saved ? "PATCH" : "POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:title.trim() || undefined,destination:built.value,type,style:design,createShortLink:isWebType(type)})});
+      const res=await fetch(saved ? `/api/kr-codes/${saved.id}` : "/api/kr-codes",{method:saved ? "PATCH" : "POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:title.trim() || (saved ? null : undefined),destination:built.value,type,style:design,createShortLink:isWebType(type)})});
       if (res.status===401 || res.redirected) {setAuth("guest");throw new Error("Sign in to save this code to your workspace.");}
       if (!res.ok) throw new Error(await responseMessage(res));
       const code:Code=await res.json();setSaved(code);setSavedSnapshot(snapshot);setTab("export");setNotice(saved ? "Changes saved. Your code is ready to download." : "Your Kompi Code is ready. Choose a format to download.");
@@ -222,14 +223,14 @@ export default function QRStudio() {
             <div className={styles.sectionHeading}><div><h2>Ready to go out into the world.</h2><p>From screens to stickers. Keep it crisp.</p></div></div>
             <div className={styles.exportTypes}>{[{id:"png",name:"PNG",desc:"Web, social & everyday use"},{id:"svg",name:"SVG",desc:"Vector quality for any print size"}].map(f=><button key={f.id} aria-pressed={format===f.id} onClick={()=>setFormat(f.id as "png"|"svg")}><FileText size={25}/><strong>{f.name}</strong><span>{f.desc}</span>{format===f.id && <Check size={17}/>}</button>)}</div>
             <Field label="Export width" hint={format === "svg" ? "SVG stays sharp at any size." : "Frames with a label are taller than the selected width."}><select value={design.size} onChange={e=>update({size:Number(e.target.value)})}>{[512,1024,2048,4096].map(size=><option value={size} key={size}>{size} px{size===1024 ? " · recommended" : ""}</option>)}</select></Field>
-            <div className={styles.infoBox}><Info size={18}/><p>{saved?.shortCodeId ? "Your download uses the saved Kompi link, so scans are tracked and the destination stays editable." : "This download contains your destination directly. Save a web code to Kompi first if you want scan analytics and an editable destination."}</p></div>
+            <div className={styles.infoBox}><Info size={18}/><p>{saved?.shortCodeId ? "Your download uses the saved Kompi link, so scans are tracked and the destination stays editable." : isWebType(type) ? "This download contains your destination directly. Save to Kompi first if you want scan analytics and an editable destination." : "Your details are stored directly in this code. Scans are not tracked. Download a new copy if you change the content."}</p></div>
             {saved && dirty && <div className={styles.warning}>You have unsaved changes. Save first to keep your workspace and download in sync.</div>}
             <button className={styles.primaryButton} onClick={exportCode} disabled={exporting || !built.value || tooLong || (Boolean(saved) && dirty)}>{exporting ? <Loader2 size={18} className={styles.spinner}/> : <Download size={18}/>} Download {format.toUpperCase()}</button>
             <div className={styles.printChecklist}><h3>A quick check before you print</h3><p><Check size={16}/> Scan with your phone and check the destination.</p><p><Check size={16}/> Keep the clear space around your code.</p><p><Check size={16}/> Test at the actual printed size and distance.</p></div>
             {saved && <Link className={styles.fullTextButton} href={`/kr-codes/${saved.id}`}><ScanLine size={17}/> View code details and analytics</Link>}
           </>}
         </div>
-        <footer className={styles.editorFooter}><span><CheckCheck size={15}/>{saved ? dirty ? "Unsaved changes" : "Saved to your workspace" : draftStatus || "Your design starts here"}</span><button className={styles.primaryButton} onClick={saveCode} disabled={saving || loadingCode || auth==="checking" || (Boolean(saved) && !dirty)}>{saving && <Loader2 size={16} className={styles.spinner}/>} {actionLabel}</button></footer>
+        <footer className={styles.editorFooter}><span><CheckCheck size={15}/>{saved ? dirty ? "Unsaved changes" : "Saved to your workspace" : draftStatus || "Your design starts here"}</span><button className={styles.primaryButton} onClick={saveCode} disabled={saving || loadingCode || (Boolean(codeId) && !saved) || auth==="checking" || (Boolean(saved) && !dirty)}>{saving && <Loader2 size={16} className={styles.spinner}/>} {actionLabel}</button></footer>
       </section>
       <aside className={styles.previewColumn}>
         <div className={styles.previewCanvas}>
