@@ -1,7 +1,7 @@
 // src/components/tools/ContactLinkGenerator.tsx
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Dialog,
@@ -65,7 +65,7 @@ export default function ContactLinkGenerator({
 
   // NEW: dashboard-specific state
   const [saving, setSaving] = useState(false);
-  const [savedShortUrl, setSavedShortUrl] = useState<string | null>(null);
+  const [savedLink, setSavedLink] = useState<{ source: string; url: string } | null>(null);
 
   const isDashboard = context === "dashboard";
 
@@ -119,7 +119,7 @@ export default function ContactLinkGenerator({
 
   // NEW: if we have a stored Kompi short URL in dashboard, prefer that
   const uiShortLink = isDashboard
-    ? savedShortUrl ?? displayShortLink
+    ? (savedLink?.source === link ? savedLink.url : displayShortLink)
     : displayShortLink;
 
   async function handleCopy() {
@@ -148,7 +148,7 @@ export default function ContactLinkGenerator({
     setShowModal(true);
     setCopied(false);
     setSaving(true);
-    setSavedShortUrl(null);
+    setSavedLink(null);
 
     try {
       const res = await fetch("/api/tools/contact-links", {
@@ -177,7 +177,7 @@ export default function ContactLinkGenerator({
         } = await res.json();
 
         if (data.shortUrl) {
-          setSavedShortUrl(data.shortUrl);
+          setSavedLink({ source: link, url: data.shortUrl });
         }
       } else {
         console.error("Failed to store contact link", await res.text());
@@ -194,10 +194,6 @@ export default function ContactLinkGenerator({
   const previewMessage =
     message.trim() || "Hi! I found you via Kompi and would love to get in touch.";
 
-  // Reset stored short URL when inputs change (new link)
-  useEffect(() => {
-    setSavedShortUrl(null);
-  }, [mode, fullPhone, message]);
 
   const body = (
     <div className="space-y-6">

@@ -69,6 +69,7 @@ export default function QRLibrary() {
     finally{if(sequence===request.current)setRefreshing(false);}
   },[]);
   useEffect(()=>{
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate browser storage and load remote library after mount.
     void load();
     try {setDraft(readKRLocalDraft(sessionStorage.getItem(KR_DRAFT_KEY)));const choice=localStorage.getItem("kompi-qr-library-view");if(choice==="grid"||choice==="list")setView(choice);}catch{}
     const refresh=()=>{if(document.visibilityState==="visible")void load();};

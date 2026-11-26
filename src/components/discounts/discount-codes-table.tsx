@@ -15,6 +15,8 @@ type DiscountCodeWithMeta = DiscountCode & {
 };
 
 export function DiscountCodesTable() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(timer); }, []);
   const [codes, setCodes] = useState<DiscountCodeWithMeta[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, startCreateTransition] = useTransition();
@@ -263,7 +265,7 @@ export function DiscountCodesTable() {
 
                   const statusLabel = !c.isActive
                     ? "Inactive"
-                    : expiresAt && expiresAt.getTime() < Date.now()
+                    : expiresAt && expiresAt.getTime() < now
                     ? "Expired"
                     : "Active";
 

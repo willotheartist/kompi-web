@@ -25,6 +25,7 @@ export default function QRLogoPicker({auth,logoUrl,onChange}:Props) {
 
   useEffect(()=>{
     const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Account changes switch the external source between API and browser storage.
     setLogos([]);setError("");setLoading(auth==="member");
     if (auth==="member") {
       fetch("/api/kr-codes/logos",{signal:controller.signal}).then(readResponse).then(data=>setLogos(data.logos)).catch(err=>{if(!controller.signal.aborted)setError(err.message);}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});
@@ -41,6 +42,7 @@ export default function QRLogoPicker({auth,logoUrl,onChange}:Props) {
       const existing=readDeviceLogos(localStorage.getItem(KR_LOGO_STORAGE_KEY));
       if(existing.some(logo=>logo.dataUrl===logoUrl))return;
       const next=recentDeviceLogos([{id:crypto.randomUUID(),name:"Recent logo",dataUrl:logoUrl,source:"device"},...existing]);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reflect a migrated guest logo after writing browser storage.
       localStorage.setItem(KR_LOGO_STORAGE_KEY,JSON.stringify(next));setLogos(next);
     } catch {setError("Logo added to this design, but this browser could not keep it for reuse.");}
   },[auth,logoUrl]);

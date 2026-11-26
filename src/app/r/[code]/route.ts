@@ -20,12 +20,6 @@ function safeParseUrl(raw: string): URL | null {
   }
 }
 
-function firstIpFromXff(xff: string | null): string | null {
-  if (!xff) return null;
-  const first = xff.split(",")[0]?.trim();
-  return first ? first : null;
-}
-
 function normalizeReferrerHost(referer: string | null): string {
   const r = (referer || "").trim();
   if (!r) return "direct";
@@ -136,13 +130,6 @@ export async function GET(req: Request, ctx: RouteContext) {
   const referer = req.headers.get("referer") || null;
   const userAgent = req.headers.get("user-agent") || null;
   const referrerHost = normalizeReferrerHost(referer);
-
-  // capture IP if available (works behind proxies/CDNs)
-  const ip =
-    firstIpFromXff(req.headers.get("x-forwarded-for")) ||
-    firstIpFromXff(req.headers.get("x-edge-ip")) ||
-    req.headers.get("x-real-ip") ||
-    null;
 
   const { country, region, city } = getGeoFromHeaders(req);
 

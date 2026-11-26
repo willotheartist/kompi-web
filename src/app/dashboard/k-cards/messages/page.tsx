@@ -54,6 +54,7 @@ export default function KCardMessagesPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Start the initial network request and its loading state together.
     void load();
   }, []);
 

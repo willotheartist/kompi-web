@@ -1,7 +1,7 @@
 // src/components/subscribers/subscribers-table.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,6 @@ type ApiResponse = {
 
 export function SubscribersTable() {
   const [subscribers, setSubscribers] = useState<SubscriberRow[]>([]);
-  const [filtered, setFiltered] = useState<SubscriberRow[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -52,7 +51,6 @@ export function SubscribersTable() {
 
         if (!cancelled) {
           setSubscribers(list);
-          setFiltered(list);
         }
       } catch (err) {
         console.error(err);
@@ -68,29 +66,10 @@ export function SubscribersTable() {
     };
   }, []);
 
-  useEffect(() => {
+  const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) {
-      setFiltered(subscribers);
-      return;
-    }
-
-    setFiltered(
-      subscribers.filter((s) => {
-        const email = s.email?.toLowerCase() ?? "";
-        const phone = s.phone?.toLowerCase() ?? "";
-        const src = s.sourceSlug?.toLowerCase() ?? "";
-        const type = s.sourceType?.toLowerCase() ?? "";
-        const tagsJoined = s.tags.join(",").toLowerCase();
-        return (
-          email.includes(q) ||
-          phone.includes(q) ||
-          src.includes(q) ||
-          type.includes(q) ||
-          tagsJoined.includes(q)
-        );
-      })
-    );
+    if (!q) return subscribers;
+    return subscribers.filter(s => [s.email, s.phone, s.sourceSlug, s.sourceType, s.tags.join(",")].some(value => value?.toLowerCase().includes(q)));
   }, [query, subscribers]);
 
   const total = subscribers.length;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- VM fixtures intentionally implement only the Prisma methods exercised by each route. */
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';

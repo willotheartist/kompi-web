@@ -416,7 +416,7 @@ export default function Page() {
                   Want to see how these pieces fit together in a real product?
                 </h2>
                 <p className="mt-4 max-w-2xl leading-7 text-black/70">
-                  Read the technical case study covering Kompi's application architecture and the work behind the platform.
+                  Read the technical case study covering Kompi’s application architecture and the work behind the platform.
                 </p>
                 <Link
                   href="/blog/how-kompi-was-built-wall-and-fifth"

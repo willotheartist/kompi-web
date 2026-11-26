@@ -217,14 +217,14 @@ export default function Page() {
                 NextAuth with Google sign-in and email/password credentials, protected by route middleware.
               </SystemItem>
               <SystemItem number="04" title="Commercial layer">
-                Stripe for billing and subscriptions, with PostHog plus Kompi's own event models for analytics.
+                Stripe for billing and subscriptions, with PostHog plus Kompi’s own event models for analytics.
               </SystemItem>
             </div>
           </ArticleSection>
 
           <ArticleSection label="03 / DATA MODEL" title="Everything starts with a workspace">
             <p>
-              Kompi's main product objects share a workspace model. A workspace can own links, bio pages, KR codes, forms,
+              Kompi’s main product objects share a workspace model. A workspace can own links, bio pages, KR codes, forms,
               subscriber lists, engagement events and additional tools. The account is the centre of the product instead of each
               feature living in its own silo.
             </p>
@@ -259,7 +259,7 @@ export default function Page() {
 
           <ArticleSection label="05 / PHYSICAL + DIGITAL" title="QR, KR Codes and K-Cards share the same foundation">
             <p>
-              Kompi's QR functionality is not a separate image generator bolted onto a website. KR Code records can hold a destination,
+              Kompi’s QR functionality is not a separate image generator bolted onto a website. KR Code records can hold a destination,
               style information and workspace ownership. K-Cards have public slugs and structured data, while click and message events
               can be associated back to the relevant card or workspace.
             </p>
@@ -291,7 +291,7 @@ export default function Page() {
               </div>
               <div>
                 <p className="text-lg font-normal leading-[1.65] text-black/70">
-                  Wall & Fifth's work on Kompi covered interface design, product structure, authenticated dashboard flows,
+                  Wall & Fifth’s work on Kompi covered interface design, product structure, authenticated dashboard flows,
                   database-backed features, link infrastructure, QR experiences, analytics, billing integration and the public web application.
                 </p>
                 <a
