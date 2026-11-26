@@ -1,0 +1,337 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/KR-Codes-QR-Code-Generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/barcode-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/how-kompi-was-built-wall-and-fifth",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/how-to-build-a-smart-link-platform",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/instagram-hashtag-mistakes-2026",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/instagram-hashtag-strategy-2026",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/link-in-bio-best-practices",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/link-in-bio-hub",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/qr-code-generator-that-people-actually-scan",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/qr-codes",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/url-link-shortener-tool",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/blog/utm",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/case-converter-online",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/chat",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/creator-studio",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/creator-tools",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/customers",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/customers/agencies",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/customers/brands",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/customers/communities",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/customers/creators",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/customers/events",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/customers/small-business",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/features/url-shortener",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/free-qr-code-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/free-qr-code/with-logo",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/hashtag-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/kompi-suite",
+    "status": 308,
+    "location": "/pricing"
+  },
+  {
+    "path": "/kr-codes",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/kr-codes/your",
+    "status": 307,
+    "location": "https://app.kompi.app/kr-codes/your"
+  },
+  {
+    "path": "/krcode2",
+    "status": 308,
+    "location": "/kr-codes"
+  },
+  {
+    "path": "/landing-page-creator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/pricing",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/pricingv2",
+    "status": 308,
+    "location": "/pricing"
+  },
+  {
+    "path": "/qr-code-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/qr-code/dynamic",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/qr-code/email",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/qr-code/for-restaurant",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/qr-code/static",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/qr-code/with-logo",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/qr-gen-online",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/barcode-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/brand-color-extractor",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/case-converter",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/character-counter",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/color-palette-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/hashtag-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/hourly-rate-calculator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/image-to-pdf",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/instagram-bio-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/instagram-caption-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/json-formatter",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/password-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/pdf-converter",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/pdf-to-image",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/profit-margin-calculator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/random-number-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/tiktok-bio-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/tiktok-caption-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/username-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/utm-builder",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/whatsapp-link-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/word-counter",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/tools/youtube-title-generator",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/whatsapp-link-generator",
+    "status": 200,
+    "location": null
+  }
+]
