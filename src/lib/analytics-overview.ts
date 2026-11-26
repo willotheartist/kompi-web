@@ -65,6 +65,8 @@ export type AnalyticsOverviewData = {
     clicks: number;
     lastClickAt: string | null;
     utmCampaignTop: string | null;
+    /** Set when this link backs a saved QR code (visits are scans). */
+    qrCode: { id: string; title: string | null } | null;
   }[];
 
   chat: {
@@ -211,34 +213,10 @@ export async function getAnalyticsOverviewForWorkspace({
   const prevTo = endOfDay(subDays(fromDate, 1));
   const prevFrom = startOfDay(subDays(prevTo, daySpan - 1));
 
-  const clickEvents = await prisma.clickEvent.findMany({
-    where: {
-      createdAt: { gte: fromDate, lte: toDate },
-      link: { workspaceId },
-    },
-    select: {
-      createdAt: true,
-      referer: true,
-      referrerHost: true,
-      userAgent: true,
-      linkId: true,
-      utmCampaign: true,
-      utmSource: true,
-      utmMedium: true,
-      country: true,
-    },
-  });
-
-  const prevLinkClicks = await prisma.clickEvent.count({
-    where: {
-      createdAt: { gte: prevFrom, lte: prevTo },
-      link: { workspaceId },
-    },
-  });
-
-  const linkClicks = clickEvents.length;
-
+  // One parallel round trip instead of three sequential ones.
   const [
+    clickEvents,
+    prevLinkClicks,
     contactSubmissions,
     subscribers,
     kcardMessages,
@@ -247,6 +225,29 @@ export async function getAnalyticsOverviewForWorkspace({
     prevKcardMessages,
     chatWidget,
   ] = await Promise.all([
+    prisma.clickEvent.findMany({
+      where: {
+        createdAt: { gte: fromDate, lte: toDate },
+        link: { workspaceId },
+      },
+      select: {
+        createdAt: true,
+        referer: true,
+        referrerHost: true,
+        userAgent: true,
+        linkId: true,
+        utmCampaign: true,
+        utmSource: true,
+        utmMedium: true,
+        country: true,
+      },
+    }),
+    prisma.clickEvent.count({
+      where: {
+        createdAt: { gte: prevFrom, lte: prevTo },
+        link: { workspaceId },
+      },
+    }),
     countContactSubmissions(workspaceId, fromDate, toDate),
     countSubscribers(workspaceId, fromDate, toDate),
     countKcardMessages(workspaceId, fromDate, toDate),
@@ -269,6 +270,8 @@ export async function getAnalyticsOverviewForWorkspace({
       },
     }),
   ]);
+
+  const linkClicks = clickEvents.length;
 
   const totalEngagements = linkClicks + contactSubmissions + subscribers + kcardMessages;
   const prevTotalEngagements =
@@ -374,13 +377,13 @@ export async function getAnalyticsOverviewForWorkspace({
 
   const topLinkIds = Array.from(linkCounts.entries())
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
+    .slice(0, 10)
     .map(([linkId]) => linkId);
 
   const links = topLinkIds.length
     ? await prisma.link.findMany({
         where: { id: { in: topLinkIds }, workspaceId },
-        select: { id: true, title: true, code: true, targetUrl: true },
+        select: { id: true, title: true, code: true, targetUrl: true, qrCodes: { select: { id: true, title: true }, take: 1 } },
       })
     : [];
 
@@ -406,6 +409,7 @@ export async function getAnalyticsOverviewForWorkspace({
         clicks,
         lastClickAt: lastClickAt ? lastClickAt.toISOString() : null,
         utmCampaignTop,
+        qrCode: link?.qrCodes[0] ?? null,
       };
     })
     .filter((x) => x.targetUrl);

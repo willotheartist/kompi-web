@@ -1,36 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { FileText, Copy, QrCode, Trash2, MoreHorizontal } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { BarChart3, Copy, Download, MoreHorizontal, Pencil, QrCode, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 type Props = {
   id: string;
-  shortUrl: string; // full short URL
+  shortUrl: string;
   className?: string;
+  onDeleted?: (id: string) => void;
 };
 
-export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
+const EASE = [0.16, 1, 0.3, 1] as const;
+const item = "flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-[14px] text-[#3C4045] transition-colors hover:bg-[#F3F4F5] hover:text-[#151619]";
+
+export default function LinkActionsMenu({ id, shortUrl, className, onDeleted }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
+  const root = useRef<HTMLDivElement>(null);
   const qrUrl = `/api/links/${id}/qr`;
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const away = (e: PointerEvent) => !root.current?.contains(e.target as Node) && setMenuOpen(false);
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [menuOpen]);
+
   async function handleCopy() {
-    if (typeof navigator === "undefined") return;
     try {
       await navigator.clipboard.writeText(shortUrl);
       toast.success("Short link copied", { description: shortUrl });
@@ -48,10 +56,10 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
         toast.error(msg || "Failed to delete link");
         return;
       }
-
       toast.success("Link deleted");
       setDeleteOpen(false);
-      window.location.reload();
+      if (onDeleted) onDeleted(id);
+      else window.location.reload();
     } finally {
       setDeleting(false);
     }
@@ -59,162 +67,92 @@ export default function LinkActionsMenu({ id, shortUrl, className }: Props) {
 
   return (
     <>
-      <div className="relative">
-        {/* Trigger */}
+      <div className="relative" ref={root}>
         <button
           type="button"
-          className={cn(
-            "inline-flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--color-text)]",
-            "border-[color:var(--color-border)] bg-[color:var(--color-surface)]",
-            "hover:bg-[color:var(--color-bg)] transition-colors",
-            className
-          )}
+          className={cn("inline-grid size-9 place-items-center rounded-[9px] text-[#80858C] transition-colors hover:bg-[#F1F2F4] hover:text-[#151619]", menuOpen && "bg-[#F1F2F4] text-[#151619]", className)}
           onClick={() => setMenuOpen((v) => !v)}
           aria-label="More actions"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
         >
-          <MoreHorizontal className="h-4 w-4 text-[color:var(--color-subtle)]" />
+          <MoreHorizontal size={18} />
         </button>
-
-        {/* Dropdown */}
-        {menuOpen && (
-          <div
-            className={cn(
-              "absolute right-0 z-40 mt-2 w-60 rounded-2xl border",
-              "border-[color:var(--color-border)] bg-[color:var(--color-surface)]",
-              "shadow-md"
-            )}
-          >
-            <ul className="py-1 text-sm text-[color:var(--color-text)]">
-              <li>
-                <Link
-                  href={`/links/${id}`}
-                  className="flex items-center gap-2 px-3 py-2 hover:bg-[color:var(--color-bg)]"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <FileText className="h-4 w-4 text-[color:var(--color-subtle)]" />
-                  <span>View link details</span>
-                </Link>
-              </li>
-
-              <li>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-[color:var(--color-bg)]"
-                  onClick={async () => {
-                    await handleCopy();
-                    setMenuOpen(false);
-                  }}
-                >
-                  <Copy className="h-4 w-4 text-[color:var(--color-subtle)]" />
-                  <span>Copy short URL</span>
-                </button>
-              </li>
-
-              <li>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-[color:var(--color-bg)]"
-                  onClick={() => {
-                    setQrOpen(true);
-                    setMenuOpen(false);
-                  }}
-                >
-                  <QrCode className="h-4 w-4 text-[color:var(--color-subtle)]" />
-                  <span>Show QR code</span>
-                </button>
-              </li>
-
-              <li className="mt-1 border-t border-[color:var(--color-border)] pt-1">
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-red-500 hover:bg-red-50"
-                  onClick={() => {
-                    setDeleteOpen(true);
-                    setMenuOpen(false);
-                  }}
-                  disabled={deleting}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>Delete link</span>
-                </button>
-              </li>
-            </ul>
-          </div>
-        )}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              role="menu"
+              initial={{ opacity: 0, y: -4, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              transition={{ duration: 0.16, ease: EASE }}
+              style={{ transformOrigin: "top right" }}
+              className="absolute right-0 top-[calc(100%+6px)] z-40 w-56 rounded-[12px] border border-[#E3E5E7] bg-white p-1.5"
+            >
+              <Link role="menuitem" href={`/links/${id}`} className={item} onClick={() => setMenuOpen(false)}>
+                <BarChart3 size={16} className="text-[#80858C]" /> Details & analytics
+              </Link>
+              <Link role="menuitem" href={`/links/${id}/edit`} className={item} onClick={() => setMenuOpen(false)}>
+                <Pencil size={16} className="text-[#80858C]" /> Edit link
+              </Link>
+              <button role="menuitem" type="button" className={item} onClick={async () => { await handleCopy(); setMenuOpen(false); }}>
+                <Copy size={16} className="text-[#80858C]" /> Copy short URL
+              </button>
+              <button role="menuitem" type="button" className={item} onClick={() => { setQrOpen(true); setMenuOpen(false); }}>
+                <QrCode size={16} className="text-[#80858C]" /> Quick QR code
+              </button>
+              <div className="my-1 h-px bg-[#EDEEF0]" />
+              <button
+                role="menuitem"
+                type="button"
+                className={cn(item, "text-[#9B3E35] hover:bg-[#FBEFED] hover:text-[#9B3E35]")}
+                onClick={() => { setDeleteOpen(true); setMenuOpen(false); }}
+                disabled={deleting}
+              >
+                <Trash2 size={16} /> Delete link
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* QR modal */}
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
-        <DialogContent className="max-w-sm rounded-3xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-[color:var(--color-text)]">
-              Download QR code
-            </DialogTitle>
-            <DialogDescription className="text-sm text-[color:var(--color-subtle)]">
-              Perfect for cards, posters, menus, and packaging.
-            </DialogDescription>
+            <DialogTitle>Quick QR code</DialogTitle>
+            <DialogDescription>A plain code for this link. For styled, trackable codes use the QR studio.</DialogDescription>
           </DialogHeader>
-          <div className="mt-4 flex flex-col items-center gap-3">
-            <div className="rounded-2xl border border-[color:var(--color-border)] bg-white p-3 shadow-sm">
-              <Image
-                src={qrUrl}
-                alt="QR code"
-                width={192}
-                height={192}
-                className="h-48 w-48"
-              />
+          <div className="mt-4 flex flex-col items-center gap-4">
+            <div className="rounded-[14px] border border-[#E3E5E7] bg-white p-3">
+              <img src={qrUrl} alt="QR code" width={192} height={192} className="size-48" />
             </div>
-            <div className="flex flex-col items-center gap-1 text-xs text-[color:var(--color-subtle)]">
-              <span className="break-all">{shortUrl}</span>
-              <a
-                href={qrUrl}
-                download={`${id}.png`}
-                className="mt-1 inline-flex items-center rounded-full border border-[color:var(--color-border)] px-3 py-1.5 text-xs font-medium text-[color:var(--color-text)]"
-              >
-                Download PNG
+            <p className="break-all text-center text-[13px] text-[#80858C]">{shortUrl}</p>
+            <div className="flex gap-2">
+              <a href={qrUrl} download={`${id}.png`} className="inline-flex min-h-10 items-center gap-2 rounded-[10px] bg-[#151619] px-4 text-[14px] font-medium text-white hover:bg-[#2B2D31]">
+                <Download size={15} /> Download PNG
               </a>
+              <Link href="/kr-codes" className="inline-flex min-h-10 items-center rounded-[10px] border border-[#E3E5E7] px-4 text-[14px] font-medium hover:bg-[#F7F8F9]">
+                Open QR studio
+              </Link>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation modal */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="max-w-sm rounded-3xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+      <Dialog open={deleteOpen} onOpenChange={(v) => !deleting && setDeleteOpen(v)}>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-[color:var(--color-text)]">
-              Delete this link?
-            </DialogTitle>
-            <DialogDescription className="text-sm text-[color:var(--color-subtle)]">
-              This will permanently remove the link and its analytics. This
-              action cannot be undone.
-            </DialogDescription>
+            <DialogTitle>Delete this link?</DialogTitle>
+            <DialogDescription>This permanently removes the link and its analytics. Anyone opening it will see an error.</DialogDescription>
           </DialogHeader>
-
-          <div className="mt-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 text-xs text-[color:var(--color-subtle)]">
-            <span className="font-mono break-all text-[color:var(--color-text)]">
-              {shortUrl}
-            </span>
-          </div>
-
-          <div className="mt-6 flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-8 rounded-full border-[color:var(--color-border)] bg-transparent px-3 text-sm text-[color:var(--color-text)] hover:bg-[color:var(--color-bg)]"
-              onClick={() => setDeleteOpen(false)}
-              disabled={deleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              className="h-8 rounded-full bg-red-500 px-4 text-sm font-semibold text-white hover:bg-red-600"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? "Deleting…" : "Delete"}
-            </Button>
+          <div className="mt-3 rounded-[10px] border border-[#E3E5E7] bg-[#FAFAFB] px-3 py-2 font-mono text-[12px] break-all text-[#3C4045]">{shortUrl}</div>
+          <div className="mt-5 flex justify-end gap-2">
+            <button type="button" className="min-h-10 rounded-[10px] border border-[#E3E5E7] px-4 text-[14px] font-medium hover:bg-[#F7F8F9]" onClick={() => setDeleteOpen(false)} disabled={deleting}>
+              Keep link
+            </button>
+            <button type="button" className="min-h-10 rounded-[10px] bg-[#9B3E35] px-4 text-[14px] font-medium text-white hover:bg-[#86342C] disabled:opacity-50" onClick={handleDelete} disabled={deleting}>
+              {deleting ? "Deleting…" : "Delete link"}
+            </button>
           </div>
         </DialogContent>
       </Dialog>

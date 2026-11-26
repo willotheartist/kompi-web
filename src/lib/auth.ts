@@ -2,6 +2,7 @@ import { getServerSession, type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { rateLimit } from "./rate-limit";
@@ -64,17 +65,18 @@ export const authOptions: NextAuthOptions = {
 };
 export function auth() { return getServerSession(authOptions); }
 export const getSession = auth;
-export async function requireUser() {
+// Deduplicated per request: layouts and pages both call these during one render.
+export const requireUser = cache(async function requireUser() {
   const session = await auth();
   if (!session?.user?.email) redirect("/signin");
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user || user.bannedAt) redirect("/signin?error=AccessDenied");
   return user;
-}
+});
 export function getUserWorkspaces(userId: string) { return prisma.workspace.findMany({ where: { ownerId: userId }, orderBy: { createdAt: "asc" } }); }
-export async function getActiveWorkspace(userId: string, workspaceId?: string | null) {
+export const getActiveWorkspace = cache(async function getActiveWorkspace(userId: string, workspaceId?: string | null) {
   if (workspaceId) return prisma.workspace.findFirst({ where: { ownerId: userId, OR: [{ id: workspaceId }, { slug: workspaceId }] } });
   const existing = await prisma.workspace.findFirst({ where: { ownerId: userId }, orderBy: { createdAt: "asc" } });
   if (existing) return existing;
   return prisma.workspace.upsert({ where: { slug: `ws-${userId}` }, update: {}, create: { name: "My workspace", slug: `ws-${userId}`, ownerId: userId } });
-}
+});
