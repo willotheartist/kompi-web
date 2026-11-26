@@ -1,181 +1,105 @@
-// src/components/dashboard/account-menu.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronDown, CircleHelp, CreditCard, LogOut, Settings, Sparkles, UserRound, type LucideIcon } from "lucide-react";
+import { useWorkspaceSummary } from "./shell/use-workspace-summary";
+
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+export function Avatar({ name, image, size = 32 }: { name: string; image?: string | null; size?: number }) {
+  const initial = (name.trim()[0] ?? "K").toUpperCase();
+  return (
+    <span
+      className="grid shrink-0 place-items-center overflow-hidden rounded-full border border-[#E3E5E7] bg-[#FBE4FA] font-medium text-[#151619]"
+      style={{ width: size, height: size, fontSize: size * 0.42 }}
+    >
+      {image ? <img src={image} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}
+    </span>
+  );
+}
 
 export function AccountMenu() {
   const { data } = useSession();
+  const summary = useWorkspaceSummary(Boolean(data?.user));
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
 
   const email = data?.user?.email ?? "";
   const name = data?.user?.name ?? "";
-  const image =
-    (data?.user as { image?: string | null } | undefined)?.image ?? null;
+  const image = (data?.user as { image?: string | null } | undefined)?.image ?? null;
+  const display = name || email || "Your account";
+  const paid = summary?.plan && summary.plan !== "FREE";
 
-  const display = name || email || "User";
-  const initial = (display?.trim()?.[0] ?? "U").toUpperCase();
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => !root.current?.contains(e.target as Node) && setOpen(false);
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [open]);
 
-  // (keep as-is; later you can wire real plan)
-  const [planLabel, setPlanLabel] = useState<string | null>(null);
-  useEffect(() => { if (!data?.user) return; let alive = true; fetch("/api/account/summary").then(r => r.ok ? r.json() : null).then(v => { if (alive && v) setPlanLabel(v.planName); }).catch(() => {}); return () => { alive = false; }; }, [data?.user?.email]);
-
-  const [open, setOpen] = useState(false);
-  const menuRef = useOutsideClose<HTMLDivElement>(open, () => setOpen(false));
+  const close = () => setOpen(false);
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative" ref={root}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 text-sm font-medium"
-        style={{
-          backgroundColor: "transparent",
-          border: "none",
-          color: "var(--color-text)",
-        }}
+        aria-haspopup="menu"
+        aria-expanded={open}
         aria-label="Open account menu"
+        className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-[#F3F4F5] sm:pl-3"
       >
-        <span className="max-w-40 truncate">{display}</span>
-
-        <span
-          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs uppercase tracking-wide"
-          style={{
-            backgroundColor: "var(--color-accent-soft)",
-            border: "1px solid var(--color-border)",
-            color: "var(--color-text)",
-          }}
-        >
-          {planLabel || "Account"}
-        </span>
-
-        <div className="flex items-center gap-1">
-          <div
-            className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full text-sm font-semibold"
-            style={{
-              backgroundColor: "var(--color-bg)",
-              border: "1px solid var(--color-accent)",
-              color: "var(--color-text)",
-            }}
-            aria-label="Account avatar"
-          >
-            {image ? (
-              // plain img avoids next/image remote domain config
-              <img
-                src={image}
-                alt={display}
-                className="h-full w-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              initial
-            )}
-          </div>
-
-          <ChevronDown
-            className="h-4 w-4"
-            style={{ color: "var(--color-subtle)" }}
-          />
-        </div>
+        <span className="hidden max-w-40 truncate text-[14px] font-medium text-[#151619] sm:block">{name.split(" ")[0] || display}</span>
+        {summary && (
+          <span className="hidden rounded-[6px] border border-[#E3E5E7] px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.06em] text-[#3C4045] sm:inline-block">
+            {summary.planName}
+          </span>
+        )}
+        <Avatar name={display} image={image} />
+        <ChevronDown size={15} className={`text-[#8A9099] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
 
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            transition={{ duration: 0.16 }}
-            className="wf-dashboard-account-menu absolute right-0 z-50 mt-2 w-80 rounded-2xl p-1.5"
-            style={{
-              backgroundColor: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
             role="menu"
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: EASE }}
+            style={{ transformOrigin: "top right" }}
+            className="absolute right-0 z-50 mt-2 w-[290px] rounded-[14px] border border-[#E3E5E7] bg-white p-1.5"
           >
-            <div className="flex items-center gap-3 px-3 py-3">
-              <div
-                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full text-xs font-semibold"
-                style={{
-                  backgroundColor: "var(--color-bg)",
-                  color: "var(--color-text)",
-                  border: "1px solid var(--color-border)",
-                }}
-              >
-                {image ? (
-                  <img
-                    src={image}
-                    alt={display}
-                    className="h-full w-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  initial
-                )}
-              </div>
-
-              <div className="flex min-w-0 flex-col">
-                <span className="text-xs" style={{ color: "var(--color-subtle)" }}>
-                  Signed in as
-                </span>
-                <span className="truncate text-sm font-medium">{display}</span>
+            <div className="flex items-center gap-3 rounded-[10px] px-2.5 py-3">
+              <Avatar name={display} image={image} size={40} />
+              <div className="min-w-0">
+                <p className="truncate text-[14px] font-medium text-[#151619]">{name || "Your account"}</p>
+                <p className="truncate text-[12px] text-[#80858C]">{email}</p>
               </div>
             </div>
-
-            <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
-
-            {/* Single-workspace mode: Workspace section intentionally removed */}
-
-            <MenuItem
-              href="/dashboard/settings/profile"
-              label="Account"
-              onClick={() => setOpen(false)}
-            />
-            <MenuItem
-              href="/dashboard/settings"
-              label="Settings"
-              onClick={() => setOpen(false)}
-            />
-            <MenuItem
-              href="/dashboard/settings/billing"
-              label="Upgrade"
-              onClick={() => setOpen(false)}
-            />
-
-            <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
-
-            <MenuItem
-              href="/dashboard/support"
-              label="Ask a question"
-              onClick={() => setOpen(false)}
-            />
-            <MenuItem
-              href="/dashboard/support"
-              label="Help topics"
-              onClick={() => setOpen(false)}
-            />
-            <MenuItem
-              href="/dashboard/support"
-              label="Share feedback"
-              onClick={() => setOpen(false)}
-            />
-
-            <div className="my-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
-
+            <div className="my-1 h-px bg-[#EDEEF0]" />
+            <Item href="/dashboard/settings/profile" icon={UserRound} label="Your profile" onClick={close} />
+            <Item href="/dashboard/settings" icon={Settings} label="Settings" onClick={close} />
+            <Item href="/dashboard/settings/billing" icon={paid ? CreditCard : Sparkles} label={paid ? "Plans & billing" : "Upgrade your plan"} onClick={close} accent={!paid} />
+            <Item href="/support" icon={CircleHelp} label="Help & support" onClick={close} />
+            <div className="my-1 h-px bg-[#EDEEF0]" />
             <button
-              className={cn(
-                "wf-dashboard-account-menu-signout w-full rounded-lg px-2.5 py-2 text-left text-sm font-medium transition"
-              )}
-              style={{ color: "var(--color-subtle)" }}
+              role="menuitem"
               onClick={() => {
-                setOpen(false);
-                signOut({ callbackUrl: "/" });
+                close();
+                void signOut({ callbackUrl: "/" });
               }}
+              className="flex w-full items-center gap-3 rounded-[10px] px-2.5 py-2 text-left text-[14px] text-[#696C72] transition-colors hover:bg-[#F3F4F5] hover:text-[#151619]"
             >
-              Log out
+              <LogOut size={16} /> Sign out
             </button>
           </motion.div>
         )}
@@ -184,50 +108,16 @@ export function AccountMenu() {
   );
 }
 
-function MenuItem({
-  href,
-  label,
-  onClick,
-}: {
-  href: string;
-  label: string;
-  onClick?: () => void;
-}) {
+function Item({ href, icon: Icon, label, onClick, accent }: { href: string; icon: LucideIcon; label: string; onClick: () => void; accent?: boolean }) {
   return (
     <Link
+      role="menuitem"
       href={href}
       onClick={onClick}
-      className={cn("wf-dashboard-account-menu-item block rounded-lg px-2.5 py-2 text-sm transition")}
-      role="menuitem"
-      style={{ color: "var(--color-text)" }}
+      className="group flex items-center gap-3 rounded-[10px] px-2.5 py-2 text-[14px] text-[#151619] transition-colors hover:bg-[#F3F4F5]"
     >
-      <span>{label}</span>
+      <Icon size={16} className={accent ? "text-[#B24BB0]" : "text-[#80858C] transition-colors group-hover:text-[#151619]"} />
+      {label}
     </Link>
   );
-}
-
-function useOutsideClose<T extends HTMLElement>(open: boolean, onClose: () => void) {
-  const ref = useRef<T | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    function onDoc(e: MouseEvent) {
-      if (!ref.current) return;
-      if (!ref.current.contains(e.target as Node)) onClose();
-    }
-
-    function onEsc(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-
-    document.addEventListener("mousedown", onDoc);
-    document.addEventListener("keydown", onEsc);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("keydown", onEsc);
-    };
-  }, [open, onClose]);
-
-  return ref;
 }

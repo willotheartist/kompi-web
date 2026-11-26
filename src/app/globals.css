@@ -393,3 +393,9 @@ body {
   font-style: italic;
   font-weight: 500;
 }
+
+/* Dashboard skeleton shimmer (flat, no glow) */
+@keyframes kompi-shimmer { 100% { transform: translateX(100%); } }
+.kompi-skeleton { position: relative; overflow: hidden; background: #EEF0F2; border-radius: 8px; }
+.kompi-skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,.65), transparent); animation: kompi-shimmer 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .kompi-skeleton::after { animation: none; } }
