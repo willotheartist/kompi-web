@@ -1,11 +1,15 @@
 // src/app/api/k-cards/clicks/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth";
+import { rateLimit, requestIp } from "@/lib/rate-limit";
+import { apiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
 
 // POST  /api/k-cards/clicks
 // Body: { slug: string; linkId: string; url: string }
 export async function POST(req: NextRequest) {
   try {
+    await rateLimit("card-click", requestIp(req), 120, 3600);
     const { slug, linkId, url } = (await req.json()) as {
       slug?: string;
       linkId?: string;
@@ -20,8 +24,8 @@ export async function POST(req: NextRequest) {
     }
 
     const kcard = await prisma.kCard.findFirst({
-      where: { slug, isPublic: true },
-      select: { id: true },
+      where: { slug, isPublic: true, user: { bannedAt: null } },
+      select: { id: true, data: true },
     });
 
     if (!kcard) {
@@ -31,8 +35,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const referer = req.headers.get("referer");
-    const userAgent = req.headers.get("user-agent");
+    const content = kcard.data as { links?: Array<{ id: string; url: string; enabled: boolean }> };
+    if (!Array.isArray(content.links) || !content.links.some(l => l.id === linkId && l.url === url && l.enabled)) return NextResponse.json({ error: "Link not found" }, { status: 404 });
+    const referer = null;
+    const userAgent = null;
 
     await prisma.kCardLinkClick.create({
       data: {
@@ -47,11 +53,7 @@ export async function POST(req: NextRequest) {
     // best-effort – nothing for client to do
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("Error recording K-Card link click", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(err);
   }
 }
 
@@ -59,6 +61,7 @@ export async function POST(req: NextRequest) {
 // Response: { data: { linkId: string; totalClicks: number }[] }
 export async function GET(req: NextRequest) {
   try {
+    const user = await requireUser();
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
 
@@ -70,7 +73,7 @@ export async function GET(req: NextRequest) {
     }
 
     const kcard = await prisma.kCard.findFirst({
-      where: { slug },
+      where: { slug, userId: user.id },
       select: { id: true },
     });
 
@@ -96,10 +99,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ data });
   } catch (err) {
-    console.error("Error loading K-Card click stats", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(err);
   }
 }

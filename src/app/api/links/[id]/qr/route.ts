@@ -17,7 +17,7 @@ export async function GET(_req: Request, ctx: RouteContext) {
     return new NextResponse("Not found", { status: 404 });
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_SHORT_LINK_URL || "https://kompi.app";
   const fullUrl = `${baseUrl}/r/${link.code}`;
 
   try {

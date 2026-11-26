@@ -1,21 +1,6 @@
-// src/lib/stripe.ts
 import Stripe from "stripe";
-
-// Read secret key from env
-const secretKey = process.env.STRIPE_SECRET_KEY;
-
-if (!secretKey) {
-  // Fail fast if it's missing – easier to debug
-  throw new Error(
-    "STRIPE_SECRET_KEY is not set. Add it to your .env.local file."
-  );
-}
-
-// Server-side Stripe client
-export const stripe = new Stripe(secretKey, {
-  // No apiVersion: we'll use the default for this Stripe SDK version
-});
-
-// Base app URL for redirects (success / cancel URLs, billing portal, etc.)
-export const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+import { ApiError } from "./api-errors";
+export { APP_URL } from "./urls";
+let client: Stripe | undefined;
+export function getStripe() { if (!process.env.STRIPE_SECRET_KEY) throw new ApiError("Billing is not available in this environment.", 503); return client ||= new Stripe(process.env.STRIPE_SECRET_KEY); }
+export function stripePrice(plan: string) { return plan === "STARTER" ? process.env.STRIPE_PRICE_STARTER_MONTHLY : plan === "BUSINESS" ? process.env.STRIPE_PRICE_BUSINESS_MONTHLY : process.env.STRIPE_PRICE_PRO_MONTHLY || process.env.STRIPE_PRICE_CREATOR_MONTHLY; }

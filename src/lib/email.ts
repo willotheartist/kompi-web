@@ -1,111 +1,22 @@
-// src/lib/email.ts
 import { Resend } from "resend";
-
-const resendApiKey = process.env.RESEND_API_KEY;
-const fromEmail = process.env.RESEND_FROM_EMAIL || "Kompi <onboarding@resend.dev>";
-const appUrl = process.env.APP_URL || "http://localhost:3000";
-
-if (!resendApiKey) {
-  console.warn("[email] RESEND_API_KEY is not set – emails will not be sent.");
+import { APP_URL } from "./urls";
+export function emailConfigured() { return !!process.env.RESEND_API_KEY; }
+export function escapeHtml(value: string) { return value.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '\"': "&quot;", "'": "&#39;" }[c] || c)); }
+export async function sendEmail(options: { to: string; subject: string; html: string; text?: string }) {
+  if (!process.env.RESEND_API_KEY) throw new Error("Transactional email is not configured");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const result = await resend.emails.send({ from: process.env.RESEND_FROM_EMAIL || "Kompi <hello@mail.kompi.app>", ...options });
+  if (result.error) throw new Error(`Email delivery rejected: ${result.error.name}`);
+  return result.data;
 }
-
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
-
-type SendEmailOptions = {
-  to: string;
-  subject: string;
-  html: string;
-  text?: string;
-};
-
-/**
- * Low-level helper – you can reuse for any email in the app.
- */
-export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
-  if (!resend) {
-    console.warn("[email] Resend client not initialized, skipping send.");
-    return;
-  }
-
-  await resend.emails.send({
-    from: fromEmail,
-    to,
-    subject,
-    html,
-    text,
-  });
-}
-
-/**
- * Welcome email after signup.
- */
 export async function sendWelcomeEmail(to: string) {
-  const dashboardUrl = `${appUrl}/dashboard`;
-
-  const subject = "Welcome to Kompi 🎉";
-  const html = `
-    <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #0f172a;">
-      <h1 style="font-size: 24px; margin-bottom: 8px;">Welcome to Kompi 👋</h1>
-      <p style="margin: 0 0 12px;">You’re in. Your Kompi account is ready.</p>
-      <p style="margin: 0 0 16px;">
-        Head over to your dashboard to create links, K-Cards, QR menus and more.
-      </p>
-      <a
-        href="${dashboardUrl}"
-        style="display: inline-block; padding: 10px 18px; border-radius: 999px; background: #020617; color: #f9fafb; text-decoration: none; font-weight: 600; margin-top: 8px;"
-      >
-        Go to your dashboard
-      </a>
-      <p style="font-size: 12px; color: #6b7280; margin-top: 24px;">
-        If you didn’t sign up for Kompi, you can ignore this email.
-      </p>
-    </div>
-  `;
-
-  const text = `Welcome to Kompi!
-
-You’re in. Your Kompi account is ready.
-
-Open your dashboard: ${dashboardUrl}
-
-If you didn’t sign up for Kompi, you can ignore this email.`;
-
-  await sendEmail({ to, subject, html, text });
+  return sendEmail({ to, subject: "Welcome to Kompi", html: `<p>Your Kompi is ready.</p><p>Create a Card, design a QR code or shorten a link.</p><p><a href="${APP_URL}/dashboard">Open your workspace</a></p>` });
 }
-
-/**
- * Forgot password email – pass in the raw token, we’ll build the link.
- */
 export async function sendPasswordResetEmail(to: string, token: string) {
-  const resetUrl = `${appUrl}/reset-password?token=${encodeURIComponent(token)}`;
-
-  const subject = "Reset your Kompi password";
-  const html = `
-    <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #0f172a;">
-      <h1 style="font-size: 22px; margin-bottom: 8px;">Reset your password</h1>
-      <p style="margin: 0 0 12px;">We received a request to reset your Kompi password.</p>
-      <p style="margin: 0 0 16px;">
-        Click the button below to choose a new password. This link will expire soon.
-      </p>
-      <a
-        href="${resetUrl}"
-        style="display: inline-block; padding: 10px 18px; border-radius: 999px; background: #020617; color: #f9fafb; text-decoration: none; font-weight: 600; margin-top: 8px;"
-      >
-        Reset password
-      </a>
-      <p style="font-size: 12px; color: #6b7280; margin-top: 24px;">
-        If you didn’t request this, you can safely ignore this email.
-      </p>
-    </div>
-  `;
-
-  const text = `Reset your Kompi password
-
-We received a request to reset your password.
-
-Reset link: ${resetUrl}
-
-If you didn’t request this, you can ignore this email.`;
-
-  await sendEmail({ to, subject, html, text });
+  const url = `${APP_URL}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(to)}`;
+  return sendEmail({ to, subject: "Reset your Kompi password", html: `<p>Use the link below to choose a new password. It expires in one hour and can be used once.</p><p><a href="${escapeHtml(url)}">Reset password</a></p><p>If you did not request this, you can ignore this email.</p>` });
+}
+export async function sendVerificationEmail(to: string, token: string) {
+  const url = `${APP_URL}/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(to)}`;
+  return sendEmail({ to, subject: "Confirm your Kompi email", html: `<p>Confirm your email to start using your Kompi workspace.</p><p><a href="${escapeHtml(url)}">Confirm email</a></p><p>This link expires in 24 hours.</p>` });
 }

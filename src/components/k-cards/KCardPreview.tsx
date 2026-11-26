@@ -1,5 +1,7 @@
 "use client";
 
+import { safePublicHref } from "@/lib/card-content";
+
 //src/components/k-cards/KCardPreview.tsx
 "use client";
 
@@ -273,7 +275,7 @@ export function KCardPreview({
             {socials.map((s) => {
               const Icon = SOCIAL_ICON_MAP[s];
               if (!Icon) return null;
-              const href = socialUrls[s]?.trim();
+              const href = safePublicHref(socialUrls[s]);
               return (
                 <a
                   key={s}
@@ -296,7 +298,7 @@ export function KCardPreview({
               </div>
             ) : (
               visibleLinks.slice(0, 8).map((link) => {
-                const href = (link.url || "").trim();
+                const href = safePublicHref(link.url);
                 const content = (
                   <span className="truncate">
                     {link.title || "Untitled link"}

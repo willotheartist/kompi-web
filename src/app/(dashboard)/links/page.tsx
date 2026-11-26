@@ -28,7 +28,7 @@ export default async function Page({ searchParams }: PageProps) {
     return <CreateWorkspaceEmpty />;
   }
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_SHORT_LINK_URL ?? "https://kompi.app";
 
   const rows = await prisma.link.findMany({
     where: { workspaceId: workspace.id },

@@ -94,7 +94,7 @@ export async function POST(req: Request) {
     });
 
     const base =
-      process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      process.env.NEXT_PUBLIC_SHORT_LINK_URL ?? "https://kompi.app";
 
     const shortUrl = link.code ? `${base}/r/${link.code}` : null;
 

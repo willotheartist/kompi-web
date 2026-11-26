@@ -7,19 +7,21 @@ import { checkUrlSafety } from "@/lib/url-safety";
 import { checkLinkCreationAllowed } from "@/lib/abuse";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
+import { getPlanLimits, limitMessage } from "@/lib/plan-limits";
+import { ApiError, apiError } from "@/lib/api-errors";
 
 export const dynamic = "force-dynamic";
 const privateHeaders = { "Cache-Control": "private, no-store" };
 
 const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
-const FREE_QR_LIMIT = 5;
+  process.env.NEXT_PUBLIC_SHORT_LINK_URL ?? "https://kompi.app";
 
 
 
 
-const CREATOR_QR_LIMIT = 1000000; // effectively unlimited for Creator
+
+
+
 
 const BodySchema = z.object({
   destination: z.string().min(1).max(4096),
@@ -139,15 +141,8 @@ export async function POST(req: Request) {
     const { searchParams } = new URL(req.url);
     const workspaceIdFromQuery = searchParams.get("workspaceId");
 
-    const workspace =
-      (await getActiveWorkspace(user.id, workspaceIdFromQuery)) ??
-      (await prisma.workspace.create({
-        data: {
-          name: "My workspace",
-          slug: `ws-${user.id.slice(0, 6)}`,
-          ownerId: user.id,
-        },
-      }));
+    const workspace = await getActiveWorkspace(user.id, workspaceIdFromQuery);
+    if (!workspace) throw new ApiError("Workspace not found.", 404);
 
     // A stable draft ID makes network retries and double submissions idempotent.
     const recordId = body.clientRequestId ? `kr_${body.clientRequestId.replace(/-/g, "")}` : undefined;
@@ -163,7 +158,7 @@ export async function POST(req: Request) {
 
     // --- plan-based KR / QR limits ---
     const qrLimit =
-      workspace.plan === "CREATOR" ? CREATOR_QR_LIMIT : FREE_QR_LIMIT;
+      getPlanLimits(workspace.plan).krCodes;
 
     const qrCount = await prisma.kRCode.count({
       where: { workspaceId: workspace.id },
@@ -171,7 +166,7 @@ export async function POST(req: Request) {
 
     if (qrCount >= qrLimit) {
       return new NextResponse(
-        "You’ve reached your limit on the Free plan. You can create up to 5 Kompi Codes™ per workspace on the Free plan. Upgrade to the Creator plan (£9.99/mo) to create more codes and unlock full access to Kompi tools.",
+        limitMessage("krCodes", workspace.plan),
         { status: 402 },
       );
     }
@@ -197,6 +192,8 @@ export async function POST(req: Request) {
     let krc;
     try {
       krc = await prisma.$transaction(async tx => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${workspace.id}))`;
+        if (await tx.kRCode.count({ where: { workspaceId: workspace.id } }) >= qrLimit) throw new ApiError(limitMessage("krCodes", workspace.plan), 402);
         let shortLinkId: string | null = null;
         let qrDestination = finalUrl;
         if (body.createShortLink) {
@@ -232,6 +229,7 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ ...krc, targetUrl: finalUrl }, { status: 201, headers: privateHeaders });
   } catch (err) {
+    if (err instanceof ApiError) return apiError(err);
     if (err instanceof z.ZodError) return NextResponse.json({ error: "Check your content and design settings." }, { status: 400 });
     if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) return new NextResponse("Sign in to save your code.", { status: 401 });
     console.error("POST /api/kr-codes error", err);

@@ -138,7 +138,7 @@ export default async function Page({ params }: PageProps) {
   const createdLabel = link.createdAt.toISOString().slice(0, 10);
   const code = link.code ?? null;
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_SHORT_LINK_URL ?? "https://kompi.app";
   const shortUrl = code ? `${base}/r/${code}` : null;
 
   const vm: LinkAnalyticsViewModel = {

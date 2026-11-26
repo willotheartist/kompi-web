@@ -5,8 +5,9 @@ import { requireUser, getActiveWorkspace } from "@/lib/auth";
 import { checkUrlSafety } from "@/lib/url-safety";
 import { checkLinkCreationAllowed } from "@/lib/abuse";
 
-const FREE_LINK_LIMIT = 20;
-const CREATOR_LINK_LIMIT = 1_000_000;
+import { getPlanLimits, limitMessage } from "@/lib/plan-limits";
+import { ApiError, apiError } from "@/lib/api-errors";
+import { normalizeLinkCode } from "@/lib/link-code";
 
 function generateCode(len = 6) {
   const chars =
@@ -55,7 +56,7 @@ export async function GET(req: Request) {
     const before = searchParams.get("before");
     const beforeId = searchParams.get("beforeId");
 
-    const whereBase = { workspaceId: workspace.id };
+    const whereBase = { workspaceId: workspace.id, qrCodes: { none: {} } };
 
     const where =
       before && beforeId
@@ -157,24 +158,24 @@ export async function POST(req: Request) {
       }));
 
     const limit =
-      workspace.plan === "CREATOR" ? CREATOR_LINK_LIMIT : FREE_LINK_LIMIT;
+      getPlanLimits(workspace.plan).links;
 
     const count = await prisma.link.count({
-      where: { workspaceId: workspace.id },
+      where: { workspaceId: workspace.id, qrCodes: { none: {} } },
     });
 
     if (count >= limit) {
       return new NextResponse(
-        `You’ve reached your limit on the Free plan. You can create up to ${limit} links per workspace on the Free plan. Upgrade to the Creator plan (£9.99/mo) to create more links and unlock full access to Kompi tools.`,
+        limitMessage("links", workspace.plan),
         { status: 402 }
       );
     }
 
-    let code = (body.code ?? "").toString().trim();
+    let code = body.code ? normalizeLinkCode(String(body.code)) : "";
 
     if (code) {
       const exists = await prisma.link.findFirst({
-        where: { code, workspaceId: workspace.id },
+        where: { code },
       });
       if (exists) {
         return new NextResponse("Custom code already in use", { status: 409 });
@@ -195,7 +196,10 @@ export async function POST(req: Request) {
     const rawTitle = (body.title ?? "").toString().trim();
     const title = rawTitle || undefined;
 
-    const link = await prisma.link.create({
+    const link = await prisma.$transaction(async tx => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${workspace.id}))`;
+      if (await tx.link.count({ where: { workspaceId: workspace.id, qrCodes: { none: {} } } }) >= limit) throw new ApiError(limitMessage("links", workspace.plan), 402);
+      return tx.link.create({
       data: {
         workspaceId: workspace.id,
         code,
@@ -203,11 +207,11 @@ export async function POST(req: Request) {
         isActive: true,
         title,
       },
+      });
     });
 
     return NextResponse.json(link, { status: 201 });
   } catch (error) {
-    console.error("LINKS_POST_ERROR", error);
-    return new NextResponse("Unauthorized", { status: 401 });
+    return apiError(error);
   }
 }

@@ -65,13 +65,13 @@ const [quickMode, setQuickMode] = useState<QuickMode>("link");
     try {
       setIsCreating(true);
 
-      const res = await fetch("/api/links", {
+      const res = await fetch(quickMode === "link" ? "/api/links" : "/api/kr-codes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           quickMode === "link"
             ? { targetUrl: trimmed }
-            : { targetUrl: trimmed, createKr: true }
+            : { destination: trimmed, createShortLink: true }
         ),
       });
 

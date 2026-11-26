@@ -100,7 +100,7 @@ export default function QRLibrary() {
     finally{setRecovering(false);recoveryLock.current=false;}
   }
   async function remove(code:LibraryKRCode){
-    if(!window.confirm(`Delete “${krCodeName(code)}”? This removes its saved design. Downloaded files and its existing link are not deleted.`))return;
+    if(!window.confirm(`Delete “${krCodeName(code)}”? This removes its saved design and disables its dynamic destination. Printed dynamic codes will stop opening. Direct/static downloads keep their original content.`))return;
     setDeleting(code.id);setError("");
     try{const res=await fetch(`/api/kr-codes/${code.id}`,{method:"DELETE"});if(!res.ok)throw new Error("The code wasn’t deleted. Please try again.");setCodes(all=>all.filter(item=>item.id!==code.id));setNotice("Code deleted.");}
     catch(err){setError(err instanceof Error?err.message:"Could not delete this code.");}finally{setDeleting(null);}

@@ -26,7 +26,7 @@ export default async function Page({ params }: PageProps) {
 
   if (!link) notFound();
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_SHORT_LINK_URL ?? "https://kompi.app";
   const shortUrl = link.code ? `${base}/r/${link.code}` : null;
 
   return (

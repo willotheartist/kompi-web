@@ -93,7 +93,7 @@ export async function POST(req: Request) {
         const url = new URL(req.url);
         const urlOrigin = `${url.protocol}//${url.host}`;
 
-        const envOrUrlOrigin = process.env.NEXT_PUBLIC_APP_URL ?? urlOrigin;
+        const envOrUrlOrigin = process.env.NEXT_PUBLIC_SHORT_LINK_URL ?? urlOrigin;
         const origin = headerOrigin ?? envOrUrlOrigin ?? "https://kompi.app";
 
         const destination = `${origin}/m/${slug}`;

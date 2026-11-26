@@ -1,63 +1,20 @@
-// src/app/api/auth/reset-password/route.ts
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-
+import { hashToken } from "@/lib/auth-tokens";
+import { rateLimit, requestIp } from "@/lib/rate-limit";
+import { apiError, ApiError } from "@/lib/api-errors";
 export async function POST(req: Request) {
   try {
-    const { email: rawEmail, token, password } = await req.json();
-
-    const email =
-      typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
-
-    if (!email || !token || !password) {
-      return NextResponse.json(
-        { error: "Missing token, email or password" },
-        { status: 400 },
-      );
-    }
-
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: "Password must be at least 8 characters" },
-        { status: 400 },
-      );
-    }
-
-    const record = await prisma.passwordResetToken.findUnique({
-      where: { token },
+    await rateLimit("reset-submit", requestIp(req), 10, 3600);
+    const body = z.object({ email: z.string().trim().email().transform(v => v.toLowerCase()), token: z.string().min(20).max(128), password: z.string().min(8).max(128) }).parse(await req.json());
+    const passwordHash = await bcrypt.hash(body.password, 12);
+    await prisma.$transaction(async tx => {
+      const used = await tx.passwordResetToken.deleteMany({ where: { email: body.email, token: { in: [hashToken(body.token), body.token] }, expiresAt: { gt: new Date() } } });
+      if (!used.count) throw new ApiError("This reset link is invalid or has expired.");
+      await tx.user.update({ where: { email: body.email }, data: { passwordHash, emailVerifiedAt: new Date(), sessionVersion: { increment: 1 } } });
     });
-
-    if (!record || record.email !== email || record.expiresAt < new Date()) {
-      return NextResponse.json(
-        { error: "This reset link is invalid or has expired." },
-        { status: 400 },
-      );
-    }
-
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return NextResponse.json(
-        { error: "This reset link is invalid." },
-        { status: 400 },
-      );
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    await prisma.user.update({
-      where: { email },
-      data: { passwordHash },
-    });
-
-    await prisma.passwordResetToken.delete({ where: { id: record.id } });
-
     return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error("Reset password error", err);
-    return NextResponse.json(
-      { error: "Could not reset password, please try again." },
-      { status: 500 },
-    );
-  }
+  } catch (error) { return apiError(error); }
 }

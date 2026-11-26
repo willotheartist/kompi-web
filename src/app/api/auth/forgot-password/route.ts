@@ -1,77 +1,22 @@
-// src/app/api/auth/forgot-password/route.ts
 import { NextResponse } from "next/server";
-import crypto from "crypto";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { Resend } from "resend";
-
-const resendApiKey = process.env.RESEND_API_KEY;
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
-
-const RESET_EXPIRY_HOURS = 1;
-
+import { sendPasswordResetEmail, emailConfigured } from "@/lib/email";
+import { newToken, hashToken } from "@/lib/auth-tokens";
+import { rateLimit, requestIp } from "@/lib/rate-limit";
+import { apiError, ApiError } from "@/lib/api-errors";
 export async function POST(req: Request) {
   try {
-    const { email: rawEmail } = await req.json();
-    const email =
-      typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
-
-    if (!email) {
-      return NextResponse.json({ ok: true });
+    await rateLimit("reset-ip", requestIp(req), 10, 3600);
+    const { email } = z.object({ email: z.string().trim().email().max(254).transform(v => v.toLowerCase()) }).parse(await req.json());
+    await rateLimit("reset-email", email, 3, 3600);
+    if (!emailConfigured()) throw new ApiError("Email recovery is temporarily unavailable. Please try again later or contact support.", 503);
+    const user = await prisma.user.findUnique({ where: { email }, select: { id: true, bannedAt: true } });
+    if (user && !user.bannedAt) {
+      const token = newToken();
+      await prisma.$transaction([prisma.passwordResetToken.deleteMany({ where: { email } }), prisma.passwordResetToken.create({ data: { email, token: hashToken(token), expiresAt: new Date(Date.now() + 3600000) } })]);
+      await sendPasswordResetEmail(email, token);
     }
-
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true, name: true },
-    });
-
-    // Always respond 200 to avoid leaking which emails exist
-    if (!user) {
-      return NextResponse.json({ ok: true });
-    }
-
-    // Clean up old tokens for this email
-    await prisma.passwordResetToken.deleteMany({ where: { email } });
-
-    const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + RESET_EXPIRY_HOURS * 60 * 60 * 1000);
-
-    await prisma.passwordResetToken.create({
-      data: {
-        email,
-        token,
-        expiresAt,
-      },
-    });
-
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL ?? "http://localhost:3000";
-
-    const resetUrl = `${appUrl}/reset-password?token=${encodeURIComponent(
-      token,
-    )}&email=${encodeURIComponent(email)}`;
-
-    if (resend) {
-      await resend.emails.send({
-        from: "Kompi <hello@mail.kompi.app>",
-        to: email,
-        subject: "Reset your Kompi password",
-        html: `
-          <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height:1.5; color:#111827;">
-            <p>We received a request to reset your Kompi password.</p>
-            <p><a href="${resetUrl}" style="display:inline-block;padding:10px 16px;border-radius:999px;background:#000;color:#fff;text-decoration:none;">Reset password</a></p>
-            <p style="font-size:12px;color:#6b7280;margin-top:16px;">
-              If you didn't request this, you can ignore this email.
-            </p>
-          </div>
-        `,
-      });
-    } else {
-      console.log("[forgot-password] reset link:", resetUrl);
-    }
-
     return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error("Forgot password error", err);
-    return NextResponse.json({ ok: true });
-  }
+  } catch (error) { return apiError(error); }
 }

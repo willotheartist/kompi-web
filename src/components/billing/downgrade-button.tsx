@@ -1,52 +1,11 @@
-// src/components/billing/downgrade-button.tsx
 "use client";
-
-import { useTransition } from "react";
-import { Button } from "@/components/ui/button";
-
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 export function DowngradeButton() {
-  const [pending, startTransition] = useTransition();
-
-  const handleClick = () => {
-    startTransition(async () => {
-      try {
-        const res = await fetch("/api/stripe/portal", {
-          method: "POST",
-        });
-
-        if (!res.ok) {
-          console.error("Failed to start Stripe portal session");
-          return;
-        }
-
-        const data = (await res.json()) as { url?: string };
-        if (data.url) {
-          window.location.href = data.url;
-        }
-      } catch (err) {
-        console.error("Stripe portal error", err);
-      }
-    });
-  };
-
-  return (
-    <Button
-      type="button"
-      onClick={handleClick}
-      disabled={pending}
-      className="h-9 rounded-full px-4 text-xs font-medium"
-      // lime outline on dark navy; readable text
-      style={{
-        borderRadius: 999,
-        borderWidth: 1,
-        borderStyle: "solid",
-        borderColor: "rgba(234, 247, 122, 0.6)",
-        backgroundColor: "transparent",
-        color: "#EAF77A",
-      }}
-      variant="outline"
-    >
-      {pending ? "Opening…" : "Downgrade to Free"}
-    </Button>
-  );
+ const [pending, setPending] = useState(false); const router = useRouter();
+ return <button disabled={pending} className="min-h-11 rounded-xl border px-4 py-2 text-sm disabled:opacity-50" onClick={async () => {
+ if (!window.confirm("Cancel renewal? You keep paid access until the current billing period ends. Existing Cards, QR codes and links will stay available.")) return;
+ setPending(true); try { const res = await fetch("/api/billing/downgrade", { method: "POST" }); const data = await res.json(); if (!res.ok) throw new Error(data.error); toast.success("Renewal cancelled. Your paid access continues until the end of this billing period."); router.refresh(); } catch (error) { toast.error(error instanceof Error ? error.message : "Could not cancel renewal."); } finally { setPending(false); }
+ }}>{pending ? "Cancelling…" : "Cancel renewal"}</button>;
 }
