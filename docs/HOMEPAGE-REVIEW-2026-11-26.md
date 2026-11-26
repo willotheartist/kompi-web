@@ -1,6 +1,6 @@
 # Kompi homepage and navigation review
 
-This branch is a review preview. Do not merge or promote it until William approves the design and scope.
+The initial homepage/navigation review was merged by William in PR #4 on 26 November 2026. The original-artwork and motion refinement is a separate preview, following his request to change the imagery and improve the effects.
 
 ## URL findings
 
@@ -24,15 +24,13 @@ Compared production commit `9fe2e3224761b2bcb34fd6c73582cbc08d989bf2` with the o
 - Read the existing central plan configuration for accurate displayed pricing and limits.
 - No authentication, payment, API, database, domain or quota changes.
 
-## Reference artwork
+## Original artwork and motion
 
-The three landscape PNG files in `public/home` come from the Nouva source supplied by William for this visual preview:
+William requested the Nouva visual direction without its exact artwork. All three borrowed landscape files have been removed from the current branch. `public/home/kompi-connections.png` is an original image made with the built-in image-generation tool: two satin pink interconnected sculptures on a dark volcanic coastline at blue hour, with calm reflections and clear sky for the heading. The complete generation brief is in `docs/kompi-home-artwork-prompt.md`. Product backdrops are now original CSS compositions.
 
-- https://framerusercontent.com/images/ro6i79EOvzrYuRqMtGWmH5OnP0k.png
-- https://framerusercontent.com/images/KTqCI1D1pVNnBRvzNyLSV7RDOpw.png
-- https://framerusercontent.com/images/RSMKY4k1RydBun8aTXVJIanJqU.png
+Motion includes masked hero title entrances, scroll-linked image depth and text lighting, staggered section reveals, floating Card/QR/link illustrations, a QR scan sweep, link activity bars, layered editor/destination entrances, pointer-responsive card tilt and lighting, button highlights and FAQ expansion. A pause control stops page animations; reduced-motion preferences also disable them. Offscreen illustrative loops pause automatically. Scroll and pointer updates are scheduled through requestAnimationFrame without a permanent JavaScript loop.
 
-No Nouva testimonials, invented customer counts or AI-product claims are included. Product illustrations are labelled as examples.
+No Nouva testimonials, invented customer counts or AI-product claims are included. Product illustrations are labelled as examples. Navigation, routes, pricing and application behavior are preserved by this visual revision.
 
 ## Verification
 
@@ -40,4 +38,4 @@ Production build, separate TypeScript check, targeted lint and all 62 existing t
 
 Rendered preview review at 1363px, 454px and 340px CSS widths found no horizontal overflow. Narrow widths were checked through browser zoom, not a physical phone. Desktop Products / Tools / Explore navigation, Escape dismissal, mobile Tools / Explore expansion, navigation into `/tools` and `/kompi-suite`, FAQ expansion and automatic menu closure after navigation were checked. All loaded page images had valid dimensions. The hero, product illustrations, pricing and closing sections were visually reviewed.
 
-The review also corrected the illustrative Card address to the actual `/k/` path format. The final preview URL and GitHub Actions result are recorded on PR #4. Production has not been changed by this branch.
+The review also corrected the illustrative Card address to the actual `/k/` path format. The follow-up pull request records the new preview URL, motion-specific browser checks and GitHub Actions result. The artwork/motion revision does not alter navigation, application routes, data or billing.
