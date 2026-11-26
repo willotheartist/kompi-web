@@ -36,4 +36,8 @@ No Nouva testimonials, invented customer counts or AI-product claims are include
 
 ## Verification
 
-Targeted lint passed. Build, existing automated tests and rendered browser checks are recorded in the review PR after completion.
+Production build, separate TypeScript check, targeted lint and all 62 existing tests passed.
+
+Rendered preview review at 1363px, 454px and 340px CSS widths found no horizontal overflow. Narrow widths were checked through browser zoom, not a physical phone. Desktop Products / Tools / Explore navigation, Escape dismissal, mobile Tools / Explore expansion, navigation into `/tools` and `/kompi-suite`, FAQ expansion and automatic menu closure after navigation were checked. All loaded page images had valid dimensions. The hero, product illustrations, pricing and closing sections were visually reviewed.
+
+The review also corrected the illustrative Card address to the actual `/k/` path format. The final preview URL and GitHub Actions result are recorded on PR #4. Production has not been changed by this branch.

@@ -21,12 +21,12 @@ const faqs = [
   ["Can I start for free?", "Yes. Free includes one Kompi Card, five saved QR codes and twenty short links. You can also generate a direct QR code without an account. No card details needed."],
   ["Can I change a QR destination after printing?", "Yes, if you create a saved dynamic QR code. Update its destination in your dashboard and keep using the same printed code. A direct QR code stores its content in the image, so changing that content requires a new code."],
   ["What can I see in my analytics?", "See visits through your short links and dynamic QR destinations, plus views of your public Kompi Cards. A destination visit may come from a scan or a shared link; it is not a unique-person count."],
-  ["Where are the other Kompi tools?", "They are still here. Open Tools in the menu for the complete collection, and Explore for guides, customer pages, Creator Studio and Kompi Suite."],
+  ["Where can I find more Kompi tools?", "Open Tools in the menu for the complete collection, and Explore for guides, customer pages, Creator Studio and Kompi Suite."],
   ["Can I cancel my subscription?", "You can manage or cancel your subscription through the billing portal in Settings. Your current paid plan remains available until the end of its billing period."],
 ];
 
 function CardDemo() {
-  return <div className="nh-card-demo"><Image src="/faces/face79.png" alt="Illustrative profile portrait" width={64} height={64}/><strong>Alex Morgan</strong><p>Good ideas. Better connections.</p><div>My latest work<Globe2 size={14}/></div><div>Let’s make something<Mail size={14}/></div><div>Life, lately<Instagram size={14}/></div><small>kompi.app/alex</small></div>;
+  return <div className="nh-card-demo"><Image src="/faces/face79.png" alt="Illustrative profile portrait" width={64} height={64}/><strong>Alex Morgan</strong><p>Good ideas. Better connections.</p><div>My latest work<Globe2 size={14}/></div><div>Let’s make something<Mail size={14}/></div><div>Life, lately<Instagram size={14}/></div><small>kompi.app/k/alex</small></div>;
 }
 function QrDemo() {
   return <div className="nh-qr-demo"><QRCode value="https://kompi.app" size={152} bgColor="#f9d6f2" fgColor="#242432"/><p>A little scan.<br/>A new connection.</p></div>;
