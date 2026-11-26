@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { ApiError, apiError } from "@/lib/api-errors";
+import { normalizeLinkCode } from "@/lib/link-code";
 import { checkUrlSafety } from "@/lib/url-safety";
 
 async function getUserLink(userId: string, id: string) {
@@ -61,7 +63,8 @@ export async function PATCH(
     } = {};
 
     if (typeof body.code === "string") {
-      data.code = body.code;
+      if (await prisma.kRCode.count({ where: { shortCodeId: link.id } })) throw new ApiError("This address belongs to a QR code and cannot be renamed.", 409);
+      data.code = normalizeLinkCode(body.code);
     }
 
     if (typeof body.targetUrl === "string") {
@@ -79,16 +82,14 @@ export async function PATCH(
       data.targetUrl = targetUrl;
     }
 
-    if (typeof body.url === "string") {
-      // In case your schema uses `url` instead of `targetUrl`
-      data.url = body.url;
-    }
+
 
     if (typeof body.title === "string") {
       data.title = body.title;
     }
 
     if (Array.isArray(body.tags)) {
+      if (!body.tags.every((tag: unknown) => typeof tag === "string" && tag.length <= 50) || body.tags.length > 20) throw new ApiError("Use up to 20 tags of 50 characters each.");
       data.tags = body.tags;
     }
 
@@ -103,8 +104,7 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("PATCH /api/links/[id] error", error);
-    return new NextResponse("Unauthorized", { status: 401 });
+    return apiError(error);
   }
 }
 
@@ -122,13 +122,13 @@ export async function DELETE(
       return new NextResponse("Not found", { status: 404 });
     }
 
+    if (await prisma.kRCode.count({ where: { shortCodeId: link.id } })) throw new ApiError("This link powers a QR code. Manage it from Your QR codes to protect printed copies.", 409);
     await prisma.link.delete({
       where: { id: link.id },
     });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("DELETE /api/links/[id] error", error);
-    return new NextResponse("Unauthorized", { status: 401 });
+    return apiError(error);
   }
 }

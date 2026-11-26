@@ -42,7 +42,7 @@ export function PlanLimitModal({
           </DialogTitle>
           <DialogDescription className="text-sm text-[color:var(--color-subtle)]">
             You’ve created {usedSafe} / {limit} {featureLabel} in this workspace.
-            Upgrade to the Creator plan (£9.99/mo) to keep creating new {featureLabel} and unlock more analytics.
+            Choose a higher plan to create more {featureLabel}. Your existing items remain available.
           </DialogDescription>
         </DialogHeader>
 

@@ -4,6 +4,7 @@ import { FooterCTA } from "@/components/footer-cta";
 
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/customers/creators" },
   title: "Kompi for Creators & Personal Brands",
   description:
     "Turn every link, QR code and K-Card into a branded touchpoint. Kompi helps creators share links, Kompi Codes™ and K-Cards from one simple workspace.",

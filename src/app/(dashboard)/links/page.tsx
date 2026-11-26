@@ -1,3 +1,4 @@
+import { SHORT_LINK_BASE_URL } from "@/lib/urls";
 // src/app/(dashboard)/links/page.tsx
 import { prisma } from "@/lib/prisma";
 import {
@@ -28,7 +29,7 @@ export default async function Page({ searchParams }: PageProps) {
     return <CreateWorkspaceEmpty />;
   }
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = SHORT_LINK_BASE_URL;
 
   const rows = await prisma.link.findMany({
     where: { workspaceId: workspace.id },

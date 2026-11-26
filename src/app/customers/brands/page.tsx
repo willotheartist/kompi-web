@@ -3,6 +3,7 @@ import BrandsCustomersClient from "./BrandsCustomersClient";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/customers/brands" },
   title: "Kompi for Brands & Marketing Teams",
   description:
     "Route, track and brand every campaign touchpoint. Kompi gives marketing teams smart links, Kompi Codes™ and workspaces with clean analytics.",

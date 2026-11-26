@@ -5,6 +5,7 @@ import { YoutubeTitleGenerator } from "@/components/tools/YoutubeTitleGenerator"
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/youtube-title-generator" },
   title:
     "Free YouTube Title Generator | Click-Worthy Video Titles | Kompi Tools",
   description:

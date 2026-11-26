@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import Link from "next/link";
 
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 
 import {
@@ -1151,7 +1150,7 @@ export default function Page() {
       <Script id="ld-howto-creator-tools" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
       <Script id="ld-video-creator-tools" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(videoJsonLd) }} />
 
-      <Navbar />
+      
 
       <main className="bg-white">
         <HeroSection />

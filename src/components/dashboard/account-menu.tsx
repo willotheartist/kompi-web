@@ -20,7 +20,8 @@ export function AccountMenu() {
   const initial = (display?.trim()?.[0] ?? "U").toUpperCase();
 
   // (keep as-is; later you can wire real plan)
-  const planLabel = "Free";
+  const [planLabel, setPlanLabel] = useState<string | null>(null);
+  useEffect(() => { if (!data?.user) return; let alive = true; fetch("/api/account/summary").then(r => r.ok ? r.json() : null).then(v => { if (alive && v) setPlanLabel(v.planName); }).catch(() => {}); return () => { alive = false; }; }, [data?.user?.email]);
 
   const [open, setOpen] = useState(false);
   const menuRef = useOutsideClose<HTMLDivElement>(open, () => setOpen(false));
@@ -41,14 +42,14 @@ export function AccountMenu() {
         <span className="max-w-40 truncate">{display}</span>
 
         <span
-          className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide"
+          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs uppercase tracking-wide"
           style={{
             backgroundColor: "var(--color-accent-soft)",
             border: "1px solid var(--color-border)",
             color: "var(--color-text)",
           }}
         >
-          {planLabel}
+          {planLabel || "Account"}
         </span>
 
         <div className="flex items-center gap-1">
@@ -139,7 +140,7 @@ export function AccountMenu() {
               onClick={() => setOpen(false)}
             />
             <MenuItem
-              href="/pricing"
+              href="/dashboard/settings/billing"
               label="Upgrade"
               onClick={() => setOpen(false)}
             />

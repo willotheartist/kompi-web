@@ -4,9 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Bot,
-  Sparkles,
   Globe,
-  Palette,
   Copy,
   RefreshCw,
   Plus,
@@ -314,7 +312,6 @@ export default function DashboardChatWidgetPage() {
     ? `${form.publicToken.slice(0, 12)}…${form.publicToken.slice(-6)}`
     : "Generated on first save";
 
-  const cleanSiteUrl = (form.siteUrl || "").trim();
 
   return (
     <DashboardLayout

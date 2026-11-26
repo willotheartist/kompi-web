@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, BookOpen, QrCode } from "lucide-react";
 
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import { getAllPSEOPages } from "@/lib/pseo/dataset";
 
@@ -53,7 +52,7 @@ export default function QRCodesHubPage() {
 
   return (
     <div className="min-h-screen bg-white text-neutral-900">
-      <Navbar />
+      
 
       <main className="pt-0">
         {/* Hero */}

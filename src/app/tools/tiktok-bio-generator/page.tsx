@@ -4,6 +4,7 @@ import { TikTokBioGenerator } from "@/components/tools/TikTokBioGenerator";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/tiktok-bio-generator" },
   title:
     "Free TikTok Bio Generator | Hooks, Vibes & CTAs for Your Profile | Kompi Tools",
   description:

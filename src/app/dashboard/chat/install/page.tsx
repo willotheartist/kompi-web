@@ -1,4 +1,5 @@
 "use client";
+import { PUBLIC_SITE_URL } from "@/lib/urls";
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -108,11 +109,7 @@ export default function DashboardChatInstallPage() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [copiedToken, setCopiedToken] = useState(false);
-  const [appUrl, setAppUrl] = useState("https://app.kompi.co");
-
-  useEffect(() => {
-    setAppUrl(window.location.origin);
-  }, []);
+  const appUrl = PUBLIC_SITE_URL;
 
   useEffect(() => {
     let mounted = true;

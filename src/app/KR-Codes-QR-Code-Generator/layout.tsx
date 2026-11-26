@@ -1,0 +1,1 @@
+import type { Metadata } from "next"; export const metadata:Metadata={alternates:{canonical:"https://kompi.app/KR-Codes-QR-Code-Generator"}};export default function Layout({children}:{children:React.ReactNode}){return children;}

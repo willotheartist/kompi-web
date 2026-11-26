@@ -32,7 +32,6 @@ import {
   Users,
 } from "lucide-react";
 
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import HashtagGenerator from "@/components/tools/HashtagGenerator";
 
@@ -1270,7 +1269,7 @@ export default function HashtagGeneratorPage() {
       </Script>
 
       <div className="min-h-screen bg-white text-neutral-900">
-        <Navbar />
+        
 
         <main className="pt-0">
           <HashtagHeroBand />

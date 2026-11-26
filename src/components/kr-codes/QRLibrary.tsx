@@ -69,6 +69,7 @@ export default function QRLibrary() {
     finally{if(sequence===request.current)setRefreshing(false);}
   },[]);
   useEffect(()=>{
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate browser storage and load remote library after mount.
     void load();
     try {setDraft(readKRLocalDraft(sessionStorage.getItem(KR_DRAFT_KEY)));const choice=localStorage.getItem("kompi-qr-library-view");if(choice==="grid"||choice==="list")setView(choice);}catch{}
     const refresh=()=>{if(document.visibilityState==="visible")void load();};
@@ -100,7 +101,7 @@ export default function QRLibrary() {
     finally{setRecovering(false);recoveryLock.current=false;}
   }
   async function remove(code:LibraryKRCode){
-    if(!window.confirm(`Delete “${krCodeName(code)}”? This removes its saved design. Downloaded files and its existing link are not deleted.`))return;
+    if(!window.confirm(`Delete “${krCodeName(code)}”? This removes its saved design and disables its dynamic destination. Printed dynamic codes will stop opening. Direct/static downloads keep their original content.`))return;
     setDeleting(code.id);setError("");
     try{const res=await fetch(`/api/kr-codes/${code.id}`,{method:"DELETE"});if(!res.ok)throw new Error("The code wasn’t deleted. Please try again.");setCodes(all=>all.filter(item=>item.id!==code.id));setNotice("Code deleted.");}
     catch(err){setError(err instanceof Error?err.message:"Could not delete this code.");}finally{setDeleting(null);}

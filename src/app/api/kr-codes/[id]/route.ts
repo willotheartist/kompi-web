@@ -93,8 +93,9 @@ export async function DELETE(_req: NextRequest, context: RouteContext) {
       );
     }
 
-    await prisma.kRCode.delete({
-      where: { id },
+    await prisma.$transaction(async tx => {
+      await tx.kRCode.delete({ where: { id } });
+      if (existing.shortCodeId && !await tx.kRCode.count({ where: { shortCodeId: existing.shortCodeId } })) await tx.link.update({ where: { id: existing.shortCodeId }, data: { isActive: false } });
     });
 
     return NextResponse.json({ ok: true }, { status: 200 });

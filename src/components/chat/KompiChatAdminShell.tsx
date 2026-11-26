@@ -10,8 +10,6 @@ import {
   Download,
   MessageSquare,
   Settings,
-  RefreshCw,
-  Plus,
   Menu,
   X,
 } from "lucide-react";

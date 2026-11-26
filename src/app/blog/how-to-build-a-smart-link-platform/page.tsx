@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 
 const SITE_URL = "https://kompi.app";
@@ -147,7 +146,7 @@ export default function Page() {
 
   return (
     <>
-      <Navbar />
+      
 
       <main className="bg-[#F7F7F3] text-[#111111]">
         <header className="pt-24 md:pt-28">
@@ -417,7 +416,7 @@ export default function Page() {
                   Want to see how these pieces fit together in a real product?
                 </h2>
                 <p className="mt-4 max-w-2xl leading-7 text-black/70">
-                  Read the technical case study covering Kompi's application architecture and the work behind the platform.
+                  Read the technical case study covering Kompi’s application architecture and the work behind the platform.
                 </p>
                 <Link
                   href="/blog/how-kompi-was-built-wall-and-fifth"

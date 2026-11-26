@@ -3,7 +3,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import Link from "next/link";
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import ContactLinkGenerator from "@/components/tools/ContactLinkGenerator";
 
@@ -1143,7 +1142,7 @@ export default function WhatsappLinkGeneratorSeoPage() {
       </Script>
 
       <div className="min-h-screen bg-[#f3f4f6] text-[#020617]">
-        <Navbar />
+        
         <main className="space-y-16 pb-20 pt-16 md:space-y-20 md:pt-20">
           <section className="px-4">
             <div className="mx-auto max-w-5xl">

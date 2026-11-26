@@ -4,6 +4,7 @@ import ContactLinkGenerator from "@/components/tools/ContactLinkGenerator";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/whatsapp-link-generator" },
   title:
     "Free WhatsApp Link Generator | Click-to-Chat, Call & SMS Links | Kompi Tools",
   description:

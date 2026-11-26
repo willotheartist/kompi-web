@@ -34,7 +34,7 @@ export default function NewQrMenuPage() {
   const [accentHex, setAccentHex] = useState("#C4F28B");
   const [sections, setSections] = useState<MenuSection[]>([
     {
-      id: `sec-${Date.now()}`,
+      id: "initial-section",
       name: "Starters",
       items: [],
     },

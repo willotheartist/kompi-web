@@ -1,12 +1,13 @@
 // src/app/[handle]/page.tsx
-export const revalidate = 60; // public page cache (tune: 30/60/300)
+export const dynamic = "force-dynamic"; // public page cache (tune: 30/60/300)
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { KCardPreview } from "@/components/k-cards/KCardPreview";
-import { ClaimHandleCTA } from "@/components/k-cards/ClaimHandleCTA";
+import { PUBLIC_PROFILE_URL, appUrl } from "@/lib/urls";
+import { CardViewTracker } from "@/components/k-cards/card-view-tracker";
 import {
   DEFAULT_KCARD_THEME,
   type KCardThemeState,
@@ -21,8 +22,8 @@ const getPublicKCard = cache(async (handle: string) => {
   if (!handle) return null;
 
   return prisma.kCard.findUnique({
-    where: { slug: handle },
-    select: { slug: true, isPublic: true, data: true },
+    where: { slug: handle, user: { bannedAt: null } },
+    select: { slug: true, isPublic: true, data: true, workspace: { select: { plan: true } } },
   });
 });
 
@@ -43,7 +44,7 @@ export async function generateMetadata({
   const data = (kcard.data ?? {}) as KCardsInitialData;
   const title = data.title || "@yourname";
   const description = data.subtitle || "All your important links in one Kompi.";
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = PUBLIC_PROFILE_URL;
 
   return {
     title,
@@ -78,6 +79,9 @@ export default async function PublicHandlePage({ params }: PageProps) {
     avatarSize = "medium",
     headerTextSize = "medium",
     avatarShadow = "shadow",
+    socialUrls = {},
+    contact,
+    contactDetails,
   } = data || {};
 
   const theme: KCardThemeState = {
@@ -147,12 +151,9 @@ export default async function PublicHandlePage({ params }: PageProps) {
   const wallpaperStyle: React.CSSProperties = { background: wallpaper };
 
   const visibleLinks =
-    (linksRaw ?? []).filter((l) => l && l.enabled !== false) ?? [];
+    (Array.isArray(linksRaw) ? linksRaw : []).filter((l) => l && l.enabled !== false) ?? [];
   const socials = socialsRaw ?? ["Instagram", "YouTube", "Website"];
 
-  const claimHref = `/claim?handle=${encodeURIComponent(
-    handle
-  )}&callbackUrl=${encodeURIComponent(`/${handle}`)}`;
 
   return (
     <main
@@ -176,6 +177,8 @@ export default async function PublicHandlePage({ params }: PageProps) {
             _profileLayout={profileLayout}
             avatarPreview={avatarDataUrl}
             socials={socials}
+            socialUrls={socialUrls}
+            contact={contact}
             visibleLinks={visibleLinks}
             buttonBaseStyles={buttonBaseStyles}
             avatarSize={avatarSize}
@@ -183,24 +186,12 @@ export default async function PublicHandlePage({ params }: PageProps) {
             avatarShadow={avatarShadow}
           />
 
-          <div
-            className="pointer-events-none absolute inset-x-0 flex justify-center"
-            style={{ bottom: 78 }}
-          >
-            <div className="pointer-events-auto">
-              <ClaimHandleCTA
-                href={claimHref}
-                label="Claim your handle"
-                className="w-[320px] max-w-[86vw]"
-                size="embedded"
-              />
-            </div>
-          </div>
+          <CardViewTracker slug={handle} />
+          {(contactDetails?.email || contactDetails?.phone) && <a className="mx-auto mt-5 block w-fit rounded-full border border-black/15 bg-white px-5 py-3 text-sm text-neutral-900" href={`/${encodeURIComponent(handle)}/contact.vcf`}>Save contact</a>}
+
         </div>
 
-        <p className="mt-6 text-center text-[10px] text-neutral-500">
-          Made with <span className="font-semibold">Kompi</span>
-        </p>
+        {(!kcard.workspace || kcard.workspace.plan === "FREE") && <a href={appUrl("/signup")} className="mt-6 text-center text-sm text-neutral-700 underline">Create your own Kompi Card</a>}
       </div>
     </main>
   );

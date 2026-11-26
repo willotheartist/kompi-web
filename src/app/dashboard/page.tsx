@@ -1,62 +1,18 @@
-// src/app/dashboard/page.tsx
+import Link from "next/link";
+import { IdCard, QrCode, Link2, Inbox } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
-import {
-  DashboardShell,
-  type LinkSummary,
-} from "@/components/dashboard/dashboard-shell";
 import { requireUser, getActiveWorkspace } from "@/lib/auth";
-import { CreateWorkspaceEmpty } from "@/components/dashboard/create-workspace-empty";
-
+import { SHORT_LINK_BASE_URL } from "@/lib/urls";
 export const dynamic = "force-dynamic";
-
-type PageProps = {
-  searchParams?: Promise<{
-    workspaceId?: string;
-  }>;
-};
-
-type LinkRecord = Awaited<ReturnType<typeof prisma.link.findMany>>[number];
-
-export default async function DashboardPage(props: PageProps) {
-  const searchParams = (await props.searchParams) ?? {};
-
-  const user = await requireUser();
-  const workspace = await getActiveWorkspace(user.id, searchParams.workspaceId ?? null);
-
-  if (!workspace) {
-    return (
-      <DashboardLayout>
-        <CreateWorkspaceEmpty />
-      </DashboardLayout>
-    );
-  }
-
-  const linksRaw = await prisma.link.findMany({
-    where: { workspaceId: workspace.id },
-    orderBy: { createdAt: "desc" },
-    take: 15,
-  });
-
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
-  const links: LinkSummary[] = linksRaw.map((link: LinkRecord) => {
-    const code = link.code ?? null;
-    const shortUrl = code ? `${base}/r/${code}` : null;
-
-    return {
-      id: link.id,
-      code,
-      shortUrl,
-      targetUrl: link.targetUrl,
-      createdAt: link.createdAt.toISOString(),
-      clicks: link.clicks ?? null,
-    };
-  });
-
-  return (
-    <DashboardLayout>
-      <DashboardShell links={links} />
-    </DashboardLayout>
-  );
+export default async function DashboardPage() {
+ const user = await requireUser(); const workspace = await getActiveWorkspace(user.id); const workspaceId = workspace!.id;
+ const [links, cards, qrCount, clicks, qrVisits, cardViews, messages, latest] = await Promise.all([
+ prisma.link.count({ where: { workspaceId } }), prisma.kCard.count({ where: { workspaceId } }), prisma.kRCode.count({ where: { workspaceId } }),
+ prisma.clickEvent.count({ where: { link: { workspaceId } } }),
+ prisma.$queryRaw<Array<{ count: bigint }>>`SELECT count(*) FROM "ClickEvent" e WHERE EXISTS (SELECT 1 FROM "KRCode" q WHERE q."shortCodeId" = e."linkId" AND q."workspaceId" = ${workspaceId})`,
+ prisma.engagementEvent.count({ where: { workspaceId, type: "card_view" } }), prisma.kCardMessage.count({ where: { ownerId: user.id, isSpam: false, OR: [{ workspaceId }, { workspaceId: null }] } }),
+ prisma.link.findMany({ where: { workspaceId }, orderBy: { createdAt: "desc" }, take: 5 })]);
+ const stats = [["Link visits", clicks], ["QR destination visits", Number(qrVisits[0]?.count || 0)], ["Card views", cardViews], ["Messages", messages]] as const;
+ return <DashboardLayout pageTitle="Overview"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="mb-2 text-sm text-neutral-500">Your Kompi workspace</p><h1 className="text-3xl font-medium tracking-tight sm:text-4xl">Good to see you{user.name ? `, ${user.name.split(" ")[0]}` : ""}.</h1></div><p className="text-sm text-neutral-500">All-time activity</p></div><div className="grid grid-cols-2 gap-3 xl:grid-cols-4">{stats.map(([label,value]) => <div key={label} className="rounded-2xl border border-neutral-200 bg-white p-5"><p className="text-sm text-neutral-500">{label}</p><p className="mt-5 text-4xl font-medium tracking-tight">{value.toLocaleString()}</p></div>)}</div><p className="mt-3 text-sm text-neutral-500">Visits count requests, not unique people. QR destination visits may include a shared link. Card views begin when view tracking is enabled.</p><section className="mt-9"><h2 className="mb-4 text-xl font-medium">What would you like to share?</h2><div className="grid gap-4 xl:grid-cols-3">{[{label:"Kompi Cards",body:"Your links, your personality, one memorable address.",href:"/dashboard/cards",count:cards,icon:IdCard},{label:"QR Codes",body:"Make it worth scanning. Create, style and export.",href:"/kr-codes",count:qrCount,icon:QrCode},{label:"Short Links",body:"A cleaner link. An easier way to connect.",href:"/links/new",count:links,icon:Link2}].map(({label,body,href,count,icon:Icon})=><Link key={label} href={href} className="group rounded-2xl border border-neutral-200 bg-white p-6 transition-colors hover:bg-[var(--color-accent-pink-soft)]"><Icon size={26}/><h3 className="mt-6 text-xl font-medium">{label}</h3><p className="mt-2 text-base leading-relaxed text-neutral-600">{body}</p><p className="mt-6 text-sm text-neutral-500">{count} created</p></Link>)}</div></section><section className="mt-9 rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6"><div className="mb-5 flex items-center justify-between"><h2 className="text-xl font-medium">Recent links</h2><Link href="/links" className="text-sm underline">View all</Link></div>{!latest.length ? <p className="py-6 text-base text-neutral-500">Your links will appear here once you create one.</p> : <div className="divide-y divide-neutral-100">{latest.map(link=><div key={link.id} className="flex items-center justify-between gap-4 py-4"><div className="min-w-0"><p className="truncate text-base font-medium">{link.title || link.targetUrl}</p><a className="mt-1 block truncate text-sm text-neutral-500" href={`${SHORT_LINK_BASE_URL}/r/${link.code}`} target="_blank" rel="noreferrer">kompi.app/r/{link.code}</a></div><span className="shrink-0 text-sm text-neutral-500">{link.clicks} visits</span></div>)}</div>}</section><Link href="/messages" className="mt-5 flex items-center gap-2 text-sm underline"><Inbox size={17}/>Open your Card messages</Link></DashboardLayout>;
 }

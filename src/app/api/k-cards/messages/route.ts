@@ -1,126 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-
-
-function hashIp(ip: string) {
-  return crypto.createHash("sha256").update(ip).digest("hex").slice(0, 32);
-}
-
+import { rateLimit, requestIp } from "@/lib/rate-limit";
+import { ApiError, apiError } from "@/lib/api-errors";
+const schema = z.object({ slug: z.string().max(100).optional(), kcardId: z.string().max(100).optional(), name: z.string().trim().max(120).optional(), email: z.union([z.string().trim().email().max(254), z.literal("")]).optional(), phone: z.string().trim().max(50).optional(), message: z.string().trim().max(5000).optional(), intentKey: z.string().max(80).optional(), intentLabel: z.string().max(120).optional(), companyWebsite: z.string().optional() });
 export async function POST(req: NextRequest) {
   try {
-    const raw: unknown = await req.json();
-
-    if (!raw || typeof raw !== "object") {
-      return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
-    }
-
-    const body = raw as Record<string, unknown>;
-
-    // Honeypot (optional)
-    if (body?.companyWebsite) {
-      return NextResponse.json({ ok: true });
-    }
-
-    const slug = typeof body?.slug === "string" ? body.slug.trim() : "";
-    const kcardId = typeof body?.kcardId === "string" ? body.kcardId.trim() : "";
-
-    if (!slug && !kcardId) {
-      return NextResponse.json({ error: "Missing slug or kcardId." }, { status: 400 });
-    }
-
-    const kcard = await prisma.kCard.findFirst({
-      where: slug ? { slug, isPublic: true } : { id: kcardId, isPublic: true },
-      select: { id: true, userId: true },
-    });
-
-    if (!kcard) {
-      return NextResponse.json({ error: "Not found." }, { status: 404 });
-    }
-
-    const name = typeof body?.name === "string" ? body.name.trim() : null;
-    const email = typeof body?.email === "string" ? body.email.trim() : null;
-    const phone = typeof body?.phone === "string" ? body.phone.trim() : null;
-    const message = typeof body?.message === "string" ? body.message.trim() : null;
-
-    const intentKey = typeof body?.intentKey === "string" ? body.intentKey.trim() : null;
-    const intentLabel = typeof body?.intentLabel === "string" ? body.intentLabel.trim() : null;
-
-    if (!message && !email && !phone) {
-      return NextResponse.json(
-        { error: "Please add a message, email, or phone." },
-        { status: 400 }
-      );
-    }
-
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      req.headers.get("x-real-ip") ||
-      "unknown";
-    const ipHash = ip === "unknown" ? null : hashIp(ip);
-
-    // Basic rate limit: 3 per hour per IP per card
-    if (ipHash) {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const recentCount = await prisma.kCardMessage.count({
-        where: { kcardId: kcard.id, ipHash, createdAt: { gte: oneHourAgo } },
-      });
-      if (recentCount >= 3) {
-        return NextResponse.json(
-          { error: "Too many messages. Try again later." },
-          { status: 429 }
-        );
-      }
-    }
-
-    const userAgent = req.headers.get("user-agent") || null;
-
-    await prisma.kCardMessage.create({
-      data: {
-        kcardId: kcard.id,
-        ownerId: kcard.userId,
-        intentKey,
-        intentLabel,
-        name,
-        email,
-        phone,
-        message,
-        ipHash,
-        userAgent,
-        meta: { source: "kcard_contact_button" },
-      },
-    });
-
+    await rateLimit("card-message-ip", requestIp(req), 20, 3600);
+    const body = schema.parse(await req.json());
+    if (body.companyWebsite) return NextResponse.json({ ok: true });
+    if (!body.slug && !body.kcardId) throw new ApiError("Card is required.", 400);
+    const card = await prisma.kCard.findFirst({ where: { ...(body.slug ? { slug: body.slug } : { id: body.kcardId }), isPublic: true, user: { bannedAt: null } }, select: { id: true, userId: true, data: true } });
+    if (!card) throw new ApiError("Card not found.", 404);
+    const content = card.data as { contact?: { enabled?: boolean; emailOnly?: boolean } } | null;
+    if (!content?.contact?.enabled) throw new ApiError("This card is not accepting messages.", 400);
+    if (!body.message && !body.email && !body.phone) throw new ApiError("Add a message or contact details.", 400);
+    if (content.contact.emailOnly && !body.email) throw new ApiError("Add an email address.", 400);
+    await rateLimit("card-message", `${card.id}:${requestIp(req)}`, 3, 3600);
+    await prisma.kCardMessage.create({ data: { kcardId: card.id, ownerId: card.userId, name: body.name || null, email: body.email || null, phone: body.phone || null, message: body.message || null, intentKey: body.intentKey || null, intentLabel: body.intentLabel || null } });
     return NextResponse.json({ ok: true });
-  } catch (e) {
-    console.error("POST /api/k-cards/messages error", e);
-    return NextResponse.json({ error: "Server error." }, { status: 500 });
-  }
+  } catch (error) { return apiError(error); }
 }
-
-export async function GET(_req: NextRequest) {
+export async function GET() {
   try {
     const user = await requireUser();
-
-    const items = await prisma.kCardMessage.findMany({
-      where: { ownerId: user.id },
-      orderBy: { createdAt: "desc" },
-      take: 200,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        message: true,
-        intentLabel: true,
-        createdAt: true,
-      },
-    });
-
+    const items = await prisma.kCardMessage.findMany({ where: { ownerId: user.id }, orderBy: { createdAt: "desc" }, take: 200, select: { id: true, name: true, email: true, phone: true, message: true, intentLabel: true, createdAt: true } });
     return NextResponse.json({ ok: true, items });
-  } catch (e) {
-    console.error("GET /api/k-cards/messages error", e);
-    return NextResponse.json({ error: "Server error." }, { status: 500 });
-  }
+  } catch (error) { return apiError(error); }
 }

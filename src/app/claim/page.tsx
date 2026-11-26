@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import { ClaimHandleInline } from "@/components/claim/claim-handle-inline";
 
@@ -37,7 +36,7 @@ export default async function ClaimPage({ searchParams }: Props) {
 
   return (
     <>
-      <Navbar />
+      
 
       <main className="bg-white">
         {/* Top helper strip */}

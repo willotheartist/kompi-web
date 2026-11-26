@@ -5,6 +5,7 @@ import { RandomNumberGenerator } from "@/components/tools/RandomNumberGenerator"
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/random-number-generator" },
   title:
     "Free Random Number Generator | Pick Numbers in Any Range | Kompi Tools",
   description:

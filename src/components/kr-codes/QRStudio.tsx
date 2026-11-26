@@ -38,6 +38,7 @@ function ColorField({label,value,onChange,onValidityChange,allowTransparent=fals
   useEffect(()=>{if(value!=="transparent")lastSolidColor.current=value;},[value]);
   const [text,setText]=useState(value.replace(/^#/, ""));
   const [invalid,setInvalid]=useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Controlled colour changes must replace an unfinished local hex draft.
   useEffect(()=>{setText(value.replace(/^#/, ""));setInvalid(false);onValidityChange(label,true);},[value,label,onValidityChange]);
   useEffect(()=>()=>onValidityChange(label,true),[label,onValidityChange]);
   function commit() {
@@ -214,7 +215,7 @@ export default function QRStudio() {
   }
   async function saveCode() {
     if(operation.current||!validateCode())return;
-    if (auth === "guest") {window.location.href=`/signin?callbackUrl=${encodeURIComponent(`/kr-codes${codeId ? `?krcodeId=${codeId}` : ""}`)}`;return;}
+    if (auth === "guest") {router.push(`/signin?callbackUrl=${encodeURIComponent(`/kr-codes${codeId ? `?krcodeId=${codeId}` : ""}`)}`);return;}
     if(auth!=="member"){setError("Sign-in could not be checked. Refresh and try again.");return;}
     operation.current=true;
     try {

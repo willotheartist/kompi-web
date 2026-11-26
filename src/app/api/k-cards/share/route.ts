@@ -1,116 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 import { requireUser } from "@/lib/auth";
-
-export async function GET(_req: NextRequest) {
-  try {
-    const user = await requireUser();
-
-    const kcard = await prisma.kCard.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: "asc" },
-    });
-
-    return NextResponse.json({
-      slug: kcard?.slug ?? null,
-      isPublic: kcard?.isPublic ?? true,
-    });
-  } catch (err) {
-    console.error("GET /api/k-cards/share error", err);
-    return NextResponse.json(
-      { error: "Failed to load K-Card share settings" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const user = await requireUser();
-    const body = (await req.json()) as {
-      slug?: string | null;
-      isPublic?: boolean;
-    };
-
-    let { slug, isPublic } = body;
-
-    slug = (slug ?? "").trim().toLowerCase();
-
-    if (!slug) {
-      return NextResponse.json(
-        { error: "Slug is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!/^[a-z0-9-]+$/.test(slug)) {
-      return NextResponse.json(
-        { error: "Slug can only contain letters, numbers and hyphens" },
-        { status: 400 }
-      );
-    }
-
-    if (typeof isPublic !== "boolean") {
-      isPublic = true;
-    }
-
-    const existing = await prisma.kCard.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: "asc" },
-    });
-
-    let kcard;
-
-    if (existing) {
-      const usedByAnother = await prisma.kCard.findFirst({
-        where: {
-          slug,
-          NOT: { id: existing.id },
-        },
-      });
-      if (usedByAnother) {
-        return NextResponse.json(
-          { error: "That URL is already taken" },
-          { status: 400 }
-        );
-      }
-
-      kcard = await prisma.kCard.update({
-        where: { id: existing.id },
-        data: {
-          slug,
-          isPublic,
-        },
-      });
-    } else {
-      const used = await prisma.kCard.findFirst({ where: { slug } });
-      if (used) {
-        return NextResponse.json(
-          { error: "That URL is already taken" },
-          { status: 400 }
-        );
-      }
-
-      kcard = await prisma.kCard.create({
-        data: {
-          userId: user.id,
-          slug,
-          isPublic,
-          data: {}, // empty JSON; editor will fill
-        },
-      });
-    }
-
-    return NextResponse.json({
-      ok: true,
-      slug: kcard.slug,
-      isPublic: kcard.isPublic,
-    });
-  } catch (err) {
-    console.error("POST /api/k-cards/share error", err);
-    return NextResponse.json(
-      { error: "Failed to update K-Card share settings" },
-      { status: 500 }
-    );
-  }
-}
+import { prisma } from "@/lib/prisma";
+import { findOwnedCard } from "@/lib/card-service";
+import { validateHandle, assertHandleAvailable } from "@/lib/handles";
+import { apiError, ApiError } from "@/lib/api-errors";
+export async function GET(req: Request) { try { const user = await requireUser(); const card = await findOwnedCard(user.id, new URL(req.url).searchParams.get("cardId")); return NextResponse.json({ slug: card?.slug || "", isPublic: card?.isPublic || false }, { headers: { "Cache-Control": "private, no-store" } }); } catch(e) { return apiError(e); } }
+export async function POST(req: Request) { try {
+ const user = await requireUser(); const body = z.object({ cardId: z.string().optional(), slug: z.string(), isPublic: z.boolean() }).parse(await req.json());
+ const card = await findOwnedCard(user.id, body.cardId); if (!card) throw new ApiError("Create and save your Card before publishing.", 404);
+ const slug = card.slug === body.slug.trim().toLowerCase() ? card.slug : validateHandle(body.slug);
+ const updated = await prisma.$transaction(async tx => { await assertHandleAvailable(tx, slug, user.id, card.id); return tx.kCard.update({ where: { id: card.id }, data: { slug, isPublic: body.isPublic } }); });
+ return NextResponse.json({ ok: true, slug: updated.slug, isPublic: updated.isPublic });
+ } catch(e) { return apiError(e); } }

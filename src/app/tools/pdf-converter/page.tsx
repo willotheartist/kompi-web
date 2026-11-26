@@ -5,6 +5,7 @@ import { PdfConverter } from "@/components/tools/PdfConverter";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/pdf-converter" },
   title:
     "PDF Link Converter | Turn PDFs Into Trackable Links & QR Codes | Kompi Tools",
   description:

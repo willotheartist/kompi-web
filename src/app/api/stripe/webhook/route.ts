@@ -1,134 +1,51 @@
-// src/app/api/stripe/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
-import { stripe } from "@/lib/stripe";
-import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
-
-export const runtime = "nodejs"; // important: use Node.js runtime, not edge
-
+import type Stripe from "stripe";
+import { getStripe } from "@/lib/stripe";
+import { syncSubscription } from "@/lib/billing";
+export const runtime = "nodejs";
+function objectId(value: string | { id: string } | null | undefined) { return typeof value === "string" ? value : value?.id; }
+function invoiceSubscription(invoice: Stripe.Invoice) { return objectId(invoice.parent?.subscription_details?.subscription); }
+async function riskSubscriptions(object: Stripe.Charge | Stripe.Dispute | Stripe.Radar.EarlyFraudWarning) {
+  const stripe = getStripe();
+  let paymentIntent = objectId(object.payment_intent);
+  if (!paymentIntent && "charge" in object) {
+    const chargeId = objectId(object.charge);
+    if (chargeId) paymentIntent = objectId((await stripe.charges.retrieve(chargeId)).payment_intent);
+  }
+  const ids = new Set<string>();
+  if (!paymentIntent) return ids;
+  // Invoice payments can fan out; inspect every paid invoice, not only the first match.
+  for await (const payment of stripe.invoicePayments.list({ payment: { type: "payment_intent", payment_intent: paymentIntent }, status: "paid", limit: 100 })) {
+    const invoice = typeof payment.invoice === "string" ? await stripe.invoices.retrieve(payment.invoice) : payment.invoice;
+    if ("deleted" in invoice && invoice.deleted) continue;
+    const id = invoiceSubscription(invoice as Stripe.Invoice);
+    if (id) ids.add(id);
+  }
+  return ids;
+}
 export async function POST(req: NextRequest) {
   const signature = req.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET is not set");
-    return new NextResponse("Webhook secret not configured", { status: 500 });
-  }
-
-  if (!signature) {
-    return new NextResponse("Missing Stripe signature", { status: 400 });
-  }
-
+  if (!process.env.STRIPE_WEBHOOK_SECRET) return new NextResponse("Webhook unavailable", { status: 503 });
+  if (!signature) return new NextResponse("Missing signature", { status: 400 });
   let event: Stripe.Event;
-
+  try { event = getStripe().webhooks.constructEvent(await req.text(), signature, process.env.STRIPE_WEBHOOK_SECRET); }
+  catch { return new NextResponse("Invalid signature", { status: 400 }); }
   try {
-    // Must read raw text body for Stripe signature verification
-    const body = await req.text();
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (err) {
-    console.error("Stripe webhook signature verification failed:", err);
-    return new NextResponse("Invalid signature", { status: 400 });
-  }
-
-  try {
-    switch (event.type) {
-      /**
-       * UPGRADE: a user successfully completed Checkout
-       * for the Creator subscription.
-       */
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-
-        // You set this when creating the Checkout Session
-        const workspaceId = session.metadata?.workspaceId;
-
-        if (!workspaceId) {
-          console.warn(
-            "checkout.session.completed received without workspaceId metadata"
-          );
-          break;
-        }
-
-        const subscriptionId =
-          typeof session.subscription === "string"
-            ? session.subscription
-            : session.subscription?.id;
-
-        const customerId =
-          typeof session.customer === "string"
-            ? session.customer
-            : session.customer?.id;
-
-        await prisma.workspace.update({
-          where: { id: workspaceId },
-          data: {
-            plan: "CREATOR",
-            stripeCustomerId: customerId ?? undefined,
-            stripeSubscriptionId: subscriptionId ?? undefined,
-          },
-        });
-
-        break;
-      }
-
-      /**
-       * DOWNGRADE: subscription canceled / ended in Stripe.
-       * We drop the workspace back to FREE.
-       */
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-
-        const subscriptionId = subscription.id;
-        const customerId =
-          typeof subscription.customer === "string"
-            ? subscription.customer
-            : subscription.customer?.id;
-
-        // Build a typed OR array
-        const orConditions: Prisma.WorkspaceWhereInput[] = [
-          { stripeSubscriptionId: subscriptionId },
-        ];
-
-        if (customerId) {
-          orConditions.push({ stripeCustomerId: customerId });
-        }
-
-        const workspace = await prisma.workspace.findFirst({
-          where: {
-            OR: orConditions,
-          },
-        });
-
-        if (!workspace) {
-          console.warn(
-            "customer.subscription.deleted: no workspace matched this subscription/customer",
-            { subscriptionId, customerId }
-          );
-          break;
-        }
-
-        await prisma.workspace.update({
-          where: { id: workspace.id },
-          data: {
-            plan: "FREE",
-            stripeSubscriptionId: null,
-            // Keep customerId so they can re-subscribe easily
-          },
-        });
-
-        break;
-      }
-
-      default: {
-        // For now ignore any other events
-        break;
-      }
+    const receipt = { id: event.id, type: event.type };
+    if (event.type.startsWith("customer.subscription.")) {
+      await syncSubscription((event.data.object as Stripe.Subscription).id, undefined, receipt);
+    } else if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const id = objectId(session.subscription);
+      if (id && session.mode === "subscription" && ["paid", "no_payment_required"].includes(session.payment_status)) await syncSubscription(id, undefined, receipt);
+    } else if (event.type === "invoice.paid" || event.type === "invoice.payment_failed") {
+      const id = invoiceSubscription(event.data.object as Stripe.Invoice);
+      if (id) await syncSubscription(id, undefined, receipt);
+    } else if (["charge.refunded", "charge.dispute.created", "radar.early_fraud_warning.created"].includes(event.type)) {
+      const object = event.data.object as Stripe.Charge | Stripe.Dispute | Stripe.Radar.EarlyFraudWarning;
+      const reviewRequired = event.type !== "charge.refunded" || (object as Stripe.Charge).refunded;
+      for (const id of await riskSubscriptions(object)) await syncSubscription(id, undefined, { ...receipt, id: `${event.id}:${id}` }, reviewRequired);
     }
-
-    return new NextResponse("OK", { status: 200 });
-  } catch (err) {
-    console.error("Stripe webhook handler error:", err);
-    return new NextResponse("Webhook error", { status: 500 });
-  }
+    return NextResponse.json({ received: true });
+  } catch { console.error("Billing reconciliation failed", { eventId: event.id, type: event.type }); return new NextResponse("Reconciliation failed", { status: 500 }); }
 }

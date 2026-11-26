@@ -366,60 +366,61 @@ export default function BuilderEditorClient({ site }: { site: Site }) {
     activeSection?.type === "FOOTER" ? normalizeFooterDraft(activeSection.content ?? {}) : normalizeFooterDraft({})
   );
 
-  // Sync drafts when section changes
-  useMemo(() => {
-    if (!activeSection) return;
+  // Reset local drafts in the selection event, never during render.
+  function selectSection(section: Section | undefined) {
+    setActiveSectionId(section?.id ?? "");
+    if (!section) return;
 
-    setDraftJson(JSON.stringify(activeSection.content ?? {}, null, 2));
+    setDraftJson(JSON.stringify(section.content ?? {}, null, 2));
     setShowAdvanced(false);
 
-    switch (activeSection.type) {
+    switch (section.type) {
       case "NAVBAR":
-        setNavbarDraft(normalizeNavbarDraft(activeSection.content ?? {}));
+        setNavbarDraft(normalizeNavbarDraft(section.content ?? {}));
         break;
       case "HERO":
-        setHeroDraft(normalizeHeroDraft(activeSection.content ?? {}));
+        setHeroDraft(normalizeHeroDraft(section.content ?? {}));
         break;
       case "SOCIAL_PROOF":
-        setSocialProofDraft(normalizeSocialProofDraft(activeSection.content ?? {}));
+        setSocialProofDraft(normalizeSocialProofDraft(section.content ?? {}));
         break;
       case "FEATURES":
-        setFeaturesDraft(normalizeFeaturesDraftFromContent(activeSection.content ?? {}));
+        setFeaturesDraft(normalizeFeaturesDraftFromContent(section.content ?? {}));
         break;
       case "BENEFITS":
-        setBenefitsDraft(normalizeBenefitsDraft(activeSection.content ?? {}));
+        setBenefitsDraft(normalizeBenefitsDraft(section.content ?? {}));
         break;
       case "HOW_IT_WORKS":
-        setHowItWorksDraft(normalizeHowItWorksDraft(activeSection.content ?? {}));
+        setHowItWorksDraft(normalizeHowItWorksDraft(section.content ?? {}));
         break;
       case "USE_CASES":
-        setUseCasesDraft(normalizeUseCasesDraft(activeSection.content ?? {}));
+        setUseCasesDraft(normalizeUseCasesDraft(section.content ?? {}));
         break;
       case "TESTIMONIALS":
-        setTestimonialsDraft(normalizeTestimonialsDraft(activeSection.content ?? {}));
+        setTestimonialsDraft(normalizeTestimonialsDraft(section.content ?? {}));
         break;
       case "PRICING":
-        setPricingDraft(normalizePricingDraft(activeSection.content ?? {}));
+        setPricingDraft(normalizePricingDraft(section.content ?? {}));
         break;
       case "FAQ":
-        setFaqDraft(normalizeFaqDraftFromContent(activeSection.content ?? {}));
+        setFaqDraft(normalizeFaqDraftFromContent(section.content ?? {}));
         break;
       case "WAITLIST":
-        setWaitlistDraft(normalizeWaitlistDraft(activeSection.content ?? {}));
+        setWaitlistDraft(normalizeWaitlistDraft(section.content ?? {}));
         break;
       case "ABOUT":
-        setAboutDraft(normalizeAboutDraft(activeSection.content ?? {}));
+        setAboutDraft(normalizeAboutDraft(section.content ?? {}));
         break;
       case "CONTACT":
-        setContactDraft(normalizeContactDraft(activeSection.content ?? {}));
+        setContactDraft(normalizeContactDraft(section.content ?? {}));
         break;
       case "FOOTER":
-        setFooterDraft(normalizeFooterDraft(activeSection.content ?? {}));
+        setFooterDraft(normalizeFooterDraft(section.content ?? {}));
         break;
       default:
         break;
     }
-  }, [activeSectionId]);
+  }
 
   async function saveContent(content: any) {
     if (!activeSection) return;
@@ -533,7 +534,7 @@ export default function BuilderEditorClient({ site }: { site: Site }) {
                 key={p.id}
                 onClick={() => {
                   setActivePageId(p.id);
-                  setActiveSectionId(p.sections?.[0]?.id ?? "");
+                  selectSection(p.sections?.[0]);
                 }}
                 style={{
                   textAlign: "left",
@@ -561,7 +562,7 @@ export default function BuilderEditorClient({ site }: { site: Site }) {
             return (
               <button
                 key={s.id}
-                onClick={() => setActiveSectionId(s.id)}
+                onClick={() => selectSection(s)}
                 style={{
                   textAlign: "left",
                   padding: "10px",

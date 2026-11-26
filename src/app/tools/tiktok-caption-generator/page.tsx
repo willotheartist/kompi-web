@@ -4,6 +4,7 @@ import { TikTokCaptionGenerator } from "@/components/tools/TikTokCaptionGenerato
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/tiktok-caption-generator" },
   title:
     "Free TikTok Caption Generator | Hooks, CTAs & Hashtags | Kompi Tools",
   description:

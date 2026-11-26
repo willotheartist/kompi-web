@@ -62,7 +62,8 @@ export function ContactFormsTable() {
   }
 
   useEffect(() => {
-    loadForms();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Start the initial network request and its loading state together.
+    void loadForms();
   }, []);
 
   async function handleCreate(e: FormEvent) {

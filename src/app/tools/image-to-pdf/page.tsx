@@ -5,6 +5,7 @@ import { ImageToPdf } from "@/components/tools/ImageToPdf";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/image-to-pdf" },
   title:
     "Image to PDF Converter | Combine Photos Into One PDF | Kompi Tools",
   description:

@@ -1,3 +1,4 @@
+import { SHORT_LINK_BASE_URL } from "@/lib/urls";
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { prisma } from "@/lib/prisma";
@@ -17,7 +18,7 @@ export async function GET(_req: Request, ctx: RouteContext) {
     return new NextResponse("Not found", { status: 404 });
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = SHORT_LINK_BASE_URL;
   const fullUrl = `${baseUrl}/r/${link.code}`;
 
   try {

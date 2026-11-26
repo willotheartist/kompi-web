@@ -5,6 +5,7 @@ import { PdfToImage } from "@/components/tools/PdfToImage";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/pdf-to-image" },
   title:
     "PDF to Image Converter | Export PDF Pages as PNG/JPG | Kompi Tools",
   description:

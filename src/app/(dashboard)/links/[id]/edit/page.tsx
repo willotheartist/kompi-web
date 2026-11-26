@@ -1,3 +1,4 @@
+import { SHORT_LINK_BASE_URL } from "@/lib/urls";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
@@ -26,7 +27,7 @@ export default async function Page({ params }: PageProps) {
 
   if (!link) notFound();
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = SHORT_LINK_BASE_URL;
   const shortUrl = link.code ? `${base}/r/${link.code}` : null;
 
   return (

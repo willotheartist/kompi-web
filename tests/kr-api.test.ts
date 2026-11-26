@@ -1,20 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- VM fixtures intentionally implement only the Prisma methods exercised by each route. */
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import vm from 'node:vm';
 import ts from 'typescript';
+import * as planLimits from '../src/lib/plan-limits';
+import * as apiErrors from '../src/lib/api-errors';
 import {DEFAULT_KR_STYLE,KRStyleSchema} from '../src/lib/kr-design';
 const require=createRequire(import.meta.url);
 const source=ts.transpileModule(readFileSync(new URL('../src/app/api/kr-codes/route.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-function harness({failCreate=false,unauthorized=false}={}) {
+function harness({failCreate=false,unauthorized=false,plan="CREATOR",initialCount=0}={}) {
   let codes:any[]=[],links:any[]=[];
   class KnownError extends Error {code='P2002';}
   const prisma:any={
+    $executeRaw:async()=>0,
     kRCode:{
       findFirst:async({where}:any)=>codes.find(row=>Object.entries(where).every(([key,value])=>row[key]===value))||null,
       findMany:async()=>codes,
-      count:async()=>codes.length,
+      count:async()=>codes.length+initialCount,
       create:async({data}:any)=>{
         if(failCreate)throw new Error('Simulated write failure');
         if(codes.some(code=>code.id===data.id))throw new KnownError('Duplicate');
@@ -27,8 +31,8 @@ function harness({failCreate=false,unauthorized=false}={}) {
   prisma.$transaction=async(fn:any)=>{const oldCodes=[...codes],oldLinks=[...links];try{return await fn(prisma);}catch(error){codes=oldCodes;links=oldLinks;throw error;}};
   const exports:any={};
   const mocks:Record<string,any>={
-    '@/lib/prisma':{prisma},'@/lib/kr-design':{DEFAULT_KR_STYLE,KRStyleSchema},
-    '@/lib/auth':{requireUser:async()=>{if(unauthorized)throw {digest:'NEXT_REDIRECT;replace;/signin;307;'};return {id:'owner'};},getActiveWorkspace:async()=>({id:'workspace',plan:'CREATOR'})},
+    '@/lib/plan-limits':planLimits, '@/lib/api-errors':apiErrors, '@/lib/prisma':{prisma},'@/lib/kr-design':{DEFAULT_KR_STYLE,KRStyleSchema},
+    '@/lib/auth':{requireUser:async()=>{if(unauthorized)throw {digest:'NEXT_REDIRECT;replace;/signin;307;'};return {id:'owner'};},getActiveWorkspace:async()=>({id:'workspace',plan})},
     '@/lib/url-safety':{checkUrlSafety:async()=>({ok:true})},'@/lib/abuse':{checkLinkCreationAllowed:async()=>null},
     '@prisma/client':{Prisma:{PrismaClientKnownRequestError:KnownError}},
   };
@@ -53,4 +57,14 @@ test('a failed save rolls back the new tracking link and never reports success',
 test('saving still requires authentication and a valid idempotency key',async()=>{
   assert.equal((await harness({unauthorized:true}).post(payload)).status,401);
   assert.equal((await harness().post({...payload,clientRequestId:'bad-id'})).status,400);
+});
+
+test('Free limits reject a sixth QR without creating a backing link',async()=>{
+ const app=harness({plan:'FREE',initialCount:5}); assert.equal((await app.post(payload)).status,402); assert.deepEqual(app.rows(),{codes:[],links:[]});
+});
+test('paid tiers enforce their own saved-code allowances',async()=>{
+ for(const [plan,initialCount] of [['STARTER',25],['CREATOR',100],['BUSINESS',1000]] as const) assert.equal((await harness({plan,initialCount}).post(payload)).status,402);
+});
+test('a retry still returns the saved code at the plan limit',async()=>{
+ const app=harness({plan:'FREE',initialCount:4}); const first=await app.post(payload); assert.equal(first.status,201); const retry=await app.post(payload);assert.equal(retry.status,200);assert.equal(app.rows().codes.length,1);
 });

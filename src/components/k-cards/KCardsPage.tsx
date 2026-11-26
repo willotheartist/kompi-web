@@ -196,15 +196,18 @@ export type KCardsInitialData = {
   headerTextSize?: "small" | "medium" | "large";
   avatarShadow?: "shadow" | "flat";
   contact?: KCardContact;
+  contactDetails?: { email: string; phone: string; company?: string };
 
 };
 
 type KCardsPageProps = {
+  cardId: string;
   initialData?: KCardsInitialData | null;
   baseUrl: string;
 };
 
-export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
+export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageProps) {
+  const [contactDetails, setContactDetails] = useState(initialData?.contactDetails || { email: "", phone: "", company: "" });
   // which section is currently "active" for the left nav
   const [activeSection, setActiveSection] =
     useState<DesignSection>("header");
@@ -370,19 +373,19 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
   const [shareOpen, setShareOpen] = useState<boolean>(false);
 
   const publicUrl =
-    shareSlug && shareIsPublic ? `${baseUrl}/k/${shareSlug}` : null;
+    shareSlug && shareIsPublic ? `${baseUrl}/${shareSlug}` : null;
 
   const derivedSlugFromTitle = slugFromTitle(title);
   const visualSlug = shareSlug || derivedSlugFromTitle || "yourname";
 
-  const shareDisplayUrl = `${baseUrl}/k/${visualSlug}`;
+  const shareDisplayUrl = `${baseUrl}/${visualSlug}`;
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       try {
-        const res = await fetch("/api/k-cards/share");
+        const res = await fetch(`/api/k-cards/share?cardId=${encodeURIComponent(cardId)}`);
         if (!res.ok) throw new Error("Failed to load share settings");
         const data: KCardShareResponse = await res.json();
         if (cancelled) return;
@@ -400,49 +403,9 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
     return () => {
       cancelled = true;
     };
-  }, [baseUrl,
-    contact,]);
+  }, [baseUrl, cardId]);
 
-  // Keep the public K-Card URL slug in sync with the header title.
-  // Whenever the title changes, we derive a slug and upsert it via the share API.
-  useEffect(() => {
-    // Don't run while share settings are still loading/saving.
-    if (shareLoading || shareSaving) return;
-
-    const derived = slugFromTitle(title);
-    if (!derived) return;
-
-    (async () => {
-      try {
-        const res = await fetch("/api/k-cards/share", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            slug: derived,
-            isPublic: true,
-          }),
-        });
-
-        const data: KCardShareResponse = await res.json();
-
-        if (!res.ok) {
-          const message = data.error || "Couldn’t claim that handle";
-          toast.error(message, {
-            description:
-              "Try a different title or edit your URL in Share settings.",
-          });
-          return;
-        }
-
-        setShareSlug(data.slug ?? derived);
-        setShareIsPublic(data.isPublic ?? true);
-      } catch (err) {
-        console.error("Sync K-Card slug with title failed", err);
-      }
-    })();
-  }, [title, shareLoading, shareSaving]);
-
-  async function _saveShareSettings() {
+  async function saveShareSettings() {
     if (!shareSlug.trim()) {
       toast.error("Add a public slug for your K-Card");
       return;
@@ -454,6 +417,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          cardId,
           slug: shareSlug,
           isPublic: shareIsPublic,
         }),
@@ -471,7 +435,7 @@ export default function KCardsPage({ initialData, baseUrl }: KCardsPageProps) {
 
       if (data.slug) {
         toast("K-Card link updated", {
-          description: `${baseUrl}/k/${data.slug}`,
+          description: `${baseUrl}/${data.slug}`,
         });
       }
     } catch (err) {
@@ -671,6 +635,7 @@ const buttonBaseStyles = useMemo(() => {
       headerTextSize,
       avatarShadow,
       contact,
+      contactDetails,
     };
 
     if (saveTimeoutRef.current) {
@@ -681,19 +646,20 @@ const buttonBaseStyles = useMemo(() => {
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch("/api/k-cards", {
+        const res = await fetch(`/api/k-cards?cardId=${encodeURIComponent(cardId)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
 
-        if (!res.ok) throw new Error("Failed to save K-Card");
+        if (!res.ok) { const error = await res.json().catch(() => ({})); throw new Error(error.error || "Could not save your Card."); }
 
         setSaveStatus("saved");
         setLastSavedAt(new Date().toLocaleTimeString());
       } catch (err) {
         console.error("Failed to autosave K-Card", err);
         setSaveStatus("error");
+        toast.error(err instanceof Error ? err.message : "Could not save your Card.");
       }
     }, 800);
 
@@ -714,7 +680,9 @@ const buttonBaseStyles = useMemo(() => {
     avatarDataUrl,
     avatarSize,
     headerTextSize,
-    avatarShadow,,
+    avatarShadow,
+    cardId,
+    contactDetails,
     contact
   ]);
 
@@ -800,6 +768,11 @@ const buttonBaseStyles = useMemo(() => {
       className="wf-dashboard-main w-full"
       style={{ backgroundColor: "var(--color-bg)" }}
     >
+      <section className="mx-auto mb-2 grid w-full max-w-6xl gap-4 rounded-2xl border border-neutral-200 bg-white p-5 sm:grid-cols-2" aria-label="Publish your Card">
+        <div><label className="block text-sm font-medium">Your public address<input aria-label="Card handle" className="mt-2 h-11 w-full rounded-xl border border-neutral-300 px-3 text-base" value={shareSlug} onChange={e => setShareSlug(e.target.value)} placeholder="your-name" /></label><p className="mt-2 break-all text-sm text-neutral-500">{baseUrl}/{shareSlug || "your-name"}</p></div>
+        <div className="flex flex-wrap items-center gap-4"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={shareIsPublic} onChange={e => setShareIsPublic(e.target.checked)} />Public Card</label><button type="button" className="min-h-11 rounded-full bg-neutral-950 px-5 text-sm font-medium text-white disabled:opacity-50" disabled={shareSaving || shareLoading || !shareSlug} onClick={() => void saveShareSettings()}>{shareSaving ? "Saving…" : "Save publishing settings"}</button>{publicUrl && <a className="text-sm underline" href={publicUrl} target="_blank" rel="noreferrer">View Card</a>}<span role="status" className="text-sm text-neutral-500">{saveStatus === "saving" ? "Saving design…" : saveStatus === "error" ? "Design not saved" : saveStatus === "saved" ? "Design saved" : ""}</span></div>
+        <details className="sm:col-span-2"><summary className="cursor-pointer text-sm font-medium">Public contact details for “Save contact”</summary><p className="mt-2 text-sm text-neutral-500">These details will be downloadable from your public Card. Leave them blank to hide the button.</p><div className="mt-3 grid gap-3 sm:grid-cols-3">{(["email", "phone", "company"] as const).map(field => <label key={field} className="text-sm capitalize">{field}<input className="mt-1 h-11 w-full rounded-xl border border-neutral-300 px-3 text-base" type={field === "email" ? "email" : "text"} value={contactDetails[field] || ""} onChange={e => setContactDetails(prev => ({ ...prev, [field]: e.target.value }))} /></label>)}</div></details>
+      </section>
       <div className="mx-auto flex w-full max-w-6xl gap-8 px-4 py-6 sm:px-6 lg:px-8">
         {/* LEFT: Sections list */}
         <aside className="hidden w-40 shrink-0 lg:block">
@@ -845,13 +818,13 @@ const buttonBaseStyles = useMemo(() => {
               {saveStatus === "saved" &&
                 (lastSavedAt ? `Saved ${lastSavedAt}` : "Saved")}
               {saveStatus === "error" &&
-                "Error saving – changes kept locally"}
+                "Not saved. Keep this page open and try again."}
             </div>
           </div>
         </aside>
 
         {/* MIDDLE + RIGHT */}
-        <div className="flex w-full flex-1 gap-8">
+        <div className="flex w-full min-w-0 flex-1 flex-col gap-8 xl:flex-row">
           {/* MIDDLE: editor stack */}
           <div className="flex min-w-0 flex-1 flex-col gap-6">
             {/* Header section */}
