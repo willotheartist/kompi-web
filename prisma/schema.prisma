@@ -95,6 +95,7 @@ model Workspace {
   plan                 Plan              @default(FREE)
   stripeCustomerId     String?
   stripeSubscriptionId String?
+  billingReviewRequired Boolean @default(false)
   billingStatus        String?
   billingPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean           @default(false)

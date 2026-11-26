@@ -11,7 +11,7 @@ if (process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL) process.env.
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({ clientId: process.env.GOOGLE_CLIENT_ID || "", clientSecret: process.env.GOOGLE_CLIENT_SECRET || "" }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [GoogleProvider({ clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET })] : []),
     CredentialsProvider({ name: "Email and password", credentials: { email: { label: "Email", type: "email" }, password: { label: "Password", type: "password" } },
       async authorize(credentials, req) {
         const email = credentials?.email?.trim().toLowerCase();

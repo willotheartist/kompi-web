@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const session = await getStripe().checkout.sessions.retrieve(sessionId);
     if (session.metadata?.workspaceId !== workspace.id || session.customer !== workspace.stripeCustomerId) throw new ApiError("Checkout does not belong to this workspace.", 403);
     const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
-    if (session.status !== "complete" || !subscriptionId) return NextResponse.json({ pending: true });
+    if (session.status !== "complete" || !["paid", "no_payment_required"].includes(session.payment_status) || !subscriptionId) return NextResponse.json({ pending: true });
     await syncSubscription(subscriptionId, workspace.id);
     return NextResponse.json({ ok: true });
   } catch (error) { return apiError(error); }

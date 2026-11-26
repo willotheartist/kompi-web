@@ -26,10 +26,12 @@ export async function POST(req: NextRequest) {
       customerId = customer.id;
       await prisma.workspace.update({ where: { id: workspace.id }, data: { stripeCustomerId: customerId } });
     }
-    const active = await stripe.subscriptions.list({ customer: customerId, limit: 100, status: "all" });
-    if (active.data.some(s => !["canceled", "incomplete_expired"].includes(s.status))) throw new ApiError("An existing subscription needs attention. Open Manage billing.", 409);
     const session = await prisma.$transaction(async tx => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`checkout:${workspace.id}`}))`;
+      const current = await tx.workspace.findUniqueOrThrow({ where: { id: workspace.id } });
+      if (current.billingReviewRequired) throw new ApiError("Please contact support about your billing account.", 409);
+      const active = await stripe.subscriptions.list({ customer: customerId!, limit: 100, status: "all" });
+      if (active.data.some(s => !["canceled", "incomplete_expired"].includes(s.status))) throw new ApiError("An existing subscription needs attention. Open Manage billing.", 409);
       const openSessions = await stripe.checkout.sessions.list({ customer: customerId!, status: "open", limit: 100 });
       const existing = openSessions.data.find(s => s.mode === "subscription" && s.metadata?.workspaceId === workspace.id);
       if (existing) {
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
       metadata: { workspaceId: workspace.id, userId: user.id, plan: body.plan },
       subscription_data: { metadata: { workspaceId: workspace.id, userId: user.id } },
       billing_address_collection: "auto", allow_promotion_codes: true,
-    }, { idempotencyKey: `kompi-checkout-${workspace.id}-${body.plan}-${Math.floor(Date.now() / 600000)}` });
+    }, { idempotencyKey: `kompi-checkout-${workspace.id}-${body.plan}-${existing?.id || "new"}-${Math.floor(Date.now() / 600000)}` });
     }, { timeout: 20000 });
     if (!session.url) throw new ApiError("Unable to open checkout.", 502);
     return NextResponse.json({ url: session.url });
