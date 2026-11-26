@@ -16,14 +16,11 @@ export default async function CardsPage() {
   const [cards, views, messages] = await Promise.all([
     prisma.kCard.findMany({ where: { userId: user.id, workspaceId: workspace?.id }, orderBy: { updatedAt: "desc" } }),
     workspace
-      ? prisma.$queryRaw<Array<{ id: string | null; n: bigint }>>`
-          SELECT value AS id, count(*) AS n FROM "EngagementEvent"
-          WHERE "workspaceId" = ${workspace.id} AND type = 'card_view' AND "createdAt" >= ${since}
-          GROUP BY 1`
+      ? prisma.engagementEvent.groupBy({ by: ["value"], where: { workspaceId: workspace.id, type: "card_view", createdAt: { gte: since } }, _count: { _all: true } })
       : Promise.resolve([]),
     prisma.kCardMessage.groupBy({ by: ["kcardId"], where: { ownerId: user.id, isSpam: false }, _count: { _all: true } }),
   ]);
-  const viewMap = new Map(views.map((v) => [v.id, Number(v.n)]));
+  const viewMap = new Map(views.map((v) => [v.value, v._count._all]));
   const messageMap = new Map(messages.map((m) => [m.kcardId, m._count._all]));
   const items = cards.map((card) => {
     const data = (card.data ?? {}) as { title?: string; subtitle?: string; avatarDataUrl?: string; theme?: { background?: string; accent?: string } };

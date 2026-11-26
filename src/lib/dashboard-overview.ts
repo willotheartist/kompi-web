@@ -19,16 +19,19 @@ export async function getDashboardOverview(userId: string, workspace: { id: stri
   const since = new Date(today);
   since.setUTCDate(since.getUTCDate() - (DAYS * 2 - 1)); // current + previous window for deltas
 
+  // ORM queries only: production tables live in a non-default Postgres schema that raw SQL would miss.
   const [
     linkCount,
     cardCount,
     qrCount,
-    allClicks,
+    linkClicksAll,
+    qrClicksAll,
     allCardViews,
     allMessages,
-    clickDays,
-    viewDays,
-    messageDays,
+    qrLinks,
+    clickRows,
+    viewRows,
+    messageRows,
     recentLinks,
     recentCodes,
     cards,
@@ -36,30 +39,17 @@ export async function getDashboardOverview(userId: string, workspace: { id: stri
     prisma.link.count({ where: { workspaceId, qrCodes: { none: {} } } }),
     prisma.kCard.count({ where: { workspaceId } }),
     prisma.kRCode.count({ where: { workspaceId } }),
-    prisma.$queryRaw<Array<{ qr: boolean; n: bigint }>>`
-      SELECT EXISTS (SELECT 1 FROM "KRCode" q WHERE q."shortCodeId" = l.id) AS qr, count(*) AS n
-      FROM "ClickEvent" e JOIN "Link" l ON l.id = e."linkId"
-      WHERE l."workspaceId" = ${workspaceId}
-      GROUP BY 1`,
+    prisma.clickEvent.count({ where: { link: { workspaceId, qrCodes: { none: {} } } } }),
+    prisma.clickEvent.count({ where: { link: { workspaceId, qrCodes: { some: {} } } } }),
     prisma.engagementEvent.count({ where: { workspaceId, type: "card_view" } }),
     prisma.kCardMessage.count({ where: { ownerId: userId, isSpam: false, OR: [{ workspaceId }, { workspaceId: null }] } }),
-    prisma.$queryRaw<Array<{ d: Date; qr: boolean; n: bigint }>>`
-      SELECT date_trunc('day', e."createdAt") AS d,
-             EXISTS (SELECT 1 FROM "KRCode" q WHERE q."shortCodeId" = l.id) AS qr,
-             count(*) AS n
-      FROM "ClickEvent" e JOIN "Link" l ON l.id = e."linkId"
-      WHERE l."workspaceId" = ${workspaceId} AND e."createdAt" >= ${since}
-      GROUP BY 1, 2`,
-    prisma.$queryRaw<Array<{ d: Date; n: bigint }>>`
-      SELECT date_trunc('day', "createdAt") AS d, count(*) AS n
-      FROM "EngagementEvent"
-      WHERE "workspaceId" = ${workspaceId} AND type = 'card_view' AND "createdAt" >= ${since}
-      GROUP BY 1`,
-    prisma.$queryRaw<Array<{ d: Date; n: bigint }>>`
-      SELECT date_trunc('day', "createdAt") AS d, count(*) AS n
-      FROM "KCardMessage"
-      WHERE "ownerId" = ${userId} AND "isSpam" = false AND ("workspaceId" = ${workspaceId} OR "workspaceId" IS NULL) AND "createdAt" >= ${since}
-      GROUP BY 1`,
+    prisma.kRCode.findMany({ where: { workspaceId, shortCodeId: { not: null } }, select: { shortCodeId: true } }),
+    prisma.clickEvent.findMany({ where: { createdAt: { gte: since }, link: { workspaceId } }, select: { createdAt: true, linkId: true } }),
+    prisma.engagementEvent.findMany({ where: { workspaceId, type: "card_view", createdAt: { gte: since } }, select: { createdAt: true } }),
+    prisma.kCardMessage.findMany({
+      where: { ownerId: userId, isSpam: false, OR: [{ workspaceId }, { workspaceId: null }], createdAt: { gte: since } },
+      select: { createdAt: true },
+    }),
     prisma.link.findMany({
       where: { workspaceId, qrCodes: { none: {} } },
       orderBy: { createdAt: "desc" },
@@ -79,6 +69,7 @@ export async function getDashboardOverview(userId: string, workspace: { id: stri
       select: { id: true, data: true, slug: true, isPublic: true, updatedAt: true },
     }),
   ]);
+  const qrLinkIds = new Set(qrLinks.map((q) => q.shortCodeId));
 
   // Fill a dense day-by-day series (UTC) so charts have no gaps.
   const map = new Map<string, DayPoint>();
@@ -88,17 +79,17 @@ export async function getDashboardOverview(userId: string, workspace: { id: stri
     const key = dayKey(d);
     map.set(key, { date: key, links: 0, qr: 0, cards: 0, messages: 0 });
   }
-  for (const row of clickDays) {
-    const p = map.get(dayKey(new Date(row.d)));
-    if (p) p[row.qr ? "qr" : "links"] += Number(row.n);
+  for (const row of clickRows) {
+    const p = map.get(dayKey(row.createdAt));
+    if (p) p[qrLinkIds.has(row.linkId) ? "qr" : "links"] += 1;
   }
-  for (const row of viewDays) {
-    const p = map.get(dayKey(new Date(row.d)));
-    if (p) p.cards += Number(row.n);
+  for (const row of viewRows) {
+    const p = map.get(dayKey(row.createdAt));
+    if (p) p.cards += 1;
   }
-  for (const row of messageDays) {
-    const p = map.get(dayKey(new Date(row.d)));
-    if (p) p.messages += Number(row.n);
+  for (const row of messageRows) {
+    const p = map.get(dayKey(row.createdAt));
+    if (p) p.messages += 1;
   }
   const all = Array.from(map.values());
   const previous = all.slice(0, DAYS);
@@ -111,9 +102,6 @@ export async function getDashboardOverview(userId: string, workspace: { id: stri
     if (!prev) return cur ? null : 0; // "new" rather than an infinite percentage
     return ((cur - prev) / prev) * 100;
   };
-
-  const linkClicksAll = Number(allClicks.find((r) => !r.qr)?.n ?? 0);
-  const qrClicksAll = Number(allClicks.find((r) => r.qr)?.n ?? 0);
 
   const metrics = (
     [
