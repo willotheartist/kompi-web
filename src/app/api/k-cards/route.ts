@@ -15,3 +15,19 @@ export async function PUT(req: Request) {
  const kcard = existing ? await prisma.kCard.update({ where: { id: existing.id }, data: { data: payload } }) : await createCard(user.id, null, payload);
  return NextResponse.json({ ok: true, kcard }, { headers }); } catch(e) { return apiError(e); }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const user = await requireUser();
+    const cardId = new URL(req.url).searchParams.get("cardId");
+    if (!cardId) throw new ApiError("Choose a Card to delete.", 400);
+    const card = await findOwnedCard(user.id, cardId);
+    if (!card) throw new ApiError("Card not found.", 404);
+    await prisma.$transaction(async tx => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${card.workspaceId || user.id}))`;
+      const result = await tx.kCard.deleteMany({ where: { id: card.id, userId: user.id } });
+      if (!result.count) throw new ApiError("Card not found.", 404);
+    });
+    return NextResponse.json({ ok: true }, { headers });
+  } catch (error) { return apiError(error); }
+}

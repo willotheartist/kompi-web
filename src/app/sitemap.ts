@@ -34,7 +34,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     { url: `${baseUrl}/features/kompi-cards`, lastModified, changeFrequency: "monthly", priority: 0.9 },
     // Product pages
-    { url: `${baseUrl}/kompi-suite`, lastModified, changeFrequency: "monthly", priority: 0.7 },
 
     // Growth / analytics
     { url: `${baseUrl}/features/url-shortener`, lastModified, changeFrequency: "weekly", priority: 0.75 },
