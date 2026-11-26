@@ -1,0 +1,1 @@
+import { FooterCTA } from "@/components/footer-cta";export function LegalPage({title,children}:{title:string;children:React.ReactNode}){return <><main className="kompi-marketing"><article className="kompi-legal"><h1>{title}</h1><p>Last updated: 26 November 2026</p>{children}</article></main><FooterCTA/></>;}

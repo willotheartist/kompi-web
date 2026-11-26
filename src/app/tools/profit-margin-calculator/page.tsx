@@ -4,6 +4,7 @@ import ProfitMarginCalculator from "@/components/tools/ProfitMarginCalculator";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/profit-margin-calculator" },
   title:
     "Profit Margin Calculator | Check Margin, Profit & Markup | Kompi Tools",
   description:

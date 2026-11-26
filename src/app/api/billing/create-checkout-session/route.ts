@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
         await stripe.checkout.sessions.expire(existing.id);
       }
       return stripe.checkout.sessions.create({
-      mode: "subscription", customer: customerId, line_items: [{ price, quantity: 1 }],
+      mode: "subscription", integration_identifier: "kompi-monthly-hrptvxnq", customer: customerId, line_items: [{ price, quantity: 1 }],
       success_url: `${APP_URL}/dashboard/settings/billing?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${APP_URL}/dashboard/settings/billing?status=cancelled`,
       client_reference_id: workspace.id,

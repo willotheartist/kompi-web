@@ -22,8 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://kompi.app";
 
   // Stable date string (avoid locale variance)
-  const now = new Date();
-  const lastModified = new Date(now.toISOString().slice(0, 10));
+  const lastModified = new Date("2026-11-26");
 
   const entries: MetadataRoute.Sitemap = [];
 
@@ -33,15 +32,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/pricing`, lastModified, changeFrequency: "monthly", priority: 0.9 },
     { url: `${baseUrl}/customers`, lastModified, changeFrequency: "monthly", priority: 0.8 },
 
+    { url: `${baseUrl}/features/kompi-cards`, lastModified, changeFrequency: "monthly", priority: 0.9 },
     // Product pages
-    { url: `${baseUrl}/k-cards`, lastModified, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${baseUrl}/kr-codes`, lastModified, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${baseUrl}/qr-menus`, lastModified, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/kompi-suite`, lastModified, changeFrequency: "monthly", priority: 0.7 },
 
     // Growth / analytics
-    { url: `${baseUrl}/analytics`, lastModified, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${baseUrl}/growth`, lastModified, changeFrequency: "weekly", priority: 0.7 },
     { url: `${baseUrl}/features/url-shortener`, lastModified, changeFrequency: "weekly", priority: 0.75 },
 
     // QR landers
@@ -102,5 +97,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  return entries;
+  return [...new Map(entries.map(entry => [entry.url, entry])).values()];
 }

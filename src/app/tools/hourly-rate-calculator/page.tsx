@@ -5,6 +5,7 @@ import { HourlyRateCalculator } from "@/components/tools/HourlyRateCalculator";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/hourly-rate-calculator" },
   title:
     "Hourly Rate Calculator for Freelancers | Free Business Tool | Kompi",
   description:

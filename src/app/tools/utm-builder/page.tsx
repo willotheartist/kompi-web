@@ -5,6 +5,7 @@ import { UtmBuilder } from "@/components/tools/UtmBuilder";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/utm-builder" },
   title:
     "Free UTM Builder | Create Clean Tracking Links for Campaigns | Kompi Tools",
   description:

@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, BookOpen } from "lucide-react";
 
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 import { getBlogRoutesIndex, type BlogRoutePost } from "@/lib/blog-route-index";
 
@@ -56,7 +55,7 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-white text-neutral-900">
-      <Navbar />
+      
 
       <main className="pt-0">
         <section className="border-b border-black/10 bg-linear-to-b from-[#F7F7F4] to-white pt-24 md:pt-28 pb-10">

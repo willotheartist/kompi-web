@@ -4,6 +4,7 @@ import { InstagramCaptionGenerator } from "@/components/tools/InstagramCaptionGe
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/instagram-caption-generator" },
   title:
     "Free Instagram Caption Generator | Hooks, CTAs & Hashtags | Kompi Tools",
   description:

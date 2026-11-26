@@ -3,6 +3,7 @@ import EventsCustomersClient from "./EventsCustomersClient";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/customers/events" },
   title: "Kompi for Events & Venues",
   description:
     "QR schedules, menus and sponsor links in one place. Kompi helps events and venues keep guests oriented and engaged with live-updated links and Kompi Codes™.",

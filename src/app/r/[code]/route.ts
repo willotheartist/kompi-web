@@ -168,8 +168,8 @@ export async function GET(req: Request, ctx: RouteContext) {
     await prisma.clickEvent.create({
       data: {
         linkId: link.id,
-        ip,
-        referer,
+        ip: null,
+        referer: null,
         referrerHost,
         userAgent,
         utmSource,

@@ -1,3 +1,4 @@
+import { SHORT_LINK_BASE_URL } from "@/lib/urls";
 //src/app/api/kr-codes/route.ts
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -14,7 +15,7 @@ export const dynamic = "force-dynamic";
 const privateHeaders = { "Cache-Control": "private, no-store" };
 
 const APP_URL =
-  process.env.NEXT_PUBLIC_SHORT_LINK_URL ?? "https://kompi.app";
+  SHORT_LINK_BASE_URL;
 
 
 

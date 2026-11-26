@@ -4,6 +4,7 @@ import { BrandColorExtractor } from "@/components/tools/BrandColorExtractor";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/brand-color-extractor" },
   title:
     "Free Brand Color Extractor | Pull Hex Codes From Logos & Screenshots | Kompi Tools",
   description:

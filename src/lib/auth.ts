@@ -7,6 +7,8 @@ import { prisma } from "./prisma";
 import { rateLimit } from "./rate-limit";
 import { safeReturnPath } from "./urls";
 
+if (process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL) process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({ clientId: process.env.GOOGLE_CLIENT_ID || "", clientSecret: process.env.GOOGLE_CLIENT_SECRET || "" }),

@@ -32,6 +32,7 @@ import KompiDoes from "@/components/kompidoes";
 
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/kompi-suite" },
   title:
     "Kompi Suite",
   description:

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 
 const SITE_URL = "https://kompi.app";
@@ -147,7 +146,7 @@ export default function Page() {
 
   return (
     <>
-      <Navbar />
+      
 
       <main className="bg-[#F7F7F3] text-[#111111]">
         <header className="pt-24 md:pt-28">

@@ -1,0 +1,4 @@
+import Image from "next/image";
+import QRCode from "react-qr-code";
+import { Link2 } from "lucide-react";
+export function ProductArt() { return <div className="kompi-hero-art" aria-label="Example Kompi Card, QR code and short link"><p className="kompi-art-label">Your world, ready to share.</p><div className="kompi-sample-card"><Image src="/herowoman.png" alt="Example profile portrait" width={138} height={138} priority/><h3>Alex Morgan</h3><p>Creative mind. Good company.</p><span>My latest work ↗</span><span>Say hello ↗</span><span>Something worth sharing ↗</span></div><div className="kompi-sample-qr"><QRCode value="https://kompi.app" size={149} style={{width:"100%",height:"auto"}} fgColor="#252523" bgColor="#fffbf3"/><p>One scan. More possibilities.</p></div><div className="kompi-sample-link"><Link2 size={19}/><span>kompi.app/r/your-next-idea</span></div></div>; }

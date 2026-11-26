@@ -3,7 +3,7 @@
 import { safePublicHref } from "@/lib/card-content";
 
 //src/components/k-cards/KCardPreview.tsx
-"use client";
+
 
 import * as React from "react";
 import { useState } from "react";

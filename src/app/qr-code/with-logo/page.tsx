@@ -1,7 +1,6 @@
 //src/app/qr-code/with-logo/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
 export default function QrWithLogoPage() {
   return (
     <div className="min-h-screen bg-[#f5f3ee] text-[#050505]">
-      <Navbar />
+      
       <main className="pt-20 pb-16 md:pt-24">
         <div className="mx-auto max-w-5xl px-4">
           {/* Hero */}

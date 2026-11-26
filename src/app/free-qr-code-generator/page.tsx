@@ -7,6 +7,7 @@ import Faces from "@/components/sections/faces";
 import Faqs from "@/components/faqs";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/free-qr-code-generator" },
   title: "Free QR Code Generator | Kompi",
   description:
     "Use Kompi's free QR code generator to create custom QR codes for links, text, email, WiFi and more. Customize colors, add your logo and download high-resolution PNG QR codes for print or digital use.",

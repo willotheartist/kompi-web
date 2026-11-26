@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import Script from "next/script";
 
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 
 const SITE_URL = "https://kompi.io";
@@ -210,7 +209,7 @@ export default function Page() {
 
   return (
     <>
-      <Navbar />
+      
 
       <main className="bg-white text-neutral-900">
         <HeroSection published={published} />

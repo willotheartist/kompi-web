@@ -4,6 +4,7 @@ import { BarcodeGenerator } from "@/components/tools/BarcodeGenerator";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/barcode-generator" },
   title:
     "Free Barcode Generator | Code 128 Barcodes for Links, SKUs & IDs | Kompi Tools",
   description:

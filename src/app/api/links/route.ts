@@ -147,15 +147,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const workspace =
-      (await getActiveWorkspace(user.id, body.workspaceId ?? null)) ??
-      (await prisma.workspace.create({
-        data: {
-          name: "My workspace",
-          slug: `ws-${user.id.slice(0, 6)}`,
-          ownerId: user.id,
-        },
-      }));
+    const workspace = await getActiveWorkspace(user.id, body.workspaceId ?? null);
+    if (!workspace) throw new ApiError("Workspace not found.", 404);
 
     const limit =
       getPlanLimits(workspace.plan).links;

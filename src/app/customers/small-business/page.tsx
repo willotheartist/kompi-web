@@ -3,6 +3,7 @@ import SmallBusinessCustomersClient from "./SmallBusinessCustomersClient";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/customers/small-business" },
   title: "Kompi for Small Businesses",
   description:
     "QR menus, offers and local marketing in one simple hub. Kompi helps small businesses share links, QR codes and K-Cards with on-brand tracking.",

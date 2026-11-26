@@ -5,6 +5,7 @@ import { UsernameGenerator } from "@/components/tools/UsernameGenerator";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/username-generator" },
   title:
     "Free Username Generator | Create Brandable Usernames & Social Handles | Kompi Tools",
   description:

@@ -27,7 +27,7 @@ export async function proxy(req: NextRequest) {
     if (origin && origin !== req.nextUrl.origin) return NextResponse.json({ error: "Request origin not allowed." }, { status: 403 });
   }
   const res = NextResponse.next();
-  if (privatePage || isApi || isAppHost || ["/signin", "/signup", "/forgot-password", "/reset-password"].includes(path)) res.headers.set("X-Robots-Tag", "noindex, nofollow");
+  if (process.env.VERCEL_ENV === "preview" || privatePage || isApi || isAppHost || ["/signin", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/kr-codes"].includes(path)) res.headers.set("X-Robots-Tag", "noindex, nofollow");
   return res;
 }
 export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|gif|woff2|css|js)$).*)"] };

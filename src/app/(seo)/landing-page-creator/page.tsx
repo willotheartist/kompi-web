@@ -16,7 +16,6 @@ import {
   LayoutTemplate,
 } from "lucide-react";
 
-import { Navbar } from "@/components/navbar";
 import { FooterCTA } from "@/components/footer-cta";
 
 /**
@@ -1230,7 +1229,7 @@ export default function Page() {
       </Script>
 
       <div className="min-h-screen bg-[#f7f7f4] text-[#050505]">
-        <Navbar />
+        
 
         <main className="pt-20 md:pt-28 pb-24 space-y-24 md:space-y-32">
           <section>

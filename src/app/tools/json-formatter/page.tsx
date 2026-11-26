@@ -4,6 +4,7 @@ import JsonFormatter from "@/components/tools/JsonFormatter";
 import { FooterCTA } from "@/components/footer-cta";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://kompi.app/tools/json-formatter" },
   title:
     "Free JSON Formatter & Validator | Clean API Payloads Fast | Kompi Tools",
   description:
