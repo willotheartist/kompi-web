@@ -238,8 +238,8 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex justify-center">
-        <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1 text-xs font-medium">
+      <div className="flex">
+        <div className="inline-flex rounded-[11px] border border-[#E3E5E7] bg-white p-1 text-[14px]">
           {TABS.map((tab) => {
             const active = activeTab === tab.id;
             const isRandom = tab.id === "random";
@@ -253,10 +253,10 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
                   if (isRandom) handleRandomizeTheme();
                 }}
                 className={cn(
-                  "min-w-[96px] rounded-full px-4 py-2 transition",
+                  "h-9 rounded-[8px] px-3.5 transition-colors",
                   active
-                    ? "border border-black bg-white text-[#050505] shadow-[0_2px_0_#000000]"
-                    : "bg-[#dedbd5] text-[#555555]"
+                    ? "bg-[#F1F2F4] font-medium text-[#151619]"
+                    : "text-[#80858C] hover:text-[#151619]"
                 )}
               >
                 {tab.label}
@@ -295,8 +295,8 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
               className={cn(
                 "flex h-32 flex-col rounded-3xl border px-3 py-2 text-left text-xs transition",
                 selected
-                  ? "border-black bg-white shadow-[0_2px_0_#000000]"
-                  : "border-transparent bg-[#e9e6e1] hover:bg-[#e0ded9]"
+                  ? "border-[#151619] bg-white"
+                  : "border-[#E3E5E7] bg-white hover:border-[#CDD1D7]"
               )}
             >
               <div

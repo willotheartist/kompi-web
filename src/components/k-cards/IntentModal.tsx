@@ -51,7 +51,7 @@ function IntentModalBody({
 
       {/* panel */}
       <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="w-full max-w-[520px] rounded-[28px] border border-black/10 bg-white shadow-[0_22px_70px_rgba(0,0,0,0.22)]">
+        <div className="w-full max-w-[520px] rounded-[28px] border border-black/10 bg-white border border-[#E3E5E7]">
           <div className="px-6 pt-6 pb-4">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -63,7 +63,7 @@ function IntentModalBody({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-black/50 hover:bg-[#f3eee7]"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-black/50 hover:bg-[#F1F2F4]"
                 aria-label="Close"
               >
                 ✕
@@ -76,7 +76,7 @@ function IntentModalBody({
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder={placeholder}
-                className="w-full rounded-[18px] border border-black/10 bg-[#f6f4f0] px-4 py-3 text-[13px] text-[#050505] outline-none focus:border-black/20 focus:bg-white"
+                className="w-full rounded-[18px] border border-black/10 bg-[#F5F6F7] px-4 py-3 text-[13px] text-[#050505] outline-none focus:border-black/20 focus:bg-white"
               />
             </div>
           </div>
@@ -85,7 +85,7 @@ function IntentModalBody({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-black/10 bg-[#f6f4f0] px-4 py-2 text-[12px] font-semibold text-[#050505] transition hover:bg-white hover:shadow-sm"
+              className="rounded-full border border-black/10 bg-[#F5F6F7] px-4 py-2 text-[12px] font-semibold text-[#050505] transition hover:bg-white hover:shadow-sm"
             >
               Cancel
             </button>

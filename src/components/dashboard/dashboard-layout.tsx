@@ -107,7 +107,7 @@ function Shell({ children }: { children: ReactNode }) {
       </motion.aside>
 
       <div className="transition-[padding] duration-300 ease-[cubic-bezier(.16,1,.3,1)] lg:pl-[var(--sidebar-w)]">
-        <header className="sticky top-0 z-30 border-b border-[#E3E5E7] bg-white/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
+        <header className="sticky top-0 z-30 border-b border-[#E3E5E7] bg-white">
           <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-8">
             <div className="flex min-w-0 items-center gap-2">
               <button
@@ -335,7 +335,7 @@ function MobileTabs({ path, onCreate }: { path: string; onCreate: () => void }) 
   return (
     <nav
       aria-label="Mobile workspace"
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 items-end border-t border-[#E3E5E7] bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-md lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 items-end border-t border-[#E3E5E7] bg-white px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 lg:hidden"
     >
       <LayoutGroup id="mobile-tabs">
         {MOBILE_TABS.map((item, i) => {
