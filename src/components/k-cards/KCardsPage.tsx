@@ -76,6 +76,7 @@ import {
   type KCardFontToken,
 } from "./kcard-theme-presets";
 import { MessageButtonSettings } from "./MessageButtonSettings";
+import { LinkLogo, linkHost } from "./LinkLogo";
 
 type DesignSection =
   | "header"
@@ -1058,7 +1059,7 @@ const buttonBaseStyles = useMemo(() => {
                     </button>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-5">
+                <CardContent className="space-y-2.5">
                   {links.map((link) => (
                     <div
                       key={link.id}
@@ -1068,88 +1069,65 @@ const buttonBaseStyles = useMemo(() => {
                       onDragOver={handleLinkDragOver}
                       onDrop={(e) => handleLinkDrop(e, link.id)}
                       className={cn(
-                        "rounded-[14px] border border-[#E3E5E7] bg-white px-4 py-4 transition-[opacity,border-color] space-y-2 hover:border-[#CDD1D7]",
-                        draggingLinkId === link.id ? "opacity-70" : "opacity-100",
+                        "group flex items-center gap-3 rounded-[14px] border bg-white py-3 pl-2 pr-3 transition-[opacity,border-color]",
+                        link.enabled ? "border-[#E3E5E7] hover:border-[#CDD1D7]" : "border-dashed border-[#DCDFE3]",
+                        draggingLinkId === link.id ? "opacity-60" : "opacity-100",
                       )}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3">
-                          <button
-                            type="button"
-                            className="flex h-10 w-6 items-center justify-center cursor-grab text-[var(--color-subtle)] active:cursor-grabbing"
-                            aria-label="Reorder link"
-                          >
-                            <GripVertical className="h-4 w-4" />
-                          </button>
-                          <div className="flex-1 space-y-2">
-                            <Input
-                              value={link.title}
-                              onChange={(e) =>
-                                updateLink(link.id, {
-                                  title: e.target.value,
-                                })
-                              }
-                              className="h-9 border-0 bg-transparent px-0 text-sm font-semibold focus-visible:outline-none focus-visible:ring-0"
-                              style={{
-                                color: "var(--color-text)",
-                              }}
-                              placeholder="Title"
-                            />
-                            <Input
-                              value={link.url}
-                              onChange={(e) =>
-                                updateLink(link.id, { url: e.target.value })
-                              }
-                              className="h-8 border-0 bg-transparent px-0 text-xs focus-visible:outline-none focus-visible:ring-0"
-                              style={{
-                                color: "var(--color-subtle)",
-                              }}
-                              placeholder="Link · URL"
-                            />
-                          </div>
-                        </div>
-                        <div className="pt-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateLink(link.id, {
-                                enabled: !link.enabled,
-                              })
-                            }
+                      <button
+                        type="button"
+                        className="flex h-10 w-5 shrink-0 cursor-grab items-center justify-center text-[#C2C5CA] transition-colors hover:text-[#696C72] active:cursor-grabbing"
+                        aria-label="Drag to reorder"
+                        title="Drag to reorder"
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </button>
+
+                      <LinkLogo url={link.url} size={44} muted={!link.enabled} />
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={link.title}
+                            onChange={(e) => updateLink(link.id, { title: e.target.value })}
                             className={cn(
-                              "relative inline-flex h-6 w-11 items-center rounded-full border transition-all",
-                              link.enabled ? "bg-[#050505]" : "bg-[#DCDFE3]",
+                              "h-8 rounded-[7px] border-0 bg-transparent px-1.5 text-[15px] font-medium shadow-none transition-colors hover:bg-[#F5F6F7] focus-visible:bg-[#F5F6F7] focus-visible:outline-none focus-visible:ring-0",
+                              link.enabled ? "text-[#151619]" : "text-[#80858C]",
                             )}
-                            style={{
-                              borderColor: link.enabled ? "#050505" : "transparent",
-                            }}
-                            aria-pressed={link.enabled}
-                          >
-                            <span
-                              className={cn(
-                                "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-150",
-                                link.enabled ? "translate-x-5" : "translate-x-1",
-                              )}
-                            />
-                          </button>
+                            placeholder={linkHost(link.url) ?? "Title"}
+                            aria-label="Link title"
+                          />
+                          {!link.enabled && <span className="shrink-0 rounded-[5px] bg-[#F1F2F4] px-1.5 py-0.5 text-[11px] font-medium text-[#80858C]">Hidden</span>}
                         </div>
+                        <Input
+                          value={link.url}
+                          onChange={(e) => updateLink(link.id, { url: e.target.value })}
+                          className="h-7 rounded-[7px] border-0 bg-transparent px-1.5 text-[13px] text-[#80858C] shadow-none transition-colors hover:bg-[#F5F6F7] focus-visible:bg-[#F5F6F7] focus-visible:text-[#151619] focus-visible:outline-none focus-visible:ring-0"
+                          placeholder="Paste a link, e.g. dribbble.com/you"
+                          aria-label="Link address"
+                        />
                       </div>
 
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-[12px] text-[#A2A6AC]">{link.enabled ? "Shown on your Card" : "Hidden"}</span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setLinks((prev) =>
-                              prev.filter((l) => l.id !== link.id),
-                            )
-                          }
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--color-subtle)] hover:bg-[#F1F2F4]"
-                          aria-label="Delete link"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={link.enabled}
+                        aria-label={link.enabled ? "Hide this link" : "Show this link"}
+                        title={link.enabled ? "Shown on your Card" : "Hidden from your Card"}
+                        onClick={() => updateLink(link.id, { enabled: !link.enabled })}
+                        className={cn("relative inline-flex h-[22px] w-[38px] shrink-0 items-center rounded-full transition-colors duration-200", link.enabled ? "bg-[#151619]" : "bg-[#DCDFE3]")}
+                      >
+                        <span className={cn("inline-block size-[18px] rounded-full bg-white transition-transform duration-200", link.enabled ? "translate-x-[18px]" : "translate-x-[2px]")} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLinks((prev) => prev.filter((l) => l.id !== link.id))}
+                        className="grid size-9 shrink-0 place-items-center rounded-[9px] text-[#A2A6AC] transition-colors hover:bg-[#FBEFED] hover:text-[#9B3E35]"
+                        aria-label="Delete link"
+                        title="Delete link"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   ))}
 

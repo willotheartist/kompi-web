@@ -43,7 +43,7 @@ export function MessageButtonSettings<T extends MessageContact>({ contact, setCo
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: EASE }}
-      className="overflow-hidden rounded-[14px] border border-[#E3E5E7] bg-white"
+      className="mt-5 overflow-hidden rounded-[14px] border border-[#E3E5E7] bg-white"
     >
       {/* Header */}
       <div className="flex items-start gap-3 border-b border-[#EDEEF0] px-4 py-4">
