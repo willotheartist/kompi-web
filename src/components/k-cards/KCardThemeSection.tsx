@@ -3,15 +3,24 @@
 import { useState } from "react";
 import type React from "react";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getKCardFontClass } from "@/lib/fonts";
 import {
   DEFAULT_KCARD_THEME,
   type KCardThemeState,
 } from "./kcard-theme-presets";
+import { PRO_SKIN_THEMES } from "./kcard-pro-themes";
+import { SkinBackdrop, skinButton, skinTitleStyle } from "./kcard-skins";
+import { kcardButtonStyles, kcardWallpaperStyle } from "./kcard-style";
 
 type KCardThemeSectionProps = {
   value: KCardThemeState;
   onChange: (theme: KCardThemeState) => void;
+  /** Paid plan: Pro themes can be applied. */
+  isPro?: boolean;
 };
 
 type ThemeTab = "random" | "standard" | "pro";
@@ -193,7 +202,7 @@ const STANDARD_THEMES: ThemeOption[] = [
   { id: "rose-cloud", name: "Rose Cloud", theme: ROSE_CLOUD_THEME },
 ];
 
-const PRO_THEMES: ThemeOption[] = [
+const CLASSIC_PRO_THEMES: ThemeOption[] = [
   { id: "90s-teal", name: "90s Teal", theme: NINETIES_TEAL_THEME },
   { id: "90s-light", name: "90s Light", theme: NINETIES_LIGHT_THEME },
   { id: "90s-midnight", name: "90s Midnight", theme: NINETIES_MIDNIGHT_THEME },
@@ -205,8 +214,71 @@ const TABS: { id: ThemeTab; label: string }[] = [
   { id: "pro", label: "Pro Themes" },
 ];
 
+const PRO_THEMES: (ThemeOption & { tagline?: string })[] = [...PRO_SKIN_THEMES, ...CLASSIC_PRO_THEMES.map((t) => ({ ...t, tagline: "Retro type, chunky 3D buttons" }))];
+
+function showUpgrade(go: () => void) {
+  toast("Pro themes come with Kompi Pro", {
+    description: "Upgrade to use Windows 95, Terminal, VHS and the rest — plus the verified badge.",
+    action: { label: "Upgrade", onClick: go },
+  });
+}
+
+/** A small live sample of a Pro theme: its backdrop, name styling and button chrome. */
+function ProTile({ option, selected, locked, onSelect }: { option: ThemeOption & { tagline?: string }; selected: boolean; locked: boolean; onSelect: () => void }) {
+  const t = option.theme;
+  const title = skinTitleStyle(t.skin);
+  const base = kcardButtonStyles(t);
+  const framed = t.skin === "win95" || t.skin === "macos";
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "group flex flex-col rounded-[18px] border bg-white p-1.5 text-left transition-colors",
+        selected ? "border-[#151619]" : "border-[#E3E5E7] hover:border-[#CDD1D7]",
+      )}
+    >
+      <div className="relative isolate h-[164px] overflow-hidden rounded-[13px]" style={kcardWallpaperStyle(t)}>
+        <SkinBackdrop skin={t.skin} compact />
+        <div className={cn("relative flex h-full flex-col items-center px-3 pt-3.5", getKCardFontClass(t.pageFont))}>
+          <div
+            className={cn("flex flex-col items-center", framed && "w-full px-2 py-1.5", t.skin === "win95" && "bg-[#c0c0c0]", t.skin === "macos" && "border border-black bg-white")}
+            style={t.skin === "win95" ? { boxShadow: "inset -1px -1px #0a0a0a, inset 1px 1px #fff" } : undefined}
+          >
+            <span className={cn("mb-1 size-5 bg-black/25", t.skin === "win95" || t.skin === "macos" || t.skin === "arcade" || t.skin === "terminal" ? "rounded-none" : "rounded-full")} />
+            <span
+              className={cn("max-w-full truncate leading-none", getKCardFontClass(t.titleFont), t.skin === "arcade" ? "text-[9px]" : t.skin && ["terminal", "vhs", "win95", "macos"].includes(t.skin) ? "text-[17px]" : "text-[13px] font-semibold", title.className)}
+              style={{ color: t.titleColor, ...title.style }}
+            >
+              {option.name}
+            </span>
+          </div>
+          <div className="mt-2.5 flex w-full flex-col gap-[7px]">
+            {[0, 1, 2].map((i) => {
+              const sb = skinButton(t.skin, i, false);
+              return (
+                <span key={i} className="flex h-4 shrink-0 items-center justify-center overflow-hidden" style={{ ...base, ...sb.style, fontSize: 0 }}>
+                  <span className="h-[3px] w-1/3 rounded-full bg-current opacity-60" />
+                </span>
+              );
+            })}
+          </div>
+        </div>
+        {locked && (
+          <span className="absolute right-2 top-2 rounded-[6px] bg-[#151619] px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.05em] text-white">PRO</span>
+        )}
+      </div>
+      <div className="px-1.5 pb-1 pt-2">
+        <p className="truncate text-[13px] font-medium text-[#151619]">{option.name}</p>
+        {option.tagline && <p className="truncate text-[11.5px] text-[#80858C]">{option.tagline}</p>}
+      </div>
+    </button>
+  );
+}
+
 function isSameTheme(a: KCardThemeState, b: KCardThemeState): boolean {
   return (
+    (a.skin ?? null) === (b.skin ?? null) &&
     a.wallpaper === b.wallpaper &&
     a.pageBackground === b.pageBackground &&
     a.buttonColor === b.buttonColor &&
@@ -214,7 +286,8 @@ function isSameTheme(a: KCardThemeState, b: KCardThemeState): boolean {
   );
 }
 
-export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
+export function KCardThemeSection({ value, onChange, isPro = false }: KCardThemeSectionProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<ThemeTab>("random");
 
   const handleSelectTheme = (option: ThemeOption) => {
@@ -222,7 +295,7 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
   };
 
   const handleRandomizeTheme = () => {
-    const pool = [...STANDARD_THEMES, ...PRO_THEMES].filter(
+    const pool = [...STANDARD_THEMES, ...(isPro ? PRO_THEMES : [])].filter(
       (t) => t.id !== "blank"
     );
     if (!pool.length) return;
@@ -232,8 +305,7 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
 
   const isBlankActive = value.wallpaper === "none";
 
-  const activeThemes =
-    activeTab === "pro" ? PRO_THEMES : STANDARD_THEMES;
+  const activeThemes = STANDARD_THEMES;
 
   return (
     <div className="space-y-6">
@@ -266,7 +338,31 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
         </div>
       </div>
 
-      {/* Themes grid */}
+      {activeTab === "pro" ? (
+        <div className="space-y-3">
+          {!isPro && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[#E3E5E7] px-4 py-3">
+              <p className="text-[13px] text-[#3C4045]">
+                <span className="font-medium text-[#151619]">Pro themes</span> change the whole Card — frames, backdrops, buttons and type.
+              </p>
+              <Link href="/dashboard/settings/billing" className="inline-flex h-8 items-center rounded-[9px] bg-[#151619] px-3 text-[13px] font-medium text-white transition-colors hover:bg-[#2B2D31]">
+                Upgrade
+              </Link>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {PRO_THEMES.map((option) => (
+              <ProTile
+                key={option.id}
+                option={option}
+                locked={!isPro}
+                selected={isSameTheme(value, option.theme)}
+                onSelect={() => (isPro ? handleSelectTheme(option) : showUpgrade(() => router.push("/dashboard/settings/billing")))}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {activeThemes.map((option) => {
           const isBlank = option.id === "blank";
@@ -318,6 +414,7 @@ export function KCardThemeSection({ value, onChange }: KCardThemeSectionProps) {
           );
         })}
       </div>
+      )}
 
       {/* Page background color – only active for Blank */}
       <div className="border-t border-[var(--color-border)] pt-5">

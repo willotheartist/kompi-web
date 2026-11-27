@@ -1,5 +1,6 @@
 import { Inter_Tight, Instrument_Serif, Onest, Barlow_Semi_Condensed, Baloo_2, Space_Grotesk } from "next/font/google";
 
+import localFont from "next/font/local";
 import type { KCardFontToken } from "@/components/k-cards/kcard-theme-presets";
 
 export const interTight = Inter_Tight({
@@ -45,6 +46,44 @@ export const spaceFont = Space_Grotesk({
   variable: "--font-kcard-space",
 });
 
+// Self-hosted Card theme fonts (src/fonts/kcard). Not preloaded: only Cards using them load the files.
+export const robotoFont = localFont({
+  src: [
+    { path: "../fonts/kcard/roboto-latin-400-normal.woff2", weight: "400" },
+    { path: "../fonts/kcard/roboto-latin-500-normal.woff2", weight: "500" },
+    { path: "../fonts/kcard/roboto-latin-700-normal.woff2", weight: "700" },
+  ],
+  display: "swap",
+  preload: false,
+  fallback: ["system-ui", "Arial", "sans-serif"],
+});
+
+export const terminalFont = localFont({
+  src: "../fonts/kcard/vt323-latin-400-normal.woff2",
+  weight: "400",
+  display: "swap",
+  preload: false,
+  fallback: ["ui-monospace", "Menlo", "monospace"],
+});
+
+export const pixelFont = localFont({
+  src: "../fonts/kcard/press-start-2p-latin-400-normal.woff2",
+  weight: "400",
+  display: "swap",
+  preload: false,
+  fallback: ["ui-monospace", "monospace"],
+});
+
+export const silkscreenFont = localFont({
+  src: [
+    { path: "../fonts/kcard/silkscreen-latin-400-normal.woff2", weight: "400" },
+    { path: "../fonts/kcard/silkscreen-latin-700-normal.woff2", weight: "700" },
+  ],
+  display: "swap",
+  preload: false,
+  fallback: ["ui-monospace", "monospace"],
+});
+
 export function getKCardFontClass(token: KCardFontToken): string {
   switch (token) {
     case "system":
@@ -59,6 +98,14 @@ export function getKCardFontClass(token: KCardFontToken): string {
       return comicFont.className;
     case "space":
       return spaceFont.className;
+    case "roboto":
+      return robotoFont.className;
+    case "terminal":
+      return terminalFont.className;
+    case "pixel":
+      return pixelFont.className;
+    case "silkscreen":
+      return silkscreenFont.className;
     default:
       return interTight.className;
   }

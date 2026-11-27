@@ -14,6 +14,8 @@ import {
   type KCardThemeState,
 } from "@/components/k-cards/kcard-theme-presets";
 import type { KCardsInitialData } from "@/components/k-cards/KCardsPage";
+import { kcardButtonStyles, kcardWallpaperStyle, isPaidPlan } from "@/components/k-cards/kcard-style";
+import { getKCardFontClass } from "@/lib/fonts";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
@@ -90,66 +92,13 @@ export default async function PublicHandlePage({ params }: PageProps) {
     ...(themeRaw as KCardThemeState | undefined),
   };
 
-  const {
-    wallpaper,
-    pageBackground,
-    buttonColor,
-    buttonTextColor,
-    titleFont,
-    pageFont,
-    titleColor,
-    pageTextColor,
-    buttonStyle,
-    buttonRadius,
-    buttonShadow,
-  } = theme;
+  const { pageBackground, titleFont, pageFont, titleColor, pageTextColor } = theme;
 
-  const previewTitleFont =
-    titleFont === "serif"
-      ? "font-serif"
-      : titleFont === "display"
-        ? "font-semibold tracking-tight"
-        : "font-sans";
-
-  const previewBodyFont =
-    pageFont === "serif"
-      ? "font-serif"
-      : pageFont === "display"
-        ? "font-semibold tracking-tight"
-        : "font-sans";
-
-  const buttonBaseStyles: React.CSSProperties = {
-    borderRadius: buttonRadius,
-    boxShadow:
-      buttonShadow === "none"
-        ? "none"
-        : buttonShadow === "soft"
-          ? "0 6px 14px rgba(15,23,42,0.35)"
-          : buttonShadow === "hard"
-            ? "0 10px 24px rgba(15,23,42,0.6)"
-            : buttonShadow === "3d"
-              ? "0 6px 0 rgba(0,0,0,0.45), 0 12px 0 rgba(0,0,0,0.3)"
-              : "none",
-    border: "1px solid transparent",
-  };
-
-  if (buttonStyle === "solid") {
-    buttonBaseStyles.backgroundColor = buttonColor;
-    buttonBaseStyles.color = buttonTextColor;
-    buttonBaseStyles.border = "1px solid rgba(15,23,42,0.5)";
-  } else if (buttonStyle === "glass") {
-    buttonBaseStyles.backgroundColor = "rgba(15,23,42,0.35)";
-    buttonBaseStyles.color = "var(--color-surface)";
-    buttonBaseStyles.border = "1px solid rgba(15,23,42,0.35)";
-    buttonBaseStyles.backdropFilter = "blur(12px)";
-  } else {
-    buttonBaseStyles.backgroundColor = "transparent";
-    buttonBaseStyles.color = buttonColor;
-    buttonBaseStyles.border = `1px solid ${buttonColor}`;
-    buttonBaseStyles.boxShadow = "none";
-  }
-
-  const wallpaperStyle: React.CSSProperties = { background: wallpaper };
+  // Same font and button rules as the editor preview, so the live Card matches it.
+  const previewTitleFont = getKCardFontClass(titleFont);
+  const previewBodyFont = getKCardFontClass(pageFont);
+  const buttonBaseStyles = kcardButtonStyles(theme);
+  const wallpaperStyle = kcardWallpaperStyle(theme);
 
   const visibleLinks =
     (Array.isArray(linksRaw) ? linksRaw : []).filter((l) => l && l.enabled !== false) ?? [];
@@ -157,6 +106,7 @@ export default async function PublicHandlePage({ params }: PageProps) {
 
 
   const freePlan = !kcard.workspace || kcard.workspace.plan === "FREE";
+  const pro = isPaidPlan(kcard.workspace?.plan);
   const cardUrl = `${PUBLIC_PROFILE_URL}/${handle}`;
 
   return (
@@ -171,6 +121,8 @@ export default async function PublicHandlePage({ params }: PageProps) {
             shareUrl={cardUrl}
             showKompiBadge={freePlan}
             linkIcons={Boolean(theme.linkIcons)}
+            skin={pro ? theme.skin : undefined}
+            verified={pro && theme.verified !== false}
             wallpaperStyle={wallpaperStyle}
             pageBackground={pageBackground}
             previewTitleFont={previewTitleFont}
