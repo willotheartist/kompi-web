@@ -75,7 +75,7 @@ import {
   type KCardButtonShadow,
   type KCardFontToken,
 } from "./kcard-theme-presets";
-import { IntentModal } from "./IntentModal";
+import { MessageButtonSettings } from "./MessageButtonSettings";
 
 type DesignSection =
   | "header"
@@ -341,7 +341,6 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
     return { enabled, buttonLabel, emailOnly, intents };
   });
 
-  const [intentOpen, setIntentOpen] = useState(false);
 
   const [draggingLinkId, setDraggingLinkId] = useState<string | null>(null);
 
@@ -1171,118 +1170,7 @@ const buttonBaseStyles = useMemo(() => {
                 
                   {/* Contact / Message button */}
                   {contact.enabled && (
-                    <div className="mt-5 rounded-[28px] border border-black/10 bg-white p-5">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="text-[13px] font-semibold text-[#050505]">
-                            Message button
-                          </div>
-                          <div className="mt-1 text-[12px] text-black/55">
-                            Shown as a button on your K-Card.
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setContact((prev) => ({ ...prev, enabled: false }));
-                            toast("Message button removed");
-                          }}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-black/45 hover:bg-[#F1F2F4]"
-                          aria-label="Remove message button"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-
-                      <div className="mt-4 grid gap-3">
-                        <div className="grid gap-2">
-                          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                            Button label
-                          </div>
-                          <Input
-                            value={contact.buttonLabel}
-                            onChange={(e) =>
-                              setContact((prev) => ({
-                                ...prev,
-                                buttonLabel: e.target.value,
-                              }))
-                            }
-                            className="h-11 rounded-[18px] border-black/10 bg-[#F5F6F7] text-[13px]"
-                            placeholder="Message me"
-                          />
-                        </div>
-
-                        <div className="grid gap-2">
-                          <div className="flex items-center justify-between">
-                            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                              Options
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => setIntentOpen(true)}
-                              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[#F5F6F7] px-3 py-2 text-[12px] font-semibold text-[#050505] transition hover:bg-white"
-                            >
-                              <span className="text-[14px] leading-none">+</span>
-                              Add option
-                            </button>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            {(contact.intents || []).map((opt) => (
-                              <button
-                                key={opt.key}
-                                type="button"
-                                onClick={() =>
-                                  setContact((prev) => ({
-                                    ...prev,
-                                    intents: (prev.intents || []).map((x) =>
-                                      x.key === opt.key ? { ...x, enabled: !x.enabled } : x
-                                    ),
-                                  }))
-                                }
-                                className={[
-                                  "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[12px] font-medium transition",
-                                  opt.enabled
-                                    ? "border-black/10 bg-white text-[#050505]"
-                                    : "border-black/10 bg-[#F5F6F7] text-black/45 hover:bg-white",
-                                ].join(" ")}
-                              >
-                                <span
-                                  className={[
-                                    "inline-block h-2 w-2 rounded-full",
-                                    opt.enabled ? "bg-[#050505]" : "bg-black/25",
-                                  ].join(" ")}
-                                />
-                                {opt.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="mt-1 text-[11px] text-black/45">
-                          Email-only is on (no message box). We can add message later.
-                        </div>
-                      </div>
-
-                      <IntentModal
-                        open={intentOpen}
-                        title="Add an option"
-                        description='What should visitors click? (e.g. “Hire me”)'
-                        placeholder="Type an option…"
-                        onClose={() => setIntentOpen(false)}
-                        onConfirm={(label) => {
-                          const key = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || String(Date.now());
-                          setContact((prev) => ({
-                            ...prev,
-                            intents: [...(prev.intents || []), { key, label, enabled: true }],
-                          }));
-                          setIntentOpen(false);
-                          toast("Option added");
-                        }}
-                      />
-                    </div>
+                    <MessageButtonSettings contact={contact} setContact={setContact} />
                   )}
 </CardContent>
               </Card>
