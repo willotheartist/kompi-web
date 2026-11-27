@@ -1,7 +1,7 @@
 // src/app/(dashboard)/kr-codes/[id]/page.tsx
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma, rawTable } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Prisma } from "@prisma/client";
@@ -88,7 +88,7 @@ export default async function KrcodeAnalyticsPage(props: { params: Promise<{ id:
         prisma.$queryRaw<Array<{ day: Date; count: bigint }>>(
           Prisma.sql`
             SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::bigint AS count
-            FROM "ClickEvent"
+            FROM ${rawTable("ClickEvent")}
             WHERE "linkId" = ${link.id} AND "createdAt" >= ${since}
             GROUP BY 1
             ORDER BY 1 ASC
@@ -97,7 +97,7 @@ export default async function KrcodeAnalyticsPage(props: { params: Promise<{ id:
         prisma.$queryRaw<Array<{ referer: string | null; count: bigint }>>(
           Prisma.sql`
             SELECT "referer" as referer, COUNT(*)::bigint AS count
-            FROM "ClickEvent"
+            FROM ${rawTable("ClickEvent")}
             WHERE "linkId" = ${link.id} AND "createdAt" >= ${since}
             GROUP BY "referer"
             ORDER BY count DESC NULLS LAST

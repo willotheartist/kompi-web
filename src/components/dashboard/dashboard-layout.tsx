@@ -2,7 +2,7 @@
 
 import { createContext, Suspense, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AnimatePresence, LayoutGroup, motion, MotionConfig } from "framer-motion";
 import { ArrowUpRight, ChevronRight, Menu, PanelLeftClose, PanelLeftOpen, Plus, Search, X } from "lucide-react";
@@ -262,9 +262,18 @@ function Sidebar({ path, collapsed, guest, onSearch, onToggle, onClose }: { path
 
 function NavLink({ item, active, collapsed, subtle }: { item: NavItem; active: boolean; collapsed: boolean; subtle?: boolean }) {
   const Icon = item.icon;
+  const router = useRouter();
+  // Start loading the page as soon as the pointer heads for it; the result is kept
+  // briefly in the client cache (see staleTimes in next.config.ts).
+  const warm = () => {
+    if (!active) router.prefetch(item.href);
+  };
   return (
     <Link
       href={item.href}
+      onMouseEnter={warm}
+      onFocus={warm}
+      onTouchStart={warm}
       aria-current={active ? "page" : undefined}
       title={collapsed ? item.label : undefined}
       className={cn(
