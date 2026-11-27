@@ -2,6 +2,7 @@
 "use client";
 
 import {
+  useCallback,
   useMemo,
   useState,
   useEffect,
@@ -61,6 +62,8 @@ import {
   Eye,
   Loader2,
   MousePointerClick,
+  Redo2,
+  Undo2,
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -79,6 +82,7 @@ import {
 import { MessageButtonSettings } from "./MessageButtonSettings";
 import { LinkLogo, linkHost } from "./LinkLogo";
 import { PhonePreview } from "./PhonePreview";
+import { useUndoHistory } from "./use-undo-history";
 
 type DesignSection =
   | "header"
@@ -758,6 +762,73 @@ const buttonBaseStyles = useMemo(() => {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // ---- Undo / redo for design changes ----
+  const designSnapshot = useMemo(
+    () => ({ title, subtitle, theme, links, socials, socialUrls, avatarDataUrl, avatarSize, headerTextSize, avatarShadow, contact, contactDetails }),
+    [title, subtitle, theme, links, socials, socialUrls, avatarDataUrl, avatarSize, headerTextSize, avatarShadow, contact, contactDetails],
+  );
+  const applyDesign = useCallback((d: typeof designSnapshot) => {
+    setTitle(d.title);
+    setSubtitle(d.subtitle);
+    setTheme(d.theme);
+    setLinks(d.links);
+    setSocials(d.socials);
+    setSocialUrls(d.socialUrls);
+    setAvatarDataUrl(d.avatarDataUrl);
+    setAvatarSize(d.avatarSize);
+    setHeaderTextSize(d.headerTextSize);
+    setAvatarShadow(d.avatarShadow);
+    setContact(d.contact);
+    setContactDetails(d.contactDetails);
+  }, []);
+  const history = useUndoHistory(designSnapshot, applyDesign);
+
+  const describeChange = (a: typeof designSnapshot, b: typeof designSnapshot) => {
+    const labels: [keyof typeof designSnapshot, string][] = [
+      ["theme", "style change"],
+      ["links", "link change"],
+      ["title", "name change"],
+      ["subtitle", "bio change"],
+      ["avatarDataUrl", "photo change"],
+      ["avatarSize", "photo size change"],
+      ["avatarShadow", "photo style change"],
+      ["headerTextSize", "text size change"],
+      ["socials", "social links change"],
+      ["socialUrls", "social links change"],
+      ["contact", "message button change"],
+      ["contactDetails", "contact details change"],
+    ];
+    return labels.find(([k]) => !Object.is(a[k], b[k]))?.[1] ?? "change";
+  };
+  const runUndo = useCallback(() => {
+    const r = history.undo();
+    if (r) toast(`Undid ${describeChange(r.before, r.after)}`, { action: { label: "Redo", onClick: () => history.redo() }, duration: 3500 });
+  }, [history]);
+  const runRedo = useCallback(() => {
+    const r = history.redo();
+    if (r) toast(`Redid ${describeChange(r.before, r.after)}`, { duration: 2500 });
+  }, [history]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const el = e.target as HTMLElement | null;
+      // Inside a text field, let the browser undo the typing itself.
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        runUndo();
+      } else if ((key === "z" && e.shiftKey) || key === "y") {
+        e.preventDefault();
+        runRedo();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [runUndo, runRedo]);
+
   const publishDirty = !savedShare || savedShare.slug !== shareSlug || savedShare.isPublic !== shareIsPublic;
   const isLive = Boolean(savedShare?.isPublic && savedShare.slug);
   // In-canvas editing: clicking part of the preview jumps to (and highlights) its settings.
@@ -845,6 +916,28 @@ const buttonBaseStyles = useMemo(() => {
           </div>
 
           <div className="ml-auto flex w-full flex-wrap items-center gap-2 lg:w-auto">
+            <div className="flex h-10 items-center rounded-[10px] border border-[#E3E5E7] bg-white p-0.5" role="group" aria-label="Undo and redo">
+              <button
+                type="button"
+                onClick={runUndo}
+                disabled={!history.canUndo}
+                className="grid size-9 place-items-center rounded-[8px] text-[#3C4045] transition-colors hover:bg-[#F3F4F5] disabled:text-[#C2C5CA] disabled:hover:bg-transparent"
+                aria-label="Undo"
+                title="Undo (⌘Z)"
+              >
+                <Undo2 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={runRedo}
+                disabled={!history.canRedo}
+                className="grid size-9 place-items-center rounded-[8px] text-[#3C4045] transition-colors hover:bg-[#F3F4F5] disabled:text-[#C2C5CA] disabled:hover:bg-transparent"
+                aria-label="Redo"
+                title="Redo (⇧⌘Z)"
+              >
+                <Redo2 className="h-4 w-4" />
+              </button>
+            </div>
             <label className="flex h-10 w-full min-w-0 items-center rounded-[10px] border border-[#E3E5E7] bg-white pl-3 text-[14px] transition-colors focus-within:border-[#80858C] sm:w-auto sm:flex-1 lg:w-[300px] lg:flex-none">
               <span className="shrink-0 text-[#8A9099]">{baseUrl.replace(/^https?:\/\//, "")}/</span>
               <input
