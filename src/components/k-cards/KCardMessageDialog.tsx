@@ -20,6 +20,8 @@ type Props = {
   emailOnly?: boolean;
   /** Public Card slug. Without it (editor preview) sending is simulated. */
   slug?: string;
+  /** Render inside this element (the editor's phone screen) instead of over the whole page. */
+  container?: HTMLElement | null;
 };
 
 function firstName(name: string) {
@@ -31,7 +33,8 @@ function firstName(name: string) {
  * The visitor-facing "Message me" window. Rendered in a portal so it always covers the
  * whole screen; a centred dialog on desktop and a bottom sheet on phones.
  */
-export function KCardMessageDialog({ open, onClose, ownerName, avatar, intents, emailOnly, slug }: Props) {
+export function KCardMessageDialog({ open, onClose, ownerName, avatar, intents, emailOnly, slug, container }: Props) {
+  const inPhone = Boolean(container);
   const [mounted, setMounted] = useState(false);
   const [intent, setIntent] = useState<Intent | null>(null);
   const [name, setName] = useState("");
@@ -52,16 +55,16 @@ export function KCardMessageDialog({ open, onClose, ownerName, avatar, intents, 
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (!inPhone) document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     const t = window.setTimeout(() => firstField.current?.focus({ preventScroll: true }), 250);
     return () => {
-      document.body.style.overflow = prev;
+      if (!inPhone) document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
       window.clearTimeout(t);
     };
-  }, [open, onClose]);
+  }, [open, onClose, inPhone]);
 
   function reset() {
     setIntent(null);
@@ -123,7 +126,7 @@ export function KCardMessageDialog({ open, onClose, ownerName, avatar, intents, 
         <motion.div
           key="kc-message"
           data-kcard-contact-modal
-          className="fixed inset-0 z-[1000] flex items-end justify-center sm:items-center sm:p-6"
+          className={cn("inset-0 z-[1000] flex items-end justify-center", inPhone ? "pointer-events-auto absolute" : "fixed sm:items-center sm:p-6")}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -135,14 +138,17 @@ export function KCardMessageDialog({ open, onClose, ownerName, avatar, intents, 
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative max-h-[92dvh] w-full overflow-y-auto rounded-t-[24px] border border-[#E3E5E7] bg-white text-[#151619] sm:max-w-[440px] sm:rounded-[24px]"
+            className={cn(
+              "relative w-full overflow-y-auto rounded-t-[24px] border border-[#E3E5E7] bg-white text-[#151619]",
+              inPhone ? "max-h-[92%]" : "max-h-[92dvh] sm:max-w-[440px] sm:rounded-[24px]",
+            )}
             initial={{ y: 40, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 30, opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.34, ease: EASE }}
             style={{ fontFamily: "var(--font-primary, system-ui), system-ui, sans-serif" }}
           >
-            <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-[#DCDFE3] sm:hidden" />
+            <div className={cn("mx-auto mt-2.5 h-1 w-10 rounded-full bg-[#DCDFE3]", !inPhone && "sm:hidden")} />
             <button
               type="button"
               onClick={onClose}
@@ -244,7 +250,7 @@ export function KCardMessageDialog({ open, onClose, ownerName, avatar, intents, 
 
                   {/* Details */}
                   <div className="mt-6 space-y-2.5">
-                    <div className="grid gap-2.5 sm:grid-cols-2">
+                    <div className={cn("grid gap-2.5", !inPhone && "sm:grid-cols-2")}>
                       <div className="relative">
                         <input ref={firstField} id={`${titleId}-name`} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" maxLength={120} className={field} />
                         <label htmlFor={`${titleId}-name`} className={floatLabel}>Your name</label>
@@ -336,6 +342,6 @@ export function KCardMessageDialog({ open, onClose, ownerName, avatar, intents, 
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body,
+    container ?? document.body,
   );
 }

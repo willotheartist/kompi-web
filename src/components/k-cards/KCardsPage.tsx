@@ -60,6 +60,7 @@ import {
   ExternalLink,
   Eye,
   Loader2,
+  MousePointerClick,
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -67,7 +68,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
 
 import { KCardThemeSection } from "./KCardThemeSection";
-import { KCardPreview } from "./KCardPreview";
+import { KCardPreview, type KCardEditTarget } from "./KCardPreview";
 import {
   DEFAULT_KCARD_THEME,
   type KCardThemeState,
@@ -77,6 +78,7 @@ import {
 } from "./kcard-theme-presets";
 import { MessageButtonSettings } from "./MessageButtonSettings";
 import { LinkLogo, linkHost } from "./LinkLogo";
+import { PhonePreview } from "./PhonePreview";
 
 type DesignSection =
   | "header"
@@ -375,6 +377,7 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
   // Last published address/visibility, to show whether there are unpublished changes.
   const [savedShare, setSavedShare] = useState<{ slug: string; isPublic: boolean } | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [linkClicks, setLinkClicks] = useState<Record<string, number>>({});
 
   const publicUrl =
     shareSlug && shareIsPublic ? `${baseUrl}/${shareSlug}` : null;
@@ -409,6 +412,23 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
       cancelled = true;
     };
   }, [baseUrl, cardId]);
+
+  // Per-link click totals from the public Card, shown on each link row.
+  const statsSlug = savedShare?.slug;
+  useEffect(() => {
+    if (!statsSlug) return;
+    let cancelled = false;
+    fetch(`/api/k-cards/clicks?slug=${encodeURIComponent(statsSlug)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json: { data?: { linkId: string; totalClicks: number }[] } | null) => {
+        if (cancelled || !json?.data) return;
+        setLinkClicks(Object.fromEntries(json.data.map((d) => [d.linkId, d.totalClicks])));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [statsSlug]);
 
   async function saveShareSettings() {
     if (!shareSlug.trim()) {
@@ -740,9 +760,33 @@ const buttonBaseStyles = useMemo(() => {
 
   const publishDirty = !savedShare || savedShare.slug !== shareSlug || savedShare.isPublic !== shareIsPublic;
   const isLive = Boolean(savedShare?.isPublic && savedShare.slug);
-  const previewNode = (
+  // In-canvas editing: clicking part of the preview jumps to (and highlights) its settings.
+  function editFromPreview(target: KCardEditTarget) {
+    setPreviewOpen(false);
+    if (target.type === "header") {
+      scrollToSection("header");
+      return;
+    }
+    scrollToSection("links");
+    const selector = target.type === "link" ? `[data-link-row="${target.id}"]` : "[data-message-settings]";
+    window.setTimeout(() => {
+      const row = document.querySelector<HTMLElement>(selector);
+      if (!row) return;
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
+      row.animate(
+        [{ boxShadow: "0 0 0 0 rgba(61,90,254,0)" }, { boxShadow: "0 0 0 3px rgba(61,90,254,0.35)" }, { boxShadow: "0 0 0 0 rgba(61,90,254,0)" }],
+        { duration: 1400, easing: "ease-out" },
+      );
+      row.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+    }, 350);
+  }
+
+  const renderPreview = (overlay: HTMLElement | null) => (
     <KCardPreview
-      className="![width:min(320px,calc((100vh-400px)*0.4706),100%)]"
+      variant="device"
+      linkIcons={Boolean(theme.linkIcons)}
+      onEdit={editFromPreview}
+      overlayTarget={overlay}
       contact={contact}
       wallpaperStyle={wallpaperStyle}
       pageBackground={pageBackground}
@@ -925,7 +969,7 @@ const buttonBaseStyles = useMemo(() => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <KCardThemeSection value={theme} onChange={setTheme} />
+                  <KCardThemeSection value={theme} onChange={(next) => setTheme((prev) => ({ ...next, linkIcons: prev.linkIcons }))} />
                 </CardContent>
               </Card>
             </section>
@@ -1048,7 +1092,22 @@ const buttonBaseStyles = useMemo(() => {
               <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
-                    <span>Links</span>
+                    <span className="flex items-center gap-3">
+                      Links
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={Boolean(theme.linkIcons)}
+                        onClick={() => setTheme((prev) => ({ ...prev, linkIcons: !prev.linkIcons }))}
+                        className="inline-flex h-8 items-center gap-2 rounded-[9px] border border-[#E3E5E7] px-2.5 text-[13px] font-normal tracking-normal text-[#3C4045] transition-colors hover:border-[#CDD1D7]"
+                        title="Show each site's logo inside its button on your Card"
+                      >
+                        <span className={cn("relative inline-flex h-[16px] w-[26px] items-center rounded-full transition-colors", theme.linkIcons ? "bg-[#151619]" : "bg-[#DCDFE3]")}>
+                          <span className={cn("inline-block size-[12px] rounded-full bg-white transition-transform duration-200", theme.linkIcons ? "translate-x-[12px]" : "translate-x-[2px]")} />
+                        </span>
+                        Logos on buttons
+                      </button>
+                    </span>
                     <button
                       type="button"
                       onClick={() => setAddOpen(true)}
@@ -1063,6 +1122,7 @@ const buttonBaseStyles = useMemo(() => {
                   {links.map((link) => (
                     <div
                       key={link.id}
+                      data-link-row={link.id}
                       draggable
                       onDragStart={() => handleLinkDragStart(link.id)}
                       onDragEnd={handleLinkDragEnd}
@@ -1098,6 +1158,12 @@ const buttonBaseStyles = useMemo(() => {
                             aria-label="Link title"
                           />
                           {!link.enabled && <span className="shrink-0 rounded-[5px] bg-[#F1F2F4] px-1.5 py-0.5 text-[11px] font-medium text-[#80858C]">Hidden</span>}
+                          {linkClicks[link.id] !== undefined && (
+                            <span className="ml-auto inline-flex shrink-0 items-center gap-1 text-[12px] tabular-nums text-[#80858C]" title="Clicks on your public Card">
+                              <MousePointerClick className="h-3.5 w-3.5 text-[#A2A6AC]" />
+                              {linkClicks[link.id].toLocaleString()} {linkClicks[link.id] === 1 ? "click" : "clicks"}
+                            </span>
+                          )}
                         </div>
                         <Input
                           value={link.url}
@@ -1243,21 +1309,26 @@ const buttonBaseStyles = useMemo(() => {
           )}
 
 
-          {/* Live preview */}
+          {/* Live preview: a real-size phone that scales to stay fully in view */}
           <aside className="hidden xl:block" aria-label="Live preview">
-            <div className="sticky top-[196px] rounded-[16px] border border-[#E3E5E7] bg-[#F5F6F7]">
-              <div className="flex items-center justify-between border-b border-[#E3E5E7] px-4 py-3 text-[13px]">
+            <div className="sticky top-[196px] flex h-[calc(100vh-220px)] min-h-[420px] flex-col">
+              <div className="mb-3 flex items-center justify-between text-[13px]">
                 <span className="flex items-center gap-2 font-medium text-[#3C4045]">
                   <Eye className="h-4 w-4 text-[#80858C]" /> Live preview
                 </span>
-                <span className="text-[#A2A6AC]">Updates as you edit</span>
+                <span className="text-[#A2A6AC]">Click anything to edit it</span>
               </div>
-              <div className="flex justify-center px-4 py-5">{previewNode}</div>
-              <div className="flex items-center gap-2 border-t border-[#E3E5E7] px-3 py-2.5">
-                <span className="min-w-0 flex-1 truncate px-1 text-[13px] text-[#5A5E65]">{shareDisplayUrl.replace(/^https?:\/\//, "")}</span>
+              <PhonePreview>{renderPreview}</PhonePreview>
+              <div className="mt-3 flex items-center gap-2 rounded-[12px] border border-[#E3E5E7] bg-white p-1.5 pl-3">
+                <span className="min-w-0 flex-1 truncate text-[13px] text-[#5A5E65]">{shareDisplayUrl.replace(/^https?:\/\//, "")}</span>
                 <button type="button" onClick={copyPublicUrl} className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[#E3E5E7] bg-white px-2.5 text-[13px] font-medium hover:border-[#CDD1D7]">
                   <Copy className="h-3.5 w-3.5" /> Copy
                 </button>
+                {publicUrl && (
+                  <a href={publicUrl} target="_blank" rel="noreferrer" className="grid size-8 place-items-center rounded-[8px] border border-[#E3E5E7] text-[#3C4045] hover:border-[#CDD1D7]" aria-label="Open your Card" title="Open your Card">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                )}
               </div>
             </div>
           </aside>
@@ -1280,29 +1351,8 @@ const buttonBaseStyles = useMemo(() => {
             exit={{ opacity: 0 }}
             onClick={() => setPreviewOpen(false)}
           >
-            <motion.div initial={{ y: 24, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 16, opacity: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} onClick={(e) => e.stopPropagation()}>
-              <KCardPreview
-                className="![width:min(340px,calc((100vh-160px)*0.4706),calc(100vw-48px))]"
-                contact={contact}
-                wallpaperStyle={wallpaperStyle}
-                pageBackground={pageBackground}
-                previewTitleFont={previewTitleFont}
-                previewBodyFont={previewBodyFont}
-                title={title}
-                subtitle={subtitle}
-                titleColor={titleColor}
-                pageTextColor={pageTextColor}
-                titleSize={titleSize}
-                _profileLayout={profileLayout}
-                avatarPreview={avatarPreview}
-                socials={socials}
-                socialUrls={socialUrls}
-                visibleLinks={visibleLinks}
-                buttonBaseStyles={buttonBaseStyles}
-                avatarSize={avatarSize}
-                headerTextSize={headerTextSize}
-                avatarShadow={avatarShadow}
-              />
+            <motion.div initial={{ y: 24, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 16, opacity: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} onClick={(e) => e.stopPropagation()} className="flex h-[calc(100dvh-140px)] w-full">
+              <PhonePreview>{renderPreview}</PhonePreview>
             </motion.div>
             <button type="button" onClick={() => setPreviewOpen(false)} className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-[14px] font-medium text-[#151619]">
               <X className="h-4 w-4" /> Close preview
