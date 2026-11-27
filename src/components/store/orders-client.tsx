@@ -84,7 +84,7 @@ export function OrdersClient({ orders }: { orders: OrderRow[] }) {
   const currency = orders[0]?.currency ?? "gbp";
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-8 sm:py-9">
+    <div>
       <PageHeader
         eyebrow="Earn"
         icon={Receipt}

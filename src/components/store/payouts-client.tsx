@@ -50,7 +50,7 @@ export function PayoutsClient({ started, chargesEnabled, detailsSubmitted, curre
   const state = chargesEnabled ? "live" : started && detailsSubmitted ? "review" : started ? "unfinished" : "none";
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-7 sm:px-8 sm:py-9">
+    <div>
       <PageHeader eyebrow="Earn" icon={Wallet} title="Payouts" description="Kompi uses Stripe to take payments and send money to your bank." />
 
       <section className="mb-5 rounded-[16px] border border-[#E3E5E7] bg-white p-5 sm:p-6">

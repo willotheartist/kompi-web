@@ -226,10 +226,10 @@ export function ProductEditor({ initial, look, seller, connectReady, feePercent,
   const charges = p.type !== "LEAD_MAGNET";
 
   return (
-    <div className="min-h-full">
+    <div>
       {/* Top bar */}
-      <div className="sticky top-0 z-20 border-b border-[#EDEEF0] bg-white">
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3 sm:px-8">
+      <div className="mb-6 rounded-[16px] border border-[#E3E5E7] bg-white">
+        <div className="flex flex-wrap items-center gap-3 px-3 py-3 sm:px-4">
           <Link href="/dashboard/earn/products" className={buttonStyles.icon} aria-label="Back to products">
             <ArrowLeft size={18} />
           </Link>
@@ -264,8 +264,8 @@ export function ProductEditor({ initial, look, seller, connectReady, feePercent,
         </div>
       </div>
 
-      <div className="grid gap-8 px-4 py-6 sm:px-8 sm:py-8 xl:grid-cols-[minmax(0,1fr)_400px]">
-        <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-5">
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_400px]">
+        <div className="flex w-full min-w-0 flex-col gap-5">
           {issues.length > 0 && !live && (
             <div className="flex items-start gap-3 rounded-[14px] border border-[#F1DFB5] bg-[#FFFAF0] px-4 py-3.5 text-[14px] text-[#6B4A00]">
               <AlertTriangle size={18} className="mt-0.5 shrink-0 text-[#C98A00]" />
