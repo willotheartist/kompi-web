@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import {
   UserCircle2,
   Palette,
+  Sticker as StickerIcon,
   Type,
   Square,
   Link2,
@@ -86,11 +87,14 @@ import { PhonePreview } from "./PhonePreview";
 import { useUndoHistory } from "./use-undo-history";
 import { kcardButtonStyles, isPaidPlan } from "./kcard-style";
 import { VerifiedBadge } from "./VerifiedBadge";
+import { StickerPanel } from "./StickerPanel";
+import type { KCardSticker } from "./kcard-stickers";
 import { useWorkspaceSummary } from "@/components/dashboard/shell/use-workspace-summary";
 
 type DesignSection =
   | "header"
   | "theme"
+  | "stickers"
   | "text"
   | "buttons"
   | "colors"
@@ -99,6 +103,7 @@ type DesignSection =
 const SECTION_LABELS: Record<DesignSection, string> = {
   header: "Header",
   theme: "Theme",
+  stickers: "Stickers",
   text: "Text",
   buttons: "Buttons",
   colors: "Colors",
@@ -111,6 +116,7 @@ const SECTION_ICONS: Record<
 > = {
   header: UserCircle2,
   theme: Palette,
+  stickers: StickerIcon,
   text: Type,
   buttons: Square,
   colors: Palette,
@@ -232,6 +238,7 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
   // refs for scroll + intersection observer
   const headerRef = useRef<HTMLElement | null>(null);
   const themeRef = useRef<HTMLElement | null>(null);
+  const stickersRef = useRef<HTMLElement | null>(null);
   const textRef = useRef<HTMLElement | null>(null);
   const buttonsRef = useRef<HTMLElement | null>(null);
   const colorsRef = useRef<HTMLElement | null>(null);
@@ -244,6 +251,7 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
     () => ({
       header: headerRef,
       theme: themeRef,
+      stickers: stickersRef,
       text: textRef,
       buttons: buttonsRef,
       colors: colorsRef,
@@ -518,8 +526,8 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
 
   
 const buttonBaseStyles = useMemo(
-  () => kcardButtonStyles({ buttonStyle, buttonRadius, buttonShadow, buttonColor, buttonTextColor }),
-  [buttonStyle, buttonRadius, buttonShadow, buttonColor, buttonTextColor],
+  () => kcardButtonStyles({ buttonStyle, buttonRadius, buttonShadow, buttonColor, buttonTextColor, buttonBorder: theme.buttonBorder }),
+  [buttonStyle, buttonRadius, buttonShadow, buttonColor, buttonTextColor, theme.buttonBorder],
 );
 const router = useRouter();
 const workspaceSummary = useWorkspaceSummary();
@@ -536,10 +544,15 @@ const showVerified = isPro && theme.verified !== false;
   }
 
   // wrappers so panels mutate the same theme state
+  function setStickers(next: KCardSticker[]) {
+    setTheme((prev: KCardThemeState) => ({ ...prev, stickers: next }));
+  }
+
   function setButtonColorValue(value: string) {
     setTheme((prev: KCardThemeState) => ({
       ...prev,
       buttonColor: value,
+      buttonBorder: undefined,
     }));
   }
 
@@ -830,6 +843,8 @@ const showVerified = isPro && theme.verified !== false;
       linkIcons={Boolean(theme.linkIcons)}
       skin={theme.skin}
       verified={showVerified}
+      stickers={theme.stickers}
+      onStickersChange={setStickers}
       onEdit={editFromPreview}
       overlayTarget={overlay}
       contact={contact}
@@ -1059,7 +1074,20 @@ const showVerified = isPro && theme.verified !== false;
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <KCardThemeSection isPro={isPro} value={theme} onChange={(next) => setTheme((prev) => ({ ...next, linkIcons: prev.linkIcons, verified: prev.verified }))} />
+                  <KCardThemeSection isPro={isPro} value={theme} onChange={(next) => setTheme((prev) => ({ ...next, linkIcons: prev.linkIcons, verified: prev.verified, stickers: prev.stickers }))} />
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Stickers */}
+            <section ref={stickersRef} data-section-id="stickers" className="scroll-mt-[200px]">
+              <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-[16px] font-medium tracking-[-0.02em] text-[#151619]">Stickers</CardTitle>
+                  <CardDescription className="text-[13px] text-[#80858C]">Stick things on your Card. They stay put when you change theme.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <StickerPanel stickers={theme.stickers ?? []} onChange={setStickers} />
                 </CardContent>
               </Card>
             </section>

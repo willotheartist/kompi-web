@@ -14,7 +14,7 @@ import {
   type KCardThemeState,
 } from "@/components/k-cards/kcard-theme-presets";
 import type { KCardsInitialData } from "@/components/k-cards/KCardsPage";
-import { kcardButtonStyles, kcardWallpaperStyle, isPaidPlan } from "@/components/k-cards/kcard-style";
+import { kcardButtonStyles, kcardWallpaperStyle, isPaidPlan, sanitizeStickers } from "@/components/k-cards/kcard-style";
 import { getKCardFontClass } from "@/lib/fonts";
 
 type PageProps = {
@@ -123,6 +123,7 @@ export default async function PublicHandlePage({ params }: PageProps) {
             linkIcons={Boolean(theme.linkIcons)}
             skin={pro ? theme.skin : undefined}
             verified={pro && theme.verified !== false}
+            stickers={sanitizeStickers(theme.stickers)}
             wallpaperStyle={wallpaperStyle}
             pageBackground={pageBackground}
             previewTitleFont={previewTitleFont}
