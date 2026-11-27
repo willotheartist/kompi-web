@@ -231,7 +231,7 @@ export function KCardPreview({
           {/* header */}
           <div
             className={cn(
-              "mb-4 flex flex-col items-center gap-2 text-center",
+              "mb-5 flex flex-col items-center gap-3.5 text-center",
               previewTitleFont,
               headerMarginTop
             )}
@@ -256,17 +256,20 @@ export function KCardPreview({
                 </div>
               )}
             </div>
-            <div
-              className={cn("font-semibold", titleSizeClass)}
-              style={{ color: effectiveTitleColor }}
-            >
-              {title || "@yourname"}
-            </div>
-            <div
-              className={cn(subtitleSizeClass)}
-              style={{ color: effectiveTextColor }}
-            >
-              {subtitle || "Short bio line for your card."}
+            {/* Name and bio sit close together as one unit, clear of the avatar. */}
+            <div className="flex flex-col items-center gap-1">
+              <div
+                className={cn("font-semibold leading-tight tracking-[-0.01em]", titleSizeClass)}
+                style={{ color: effectiveTitleColor }}
+              >
+                {title || "@yourname"}
+              </div>
+              <div
+                className={cn("max-w-[30ch] leading-snug [text-wrap:balance]", subtitleSizeClass)}
+                style={{ color: effectiveTextColor }}
+              >
+                {subtitle || "Short bio line for your card."}
+              </div>
             </div>
           </div>
 
