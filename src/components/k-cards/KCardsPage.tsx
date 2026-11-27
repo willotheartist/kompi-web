@@ -30,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 
 import { cn } from "@/lib/utils";
@@ -83,6 +84,9 @@ import { MessageButtonSettings } from "./MessageButtonSettings";
 import { LinkLogo, linkHost } from "./LinkLogo";
 import { PhonePreview } from "./PhonePreview";
 import { useUndoHistory } from "./use-undo-history";
+import { kcardButtonStyles, isPaidPlan } from "./kcard-style";
+import { VerifiedBadge } from "./VerifiedBadge";
+import { useWorkspaceSummary } from "@/components/dashboard/shell/use-workspace-summary";
 
 type DesignSection =
   | "header"
@@ -513,47 +517,14 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
   );
 
   
-const buttonBaseStyles = useMemo(() => {
-  const style: React.CSSProperties = {
-    borderRadius: buttonRadius,
-    boxShadow:
-      buttonShadow === "none"
-        ? "none"
-        : buttonShadow === "soft"
-          ? "0 6px 14px rgba(15,23,42,0.35)"
-          : buttonShadow === "hard"
-            ? "0 10px 24px rgba(15,23,42,0.6)"
-            : buttonShadow === "3d"
-              ? "0 6px 0 rgba(0,0,0,0.45), 0 12px 0 rgba(0,0,0,0.3)"
-              : "none",
-    border: "1px solid transparent",
-  };
-
-  if (buttonStyle === "solid") {
-    style.backgroundColor = buttonColor;
-    style.color = buttonTextColor;
-    style.border = "1px solid rgba(15,23,42,0.5)";
-  } else if (buttonStyle === "glass") {
-    style.backgroundColor = "rgba(15,23,42,0.35)";
-    style.color = "var(--color-surface)";
-    style.border = "1px solid rgba(15,23,42,0.35)";
-    style.backdropFilter = "blur(12px)";
-  } else {
-    // outline
-    style.backgroundColor = "transparent";
-    style.color = buttonColor;
-    style.border = `1px solid ${buttonColor}`;
-    style.boxShadow = "none";
-  }
-
-  return style;
-}, [
-  buttonStyle,
-  buttonRadius,
-  buttonShadow,
-  buttonColor,
-  buttonTextColor,
-]);
+const buttonBaseStyles = useMemo(
+  () => kcardButtonStyles({ buttonStyle, buttonRadius, buttonShadow, buttonColor, buttonTextColor }),
+  [buttonStyle, buttonRadius, buttonShadow, buttonColor, buttonTextColor],
+);
+const router = useRouter();
+const workspaceSummary = useWorkspaceSummary();
+const isPro = isPaidPlan(workspaceSummary?.plan);
+const showVerified = isPro && theme.verified !== false;
 
 
   function toggleSocial(name: string) {
@@ -857,6 +828,8 @@ const buttonBaseStyles = useMemo(() => {
       variant="device"
       shareUrl={shareDisplayUrl}
       linkIcons={Boolean(theme.linkIcons)}
+      skin={theme.skin}
+      verified={showVerified}
       onEdit={editFromPreview}
       overlayTarget={overlay}
       contact={contact}
@@ -1018,8 +991,31 @@ const buttonBaseStyles = useMemo(() => {
             >
               <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
+                  <CardTitle className="flex items-center gap-3 text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
                     Header
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={showVerified}
+                      onClick={() => {
+                        if (!isPro) {
+                          toast("The verified badge comes with Kompi Pro", {
+                            action: { label: "Upgrade", onClick: () => router.push("/dashboard/settings/billing") },
+                          });
+                          return;
+                        }
+                        setTheme((prev) => ({ ...prev, verified: prev.verified === false }));
+                      }}
+                      className="inline-flex h-8 items-center gap-2 rounded-[9px] border border-[#E3E5E7] px-2.5 text-[13px] font-normal tracking-normal text-[#3C4045] transition-colors hover:border-[#CDD1D7]"
+                      title="Show the blue verified badge next to your name"
+                    >
+                      <span className={cn("relative inline-flex h-[16px] w-[26px] items-center rounded-full transition-colors", showVerified ? "bg-[#151619]" : "bg-[#DCDFE3]")}>
+                        <span className={cn("inline-block size-[12px] rounded-full bg-white transition-transform duration-200", showVerified ? "translate-x-[12px]" : "translate-x-[2px]")} />
+                      </span>
+                      <VerifiedBadge size={15} tooltip={false} />
+                      Verified
+                      {!isPro && <span className="rounded-[5px] bg-[#151619] px-1.5 py-px text-[10px] font-semibold tracking-[0.04em] text-white">PRO</span>}
+                    </button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -1063,7 +1059,7 @@ const buttonBaseStyles = useMemo(() => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <KCardThemeSection value={theme} onChange={(next) => setTheme((prev) => ({ ...next, linkIcons: prev.linkIcons }))} />
+                  <KCardThemeSection isPro={isPro} value={theme} onChange={(next) => setTheme((prev) => ({ ...next, linkIcons: prev.linkIcons, verified: prev.verified }))} />
                 </CardContent>
               </Card>
             </section>

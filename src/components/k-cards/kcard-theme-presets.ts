@@ -6,7 +6,14 @@ export type KCardFontToken =
   | "display"
   | "retro"
   | "comic"
-  | "space";
+  | "space"
+  | "roboto"
+  | "terminal"
+  | "pixel"
+  | "silkscreen";
+
+/** Pro "skins" change more than colours: backgrounds, frames, button chrome and details. */
+export type KCardSkin = "win95" | "terminal" | "vhs" | "arcade" | "vaporwave" | "macos" | "y2k" | "geocities" | "roboto";
 export type KCardButtonStyle = "solid" | "glass" | "outline";
 export type KCardButtonShadow = "none" | "soft" | "hard" | "3d";
 
@@ -32,6 +39,10 @@ export type KCardThemeState = {
   curated?: boolean;
   /** Show each link's site logo inside its button. */
   linkIcons?: boolean;
+  /** Pro skin (see kcard-skins). */
+  skin?: KCardSkin;
+  /** Pro: show the verified badge next to the name (default on for Pro). */
+  verified?: boolean;
 };
 
 // Full presets

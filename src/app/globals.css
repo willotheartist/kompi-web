@@ -399,3 +399,27 @@ body {
 .kompi-skeleton { position: relative; overflow: hidden; background: #EEF0F2; border-radius: 8px; }
 .kompi-skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,.65), transparent); animation: kompi-shimmer 1.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .kompi-skeleton::after { animation: none; } }
+
+/* ---- Card Pro skins (kcard-skins.tsx) ---- */
+@keyframes kc-blink { 50% { opacity: 0; } }
+.kc-blink { animation: kc-blink 1.05s steps(1) infinite; }
+@keyframes kc-flicker { 0%, 100% { opacity: .02; } 50% { opacity: .05; } 52% { opacity: .015; } }
+.kc-flicker { animation: kc-flicker 3.2s linear infinite; }
+@keyframes kc-tracking { 0% { top: -12%; } 100% { top: 112%; } }
+.kc-tracking { animation: kc-tracking 5.5s linear infinite; }
+@keyframes kc-grid { from { background-position: 0 0; } to { background-position: 0 36px; } }
+.kc-grid { animation: kc-grid 1.6s linear infinite; }
+@keyframes kc-twinkle { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.1); } }
+.kc-twinkle { animation: kc-twinkle 2.8s ease-in-out infinite; }
+@keyframes kc-marquee { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+.kc-marquee { animation: kc-marquee 14s linear infinite; }
+@keyframes kc-rainbow { to { background-position: 200% 0; } }
+.kc-rainbow { animation: kc-rainbow 4s linear infinite; }
+@keyframes kc-sheen { 0%, 70% { transform: translateX(0) rotate(20deg); } 100% { transform: translateX(40px) rotate(20deg); } }
+.kc-verified-sheen { transform-box: view-box; transform-origin: 12px 12px; animation: kc-sheen 4.5s ease-in-out infinite; }
+.kc-verified { transition: transform .2s ease; outline: none; }
+.kc-verified:hover { transform: scale(1.12) rotate(-6deg); }
+@media (prefers-reduced-motion: reduce) {
+  .kc-blink, .kc-flicker, .kc-tracking, .kc-grid, .kc-twinkle, .kc-marquee, .kc-rainbow, .kc-verified-sheen { animation: none; }
+  .kc-marquee { padding-left: 0; }
+}

@@ -1,30 +1,19 @@
-// e.g. src/components/k-cards/kcard-style.ts
-import type { KCardThemeState } from "./kcard-theme-presets";
 import type React from "react";
+import type { KCardThemeState } from "./kcard-theme-presets";
 
-export function getKCardButtonBaseStyles(
-  theme: KCardThemeState
-): React.CSSProperties {
-  const {
-    buttonRadius,
-    buttonShadow,
-    buttonStyle,
-    buttonColor,
-    buttonTextColor,
-  } = theme;
-
+/** Button styles from a theme. Shared by the editor preview and the public Card page. */
+export function kcardButtonStyles(theme: Pick<KCardThemeState, "buttonStyle" | "buttonRadius" | "buttonShadow" | "buttonColor" | "buttonTextColor">): React.CSSProperties {
+  const { buttonStyle, buttonRadius, buttonShadow, buttonColor, buttonTextColor } = theme;
   const style: React.CSSProperties = {
     borderRadius: buttonRadius,
     boxShadow:
-      buttonShadow === "none"
-        ? "none"
-        : buttonShadow === "soft"
+      buttonShadow === "soft"
         ? "0 6px 14px rgba(15,23,42,0.35)"
         : buttonShadow === "hard"
-        ? "0 10px 24px rgba(15,23,42,0.6)"
-        : buttonShadow === "3d"
-        ? "0 6px 0 rgba(0,0,0,0.45), 0 12px 0 rgba(0,0,0,0.3)"
-        : "none",
+          ? "0 10px 24px rgba(15,23,42,0.6)"
+          : buttonShadow === "3d"
+            ? "0 6px 0 rgba(0,0,0,0.45), 0 12px 0 rgba(0,0,0,0.3)"
+            : "none",
     border: "1px solid transparent",
   };
 
@@ -38,12 +27,21 @@ export function getKCardButtonBaseStyles(
     style.border = "1px solid rgba(15,23,42,0.35)";
     style.backdropFilter = "blur(12px)";
   } else {
-    // outline
     style.backgroundColor = "transparent";
     style.color = buttonColor;
     style.border = `1px solid ${buttonColor}`;
     style.boxShadow = "none";
   }
-
   return style;
+}
+
+/** Page background: the wallpaper, or the solid colour when there is none. */
+export function kcardWallpaperStyle(theme: Pick<KCardThemeState, "wallpaper" | "pageBackground">): React.CSSProperties {
+  const w = theme.wallpaper?.trim();
+  return w && w.toLowerCase() !== "none" ? { background: w } : { background: theme.pageBackground || "#020617" };
+}
+
+/** Paid plans get Pro skins and the verified badge. */
+export function isPaidPlan(plan?: string | null) {
+  return Boolean(plan && plan !== "FREE");
 }

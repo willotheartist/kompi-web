@@ -24,6 +24,9 @@ import {
   Check,
 } from "lucide-react";
 import { LinkLogo } from "./LinkLogo";
+import { VerifiedBadge } from "./VerifiedBadge";
+import { SkinBackdrop, SkinBioSuffix, SkinFooter, SkinHeader, skinButton, skinSizes, skinTitleStyle } from "./kcard-skins";
+import type { KCardSkin } from "./kcard-theme-presets";
 
 const SOCIAL_ICON_MAP: Record<
   string,
@@ -125,6 +128,10 @@ type KCardPreviewProps = {
   variant?: "builder" | "public" | "device";
   /** Show each link's site logo inside its button. */
   linkIcons?: boolean;
+  /** Pro skin: backdrop, frames and button chrome. */
+  skin?: KCardSkin;
+  /** Pro: blue verified badge next to the name. */
+  verified?: boolean;
   /** Editor only: makes parts of the Card clickable to jump to their settings. */
   onEdit?: (target: KCardEditTarget) => void;
   /** Editor only: element the message window renders into (the phone screen). */
@@ -164,6 +171,8 @@ export function KCardPreview({
   slug,
   className,
   linkIcons,
+  skin,
+  verified,
   onEdit,
   overlayTarget,
   showKompiBadge,
@@ -192,6 +201,22 @@ export function KCardPreview({
     : headerTextSize === "small" ? "text-[10px]" : headerTextSize === "medium" ? "text-[11px]" : "text-sm";
 
   const buttonSizeClass = fullSize ? "min-h-[58px] py-3 text-[16px]" : "py-2.5 text-[11px]";
+
+  const sizes = skinSizes(skin, fullSize);
+  const titleSkin = skinTitleStyle(skin);
+  const btn = (index: number) => {
+    const sb = skinButton(skin, index, fullSize);
+    return {
+      className: sb.className,
+      prefix: sb.prefix,
+      suffix: sb.suffix,
+      style: {
+        ...buttonBaseStyles,
+        transform: !skin && buttonBaseStyles?.boxShadow?.includes("0 6px 0") ? "translateY(-2px)" : undefined,
+        ...sb.style,
+      } as React.CSSProperties,
+    };
+  };
 
   const headerMarginTop = headerTextSize === "large" ? "mt-2" : "mt-1";
 
@@ -255,12 +280,14 @@ export function KCardPreview({
       }
     >
       <div
-        className={isDevice ? "flex flex-1 flex-col" : isPublic ? "flex flex-1 flex-col" : "absolute inset-0 rounded-[32px]"}
+        className={cn("isolate", isDevice ? "relative flex flex-1 flex-col overflow-hidden" : isPublic ? "relative flex flex-1 flex-col overflow-hidden" : "absolute inset-0 overflow-hidden rounded-[32px]")}
         style={cardBackgroundStyle}
       >
+        <SkinBackdrop skin={skin} compact={!fullSize} />
         <div
           className={cn(
-            "flex w-full flex-col gap-0 px-6 pb-6",
+            "relative flex w-full flex-col gap-0 px-6 pb-6",
+            skin === "win95" && (fullSize ? "pb-14" : "pb-9"),
             isDevice ? "flex-1 pt-12" : isPublic ? "flex-1 px-5 pt-5 sm:px-10 sm:pt-7" : "h-full overflow-hidden rounded-[32px] pt-10",
             previewBodyFont
           )}
@@ -269,6 +296,7 @@ export function KCardPreview({
 
           {/* header */}
           <EditSpot label="Edit profile" onEdit={onEdit ? () => onEdit({ type: "header" }) : undefined} className={fullSize ? "mb-8" : "mb-5"}>
+          <SkinHeader skin={skin} title={title} compact={!fullSize}>
           <div
             className={cn(
               "flex flex-col items-center gap-3.5 text-center",
@@ -278,9 +306,13 @@ export function KCardPreview({
           >
             <div
               className={cn(
-                "overflow-hidden rounded-full",
+                "overflow-hidden",
+                skin === "win95" || skin === "macos" || skin === "arcade" || skin === "terminal" ? "rounded-none" : "rounded-full",
+                skin === "arcade" && "ring-4 ring-black [image-rendering:pixelated]",
+                skin === "win95" && "[box-shadow:inset_1px_1px_#808080,inset_-1px_-1px_#fff]",
+                skin === "terminal" && "ring-1 ring-[#33ff66] grayscale-[0.4] sepia-[0.3]",
                 avatarSizeClass,
-                avatarShadow === "shadow" &&
+                avatarShadow === "shadow" && !skin &&
                   "shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
               )}
             >
@@ -298,20 +330,25 @@ export function KCardPreview({
             </div>
             {/* Name and bio sit close together as one unit, clear of the avatar. */}
             <div className="flex flex-col items-center gap-1">
-              <div
-                className={cn("font-semibold leading-tight tracking-[-0.01em]", titleSizeClass)}
-                style={{ color: effectiveTitleColor }}
-              >
-                {title || "@yourname"}
+              <div className="flex max-w-full items-center justify-center gap-1.5">
+                <span
+                  className={cn("min-w-0 font-semibold leading-tight tracking-[-0.01em]", titleSizeClass, sizes.title, titleSkin.className)}
+                  style={{ color: effectiveTitleColor, ...titleSkin.style }}
+                >
+                  {title || "@yourname"}
+                </span>
+                {verified && <VerifiedBadge size={fullSize ? 22 : 14} />}
               </div>
               <div
-                className={cn("max-w-[30ch] leading-snug [text-wrap:balance]", subtitleSizeClass)}
+                className={cn("max-w-[30ch] leading-snug [text-wrap:balance]", subtitleSizeClass, sizes.bio)}
                 style={{ color: effectiveTextColor }}
               >
                 {subtitle || "Short bio line for your card."}
+                <SkinBioSuffix skin={skin} />
               </div>
             </div>
           </div>
+          </SkinHeader>
 
           </EditSpot>
 
@@ -342,14 +379,19 @@ export function KCardPreview({
                 Add a link below to see it here.
               </div>
             ) : (
-              (fullSize ? visibleLinks : visibleLinks.slice(0, 8)).map((link) => {
+              (fullSize ? visibleLinks : visibleLinks.slice(0, 8)).map((link, index) => {
                 const href = safePublicHref(link.url);
+                const b = btn(index);
                 const content = (
                   <>
                     {linkIcons && (
                       <LinkLogo url={link.url} size={fullSize ? 42 : 24} className={cn("absolute left-2 top-1/2 -translate-y-1/2 border-0 bg-white", fullSize ? "rounded-[10px]" : "rounded-full")} />
                     )}
-                    <span className={cn("truncate", linkIcons && (fullSize ? "px-12" : "px-7"))}>{link.title || "Untitled link"}</span>
+                    <span className={cn("truncate", linkIcons && (fullSize ? "px-12" : "px-7"))}>
+                      {b.prefix}
+                      {link.title || "Untitled link"}
+                      {b.suffix}
+                    </span>
                   </>
                 );
 
@@ -365,15 +407,8 @@ export function KCardPreview({
                           trackKCardLinkClick(link.id, href);
                         }
                       }}
-                      className={cn("relative flex w-full items-center justify-center px-4 font-medium transition", buttonSizeClass, linkIcons && !fullSize && "min-h-[42px] py-2")}
-                      style={{
-                        ...buttonBaseStyles,
-                        transform: buttonBaseStyles?.boxShadow?.includes(
-                          "0 6px 0"
-                        )
-                          ? "translateY(-2px)"
-                          : undefined,
-                      }}
+                      className={cn("relative flex w-full items-center justify-center px-4 font-medium transition", buttonSizeClass, linkIcons && !fullSize && "min-h-[42px] py-2", b.className)}
+                      style={b.style}
                     >
                       {content}
                     </a>
@@ -385,15 +420,8 @@ export function KCardPreview({
                     <button
                       type="button"
                       onClick={onEdit ? () => onEdit({ type: "link", id: link.id }) : undefined}
-                      className={cn("relative flex w-full items-center justify-center px-4 font-medium transition", buttonSizeClass, linkIcons && !fullSize && "min-h-[42px] py-2")}
-                      style={{
-                        ...buttonBaseStyles,
-                        transform: buttonBaseStyles?.boxShadow?.includes(
-                          "0 6px 0"
-                        )
-                          ? "translateY(-2px)"
-                          : undefined,
-                      }}
+                      className={cn("relative flex w-full items-center justify-center px-4 font-medium transition", buttonSizeClass, linkIcons && !fullSize && "min-h-[42px] py-2", b.className)}
+                      style={b.style}
                     >
                       {content}
                     </button>
@@ -408,16 +436,13 @@ export function KCardPreview({
               <button
                 type="button"
                 onClick={() => setContactOpen(true)}
-                className={cn("flex w-full items-center justify-center px-4 font-medium transition", buttonSizeClass)}
-                style={{
-                  ...buttonBaseStyles,
-                  transform: buttonBaseStyles?.boxShadow?.includes("0 6px 0")
-                    ? "translateY(-2px)"
-                    : undefined,
-                }}
+                className={cn("flex w-full items-center justify-center px-4 font-medium transition", buttonSizeClass, btn(visibleLinks.length).className)}
+                style={btn(visibleLinks.length).style}
               >
                 <span className="truncate">
+                  {btn(visibleLinks.length).prefix}
                   {contact.buttonLabel || "Message me"}
+                  {btn(visibleLinks.length).suffix}
                 </span>
               </button>
               </EditSpot>
@@ -441,7 +466,10 @@ export function KCardPreview({
 
           {/* footer */}
           {fullSize ? (
-            <div className="mt-auto flex flex-col items-center gap-3 pb-4 pt-12">{footer}</div>
+            <div className="mt-auto flex flex-col items-center gap-3 pb-4 pt-12">
+              <SkinFooter skin={skin} seed={slug || title || "kompi"} />
+              {footer}
+            </div>
           ) : (
             <div className="mt-auto pt-6 text-center text-[10px] text-white/40">
               {slug ? `kompi.app/${slug}` : "kompi.app/yourcard"}
