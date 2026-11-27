@@ -166,7 +166,7 @@ export function ProductsClient({ rows: initialRows, stats, handle, currency, con
   ];
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-8 sm:py-9">
+    <div>
       <PageHeader
         eyebrow="Earn"
         icon={ShoppingBag}
