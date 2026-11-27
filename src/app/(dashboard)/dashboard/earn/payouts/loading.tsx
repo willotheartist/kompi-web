@@ -1,0 +1,4 @@
+import { ListSkeleton } from "@/components/dashboard/skeletons";
+export default function Loading() {
+  return <ListSkeleton rows={5} label="Loading your store" />;
+}

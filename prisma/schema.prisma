@@ -96,6 +96,13 @@ model Workspace {
   stripeCustomerId     String?
   stripeSubscriptionId String?
   billingReviewRequired Boolean @default(false)
+  /// Store: Stripe Connect (Express) account that receives sales.
+  stripeConnectAccountId  String?  @unique
+  connectChargesEnabled   Boolean  @default(false)
+  connectDetailsSubmitted Boolean  @default(false)
+  storeCurrency           String   @default("gbp")
+  products                Product[]
+  orders                  Order[]
   billingStatus        String?
   billingPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean           @default(false)
@@ -712,4 +719,96 @@ model BillingEvent {
   id        String   @id
   type      String
   createdAt DateTime @default(now())
+}
+
+
+/// ---------------------------
+/// Store: products & orders
+/// ---------------------------
+enum ProductType {
+  DOWNLOAD
+  LEAD_MAGNET
+  BOOKING
+  PAID_LINK
+  TIP
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FREE
+  REFUNDED
+  CANCELLED
+}
+
+model Product {
+  id             String        @id @default(cuid())
+  workspaceId    String
+  slug           String
+  type           ProductType
+  status         ProductStatus @default(DRAFT)
+  title          String
+  subtitle       String?
+  description    String?
+  coverImage     String?
+  priceCents     Int           @default(0)
+  currency       String        @default("gbp")
+  /// Buyer chooses the amount (tips, pay what you want); priceCents is the suggested amount.
+  payWhatYouWant Boolean       @default(false)
+  minPriceCents  Int?
+  buttonLabel    String?
+  fileUrl        String?
+  fileName       String?
+  fileSize       Int?
+  accessUrl      String?
+  durationMin    Int?
+  /// Booking rules: { timezone, days: { mon: [["09:00","17:00"]], ... }, noticeHours, daysAhead, bufferMin, location }
+  booking        Json?
+  thankYouNote   String?
+  views          Int           @default(0)
+  clicks         Int           @default(0)
+  sortOrder      Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  orders         Order[]
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId, status])
+}
+
+model Order {
+  id                      String      @id @default(cuid())
+  workspaceId             String
+  productId               String
+  status                  OrderStatus @default(PENDING)
+  buyerEmail              String?
+  buyerName               String?
+  buyerNote               String?
+  amountCents             Int         @default(0)
+  feeCents                Int         @default(0)
+  currency                String      @default("gbp")
+  stripeAccountId         String?
+  stripeCheckoutSessionId String?     @unique
+  stripePaymentIntentId   String?
+  /// Secret for the buyer's order page and downloads.
+  accessToken             String      @unique
+  bookingStart            DateTime?
+  bookingEnd              DateTime?
+  emailedAt               DateTime?
+  paidAt                  DateTime?
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+  workspace               Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  product                 Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, createdAt])
+  @@index([productId, bookingStart])
+  @@index([status, createdAt])
 }

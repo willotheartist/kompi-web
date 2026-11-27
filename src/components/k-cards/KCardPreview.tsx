@@ -29,6 +29,8 @@ import { SkinBackdrop, SkinBioSuffix, SkinFooter, SkinHeader, skinButton, skinSi
 import type { KCardSkin } from "./kcard-theme-presets";
 import type { KCardSticker } from "./kcard-stickers";
 import { StickerLayer } from "./StickerLayer";
+import { cardProductPrice, type CardProduct } from "./CardProductsPanel";
+import { ProductThumb } from "@/components/store/store-ui";
 
 const SOCIAL_ICON_MAP: Record<
   string,
@@ -82,7 +84,7 @@ function CardTopBar({ showKompiBadge, shareUrl, title }: { showKompiBadge?: bool
   );
 }
 
-export type KCardEditTarget = { type: "header" } | { type: "link"; id: string } | { type: "message" };
+export type KCardEditTarget = { type: "header" } | { type: "link"; id: string } | { type: "message" } | { type: "products" };
 
 /** Hover outline + "Edit" pill used for in-canvas editing in the Card editor. */
 function EditSpot({ onEdit, label, children, className }: { onEdit?: () => void; label: string; children: React.ReactNode; className?: string }) {
@@ -136,6 +138,10 @@ type KCardPreviewProps = {
   verified?: boolean;
   /** Stickers placed on the Card. */
   stickers?: KCardSticker[];
+  /** Store products shown under the links. */
+  products?: CardProduct[];
+  /** Path prefix for product pages, e.g. "/william/p/". */
+  productHrefBase?: string;
   /** Editor only: makes stickers draggable, resizable and rotatable. */
   onStickersChange?: (next: KCardSticker[]) => void;
   /** Editor only: makes parts of the Card clickable to jump to their settings. */
@@ -181,6 +187,8 @@ export function KCardPreview({
   verified,
   stickers,
   onStickersChange,
+  products,
+  productHrefBase,
   onEdit,
   overlayTarget,
   showKompiBadge,
@@ -439,6 +447,54 @@ export function KCardPreview({
                   </EditSpot>
                 );
               })
+            )}
+
+            {/* store products */}
+            {products && products.length > 0 && (
+              <EditSpot label="Edit products" onEdit={onEdit ? () => onEdit({ type: "products" }) : undefined}>
+                <div className={fullSize ? "space-y-3.5" : "space-y-2"}>
+                  {products.map((p, i) => {
+                    const b = btn(visibleLinks.length + i);
+                    const href = productHrefBase ? `${productHrefBase}${p.slug}` : undefined;
+                    const inner = (
+                      <>
+                        <ProductThumb type={p.type} cover={p.coverImage} size={fullSize ? 56 : 34} className="border-0" />
+                        <span className="min-w-0 flex-1 text-left">
+                          <span className={cn("block truncate font-semibold", fullSize ? "text-[16px]" : "text-[11px]")}>{p.title}</span>
+                          <span className={cn("block truncate opacity-75", fullSize ? "text-[13.5px]" : "text-[9px]")}>
+                            {p.type === "BOOKING" && p.durationMin ? `${p.durationMin} min · ` : ""}
+                            {cardProductPrice(p)}
+                          </span>
+                        </span>
+                        <span className={cn("shrink-0 rounded-full px-3 py-1.5 font-semibold", fullSize ? "text-[13px]" : "text-[9px]")} style={{ background: "currentColor" }}>
+                          <span style={{ color: (b.style.backgroundColor as string) || (b.style.background as string) || "#fff", filter: "none" }}>{p.buttonLabel || "Get"}</span>
+                        </span>
+                      </>
+                    );
+                    const cls = cn("flex w-full items-center gap-3 text-left transition", fullSize ? "min-h-[76px] p-2.5 pr-3" : "min-h-[46px] p-1.5 pr-2", b.className);
+                    const style = { ...b.style, borderRadius: Math.min(Number(b.style.borderRadius ?? 18), 22) };
+                    return isPublic && href ? (
+                      <a
+                        key={p.id}
+                        href={href}
+                        className={cls}
+                        style={style}
+                        onClick={() => {
+                          try {
+                            navigator.sendBeacon?.("/api/store/track", new Blob([JSON.stringify({ productId: p.id })], { type: "application/json" }));
+                          } catch {}
+                        }}
+                      >
+                        {inner}
+                      </a>
+                    ) : (
+                      <button key={p.id} type="button" className={cls} style={style} onClick={onEdit ? () => onEdit({ type: "products" }) : undefined}>
+                        {inner}
+                      </button>
+                    );
+                  })}
+                </div>
+              </EditSpot>
             )}
 
             {/* contact button */}
