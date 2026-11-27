@@ -34,7 +34,6 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import {
-  Share2,
   UserCircle2,
   Palette,
   Type,
@@ -48,17 +47,22 @@ import {
   MessageCircle,
   Mail,
   Globe2,
-  UploadCloud,
   Image as ImageIcon,
   Video,
   Sparkles,
-  BarChart3,
   Trash2,
   Plus,
   Search,
   GripVertical,
   Copy,
+  Check,
+  Contact,
+  ExternalLink,
+  Eye,
+  Loader2,
+  X,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import type React from "react";
 
@@ -222,8 +226,6 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
   const colorsRef = useRef<HTMLElement | null>(null);
   const linksRef = useRef<HTMLElement | null>(null);
 
-  const shareTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const sharePanelRef = useRef<HTMLDivElement | null>(null);
 
   const sectionRefs = useMemo<
     Record<DesignSection, React.RefObject<HTMLElement | null>>
@@ -370,7 +372,9 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
   const [shareIsPublic, setShareIsPublic] = useState<boolean>(true);
   const [shareLoading, setShareLoading] = useState<boolean>(true);
   const [shareSaving, setShareSaving] = useState<boolean>(false);
-  const [shareOpen, setShareOpen] = useState<boolean>(false);
+  // Last published address/visibility, to show whether there are unpublished changes.
+  const [savedShare, setSavedShare] = useState<{ slug: string; isPublic: boolean } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const publicUrl =
     shareSlug && shareIsPublic ? `${baseUrl}/${shareSlug}` : null;
@@ -391,6 +395,7 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
         if (cancelled) return;
         setShareSlug(data.slug ?? "");
         setShareIsPublic(data.isPublic ?? true);
+        setSavedShare({ slug: data.slug ?? "", isPublic: data.isPublic ?? true });
       } catch (err) {
         console.error(err);
       } finally {
@@ -432,9 +437,10 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
 
       setShareSlug(data.slug ?? shareSlug);
       setShareIsPublic(data.isPublic ?? true);
+      setSavedShare({ slug: data.slug ?? shareSlug, isPublic: data.isPublic ?? true });
 
       if (data.slug) {
-        toast("K-Card link updated", {
+        toast.success(data.isPublic ?? true ? "Your Card is live" : "Card hidden from the public", {
           description: `${baseUrl}/${data.slug}`,
         });
       }
@@ -457,11 +463,6 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
     }
   }
 
-  function shareComingSoon(destination: string) {
-    toast(`${destination} sharing coming soon`, {
-      description: "For now, copy your K-Card link and paste it anywhere.",
-    });
-  }
 
   const {
     wallpaper,
@@ -708,13 +709,15 @@ const buttonBaseStyles = useMemo(() => {
         });
 
         // Only update when a section is meaningfully visible
-        if (bestId && bestRatio > 0.2) {
+        if (bestId && bestRatio > 0) {
           setActiveSection(bestId);
         }
       },
       {
         root: null,
-        threshold: [0.2, 0.4, 0.6],
+        // Ignore the area under the sticky shell + publish bar.
+        rootMargin: "-200px 0px -35% 0px",
+        threshold: [0, 0.2, 0.4, 0.6, 1],
       },
     );
 
@@ -728,34 +731,6 @@ const buttonBaseStyles = useMemo(() => {
     };
   }, [sectionRefs]);
 
-  useEffect(() => {
-    if (!shareOpen) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      const target = event.target as Node | null;
-      if (!target) return;
-
-      const panel = sharePanelRef.current;
-      const trigger = shareTriggerRef.current;
-
-      if (
-        panel &&
-        !panel.contains(target) &&
-        trigger &&
-        !trigger.contains(target)
-      ) {
-        setShareOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [shareOpen]);
 
   function scrollToSection(id: DesignSection) {
     const el = sectionRefs[id].current;
@@ -763,82 +738,149 @@ const buttonBaseStyles = useMemo(() => {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  const publishDirty = !savedShare || savedShare.slug !== shareSlug || savedShare.isPublic !== shareIsPublic;
+  const isLive = Boolean(savedShare?.isPublic && savedShare.slug);
+  const previewNode = (
+    <KCardPreview
+      className="![width:min(320px,calc((100vh-400px)*0.4706),100%)]"
+      contact={contact}
+      wallpaperStyle={wallpaperStyle}
+      pageBackground={pageBackground}
+      previewTitleFont={previewTitleFont}
+      previewBodyFont={previewBodyFont}
+      title={title}
+      subtitle={subtitle}
+      titleColor={titleColor}
+      pageTextColor={pageTextColor}
+      titleSize={titleSize}
+      _profileLayout={profileLayout}
+      avatarPreview={avatarPreview}
+      socials={socials}
+      socialUrls={socialUrls}
+      visibleLinks={visibleLinks}
+      buttonBaseStyles={buttonBaseStyles}
+      avatarSize={avatarSize}
+      headerTextSize={headerTextSize}
+      avatarShadow={avatarShadow}
+    />
+  );
+
   return (
     <div
-      className="wf-dashboard-main w-full"
-      style={{ backgroundColor: "var(--color-bg)" }}
+      className="kc-editor -mx-4 -mt-6 sm:-mx-8 sm:-mt-8"
+      style={EDITOR_VARS}
     >
-      <section className="mx-auto mb-2 grid w-full max-w-6xl gap-4 rounded-2xl border border-neutral-200 bg-white p-5 sm:grid-cols-2" aria-label="Publish your Card">
-        <div><label className="block text-sm font-medium">Your public address<input aria-label="Card handle" className="mt-2 h-11 w-full rounded-xl border border-neutral-300 px-3 text-base" value={shareSlug} onChange={e => setShareSlug(e.target.value)} placeholder="your-name" /></label><p className="mt-2 break-all text-sm text-neutral-500">{baseUrl}/{shareSlug || "your-name"}</p></div>
-        <div className="flex flex-wrap items-center gap-4"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={shareIsPublic} onChange={e => setShareIsPublic(e.target.checked)} />Public Card</label><button type="button" className="min-h-11 rounded-full bg-neutral-950 px-5 text-sm font-medium text-white disabled:opacity-50" disabled={shareSaving || shareLoading || !shareSlug} onClick={() => void saveShareSettings()}>{shareSaving ? "Saving…" : "Save publishing settings"}</button>{publicUrl && <a className="text-sm underline" href={publicUrl} target="_blank" rel="noreferrer">View Card</a>}<span role="status" className="text-sm text-neutral-500">{saveStatus === "saving" ? "Saving design…" : saveStatus === "error" ? "Design not saved" : saveStatus === "saved" ? "Design saved" : ""}</span></div>
-        <details className="sm:col-span-2"><summary className="cursor-pointer text-sm font-medium">Public contact details for “Save contact”</summary><p className="mt-2 text-sm text-neutral-500">These details will be downloadable from your public Card. Leave them blank to hide the button.</p><div className="mt-3 grid gap-3 sm:grid-cols-3">{(["email", "phone", "company"] as const).map(field => <label key={field} className="text-sm capitalize">{field}<input className="mt-1 h-11 w-full rounded-xl border border-neutral-300 px-3 text-base" type={field === "email" ? "email" : "text"} value={contactDetails[field] || ""} onChange={e => setContactDetails(prev => ({ ...prev, [field]: e.target.value }))} /></label>)}</div></details>
-      </section>
-      <div className="mx-auto flex w-full max-w-6xl gap-8 px-4 py-6 sm:px-6 lg:px-8">
-        {/* LEFT: Sections list */}
-        <aside className="hidden w-40 shrink-0 lg:block">
-          <div className="sticky top-20">
-            <div className="rounded-3xl bg-white p-3">
-              <p
-                className="mb-3 text-[12px] font-semibold tracking-[0.18em] font-instrument-serif"
-                style={{ color: "var(--color-text)" }}
-              >
-                Sections
+      {/* Publish bar + section tabs */}
+      <div className="sticky top-16 z-20 border-b border-[#E3E5E7] bg-white">
+        <section aria-label="Publish your Card" className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 pb-3 pt-4 sm:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full border border-[#E3E5E7] bg-[#FBE4FA] text-[15px] font-medium">
+              {avatarPreview ? <img src={avatarPreview} alt="" className="h-full w-full object-cover" /> : (title || "K").slice(0, 1).toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <p className="flex items-center gap-2 truncate text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
+                <span className="truncate">{title || "Untitled Card"}</span>
+                <span className={cn("inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium", isLive ? "bg-[#EEF3ED] text-[#357452]" : "bg-[#F1F2F4] text-[#696C72]")}>
+                  <span className={cn("size-1.5 rounded-full", isLive ? "bg-[#357452]" : "bg-[#A2A6AC]")} />
+                  {isLive ? "Live" : "Draft"}
+                </span>
               </p>
-              <nav className="space-y-1">
-                {(Object.keys(SECTION_LABELS) as DesignSection[]).map(
-                  (id) => {
-                    const active = activeSection === id;
-                    const Icon = SECTION_ICONS[id];
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => scrollToSection(id)}
-                        className={cn(
-                          "flex w-full items-center gap-2 rounded-full px-3 py-2 text-left text-[13px] font-medium transition font-instrument-serif",
-                          active
-                            ? "bg-[var(--color-accent)] text-[#050505]"
-                            : "text-[var(--color-subtle)] hover:bg-[var(--color-surface)]",
-                        )}
-                      >
-                        {Icon && <Icon className="h-4 w-4" />}
-                        <span>{SECTION_LABELS[id]}</span>
-                      </button>
-                    );
-                  },
+              <p role="status" className="flex items-center gap-1.5 text-[12px] text-[#80858C]">
+                {saveStatus === "saving" ? (
+                  <><Loader2 className="h-3 w-3 animate-spin" /> Saving design…</>
+                ) : saveStatus === "error" ? (
+                  <span className="text-[#9B3E35]">Design not saved. Keep this page open and try again.</span>
+                ) : saveStatus === "saved" ? (
+                  <><Check className="h-3 w-3 text-[#357452]" /> {lastSavedAt ? `Design saved ${lastSavedAt}` : "Design saved"}</>
+                ) : (
+                  "Changes save automatically"
                 )}
-              </nav>
-            </div>
-            {/* Tiny save indicator */}
-            <div
-              className="mt-4 text-[11px]"
-              style={{ color: "var(--color-subtle)" }}
-            >
-              {saveStatus === "saving" && "Saving…"}
-              {saveStatus === "saved" &&
-                (lastSavedAt ? `Saved ${lastSavedAt}` : "Saved")}
-              {saveStatus === "error" &&
-                "Not saved. Keep this page open and try again."}
+              </p>
             </div>
           </div>
-        </aside>
 
-        {/* MIDDLE + RIGHT */}
-        <div className="flex w-full min-w-0 flex-1 flex-col gap-8 xl:flex-row">
-          {/* MIDDLE: editor stack */}
-          <div className="flex min-w-0 flex-1 flex-col gap-6">
+          <div className="ml-auto flex w-full flex-wrap items-center gap-2 lg:w-auto">
+            <label className="flex h-10 w-full min-w-0 items-center rounded-[10px] border border-[#E3E5E7] bg-white pl-3 text-[14px] transition-colors focus-within:border-[#80858C] sm:w-auto sm:flex-1 lg:w-[300px] lg:flex-none">
+              <span className="shrink-0 text-[#8A9099]">{baseUrl.replace(/^https?:\/\//, "")}/</span>
+              <input
+                aria-label="Card handle"
+                className="h-full min-w-0 flex-1 bg-transparent pr-3 font-medium text-[#151619] outline-none placeholder:font-normal placeholder:text-[#A2A6AC]"
+                value={shareSlug}
+                onChange={(e) => setShareSlug(e.target.value)}
+                placeholder="your-name"
+              />
+            </label>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={shareIsPublic}
+              onClick={() => setShareIsPublic((v) => !v)}
+              className="flex h-10 items-center gap-2 rounded-[10px] border border-[#E3E5E7] bg-white px-3 text-[14px] text-[#3C4045] transition-colors hover:border-[#CDD1D7]"
+              title={shareIsPublic ? "Anyone with the address can see this Card" : "Only you can see this Card"}
+            >
+              <span className={cn("relative inline-flex h-[18px] w-[30px] items-center rounded-full transition-colors", shareIsPublic ? "bg-[#151619]" : "bg-[#DCDFE3]")}>
+                <span className={cn("inline-block size-[14px] rounded-full bg-white transition-transform duration-200", shareIsPublic ? "translate-x-[14px]" : "translate-x-[2px]")} />
+              </span>
+              Public
+            </button>
+            {publicUrl && (
+              <a href={publicUrl} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center gap-1.5 rounded-[10px] border border-[#E3E5E7] bg-white px-3 text-[14px] font-medium text-[#151619] transition-colors hover:border-[#CDD1D7] hover:bg-[#F7F8F9]">
+                View <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            )}
+            <button
+              type="button"
+              className={cn(
+                "inline-flex h-10 items-center gap-2 rounded-[10px] px-4 text-[14px] font-medium transition-colors",
+                publishDirty
+                  ? "bg-[#151619] text-white hover:bg-[#2B2D31] disabled:opacity-40"
+                  : "border border-[#E3E5E7] bg-white text-[#357452]",
+              )}
+              disabled={shareSaving || shareLoading || !shareSlug || !publishDirty}
+              onClick={() => void saveShareSettings()}
+            >
+              {shareSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : !publishDirty ? <Check className="h-4 w-4" /> : null}
+              {shareSaving ? "Publishing…" : publishDirty ? (shareIsPublic ? "Publish" : "Save") : isLive ? "Published" : "Saved"}
+            </button>
+          </div>
+        </section>
+
+        <nav aria-label="Card sections" className="flex gap-1 overflow-x-auto px-3 pb-2 sm:px-7">
+          {(Object.keys(SECTION_LABELS) as DesignSection[]).map((id) => {
+            const active = activeSection === id;
+            const Icon = SECTION_ICONS[id];
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => scrollToSection(id)}
+                aria-current={active ? "true" : undefined}
+                className={cn(
+                  "relative flex h-9 shrink-0 items-center gap-2 rounded-[9px] px-3 text-[14px] transition-colors",
+                  active ? "font-medium text-[#151619]" : "text-[#80858C] hover:text-[#151619]",
+                )}
+              >
+                {active && <motion.span layoutId="kc-section-pill" className="absolute inset-0 rounded-[9px] bg-[#F1F2F4]" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
+                {Icon && <Icon className="relative h-4 w-4" />}
+                <span className="relative">{SECTION_LABELS[id]}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      <div className="grid gap-8 px-4 py-6 sm:px-8 sm:py-8 xl:grid-cols-[minmax(0,1fr)_400px]">
+          {/* Editor stack */}
+          <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-6">
             {/* Header section */}
             <section
               ref={headerRef}
               data-section-id="header"
-              className="scroll-mt-24"
+              className="scroll-mt-[200px]"
             >
-              <Card
-                className="rounded-2xl shadow-none"
-                style={{ backgroundColor: "var(--color-surface)" }}
-              >
+              <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                  <CardTitle className="text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
                     Header
                   </CardTitle>
                 </CardHeader>
@@ -871,20 +913,14 @@ const buttonBaseStyles = useMemo(() => {
             <section
               ref={themeRef}
               data-section-id="theme"
-              className="scroll-mt-24"
+              className="scroll-mt-[200px]"
             >
-              <Card
-                className="rounded-2xl shadow-none"
-                style={{ backgroundColor: "var(--color-surface)" }}
-              >
+              <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                  <CardTitle className="text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
                     Theme
                   </CardTitle>
-                  <CardDescription
-                    className="text-xs"
-                    style={{ color: "var(--color-subtle)" }}
-                  >
+                  <CardDescription className="text-[13px] text-[#80858C]">
                     Background and overall visual style.
                   </CardDescription>
                 </CardHeader>
@@ -898,20 +934,14 @@ const buttonBaseStyles = useMemo(() => {
             <section
               ref={textRef}
               data-section-id="text"
-              className="scroll-mt-24"
+              className="scroll-mt-[200px]"
             >
-              <Card
-                className="rounded-2xl shadow-none"
-                style={{ backgroundColor: "var(--color-surface)" }}
-              >
+              <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                  <CardTitle className="text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
                     Text
                   </CardTitle>
-                  <CardDescription
-                    className="text-xs"
-                    style={{ color: "var(--color-subtle)" }}
-                  >
+                  <CardDescription className="text-[13px] text-[#80858C]">
                     Typography and text colors for your K-Card.
                   </CardDescription>
                 </CardHeader>
@@ -942,14 +972,11 @@ const buttonBaseStyles = useMemo(() => {
             <section
               ref={buttonsRef}
               data-section-id="buttons"
-              className="scroll-mt-24"
+              className="scroll-mt-[200px]"
             >
-              <Card
-                className="rounded-2xl shadow-none"
-                style={{ backgroundColor: "var(--color-surface)" }}
-              >
+              <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-semibold text-[var(--color-text)]">
+                  <CardTitle className="text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
                     Buttons
                   </CardTitle>
                 </CardHeader>
@@ -980,20 +1007,14 @@ const buttonBaseStyles = useMemo(() => {
             <section
               ref={colorsRef}
               data-section-id="colors"
-              className="scroll-mt-24"
+              className="scroll-mt-[200px]"
             >
-              <Card
-                className="rounded-2xl shadow-none"
-                style={{ backgroundColor: "var(--color-surface)" }}
-              >
+              <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-[var(--color-text)]">
+                  <CardTitle className="text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
                     Colors
                   </CardTitle>
-                  <CardDescription
-                    className="text-xs"
-                    style={{ color: "var(--color-subtle)" }}
-                  >
+                  <CardDescription className="text-[13px] text-[#80858C]">
                     Fine-tune title, text and button colors.
                   </CardDescription>
                 </CardHeader>
@@ -1022,22 +1043,18 @@ const buttonBaseStyles = useMemo(() => {
             <section
               ref={linksRef}
               data-section-id="links"
-              className="scroll-mt-24"
+              className="scroll-mt-[200px]"
             >
-              <Card
-                className="rounded-2xl shadow-none"
-                style={{ backgroundColor: "var(--color-surface)" }}
-              >
+              <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
                 <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center justify-between text-sm font-semibold text-[var(--color-text)]">
+                  <CardTitle className="flex items-center justify-between text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
                     <span>Links</span>
                     <button
                       type="button"
                       onClick={() => setAddOpen(true)}
-                      className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold shadow-[0_2px_0_#000000] transition hover:-translate-y-0.5"
-                      style={{ backgroundColor: "#d9ff2f", color: "#050505" }}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-[9px] bg-[#151619] px-3.5 text-[14px] font-medium text-white transition-colors hover:bg-[#2B2D31]"
                     >
-                      <span className="text-lg leading-none">+</span>
+                      <Plus className="h-4 w-4" />
                       <span>Add</span>
                     </button>
                   </CardTitle>
@@ -1052,10 +1069,9 @@ const buttonBaseStyles = useMemo(() => {
                       onDragOver={handleLinkDragOver}
                       onDrop={(e) => handleLinkDrop(e, link.id)}
                       className={cn(
-                        "rounded-[26px] px-5 py-5 min-h-[120px] transition space-y-3",
+                        "rounded-[14px] border border-[#E3E5E7] bg-white px-4 py-4 transition-[opacity,border-color] space-y-2 hover:border-[#CDD1D7]",
                         draggingLinkId === link.id ? "opacity-70" : "opacity-100",
                       )}
-                      style={{ backgroundColor: "var(--color-bg)" }}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3">
@@ -1103,7 +1119,7 @@ const buttonBaseStyles = useMemo(() => {
                             }
                             className={cn(
                               "relative inline-flex h-6 w-11 items-center rounded-full border transition-all",
-                              link.enabled ? "bg-[#050505]" : "bg-[#e4e2dd]",
+                              link.enabled ? "bg-[#050505]" : "bg-[#DCDFE3]",
                             )}
                             style={{
                               borderColor: link.enabled ? "#050505" : "transparent",
@@ -1121,13 +1137,7 @@ const buttonBaseStyles = useMemo(() => {
                       </div>
 
                       <div className="flex items-center justify-between pt-1">
-                        <div
-                          className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px]"
-                          style={{ color: "var(--color-subtle)" }}
-                        >
-                          <BarChart3 className="h-4 w-4" />
-                          <span>0 clicks</span>
-                        </div>
+                        <span className="text-[12px] text-[#A2A6AC]">{link.enabled ? "Shown on your Card" : "Hidden"}</span>
                         <button
                           type="button"
                           onClick={() =>
@@ -1135,7 +1145,7 @@ const buttonBaseStyles = useMemo(() => {
                               prev.filter((l) => l.id !== link.id),
                             )
                           }
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--color-subtle)] hover:bg-[#f3eee7]"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--color-subtle)] hover:bg-[#F1F2F4]"
                           aria-label="Delete link"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -1178,7 +1188,7 @@ const buttonBaseStyles = useMemo(() => {
                             setContact((prev) => ({ ...prev, enabled: false }));
                             toast("Message button removed");
                           }}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-black/45 hover:bg-[#f3eee7]"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-black/45 hover:bg-[#F1F2F4]"
                           aria-label="Remove message button"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -1198,7 +1208,7 @@ const buttonBaseStyles = useMemo(() => {
                                 buttonLabel: e.target.value,
                               }))
                             }
-                            className="h-11 rounded-[18px] border-black/10 bg-[#f6f4f0] text-[13px]"
+                            className="h-11 rounded-[18px] border-black/10 bg-[#F5F6F7] text-[13px]"
                             placeholder="Message me"
                           />
                         </div>
@@ -1212,7 +1222,7 @@ const buttonBaseStyles = useMemo(() => {
                             <button
                               type="button"
                               onClick={() => setIntentOpen(true)}
-                              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[#f6f4f0] px-3 py-2 text-[12px] font-semibold text-[#050505] transition hover:bg-white hover:shadow-sm"
+                              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[#F5F6F7] px-3 py-2 text-[12px] font-semibold text-[#050505] transition hover:bg-white"
                             >
                               <span className="text-[14px] leading-none">+</span>
                               Add option
@@ -1235,8 +1245,8 @@ const buttonBaseStyles = useMemo(() => {
                                 className={[
                                   "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[12px] font-medium transition",
                                   opt.enabled
-                                    ? "border-black/10 bg-white text-[#050505] hover:shadow-sm"
-                                    : "border-black/10 bg-[#f6f4f0] text-black/45 hover:bg-white",
+                                    ? "border-black/10 bg-white text-[#050505]"
+                                    : "border-black/10 bg-[#F5F6F7] text-black/45 hover:bg-white",
                                 ].join(" ")}
                               >
                                 <span
@@ -1278,6 +1288,34 @@ const buttonBaseStyles = useMemo(() => {
               </Card>
             </section>
 
+            {/* Contact card download */}
+            <section aria-label="Save contact details">
+              <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-[16px] font-medium tracking-[-0.02em] text-[#151619]">
+                    <Contact className="h-4 w-4 text-[#80858C]" /> Save contact
+                  </CardTitle>
+                  <CardDescription className="text-[13px] text-[#80858C]">
+                    Visitors can download these as a contact card. Leave them blank to hide the button.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {(["email", "phone", "company"] as const).map((field) => (
+                      <label key={field} className="text-[13px] font-medium capitalize text-[#3C4045]">
+                        {field}
+                        <input
+                          className="mt-1.5 h-11 w-full rounded-[10px] border border-[#E3E5E7] bg-white px-3 text-[15px] font-normal normal-case outline-none transition-colors focus:border-[#80858C]"
+                          type={field === "email" ? "email" : field === "phone" ? "tel" : "text"}
+                          value={contactDetails[field] || ""}
+                          onChange={(e) => setContactDetails((prev) => ({ ...prev, [field]: e.target.value }))}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
           </div>
 
           {addOpen && (
@@ -1289,7 +1327,7 @@ const buttonBaseStyles = useMemo(() => {
                 className="absolute inset-0 bg-black/40"
               />
 
-              <div className="relative w-full max-w-[420px] rounded-[32px] bg-white p-5 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+              <div className="relative w-full max-w-[420px] rounded-[32px] bg-white p-5 border border-[#E3E5E7]">
                 <button
                   type="button"
                   onClick={() => setAddOpen(false)}
@@ -1315,7 +1353,7 @@ const buttonBaseStyles = useMemo(() => {
                       addLink();
                       setAddOpen(false);
                     }}
-                    className="w-full rounded-[22px] border border-black/10 bg-[#f6f4f0] px-4 py-4 text-left hover:bg-white hover:shadow-sm transition"
+                    className="w-full rounded-[22px] border border-black/10 bg-[#F5F6F7] px-4 py-4 text-left hover:bg-white transition"
                   >
                     <div className="text-[13px] font-semibold text-[#050505]">Link</div>
                     <div className="mt-1 text-[11px] text-black/55">Add a normal link button.</div>
@@ -1328,7 +1366,7 @@ const buttonBaseStyles = useMemo(() => {
                       setAddOpen(false);
                       toast.success("Contact button added");
                     }}
-                    className="w-full rounded-[22px] border border-black/10 bg-[#f6f4f0] px-4 py-4 text-left hover:bg-white hover:shadow-sm transition"
+                    className="w-full rounded-[22px] border border-black/10 bg-[#F5F6F7] px-4 py-4 text-left hover:bg-white transition"
                   >
                     <div className="text-[13px] font-semibold text-[#050505]">Contact Button</div>
                     <div className="mt-1 text-[11px] text-black/55">Let visitors message you.</div>
@@ -1339,157 +1377,87 @@ const buttonBaseStyles = useMemo(() => {
           )}
 
 
-          {/* RIGHT: Frozen preview (320 × 680, responsive) */}
-          <aside className="hidden w-[360px] shrink-0 lg:block">
-            <div className="sticky top-20 flex justify-end">
-              <div className="flex flex-col items-center">
-                <KCardPreview
-                  contact={contact}
-                  wallpaperStyle={wallpaperStyle}
-                  pageBackground={pageBackground}
-                  previewTitleFont={previewTitleFont}
-                  previewBodyFont={previewBodyFont}
-                  title={title}
-                  subtitle={subtitle}
-                  titleColor={titleColor}
-                  pageTextColor={pageTextColor}
-                  titleSize={titleSize}
-                  _profileLayout={profileLayout}
-                  avatarPreview={avatarPreview}
-                  socials={socials}
-                  socialUrls={socialUrls}
-                  visibleLinks={visibleLinks}
-                  buttonBaseStyles={buttonBaseStyles}
-                  avatarSize={avatarSize}
-                  headerTextSize={headerTextSize}
-                  avatarShadow={avatarShadow}
-                />
-
-                {/* Share K-Card controls under the preview */}
-                <div className="mt-4 flex w-full flex-col items-center relative">
-                  <button
-                    ref={shareTriggerRef}
-                    type="button"
-                    onClick={() => setShareOpen((v) => !v)}
-                    className="group inline-flex w-full items-center justify-between rounded-full bg-white px-4 py-2.5 text-[11px] font-medium border border-black/5 hover:bg-[#f5f3ee] transition"
-                  >
-                    <div className="flex min-w-0 flex-1 items-center justify-center">
-                      <span
-                        className="truncate text-[11px]"
-                        style={{ color: "#050505" }}
-                      >
-                        {baseUrl.replace(/^https?:\/\//, "")}/k/{visualSlug}
-                      </span>
-                    </div>
-
-                    <span className="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#050505] text-white transition group-hover:scale-105">
-                      <Share2 className="h-3.5 w-3.5" />
-                    </span>
-                  </button>
-
-                  {shareOpen && (
-                    <div
-                      ref={sharePanelRef}
-                      className="absolute bottom-[64px] z-30 w-[360px] max-w-[90vw]"
-                    >
-                      <div
-                        className="relative rounded-[32px] px-5 py-5 shadow-[0_14px_40px_rgba(15,23,42,0.24)]"
-                        style={{
-                          backgroundColor: "#ffffff",
-                          borderColor: "transparent",
-                        }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setShareOpen(false)}
-                          className="absolute right-4 top-4 text-[18px] leading-none"
-                          style={{ color: "var(--color-subtle)" }}
-                          aria-label="Close"
-                        >
-                          ×
-                        </button>
-
-                        <div className="mb-5 text-center">
-                          <p
-                            className="text-[15px] font-semibold tracking-tight"
-                            style={{ color: "#050505" }}
-                          >
-                            Share you Kard.
-                          </p>
-                        </div>
-
-                        <div
-                          className="mb-4 flex items-center gap-3 rounded-[999px] px-4 py-3"
-                          style={{ backgroundColor: "#f6f4f0" }}
-                        >
-                          <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white shadow-[0_8px_18px_rgba(15,23,42,0.25)]">
-                            {avatarPreview ? (
-                              <img
-                                src={avatarPreview}
-                                alt="Profile preview"
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <UserCircle2 className="h-6 w-6" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className="truncate text-[13px] font-semibold"
-                              style={{ color: "#050505" }}
-                            >
-                              {title || "@yourname"}
-                            </p>
-                            <p
-                              className="truncate text-[11px]"
-                              style={{ color: "#8a8680" }}
-                            >
-                              {subtitle || "Tell people what you do"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={copyPublicUrl}
-                          className="mt-1 flex w-full items-center justify-between rounded-[999px] px-6 py-3.5"
-                          style={{
-                            backgroundColor: "#d9ff2f",
-                            color: "#050505",
-                          }}
-                        >
-                          <span className="truncate text-[13px] font-normal">
-                            {shareDisplayUrl
-                              .replace(/^https?:\/\//, "")
-                              .replace(/\/$/, "")}
-                          </span>
-                          <Copy className="ml-3 h-4 w-4" />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => shareComingSoon("Social")}
-                          className="mt-6 flex w-full items-center justify-between px-1 py-1 text-[13px]"
-                          style={{ color: "#050505" }}
-                        >
-                          <span className="inline-flex items-center gap-2">
-                            <UploadCloud className="h-4 w-4" />
-                            <span>Share to...</span>
-                          </span>
-                          <span className="text-lg leading-none">&gt;</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+          {/* Live preview */}
+          <aside className="hidden xl:block" aria-label="Live preview">
+            <div className="sticky top-[196px] rounded-[16px] border border-[#E3E5E7] bg-[#F5F6F7]">
+              <div className="flex items-center justify-between border-b border-[#E3E5E7] px-4 py-3 text-[13px]">
+                <span className="flex items-center gap-2 font-medium text-[#3C4045]">
+                  <Eye className="h-4 w-4 text-[#80858C]" /> Live preview
+                </span>
+                <span className="text-[#A2A6AC]">Updates as you edit</span>
+              </div>
+              <div className="flex justify-center px-4 py-5">{previewNode}</div>
+              <div className="flex items-center gap-2 border-t border-[#E3E5E7] px-3 py-2.5">
+                <span className="min-w-0 flex-1 truncate px-1 text-[13px] text-[#5A5E65]">{shareDisplayUrl.replace(/^https?:\/\//, "")}</span>
+                <button type="button" onClick={copyPublicUrl} className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[#E3E5E7] bg-white px-2.5 text-[13px] font-medium hover:border-[#CDD1D7]">
+                  <Copy className="h-3.5 w-3.5" /> Copy
+                </button>
               </div>
             </div>
           </aside>
-        </div>
       </div>
+
+      {/* Mobile preview */}
+      <button
+        type="button"
+        onClick={() => setPreviewOpen(true)}
+        className="fixed bottom-24 right-4 z-30 inline-flex h-11 items-center gap-2 rounded-full bg-[#151619] px-4 text-[14px] font-medium text-white xl:hidden"
+      >
+        <Eye className="h-4 w-4" /> Preview
+      </button>
+      <AnimatePresence>
+        {previewOpen && (
+          <motion.div
+            className="fixed inset-0 z-[70] flex flex-col items-center justify-center gap-4 bg-[#151619]/60 p-6 xl:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setPreviewOpen(false)}
+          >
+            <motion.div initial={{ y: 24, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 16, opacity: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} onClick={(e) => e.stopPropagation()}>
+              <KCardPreview
+                className="![width:min(340px,calc((100vh-160px)*0.4706),calc(100vw-48px))]"
+                contact={contact}
+                wallpaperStyle={wallpaperStyle}
+                pageBackground={pageBackground}
+                previewTitleFont={previewTitleFont}
+                previewBodyFont={previewBodyFont}
+                title={title}
+                subtitle={subtitle}
+                titleColor={titleColor}
+                pageTextColor={pageTextColor}
+                titleSize={titleSize}
+                _profileLayout={profileLayout}
+                avatarPreview={avatarPreview}
+                socials={socials}
+                socialUrls={socialUrls}
+                visibleLinks={visibleLinks}
+                buttonBaseStyles={buttonBaseStyles}
+                avatarSize={avatarSize}
+                headerTextSize={headerTextSize}
+                avatarShadow={avatarShadow}
+              />
+            </motion.div>
+            <button type="button" onClick={() => setPreviewOpen(false)} className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-[14px] font-medium text-[#151619]">
+              <X className="h-4 w-4" /> Close preview
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
+/** Neutral palette for the editor chrome (matches the dashboard), overriding the beige site tokens. */
+const EDITOR_VARS = {
+  "--color-bg": "#F5F6F7",
+  "--color-surface": "#ffffff",
+  "--color-border": "#E3E5E7",
+  "--color-text": "#151619",
+  "--color-subtle": "#696C72",
+  "--color-accent": "#FBE4FA",
+  "--color-accent-soft": "#FDF3FC",
+} as React.CSSProperties;
 
 /* ---------- Sections ---------- */
 
@@ -2164,7 +2132,7 @@ function TextSection({
     <div className="space-y-8">
       {/* Title font row */}
       <div className="space-y-3">
-        <p className="text-base font-semibold text-[var(--color-text)]">
+        <p className="text-[14px] font-medium text-[#3C4045]">
           Title Font
         </p>
         <div className="flex flex-wrap gap-4">
@@ -2181,8 +2149,8 @@ function TextSection({
                 className={cn(
                   "min-w-[120px] rounded-[18px] border px-6 py-3 text-sm tracking-[0.02em] transition",
                   active
-                    ? "border-black bg-white shadow-[0_2px_0_#000000]"
-                    : "border-transparent bg-[#e9e6e1] text-[#555555]",
+                    ? "border-black bg-white"
+                    : "border-[#E3E5E7] bg-white text-[#5A5E65] hover:border-[#CDD1D7]",
                   isDisplay && "font-semibold",
                   isSerif && "font-serif"
                 )}
@@ -2196,7 +2164,7 @@ function TextSection({
 
       {/* Page font row */}
       <div className="space-y-3">
-        <p className="text-base font-semibold text-[var(--color-text)]">
+        <p className="text-[14px] font-medium text-[#3C4045]">
           Page Font
         </p>
         <div className="flex flex-wrap gap-4">
@@ -2213,8 +2181,8 @@ function TextSection({
                 className={cn(
                   "min-w-[120px] rounded-[18px] border px-6 py-3 text-sm tracking-[0.02em] transition",
                   active
-                    ? "border-black bg-white shadow-[0_2px_0_#000000]"
-                    : "border-transparent bg-[#e9e6e1] text-[#555555]",
+                    ? "border-black bg-white"
+                    : "border-[#E3E5E7] bg-white text-[#5A5E65] hover:border-[#CDD1D7]",
                   isDisplay && "font-semibold",
                   isSerif && "font-serif"
                 )}
@@ -2229,7 +2197,7 @@ function TextSection({
       {/* Colors */}
       <div className="space-y-6 pt-2">
         <div className="flex items-center justify-between gap-4">
-          <p className="text-base font-semibold text-[var(--color-text)]">
+          <p className="text-[14px] font-medium text-[#3C4045]">
             Title Color
           </p>
           <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
@@ -2247,7 +2215,7 @@ function TextSection({
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <p className="text-base font-semibold text-[var(--color-text)]">
+          <p className="text-[14px] font-medium text-[#3C4045]">
             Page Text Color
           </p>
           <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
@@ -2297,7 +2265,7 @@ function ButtonsSection({
     <div className="space-y-8">
       {/* Style row */}
       <div className="space-y-3">
-        <p className="text-base font-semibold text-[var(--color-text)]">
+        <p className="text-[14px] font-medium text-[#3C4045]">
           Style
         </p>
         <div className="flex flex-wrap gap-4">
@@ -2314,8 +2282,8 @@ function ButtonsSection({
                 className={cn(
                   "min-w-[120px] rounded-[18px] border px-6 py-3 text-sm font-medium tracking-[0.02em] transition",
                   active
-                    ? "border-black bg-white shadow-[0_2px_0_#000000]"
-                    : "border-transparent bg-[#e9e6e1] text-[#555555]"
+                    ? "border-black bg-white"
+                    : "border-[#E3E5E7] bg-white text-[#5A5E65] hover:border-[#CDD1D7]"
                 )}
               >
                 {label}
@@ -2327,7 +2295,7 @@ function ButtonsSection({
 
       {/* Shadows row */}
       <div className="space-y-3">
-        <p className="text-base font-semibold text-[var(--color-text)]">
+        <p className="text-[14px] font-medium text-[#3C4045]">
           Shadows
         </p>
         <div className="flex flex-wrap gap-4">
@@ -2350,8 +2318,8 @@ function ButtonsSection({
                 className={cn(
                   "min-w-[96px] rounded-[18px] border px-6 py-3 text-sm font-medium tracking-[0.02em] transition",
                   active
-                    ? "border-black bg-white shadow-[0_2px_0_#000000]"
-                    : "border-transparent bg-[#e9e6e1] text-[#555555]"
+                    ? "border-black bg-white"
+                    : "border-[#E3E5E7] bg-white text-[#5A5E65] hover:border-[#CDD1D7]"
                 )}
               >
                 {label}
@@ -2363,12 +2331,12 @@ function ButtonsSection({
 
       {/* Corners slider */}
       <div className="space-y-3">
-        <p className="text-base font-semibold text-[var(--color-text)]">
+        <p className="text-[14px] font-medium text-[#3C4045]">
           Corners
         </p>
         <div className="flex items-center gap-3">
           <span className="text-sm text-[var(--color-text)]">Square</span>
-          <div className="flex-1 rounded-full bg-[#e0ded9] px-3 py-2">
+          <div className="flex-1 rounded-full bg-[#ECEEF0] px-3 py-2">
             <input
               type="range"
               min={0}
@@ -2376,7 +2344,7 @@ function ButtonsSection({
               value={buttonRadius}
               onChange={(e) => setButtonRadius(Number(e.target.value))}
               className="w-full"
-              style={{ accentColor: "#d9ff2f" }}
+              style={{ accentColor: "#151619" }}
             />
           </div>
           <span className="text-sm text-[var(--color-text)]">Round</span>
@@ -2386,7 +2354,7 @@ function ButtonsSection({
       {/* Colors */}
       <div className="space-y-6 pt-2">
         <div className="flex items-center justify-between gap-4">
-          <p className="text-base font-semibold text-[var(--color-text)]">
+          <p className="text-[14px] font-medium text-[#3C4045]">
             Button Color
           </p>
           <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
@@ -2404,7 +2372,7 @@ function ButtonsSection({
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <p className="text-base font-semibold text-[var(--color-text)]">
+          <p className="text-[14px] font-medium text-[#3C4045]">
             Button Text Color
           </p>
           <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
@@ -2449,7 +2417,7 @@ function ColorsSection({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-base font-semibold text-[var(--color-text)]">
+        <p className="text-[14px] font-medium text-[#3C4045]">
           Title Color
         </p>
         <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
@@ -2467,7 +2435,7 @@ function ColorsSection({
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <p className="text-base font-semibold text-[var(--color-text)]">
+        <p className="text-[14px] font-medium text-[#3C4045]">
           Page Text Color
         </p>
         <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
@@ -2485,7 +2453,7 @@ function ColorsSection({
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <p className="text-base font-semibold text-[var(--color-text)]">
+        <p className="text-[14px] font-medium text-[#3C4045]">
           Buttons
         </p>
         <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
@@ -2503,7 +2471,7 @@ function ColorsSection({
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <p className="text-base font-semibold text-[var(--color-text)]">
+        <p className="text-[14px] font-medium text-[#3C4045]">
           Button Text
         </p>
         <label className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center">
