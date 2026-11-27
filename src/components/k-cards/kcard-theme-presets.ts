@@ -30,6 +30,8 @@ export type KCardThemeState = {
   pageFont: KCardFontToken;
 
   curated?: boolean;
+  /** Show each link's site logo inside its button. */
+  linkIcons?: boolean;
 };
 
 // Full presets

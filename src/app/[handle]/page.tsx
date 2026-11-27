@@ -184,6 +184,7 @@ export default async function PublicHandlePage({ params }: PageProps) {
             avatarSize={avatarSize}
             headerTextSize={headerTextSize}
             avatarShadow={avatarShadow}
+            linkIcons={Boolean(theme.linkIcons)}
           />
 
           <CardViewTracker slug={handle} />
