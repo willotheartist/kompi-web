@@ -20,6 +20,8 @@ import {
   Mail,
   Globe2,
   Pencil,
+  Share,
+  Check,
 } from "lucide-react";
 import { LinkLogo } from "./LinkLogo";
 
@@ -36,6 +38,44 @@ const SOCIAL_ICON_MAP: Record<
   Email: Mail,
   Website: Globe2,
 };
+
+/** Linktree-style corner buttons: Kompi badge (free plans) and Share. */
+function CardTopBar({ showKompiBadge, shareUrl, title }: { showKompiBadge?: boolean; shareUrl?: string; title: string }) {
+  const [copied, setCopied] = useState(false);
+  async function share() {
+    const url = shareUrl || (typeof window !== "undefined" ? window.location.href : "");
+    if (!url) return;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: title || "Kompi", url });
+        return;
+      }
+    } catch {
+      return; // share sheet dismissed
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {}
+  }
+  const chip = "grid size-11 place-items-center rounded-full bg-white/90 text-[#151619] transition-transform hover:scale-105 active:scale-95";
+  return (
+    <div className="mb-6 flex h-11 items-center justify-between" style={{ fontFamily: "var(--font-primary, system-ui), system-ui, sans-serif" }}>
+      {showKompiBadge ? (
+        <a href="https://kompi.app" target="_blank" rel="noreferrer" className={cn(chip, "text-[17px] font-semibold tracking-[-0.06em]")} aria-label="Made with Kompi">
+          K.
+        </a>
+      ) : (
+        <span />
+      )}
+      <button type="button" onClick={share} className={cn(chip, "relative")} aria-label="Share this Card">
+        {copied ? <Check className="h-[18px] w-[18px]" /> : <Share className="h-[18px] w-[18px]" />}
+        {copied && <span className="absolute right-0 top-12 whitespace-nowrap rounded-full bg-[#151619] px-2.5 py-1 text-[12px] font-medium text-white">Link copied</span>}
+      </button>
+    </div>
+  );
+}
 
 export type KCardEditTarget = { type: "header" } | { type: "link"; id: string } | { type: "message" };
 
@@ -89,6 +129,12 @@ type KCardPreviewProps = {
   onEdit?: (target: KCardEditTarget) => void;
   /** Editor only: element the message window renders into (the phone screen). */
   overlayTarget?: HTMLElement | null;
+  /** Kompi badge in the top corner (free plans). */
+  showKompiBadge?: boolean;
+  /** Address the share button shares or copies. */
+  shareUrl?: string;
+  /** Extra content at the bottom of the Card (e.g. Save contact). */
+  footer?: React.ReactNode;
   /** slug of the public K-Card, used for analytics */
   slug?: string;
   className?: string;
@@ -120,6 +166,9 @@ export function KCardPreview({
   linkIcons,
   onEdit,
   overlayTarget,
+  showKompiBadge,
+  shareUrl,
+  footer,
 }: KCardPreviewProps) {
   const isDevice = variant === "device";
 
@@ -131,18 +180,18 @@ export function KCardPreview({
   // buttons are larger there than in the old miniature preview.
   const fullSize = variant === "public" || variant === "device";
   const avatarSizeClass = fullSize
-    ? avatarSize === "small" ? "h-16 w-16" : avatarSize === "medium" ? "h-20 w-20" : "h-24 w-24"
+    ? avatarSize === "small" ? "h-20 w-20" : avatarSize === "medium" ? "h-24 w-24" : "h-28 w-28"
     : avatarSize === "small" ? "h-14 w-14" : avatarSize === "medium" ? "h-16 w-16" : "h-20 w-20";
 
   const titleSizeClass = fullSize
-    ? headerTextSize === "small" ? "text-base" : headerTextSize === "medium" ? "text-lg" : "text-xl"
+    ? headerTextSize === "small" ? "text-xl" : headerTextSize === "medium" ? "text-2xl" : "text-[28px]"
     : headerTextSize === "small" ? "text-sm" : headerTextSize === "medium" ? "text-base" : "text-lg";
 
   const subtitleSizeClass = fullSize
-    ? headerTextSize === "small" ? "text-[12px]" : headerTextSize === "medium" ? "text-[13px]" : "text-[15px]"
+    ? headerTextSize === "small" ? "text-[14px]" : headerTextSize === "medium" ? "text-[15px]" : "text-[17px]"
     : headerTextSize === "small" ? "text-[10px]" : headerTextSize === "medium" ? "text-[11px]" : "text-sm";
 
-  const buttonSizeClass = fullSize ? "min-h-[52px] py-3 text-[14px]" : "py-2.5 text-[11px]";
+  const buttonSizeClass = fullSize ? "min-h-[58px] py-3 text-[16px]" : "py-2.5 text-[11px]";
 
   const headerMarginTop = headerTextSize === "large" ? "mt-2" : "mt-1";
 
@@ -190,12 +239,12 @@ export function KCardPreview({
 
   return (
     <div
-      className={cn("relative", isDevice && "flex min-h-full w-full flex-col", isPublic && "flex min-h-[min(680px,85vh)] flex-col", className)}
+      className={cn("relative", isDevice && "flex min-h-full w-full flex-col", isPublic && "flex min-h-full w-full flex-1 flex-col", className)}
       style={
         isDevice
           ? undefined
           : isPublic
-          ? { width: "min(480px, 100%)", maxWidth: "100%" }
+          ? undefined
           : {
               // builder: small phone preview used in UI
               // public: full-width card like Linktree
@@ -206,18 +255,20 @@ export function KCardPreview({
       }
     >
       <div
-        className={isDevice ? "flex flex-1 flex-col" : isPublic ? "flex flex-1 flex-col rounded-[32px]" : "absolute inset-0 rounded-[32px]"}
+        className={isDevice ? "flex flex-1 flex-col" : isPublic ? "flex flex-1 flex-col" : "absolute inset-0 rounded-[32px]"}
         style={cardBackgroundStyle}
       >
         <div
           className={cn(
             "flex w-full flex-col gap-0 px-6 pb-6",
-            isDevice ? "flex-1 pt-[72px]" : isPublic ? "flex-1 rounded-[32px] pt-12" : "h-full overflow-hidden rounded-[32px] pt-10",
+            isDevice ? "flex-1 pt-12" : isPublic ? "flex-1 px-5 pt-5 sm:px-10 sm:pt-7" : "h-full overflow-hidden rounded-[32px] pt-10",
             previewBodyFont
           )}
         >
+          {fullSize && <CardTopBar showKompiBadge={showKompiBadge} shareUrl={shareUrl} title={title} />}
+
           {/* header */}
-          <EditSpot label="Edit profile" onEdit={onEdit ? () => onEdit({ type: "header" }) : undefined} className="mb-5">
+          <EditSpot label="Edit profile" onEdit={onEdit ? () => onEdit({ type: "header" }) : undefined} className={fullSize ? "mb-8" : "mb-5"}>
           <div
             className={cn(
               "flex flex-col items-center gap-3.5 text-center",
@@ -265,7 +316,7 @@ export function KCardPreview({
           </EditSpot>
 
           {/* socials */}
-          <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
+          <div className={cn("flex flex-wrap items-center justify-center gap-2", fullSize ? "mb-6" : "mb-4")}>
             {socials.map((s) => {
               const Icon = SOCIAL_ICON_MAP[s];
               if (!Icon) return null;
@@ -285,7 +336,7 @@ export function KCardPreview({
           </div>
 
           {/* links */}
-          <div className={fullSize ? "space-y-3" : "space-y-2"}>
+          <div className={fullSize ? "space-y-3.5" : "space-y-2"}>
             {visibleLinks.length === 0 ? (
               <div className="rounded-full border border-dashed border-white/20 bg-black/30 px-4 py-2 text-center text-[11px] text-white/60">
                 Add a link below to see it here.
@@ -296,9 +347,9 @@ export function KCardPreview({
                 const content = (
                   <>
                     {linkIcons && (
-                      <LinkLogo url={link.url} size={fullSize ? 34 : 24} className="absolute left-1.5 top-1/2 -translate-y-1/2 rounded-full border-0 bg-white" />
+                      <LinkLogo url={link.url} size={fullSize ? 42 : 24} className={cn("absolute left-2 top-1/2 -translate-y-1/2 border-0 bg-white", fullSize ? "rounded-[10px]" : "rounded-full")} />
                     )}
-                    <span className={cn("truncate", linkIcons && (fullSize ? "px-9" : "px-7"))}>{link.title || "Untitled link"}</span>
+                    <span className={cn("truncate", linkIcons && (fullSize ? "px-12" : "px-7"))}>{link.title || "Untitled link"}</span>
                   </>
                 );
 
@@ -389,9 +440,13 @@ export function KCardPreview({
           </div>
 
           {/* footer */}
-          <div className="mt-auto pt-6 text-center text-[10px] text-white/40">
-            {slug ? `kompi.app/${slug}` : "kompi.app/yourcard"}
-          </div>
+          {fullSize ? (
+            <div className="mt-auto flex flex-col items-center gap-3 pb-4 pt-12">{footer}</div>
+          ) : (
+            <div className="mt-auto pt-6 text-center text-[10px] text-white/40">
+              {slug ? `kompi.app/${slug}` : "kompi.app/yourcard"}
+            </div>
+          )}
         </div>
       </div>
     </div>
