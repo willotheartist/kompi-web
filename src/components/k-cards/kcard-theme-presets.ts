@@ -1,5 +1,7 @@
 // src/components/k-cards/kcard-theme-presets.ts
 
+import type { KCardSticker } from "./kcard-stickers";
+
 export type KCardFontToken =
   | "system"
   | "serif"
@@ -32,6 +34,8 @@ export type KCardThemeState = {
   buttonRadius: number;
   buttonStyle: KCardButtonStyle;
   buttonShadow: KCardButtonShadow;
+  /** Solid buttons: border colour (defaults to a dark hairline). */
+  buttonBorder?: string;
 
   titleFont: KCardFontToken;
   pageFont: KCardFontToken;
@@ -41,6 +45,8 @@ export type KCardThemeState = {
   linkIcons?: boolean;
   /** Pro skin (see kcard-skins). */
   skin?: KCardSkin;
+  /** Stickers placed on the Card. */
+  stickers?: KCardSticker[];
   /** Pro: show the verified badge next to the name (default on for Pro). */
   verified?: boolean;
 };

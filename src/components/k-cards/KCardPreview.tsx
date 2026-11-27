@@ -27,6 +27,8 @@ import { LinkLogo } from "./LinkLogo";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { SkinBackdrop, SkinBioSuffix, SkinFooter, SkinHeader, skinButton, skinSizes, skinTitleStyle } from "./kcard-skins";
 import type { KCardSkin } from "./kcard-theme-presets";
+import type { KCardSticker } from "./kcard-stickers";
+import { StickerLayer } from "./StickerLayer";
 
 const SOCIAL_ICON_MAP: Record<
   string,
@@ -132,6 +134,10 @@ type KCardPreviewProps = {
   skin?: KCardSkin;
   /** Pro: blue verified badge next to the name. */
   verified?: boolean;
+  /** Stickers placed on the Card. */
+  stickers?: KCardSticker[];
+  /** Editor only: makes stickers draggable, resizable and rotatable. */
+  onStickersChange?: (next: KCardSticker[]) => void;
   /** Editor only: makes parts of the Card clickable to jump to their settings. */
   onEdit?: (target: KCardEditTarget) => void;
   /** Editor only: element the message window renders into (the phone screen). */
@@ -173,6 +179,8 @@ export function KCardPreview({
   linkIcons,
   skin,
   verified,
+  stickers,
+  onStickersChange,
   onEdit,
   overlayTarget,
   showKompiBadge,
@@ -292,6 +300,9 @@ export function KCardPreview({
             previewBodyFont
           )}
         >
+          {/* Inner column, so sticker positions are measured from the same point on every page. */}
+          <div className="relative flex flex-1 flex-col">
+          {stickers && stickers.length > 0 && <StickerLayer stickers={stickers} onChange={onStickersChange} scale={fullSize ? 1 : 0.6} />}
           {fullSize && <CardTopBar showKompiBadge={showKompiBadge} shareUrl={shareUrl} title={title} />}
 
           {/* header */}
@@ -475,6 +486,7 @@ export function KCardPreview({
               {slug ? `kompi.app/${slug}` : "kompi.app/yourcard"}
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
