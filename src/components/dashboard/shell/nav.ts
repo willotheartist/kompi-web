@@ -7,7 +7,10 @@ import {
   Inbox,
   Link2,
   QrCode,
+  Receipt,
   Settings,
+  ShoppingBag,
+  Wallet,
   ShieldCheck,
   UserRound,
   type LucideIcon,
@@ -36,6 +39,14 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/dashboard/cards", label: "Kompi Cards", short: "Cards", icon: IdCard, match: ["/k-cards", "/dashboard/k-cards"], keywords: "profile bio card" },
       { href: "/kr-codes/your", label: "QR Codes", short: "QR", icon: QrCode, match: ["/kr-codes"], keywords: "qr kr code scan" },
       { href: "/links", label: "Short Links", short: "Links", icon: Link2, match: ["/dashboard/links"], keywords: "url shorten redirect" },
+    ],
+  },
+  {
+    label: "Earn",
+    items: [
+      { href: "/dashboard/earn/products", label: "Products", short: "Store", icon: ShoppingBag, keywords: "store shop sell digital download booking tip lead magnet" },
+      { href: "/dashboard/earn/orders", label: "Orders", icon: Receipt, keywords: "sales purchases bookings customers" },
+      { href: "/dashboard/earn/payouts", label: "Payouts", icon: Wallet, keywords: "stripe bank money earnings connect" },
     ],
   },
   {

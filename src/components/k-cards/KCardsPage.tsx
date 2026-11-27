@@ -39,6 +39,7 @@ import {
   UserCircle2,
   Palette,
   Sticker as StickerIcon,
+  ShoppingBag,
   Type,
   Square,
   Link2,
@@ -88,6 +89,7 @@ import { useUndoHistory } from "./use-undo-history";
 import { kcardButtonStyles, isPaidPlan } from "./kcard-style";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { StickerPanel } from "./StickerPanel";
+import { CardProductsPanel, type CardProduct } from "./CardProductsPanel";
 import type { KCardSticker } from "./kcard-stickers";
 import { useWorkspaceSummary } from "@/components/dashboard/shell/use-workspace-summary";
 
@@ -98,7 +100,8 @@ type DesignSection =
   | "text"
   | "buttons"
   | "colors"
-  | "links";
+  | "links"
+  | "products";
 
 const SECTION_LABELS: Record<DesignSection, string> = {
   header: "Header",
@@ -108,6 +111,7 @@ const SECTION_LABELS: Record<DesignSection, string> = {
   buttons: "Buttons",
   colors: "Colors",
   links: "Links",
+  products: "Products",
 };
 
 const SECTION_ICONS: Record<
@@ -121,6 +125,7 @@ const SECTION_ICONS: Record<
   buttons: Square,
   colors: Palette,
   links: Link2,
+  products: ShoppingBag,
 };
 
 const FONT_OPTIONS = [
@@ -218,7 +223,7 @@ export type KCardsInitialData = {
   avatarShadow?: "shadow" | "flat";
   contact?: KCardContact;
   contactDetails?: { email: string; phone: string; company?: string };
-
+  products?: string[];
 };
 
 type KCardsPageProps = {
@@ -229,6 +234,18 @@ type KCardsPageProps = {
 
 export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageProps) {
   const [contactDetails, setContactDetails] = useState(initialData?.contactDetails || { email: "", phone: "", company: "" });
+  const [cardProducts, setCardProducts] = useState<string[]>(Array.isArray(initialData?.products) ? initialData!.products! : []);
+  const [storeProducts, setStoreProducts] = useState<CardProduct[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    fetch("/api/store/products")
+      .then((r) => (r.ok ? r.json() : { products: [] }))
+      .then((j) => live && setStoreProducts(Array.isArray(j.products) ? j.products : []))
+      .catch(() => live && setStoreProducts([]));
+    return () => {
+      live = false;
+    };
+  }, []);
   // which section is currently "active" for the left nav
   const [activeSection, setActiveSection] =
     useState<DesignSection>("header");
@@ -243,6 +260,7 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
   const buttonsRef = useRef<HTMLElement | null>(null);
   const colorsRef = useRef<HTMLElement | null>(null);
   const linksRef = useRef<HTMLElement | null>(null);
+  const productsRef = useRef<HTMLElement | null>(null);
 
 
   const sectionRefs = useMemo<
@@ -256,6 +274,7 @@ export default function KCardsPage({ initialData, baseUrl, cardId }: KCardsPageP
       buttons: buttonsRef,
       colors: colorsRef,
       links: linksRef,
+      products: productsRef,
     }),
     [],
   );
@@ -645,6 +664,7 @@ const showVerified = isPro && theme.verified !== false;
       avatarShadow,
       contact,
       contactDetails,
+      products: cardProducts,
     };
 
     if (saveTimeoutRef.current) {
@@ -692,7 +712,8 @@ const showVerified = isPro && theme.verified !== false;
     avatarShadow,
     cardId,
     contactDetails,
-    contact
+    contact,
+    cardProducts,
   ]);
 
   // IntersectionObserver for auto-highlight in the sections list
@@ -748,8 +769,8 @@ const showVerified = isPro && theme.verified !== false;
 
   // ---- Undo / redo for design changes ----
   const designSnapshot = useMemo(
-    () => ({ title, subtitle, theme, links, socials, socialUrls, avatarDataUrl, avatarSize, headerTextSize, avatarShadow, contact, contactDetails }),
-    [title, subtitle, theme, links, socials, socialUrls, avatarDataUrl, avatarSize, headerTextSize, avatarShadow, contact, contactDetails],
+    () => ({ title, subtitle, theme, links, socials, socialUrls, avatarDataUrl, avatarSize, headerTextSize, avatarShadow, contact, contactDetails, cardProducts }),
+    [title, subtitle, theme, links, socials, socialUrls, avatarDataUrl, avatarSize, headerTextSize, avatarShadow, contact, contactDetails, cardProducts],
   );
   const applyDesign = useCallback((d: typeof designSnapshot) => {
     setTitle(d.title);
@@ -764,6 +785,7 @@ const showVerified = isPro && theme.verified !== false;
     setAvatarShadow(d.avatarShadow);
     setContact(d.contact);
     setContactDetails(d.contactDetails);
+    setCardProducts(d.cardProducts);
   }, []);
   const history = useUndoHistory(designSnapshot, applyDesign);
 
@@ -781,6 +803,7 @@ const showVerified = isPro && theme.verified !== false;
       ["socialUrls", "social links change"],
       ["contact", "message button change"],
       ["contactDetails", "contact details change"],
+      ["cardProducts", "products change"],
     ];
     return labels.find(([k]) => !Object.is(a[k], b[k]))?.[1] ?? "change";
   };
@@ -822,6 +845,10 @@ const showVerified = isPro && theme.verified !== false;
       scrollToSection("header");
       return;
     }
+    if (target.type === "products") {
+      scrollToSection("products");
+      return;
+    }
     scrollToSection("links");
     const selector = target.type === "link" ? `[data-link-row="${target.id}"]` : "[data-message-settings]";
     window.setTimeout(() => {
@@ -845,6 +872,8 @@ const showVerified = isPro && theme.verified !== false;
       verified={showVerified}
       stickers={theme.stickers}
       onStickersChange={setStickers}
+      products={cardProducts.map((id) => storeProducts?.find((p) => p.id === id && p.status === "PUBLISHED")).filter((p): p is CardProduct => Boolean(p))}
+      productHrefBase={shareSlug ? `/${shareSlug}/p/` : undefined}
       onEdit={editFromPreview}
       overlayTarget={overlay}
       contact={contact}
@@ -1335,6 +1364,19 @@ const showVerified = isPro && theme.verified !== false;
                     <MessageButtonSettings contact={contact} setContact={setContact} />
                   )}
 </CardContent>
+              </Card>
+            </section>
+
+            {/* Products from the store */}
+            <section ref={productsRef} data-section-id="products" className="scroll-mt-[200px]">
+              <Card className="rounded-[16px] border border-[#E3E5E7] bg-white shadow-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-[16px] font-medium tracking-[-0.02em] text-[#151619]">Products</CardTitle>
+                  <CardDescription className="text-[13px] text-[#80858C]">Sell from your Card. Published products show below your links.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CardProductsPanel all={storeProducts} selected={cardProducts} onChange={setCardProducts} />
+                </CardContent>
               </Card>
             </section>
 

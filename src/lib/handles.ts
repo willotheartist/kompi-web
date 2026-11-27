@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { ApiError } from "./api-errors";
-export const RESERVED_HANDLES = new Set("api signin signup claim dashboard settings pricing pricingv2 links k k-cards cards qr-code qr-code-generator qr-menus kr-codes customers tools m p menu analytics reset-password forgot-password verify-email blog chat builder preview s r legal features solutions kompi-suite free-qr-code-generator krcode2 growth messages about contact support www app me admin health robots.txt sitemap.xml".split(" "));
+export const RESERVED_HANDLES = new Set("api signin signup claim dashboard settings pricing pricingv2 links k k-cards cards qr-code qr-code-generator qr-menus kr-codes customers tools m p menu analytics reset-password forgot-password verify-email blog chat builder preview s r legal features solutions kompi-suite free-qr-code-generator krcode2 growth messages about contact support www app me admin health order shop store earn robots.txt sitemap.xml".split(" "));
 export function normalizeHandle(raw: string) { return raw.trim().replace(/^@/, "").toLowerCase(); }
 export function validateHandle(raw: string) {
   const handle = normalizeHandle(raw);

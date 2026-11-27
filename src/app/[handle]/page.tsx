@@ -16,6 +16,7 @@ import {
 import type { KCardsInitialData } from "@/components/k-cards/KCardsPage";
 import { kcardButtonStyles, kcardWallpaperStyle, isPaidPlan, sanitizeStickers } from "@/components/k-cards/kcard-style";
 import { getKCardFontClass } from "@/lib/fonts";
+import { productsForCard } from "@/lib/store-server";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
@@ -26,7 +27,7 @@ const getPublicKCard = cache(async (handle: string) => {
 
   return prisma.kCard.findUnique({
     where: { slug: handle, user: { bannedAt: null } },
-    select: { slug: true, isPublic: true, data: true, workspace: { select: { plan: true } } },
+    select: { slug: true, isPublic: true, data: true, workspaceId: true, workspace: { select: { plan: true } } },
   });
 });
 
@@ -107,6 +108,7 @@ export default async function PublicHandlePage({ params }: PageProps) {
 
   const freePlan = !kcard.workspace || kcard.workspace.plan === "FREE";
   const pro = isPaidPlan(kcard.workspace?.plan);
+  const products = await productsForCard(kcard.workspaceId, (data as { products?: unknown }).products);
   const cardUrl = `${PUBLIC_PROFILE_URL}/${handle}`;
 
   return (
@@ -124,6 +126,8 @@ export default async function PublicHandlePage({ params }: PageProps) {
             skin={pro ? theme.skin : undefined}
             verified={pro && theme.verified !== false}
             stickers={sanitizeStickers(theme.stickers)}
+            products={products}
+            productHrefBase={`/${handle}/p/`}
             wallpaperStyle={wallpaperStyle}
             pageBackground={pageBackground}
             previewTitleFont={previewTitleFont}

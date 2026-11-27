@@ -12,6 +12,7 @@ export const cardContentSchema = z.object({
  avatarDataUrl: z.string().max(2500000).refine(v => /^data:image\/(png|jpeg|jpg|webp|gif);base64,/.test(v) || /^https:\/\//.test(v), "Use a supported profile image.").nullable().optional(),
  avatarSize: z.enum(["small", "medium", "large"]).optional(), headerTextSize: z.enum(["small", "medium", "large"]).optional(), avatarShadow: z.enum(["shadow", "flat"]).optional(),
  contact: z.object({ enabled: z.boolean(), buttonLabel: z.string().max(80), emailOnly: z.boolean().optional(), intents: z.array(z.object({ key: z.string().max(80), label: z.string().max(120), enabled: z.boolean().optional() })).max(20).optional() }).optional(),
+ products: z.array(z.string().max(64)).max(30).optional(),
  contactDetails: z.object({ email: z.union([z.string().email().max(254), z.literal("")]), phone: z.string().max(40), company: z.string().max(120).optional() }).optional(),
 });
 export function vcardEscape(value: string) { return value.replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/;/g, "\\;").replace(/,/g, "\\,"); }
