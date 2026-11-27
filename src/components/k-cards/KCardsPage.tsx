@@ -784,6 +784,7 @@ const buttonBaseStyles = useMemo(() => {
   const renderPreview = (overlay: HTMLElement | null) => (
     <KCardPreview
       variant="device"
+      shareUrl={shareDisplayUrl}
       linkIcons={Boolean(theme.linkIcons)}
       onEdit={editFromPreview}
       overlayTarget={overlay}
