@@ -173,9 +173,21 @@ export function ProductsClient({ rows: initialRows, stats, handle, currency, con
         title="Products"
         description="Sell downloads, bookings and access, collect leads and take tips, all from your Card."
         actions={
-          <button type="button" className={buttonStyles.primary} onClick={() => setAdding(true)}>
-            <Plus size={17} /> Add product
-          </button>
+          <div className="flex gap-2">
+            {handle && (
+              <button
+                type="button"
+                className={buttonStyles.secondary}
+                onClick={() => navigator.clipboard.writeText(`${PUBLIC_PROFILE_URL}/${handle}/shop`).then(() => toast.success("Shop link copied"))}
+                title={`${PUBLIC_PROFILE_URL}/${handle}/shop`}
+              >
+                <Copy size={16} /> Shop link
+              </button>
+            )}
+            <button type="button" className={buttonStyles.primary} onClick={() => setAdding(true)}>
+              <Plus size={17} /> Add product
+            </button>
+          </div>
         }
       />
 

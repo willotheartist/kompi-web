@@ -10,6 +10,7 @@ import {
   Receipt,
   Settings,
   ShoppingBag,
+  TicketPercent,
   Wallet,
   ShieldCheck,
   UserRound,
@@ -46,6 +47,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/dashboard/earn/products", label: "Products", short: "Store", icon: ShoppingBag, keywords: "store shop sell digital download booking tip lead magnet" },
       { href: "/dashboard/earn/orders", label: "Orders", icon: Receipt, keywords: "sales purchases bookings customers" },
+      { href: "/dashboard/earn/discounts", label: "Discounts", icon: TicketPercent, keywords: "coupon promo code offer sale" },
       { href: "/dashboard/earn/payouts", label: "Payouts", icon: Wallet, keywords: "stripe bank money earnings connect" },
     ],
   },

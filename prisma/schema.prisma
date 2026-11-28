@@ -104,6 +104,7 @@ model Workspace {
   storeCurrency           String   @default("gbp")
   products                Product[]
   orders                  Order[]
+  storeDiscounts          StoreDiscount[]
   billingStatus        String?
   billingPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean           @default(false)
@@ -802,6 +803,8 @@ model Order {
   accessToken             String      @unique
   bookingStart            DateTime?
   bookingEnd              DateTime?
+  discountCode            String?
+  discountCents           Int         @default(0)
   emailedAt               DateTime?
   paidAt                  DateTime?
   createdAt               DateTime    @default(now())
@@ -812,4 +815,24 @@ model Order {
   @@index([workspaceId, createdAt])
   @@index([productId, bookingStart])
   @@index([status, createdAt])
+}
+
+/// Store discount codes (percentage or fixed amount off).
+model StoreDiscount {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  code           String
+  percentOff     Int?
+  amountOffCents Int?
+  /// Empty means every product.
+  productIds     String[]  @default([])
+  maxUses        Int?
+  uses           Int       @default(0)
+  expiresAt      DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, code])
 }

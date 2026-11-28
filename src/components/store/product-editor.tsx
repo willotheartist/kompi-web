@@ -439,26 +439,36 @@ export function ProductEditor({ initial, look, seller, connectReady, feePercent,
               </div>
               <div className="divide-y divide-[#EDEEF0] rounded-[12px] border border-[#E3E5E7]">
                 {WEEKDAYS.map((d) => {
-                  const range = rules.days[d]?.[0];
+                  const ranges = rules.days[d] ?? [];
+                  const setRanges = (next: [string, string][]) => setRules({ days: { ...rules.days, [d]: next } });
                   return (
-                    <div key={d} className="flex flex-wrap items-center gap-3 px-3.5 py-2.5">
-                      <label className="flex w-32 items-center gap-2.5 text-[14.5px] text-[#151619]">
-                        <input
-                          type="checkbox"
-                          className="size-4 accent-[#151619]"
-                          checked={Boolean(range)}
-                          onChange={(e) => setRules({ days: { ...rules.days, [d]: e.target.checked ? [["09:00", "17:00"]] : [] } })}
-                        />
+                    <div key={d} className="flex flex-wrap items-start gap-3 px-3.5 py-2.5">
+                      <label className="flex h-9 w-32 items-center gap-2.5 text-[14.5px] text-[#151619]">
+                        <input type="checkbox" className="size-4 accent-[#151619]" checked={ranges.length > 0} onChange={(e) => setRanges(e.target.checked ? [["09:00", "17:00"]] : [])} />
                         {DAY_LABEL[d]}
                       </label>
-                      {range ? (
-                        <div className="flex items-center gap-2 text-[14px] text-[#80858C]">
-                          <input type="time" className="h-9 rounded-[8px] border border-[#E3E5E7] px-2 text-[#151619]" value={range[0]} onChange={(e) => setRules({ days: { ...rules.days, [d]: [[e.target.value, range[1]]] } })} />
-                          to
-                          <input type="time" className="h-9 rounded-[8px] border border-[#E3E5E7] px-2 text-[#151619]" value={range[1]} onChange={(e) => setRules({ days: { ...rules.days, [d]: [[range[0], e.target.value]] } })} />
+                      {ranges.length ? (
+                        <div className="flex flex-col gap-2">
+                          {ranges.map((range, i) => (
+                            <div key={i} className="flex items-center gap-2 text-[14px] text-[#80858C]">
+                              <input type="time" className="h-9 rounded-[8px] border border-[#E3E5E7] px-2 text-[#151619]" value={range[0]} onChange={(e) => setRanges(ranges.map((r, j) => (j === i ? [e.target.value, r[1]] : r)))} />
+                              to
+                              <input type="time" className="h-9 rounded-[8px] border border-[#E3E5E7] px-2 text-[#151619]" value={range[1]} onChange={(e) => setRanges(ranges.map((r, j) => (j === i ? [r[0], e.target.value] : r)))} />
+                              {ranges.length > 1 && (
+                                <button type="button" className="grid size-8 place-items-center rounded-[8px] text-[#A3A7AD] hover:bg-[#F3F4F5] hover:text-[#151619]" aria-label="Remove these hours" onClick={() => setRanges(ranges.filter((_, j) => j !== i))}>
+                                  <X size={15} />
+                                </button>
+                              )}
+                              {i === ranges.length - 1 && ranges.length < 4 && (
+                                <button type="button" className="h-8 rounded-[8px] px-2 text-[13px] font-medium text-[#3D5AFE] hover:bg-[#F3F4F5]" onClick={() => setRanges([...ranges, [range[1] < "18:00" ? "18:00" : range[1], range[1] < "18:00" ? "20:00" : "23:00"]])}>
+                                  + Add hours
+                                </button>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       ) : (
-                        <span className="text-[14px] text-[#A3A7AD]">Unavailable</span>
+                        <span className="flex h-9 items-center text-[14px] text-[#A3A7AD]">Unavailable</span>
                       )}
                     </div>
                   );
