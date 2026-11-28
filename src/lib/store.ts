@@ -186,3 +186,23 @@ export function productSetupIssues(p: ProductLike, connectReady: boolean): strin
   }
   return issues;
 }
+
+// ---------------- Discounts ----------------
+
+export type DiscountLike = { percentOff: number | null; amountOffCents: number | null };
+
+/** How much a discount takes off a price. Prices under the card minimum become free. */
+export function discountAmount(amountCents: number, d: DiscountLike) {
+  const off = d.percentOff ? Math.round((amountCents * Math.min(100, Math.max(0, d.percentOff))) / 100) : Math.max(0, d.amountOffCents ?? 0);
+  const left = Math.max(0, amountCents - off);
+  // Anything below Stripe's minimum charge is rounded down to free.
+  return left > 0 && left < MIN_CHARGE_CENTS ? amountCents : Math.min(amountCents, off);
+}
+
+export function discountLabel(d: DiscountLike, currency: string) {
+  return d.percentOff ? `${d.percentOff}% off` : `${formatMoney(d.amountOffCents ?? 0, currency)} off`;
+}
+
+export function normalizeCode(code: string) {
+  return code.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 32);
+}

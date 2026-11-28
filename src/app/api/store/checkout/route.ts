@@ -6,8 +6,8 @@ import { apiError, ApiError } from "@/lib/api-errors";
 import { rateLimit, requestIp } from "@/lib/rate-limit";
 import { getStripe } from "@/lib/stripe";
 import { PUBLIC_PROFILE_URL } from "@/lib/urls";
-import { MIN_CHARGE_CENTS, bookingSlots, readBookingRules, storeFeeCents } from "@/lib/store";
-import { deliverOrder, newAccessToken, orderUrl, releaseStaleHolds } from "@/lib/store-server";
+import { MIN_CHARGE_CENTS, bookingSlots, discountAmount, readBookingRules, storeFeeCents } from "@/lib/store";
+import { countDiscountUse, deliverOrder, findDiscount, newAccessToken, orderUrl, releaseStaleHolds } from "@/lib/store-server";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +19,7 @@ const schema = z.object({
   email: z.string().trim().email("Enter a valid email.").max(254).optional(),
   name: z.string().trim().max(120).optional(),
   note: z.string().trim().max(1000).optional(),
+  discountCode: z.string().trim().max(40).optional(),
 });
 
 /**
@@ -41,6 +42,16 @@ export async function POST(req: NextRequest) {
       if (amount < min) throw new ApiError("Please choose a higher amount.");
     }
     if (amount > 0 && amount < MIN_CHARGE_CENTS) throw new ApiError("The minimum amount is 50p.");
+
+    // Discount codes
+    let discountCode: string | null = null;
+    let discountCents = 0;
+    if (body.discountCode && amount > 0) {
+      const d = await findDiscount(workspace.id, product, body.discountCode);
+      discountCents = discountAmount(amount, d);
+      discountCode = d.code;
+      amount -= discountCents;
+    }
 
     // Bookings: the slot must still be open.
     let bookingStart: Date | null = null;
@@ -67,6 +78,8 @@ export async function POST(req: NextRequest) {
       accessToken: newAccessToken(),
       bookingStart,
       bookingEnd,
+      discountCode,
+      discountCents,
     };
 
     // ---- Free ----
@@ -75,6 +88,7 @@ export async function POST(req: NextRequest) {
       await rateLimit("store-free", `${body.email.toLowerCase()}:${product.id}`, 5, 3600);
       const order = await prisma.order.create({ data: { ...base, status: "FREE", amountCents: 0, paidAt: new Date() }, include: { product: true, workspace: true } }).catch(slotTaken);
       if (product.type === "LEAD_MAGNET") await addSubscriber(workspace.id, body.email, product.slug);
+      await countDiscountUse(workspace.id, discountCode);
       await deliverOrder(order).catch((e) => console.error("Order email failed", order.id, e instanceof Error ? e.message : e));
       return NextResponse.json({ url: orderUrl(order.accessToken) });
     }

@@ -5,7 +5,8 @@ import { prisma } from "./prisma";
 import { getStripe } from "./stripe";
 import { emailConfigured, escapeHtml, sendEmail } from "./email";
 import { PUBLIC_PROFILE_URL, appUrl } from "./urls";
-import { formatBookingTime, formatMoney, readBookingRules } from "./store";
+import { ApiError } from "./api-errors";
+import { formatBookingTime, formatMoney, normalizeCode, readBookingRules } from "./store";
 
 export const newAccessToken = () => randomBytes(24).toString("base64url");
 export const orderUrl = (token: string) => `${PUBLIC_PROFILE_URL}/order/${token}`;
@@ -76,6 +77,7 @@ export async function applyCheckoutSession(session: Stripe.Checkout.Session, acc
     },
   });
   const fresh = await prisma.order.findUniqueOrThrow({ where: { id: order.id }, include: { product: true, workspace: true } });
+  if (updated.count) await countDiscountUse(fresh.workspaceId, fresh.discountCode).catch(() => {});
   if (updated.count) await deliverOrder(fresh).catch((e) => console.error("Order email failed", fresh.id, e instanceof Error ? e.message : e));
   return fresh;
 }
@@ -157,4 +159,24 @@ export async function productsForCard(workspaceId: string | null | undefined, id
     select: { id: true, slug: true, type: true, title: true, subtitle: true, coverImage: true, priceCents: true, currency: true, payWhatYouWant: true, buttonLabel: true, durationMin: true },
   });
   return list.map((id) => rows.find((r) => r.id === id)).filter((r): r is (typeof rows)[number] => Boolean(r));
+}
+
+// ---------------- Discounts ----------------
+
+/** A usable discount for this product, or a buyer-friendly error. */
+export async function findDiscount(workspaceId: string, product: { id: string; type: string; payWhatYouWant: boolean }, rawCode: string) {
+  const code = normalizeCode(rawCode);
+  if (!code) throw new ApiError("Enter a discount code.");
+  if (product.type === "LEAD_MAGNET" || product.payWhatYouWant) throw new ApiError("Codes can't be used on this product.");
+  const d = await prisma.storeDiscount.findUnique({ where: { workspaceId_code: { workspaceId, code } } });
+  if (!d || !d.isActive) throw new ApiError("That code isn't valid.", 404);
+  if (d.expiresAt && d.expiresAt < new Date()) throw new ApiError("That code has expired.");
+  if (d.maxUses !== null && d.uses >= d.maxUses) throw new ApiError("That code has been used up.");
+  if (d.productIds.length && !d.productIds.includes(product.id)) throw new ApiError("That code doesn't apply to this product.");
+  return d;
+}
+
+export async function countDiscountUse(workspaceId: string, code: string | null) {
+  if (!code) return;
+  await prisma.storeDiscount.updateMany({ where: { workspaceId, code }, data: { uses: { increment: 1 } } });
 }

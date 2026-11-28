@@ -48,3 +48,13 @@ test("buyers can reach store endpoints without signing in", () => {
   assert.equal(isPublicApi("/api/store/products", "POST"), false);
   assert.equal(isPublicApi("/api/store/connect", "POST"), false);
 });
+
+test("discounts take money off, and tiny leftovers become free", async () => {
+  const { discountAmount, normalizeCode } = await import("../src/lib/store");
+  assert.equal(discountAmount(2000, { percentOff: 25, amountOffCents: null }), 500);
+  assert.equal(discountAmount(2000, { percentOff: null, amountOffCents: 500 }), 500);
+  assert.equal(discountAmount(400, { percentOff: null, amountOffCents: 1000 }), 400);
+  // 30p left is under Stripe's minimum, so the whole price comes off.
+  assert.equal(discountAmount(1000, { percentOff: 97, amountOffCents: null }), 1000);
+  assert.equal(normalizeCode(" launch 20! "), "LAUNCH20");
+});

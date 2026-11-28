@@ -65,6 +65,10 @@ export function ProductView({ product: p, look, seller, preview, previewSlots, c
   const [tz, setTz] = useState<string | null>(null);
   const [day, setDay] = useState(0);
   const [slot, setSlot] = useState<string | null>(null);
+  const [codeOpen, setCodeOpen] = useState(false);
+  const [codeInput, setCodeInput] = useState("");
+  const [codeBusy, setCodeBusy] = useState(false);
+  const [applied, setApplied] = useState<{ code: string; label: string; discountCents: number; totalCents: number } | null>(null);
 
   useEffect(() => {
     if (p.type !== "BOOKING" || preview) return;
@@ -82,13 +86,33 @@ export function ProductView({ product: p, look, seller, preview, previewSlots, c
     };
   }, [p.id, p.type, preview]);
 
-  const chosenAmount = p.payWhatYouWant ? (custom ? Math.round(Number(custom) * 100) || 0 : amount) : p.priceCents;
-  const needsEmail = free || p.type === "BOOKING";
+  const chosenAmount = p.payWhatYouWant ? (custom ? Math.round(Number(custom) * 100) || 0 : amount) : (applied?.totalCents ?? p.priceCents);
+  const codesAllowed = !free && !p.payWhatYouWant;
+  const freeNow = free || (applied !== null && applied.totalCents === 0);
+  const needsEmail = freeNow || p.type === "BOOKING";
   const meta = PRODUCT_TYPES[p.type];
   const cta =
     p.buttonLabel?.trim() ||
     meta.defaultButton;
-  const priceText = free ? "Free" : p.payWhatYouWant ? `${formatMoney(chosenAmount || 0, p.currency)}` : formatMoney(p.priceCents, p.currency);
+  const priceText = freeNow ? "Free" : formatMoney(chosenAmount || 0, p.currency);
+
+  async function applyCode() {
+    setError(null);
+    if (preview) return setNotice("Codes work on your live page.");
+    if (!codeInput.trim()) return;
+    setCodeBusy(true);
+    try {
+      const res = await fetch(`/api/store/discount?productId=${encodeURIComponent(p.id)}&code=${encodeURIComponent(codeInput)}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "That code isn't valid.");
+      setApplied(json);
+      setCodeOpen(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "That code isn't valid.");
+    } finally {
+      setCodeBusy(false);
+    }
+  }
 
   async function submit() {
     setError(null);
@@ -112,6 +136,7 @@ export function ProductView({ product: p, look, seller, preview, previewSlots, c
           email: email || undefined,
           name: name || undefined,
           note: note || undefined,
+          discountCode: applied?.code,
         }),
       });
       const json = await res.json();
@@ -176,7 +201,12 @@ export function ProductView({ product: p, look, seller, preview, previewSlots, c
         <div className="mt-7 rounded-[22px] border border-black/5 bg-white p-5 text-[#151619] sm:p-6" style={{ fontFamily: "var(--font-primary), system-ui, sans-serif" }}>
           <div className="mb-4 flex items-baseline justify-between gap-3">
             <span className="text-[15px] text-[#696C72]">{p.type === "TIP" ? "Choose an amount" : p.type === "BOOKING" ? "Pick a time" : free ? "Free" : "Price"}</span>
-            {!p.payWhatYouWant && <span className="text-[26px] font-semibold tracking-[-0.03em]">{priceText}</span>}
+            {!p.payWhatYouWant && (
+              <span className="flex items-baseline gap-2">
+                {applied && <span className="text-[16px] text-[#A3A7AD] line-through">{formatMoney(p.priceCents, p.currency)}</span>}
+                <span className="text-[26px] font-semibold tracking-[-0.03em]">{priceText}</span>
+              </span>
+            )}
           </div>
 
           {p.payWhatYouWant && (
@@ -239,6 +269,32 @@ export function ProductView({ product: p, look, seller, preview, previewSlots, c
             </div>
           )}
 
+          {codesAllowed && (
+            <div className="mb-4">
+              {applied ? (
+                <div className="flex items-center justify-between rounded-[12px] border border-dashed border-[#12A150] bg-[#F3FBF6] px-3.5 py-2.5 text-[14px]">
+                  <span className="text-[#0D7A3C]">
+                    <span className="font-mono font-semibold tracking-[0.04em]">{applied.code}</span> · {applied.label}
+                  </span>
+                  <button type="button" className="text-[13px] font-medium text-[#696C72] hover:text-[#151619]" onClick={() => setApplied(null)}>
+                    Remove
+                  </button>
+                </div>
+              ) : codeOpen ? (
+                <div className="flex gap-2">
+                  <input className={cn(field, "font-mono uppercase tracking-[0.04em]")} placeholder="CODE" value={codeInput} onChange={(e) => setCodeInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && applyCode()} autoFocus />
+                  <button type="button" onClick={applyCode} disabled={codeBusy} className="h-12 shrink-0 rounded-[12px] border border-[#151619] px-4 text-[14.5px] font-semibold text-[#151619] disabled:opacity-60">
+                    {codeBusy ? <Loader2 size={16} className="animate-spin" /> : "Apply"}
+                  </button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setCodeOpen(true)} className="text-[13.5px] font-medium text-[#696C72] underline-offset-2 hover:text-[#151619] hover:underline">
+                  Have a discount code?
+                </button>
+              )}
+            </div>
+          )}
+
           {needsEmail && (
             <div className="mb-4 grid gap-2">
               <input className={field} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
@@ -256,7 +312,7 @@ export function ProductView({ product: p, look, seller, preview, previewSlots, c
           >
             {busy ? <Loader2 size={18} className="animate-spin" /> : null}
             {cta}
-            {!free && (p.type !== "BOOKING" || slot) ? <span className="opacity-80">· {p.payWhatYouWant ? formatMoney(chosenAmount || 0, p.currency) : priceText}</span> : null}
+            {!freeNow && (p.type !== "BOOKING" || slot) ? <span className="opacity-80">· {priceText}</span> : null}
           </button>
           {error && <p className="mt-3 text-center text-[13.5px] text-[#D93036]">{error}</p>}
           {notice && !error && (
@@ -265,7 +321,7 @@ export function ProductView({ product: p, look, seller, preview, previewSlots, c
             </p>
           )}
           <p className="mt-3 flex items-center justify-center gap-1.5 text-[12.5px] text-[#A3A7AD]">
-            {free ? "Delivered to your inbox instantly" : <><LockKeyhole size={12} /> Secure checkout with Stripe</>}
+            {freeNow ? "Delivered to your inbox instantly" : <><LockKeyhole size={12} /> Secure checkout with Stripe</>}
           </p>
         </div>
 
